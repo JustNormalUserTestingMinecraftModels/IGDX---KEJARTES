@@ -371,7 +371,10 @@ static func roll_shop_stock(names: Array[String], size: int, max_copies: int) ->
 ## This week's promo item: one of the DISTINCT names on `stock`, picked by a
 ## hash of the (grade, week) key -- not the global RNG, which roll_shop_stock's
 ## shuffle() advances. Distinct, so a pair on the shelf still advertises one
-## item. "" for an empty shelf. Pure.
+## item. Sorted before indexing so the pick depends only on which names are on
+## the shelf, never on roll_shop_stock's unseeded shuffle() order -- the same
+## stock shuffled two different ways must name the same promo item. "" for an
+## empty shelf. Pure.
 static func promo_item_for(stock: Array[String], grade: int, week: int) -> String:
 	var names: Array[String] = []
 	for item_name: String in stock:
@@ -379,6 +382,7 @@ static func promo_item_for(stock: Array[String], grade: int, week: int) -> Strin
 			names.append(item_name)
 	if names.is_empty():
 		return ""
+	names.sort()
 	return names[posmod(hash("promo:" + shop_week_key_for(grade, week)), names.size())]
 
 
@@ -417,7 +421,10 @@ func shop_stock_for_week() -> Array[String]:
 			names.append(item.item_name)
 		shop_stock = roll_shop_stock(names, SHOP_SHELF_SIZE, SHOP_MAX_COPIES)
 		shop_promo_item = promo_item_for(shop_stock, current_grade, minggu_ke)
-		shop_promo_percent = promo_percent_for(current_grade, minggu_ke)
+		# No item, no percent -- shop_promo_item's own doc promises "" and 0
+		# together on an empty shelf; only roll a discount when there is a
+		# promo item to hang it on.
+		shop_promo_percent = promo_percent_for(current_grade, minggu_ke) if shop_promo_item != "" else 0
 	return shop_stock.duplicate()
 
 

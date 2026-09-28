@@ -61,6 +61,17 @@ func test_empty_stock_has_no_promo() -> void:
 	var empty: Array[String] = []
 	assert_eq(GameState.promo_item_for(empty, 7, 2), "", "no shelf, no promo")
 
+## Fix round 2 (2026-09-28 review): the pick must depend only on which names
+## are on the shelf, never on roll_shop_stock's unseeded shuffle() order --
+## the spec and this suite's own header both claim order-independence, but
+## nothing proved it until names.sort() went into promo_item_for.
+func test_promo_item_ignores_shelf_order() -> void:
+	var stock := _stock()
+	var reversed: Array[String] = stock.duplicate()
+	reversed.reverse()
+	assert_eq(GameState.promo_item_for(stock, 7, 2), GameState.promo_item_for(reversed, 7, 2),
+		"the same names, differently shuffled, must still name the same promo item")
+
 func test_promo_percent_is_in_the_allowed_set() -> void:
 	for week: int in range(1, 17):
 		assert_true(GameState.PROMO_DISCOUNTS.has(GameState.promo_percent_for(9, week)),
@@ -92,6 +103,21 @@ func test_rolling_the_week_sets_a_stock_promo() -> void:
 	assert_true(GameState.PROMO_DISCOUNTS.has(GameState.shop_promo_percent),
 		"and carries a real discount")
 
+## Fix round 2 (2026-09-28 review): shop_promo_item/percent's own class doc
+## promises "" and 0 TOGETHER when the shelf is empty, but shop_stock_for_week
+## used to roll a real percent even with no item to hang it on. Scanned, not
+## exercised live -- forcing ItemDatabase empty to reach that branch is out of
+## reach for this suite.
+func test_shop_stock_for_week_zeroes_the_percent_with_no_promo_item() -> void:
+	var src: String = FileAccess.get_file_as_string("res://Scripts/GameState.gd")
+	var at: int = src.find("func shop_stock_for_week()")
+	assert_true(at != -1, "GameState.gd must have shop_stock_for_week()")
+	if at == -1:
+		return
+	var body: String = src.substr(at, src.find("\nfunc ", at + 1) - at)
+	assert_true(body.contains("if shop_promo_item != \"\" else 0"),
+		"an empty shelf (no promo item) must zero shop_promo_percent too, matching the class doc")
+
 func test_reset_clears_the_promo() -> void:
 	GameState.shop_promo_item = "Komik"
 	GameState.shop_promo_percent = 20
@@ -121,6 +147,21 @@ func test_price_of_discounts_only_the_promo_item() -> void:
 		"20% off the promo item's list price")
 	var plain: ItemData = _item("Komik", 1000)
 	assert_eq(CartScript.price_of(plain), CartScript.list_price_of(plain), "full price otherwise")
+
+## Fix round 2 (2026-09-28 review): list_price_of must ignore the promo
+## entirely -- Cart.price_of's own doc says "its list price, less this
+## week's promo when it is the promo item", i.e. list_price_of is the
+## BEFORE number. The check above (price_of == roundi(list_price_of * 0.8))
+## would still pass if list_price_of were itself wrongly discounted, since
+## both sides would be off by the same factor -- this compares list_price_of
+## directly against a same-priced non-promo item instead.
+func test_list_price_of_ignores_the_promo() -> void:
+	GameState.shop_promo_item = "Susu Murni"
+	GameState.shop_promo_percent = 20
+	var promo: ItemData = _item("Susu Murni", 1000)
+	var plain: ItemData = _item("Komik", 1000)
+	assert_eq(CartScript.list_price_of(promo), CartScript.list_price_of(plain),
+		"list_price_of must not discount the promo item -- Cart.price_of applies the cut, not this")
 
 func test_total_of_sums_the_promo_price() -> void:
 	GameState.shop_promo_item = "Susu Murni"

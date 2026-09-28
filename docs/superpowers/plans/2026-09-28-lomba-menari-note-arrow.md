@@ -28,7 +28,7 @@
 | `Scenes/Minigames/SeniBudaya/MenariNote.tscn` | Create | The note template: `MenariNote` (Control) → `Arrow` (TextureRect, full rect). |
 | `Scripts/Minigames/SeniBudaya/LombaMenari.gd` | Modify | Instances the template, turns and tints `Arrow`, drops the glyph `Label`, the procedural note box and the eight texture exports. |
 | `tests/test_lomba_menari_arrow.gd` | Create | Pins the art's direction and fill, the template's shape, and the script's use of it. |
-| `tests/test_viewport_editability.gd:74` | Modify | `LombaMenari.gd` baseline 4 → 2. |
+| `tests/test_viewport_editability.gd:74` | Modify | `LombaMenari.gd` baseline 4 → 1. |
 | `docs/superpowers/DEBT.md` | Modify | Delete the resolved glyph note; list the new generated asset. |
 | `docs/superpowers/CHANGELOG.md` | Modify | One entry for the pass. |
 
@@ -251,7 +251,7 @@ git commit -m "feat(menari): MenariNote template with the arrow" -m "Co-Authored
 ### Task 3: LombaMenari uses the template
 
 **Files:**
-- Modify: `Scripts/Minigames/SeniBudaya/LombaMenari.gd:21-39` (exports), `:149-151` (consts), `:439-519` (`_spawn_single_note`), `:656-713` (`_animate_swiped_note`), plus a new static helper beside `grade_for_distance()`
+- Modify: `Scripts/Minigames/SeniBudaya/LombaMenari.gd:21-39` (exports), `:149-151` (consts), `:439-519` (`_spawn_single_note`), `:656-713` (`_animate_swiped_note`), `:751-777` (`_show_swipe_effect`), plus a new static helper beside `grade_for_distance()`
 - Modify: `tests/test_viewport_editability.gd:74`
 - Modify: `tests/test_lomba_menari_arrow.gd` (append)
 
@@ -592,6 +592,81 @@ with:
 
 The tween that follows (slide, scale, rotation, fade, `queue_free`) is unchanged.
 
+- [ ] **Step 7b: The hit flash wears the arrow too**
+
+`_show_swipe_effect()` (~line 751) flashes a big glyph `Label` over the hit zone on every hit, with its own copy of the four lane colours. Give it the same template. Directly above `const NOTE_SCENE`, add:
+
+```gdscript
+## Side, in pixels, of the arrow that flashes over the hit zone on a hit,
+## the size the glyph Label it replaced was centred at.
+const SWIPE_EFFECT_SIZE := 100.0
+
+```
+
+Then replace the start of `_show_swipe_effect()`, from `	var effect = Label.new()` down to and including `	add_child(effect)`:
+
+```gdscript
+	var effect = Label.new()
+	var arrow_char = ""
+	var color = Color.WHITE
+	
+	match swipe_type:
+		NoteType.LEFT:
+			arrow_char = "←"
+			color = Color(1.0, 0.2, 0.2)
+		NoteType.RIGHT:
+			arrow_char = "→"
+			color = Color(0.2, 0.5, 1.0)
+		NoteType.TOP_LEFT:
+			arrow_char = "↖"
+			color = Color(1.0, 0.8, 0.1)
+		NoteType.TOP_RIGHT:
+			arrow_char = "↗"
+			color = Color(0.2, 0.8, 0.3)
+			
+	effect.text = arrow_char
+	effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	effect.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	effect.add_theme_font_size_override("font_size", 96)
+	effect.add_theme_color_override("font_color", color)
+	effect.add_theme_constant_override("outline_size", 16)
+	effect.add_theme_color_override("font_outline_color", Color.BLACK)
+	
+	# Position at center of hit zone
+	effect.global_position = hit_zone.global_position + hit_zone.size / 2 - Vector2(50, 50)
+	add_child(effect)
+```
+
+with (the lane colours now come from the exports instead of a hardcoded copy; their defaults are the same values):
+
+```gdscript
+	var effect: Control = NOTE_SCENE.instantiate()
+	var color = Color.WHITE
+	
+	match swipe_type:
+		NoteType.LEFT:
+			color = left_note_color
+		NoteType.RIGHT:
+			color = right_note_color
+		NoteType.TOP_LEFT:
+			color = top_left_note_color
+		NoteType.TOP_RIGHT:
+			color = top_right_note_color
+	
+	var effect_size := Vector2(SWIPE_EFFECT_SIZE, SWIPE_EFFECT_SIZE)
+	effect.size = effect_size
+	var arrow: TextureRect = effect.get_node("Arrow")
+	arrow.pivot_offset = effect_size / 2.0
+	arrow.rotation = arrow_rotation(swipe_type)
+	arrow.self_modulate = color
+	
+	# Position at center of hit zone
+	effect.global_position = hit_zone.global_position + hit_zone.size / 2 - effect_size / 2.0
+	add_child(effect)
+```
+
+The drift tween below it is unchanged.
+
 - [ ] **Step 8: Check nothing else still reads the removed names**
 
 Run: `grep -nE "fallback_color|arrow_char|swiped_tex|ArrowLabel|_note_texture|_swiped_texture" Scripts/Minigames/SeniBudaya/LombaMenari.gd`
@@ -608,10 +683,10 @@ Expected: no output. `_create_rounded_box_texture` must still exist, because the
 →
 
 ```gdscript
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 2,
+	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 1,
 ```
 
-The two left are the feedback `Label.new()` calls at `_show_hit_feedback` / the effect label, which are out of this plan's scope.
+The one left is `_show_hit_feedback`'s grade-word `Label.new()` (SEMPURNA!/BAGUS!/UPS!), which is real text and out of this plan's scope.
 
 - [ ] **Step 10: Run the tests to verify they pass**
 
@@ -625,7 +700,7 @@ Run each:
 
 ```bash
 git add Scripts/Minigames/SeniBudaya/LombaMenari.gd tests/test_lomba_menari_arrow.gd tests/test_viewport_editability.gd
-git commit -m "feat(menari): notes wear the arrow template, not glyphs" -m "Each note instances MenariNote.tscn; its Arrow child is turned by ARROW_DIRECTIONS and tinted with the lane colour. Drops the glyph Label, the procedural note box and eight unused texture slots; LombaMenari's runtime-UI baseline falls 4 -> 2." -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "feat(menari): notes wear the arrow template, not glyphs" -m "Each note instances MenariNote.tscn; its Arrow child is turned by ARROW_DIRECTIONS and tinted with the lane colour. Drops the glyph Label, the procedural note box and eight unused texture slots; LombaMenari's runtime-UI baseline falls 4 -> 1." -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 ```
 
 ---
@@ -677,13 +752,13 @@ At the top of `docs/superpowers/CHANGELOG.md`, under the intro and above the new
 ## 2026-09-28 — Lomba Menari's notes are real arrows
 
 The notes used to be a code-drawn coloured box with a `←`/`→`/`↖`/`↗`
-typed on it, glyphs neither Boohong nor Open Sans can draw, so they rode
+typed on it (and a bigger one flashed over the hit zone on each hit), glyphs neither Boohong nor Open Sans can draw, so they rode
 the device's fallback font. Each note is now `MenariNote.tscn`: one chunky,
 white-filled arrow (`note_arrow.png`, from the game's existing arrow art),
 turned per lane from `ARROW_DIRECTIONS` and tinted with the lane's
 `*_note_color`. A hit lightens it by `swiped_arrow_lighten` as it flies off.
 The eight never-filled per-direction texture slots are gone, and
-`LombaMenari.gd`'s runtime-UI baseline fell 4 → 2.
+`LombaMenari.gd`'s runtime-UI baseline fell 4 → 1.
 ```
 
 - [ ] **Step 4: Full suite, then the count**

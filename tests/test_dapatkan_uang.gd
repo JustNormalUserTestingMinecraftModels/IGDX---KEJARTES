@@ -11,7 +11,8 @@ const _PANEL_SCENE := "res://Scenes/Lobby/DapatkanUang.tscn"
 const _LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const _NODES := ["IklanSingkat", "VideoPenuh", "AmbilDulu4", "AmbilDulu8",
-	"TontonUtang", "Tutup", "Toast", "ToastLabel", "DevModeTag", "Book", "Scrim"]
+	"TontonUtang", "Toast", "ToastLabel", "DevModeTag", "Book", "Scrim"]
+const _SHEET_SRC := "res://Scripts/Lobby/DapatkanUang.gd"
 
 var _panel: DapatkanUang
 var _saved_money: int
@@ -246,6 +247,18 @@ func test_dash_and_ellipsis_copy_uses_the_body_font() -> void:
 	if panel == null:
 		return
 	for label: Label in [panel.get_node("%ToastLabel") as Label,
-			panel.get_node("Book/Page/Margin/Column/Tip/TipMargin/TipRow/TipLabel") as Label]:
+			panel.get_node("Safe/Center/Book/Column/Tip/TipMargin/TipRow/TipLabel") as Label]:
 		assert_eq(label.theme_type_variation, &"",
 			"%s keeps the body-font default Label" % label.name)
+
+
+func test_the_sheet_is_a_notebook_frame() -> void:
+	var popup := (load(_PANEL_SCENE) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Safe/Center/Book") as NotebookFrame
+	assert_true(frame != null, "the sheet is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "DAPATKAN UANG")
+		assert_true(frame.tabs.is_empty(), "no tabs")
+	assert_contains(FileAccess.get_file_as_string(_SHEET_SRC), "close_pressed.connect",
+		"the frame's close is wired")

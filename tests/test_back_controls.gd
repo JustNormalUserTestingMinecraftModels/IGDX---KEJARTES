@@ -32,12 +32,13 @@ const SUPERSEDED: Array[String] = [
 ## TextureButtons, `icon` for the six Buttons -- five of which keep their
 ## "Kembali" label beside the arrow, while Rapor's 260px box takes the arrow
 ## alone (its label would not fit beside any icon at all).
+##
+## AchievementDetailSheet's back arrow became the notebook frame's round
+## close (2026-09-28, UI depth pass Phase 2); tests/test_popup_frames.gd
+## pins it.
 const ROSTER := {
 	"res://Scenes/Achievements/AchievementsScreen.tscn": {
 		"Safe/UI/BackButton": "texture_normal",
-	},
-	"res://Scenes/Achievements/AchievementDetailSheet.tscn": {
-		"Sheet/Margin/VBox/BackButton": "texture_normal",
 	},
 	"res://Scenes/AturJadwal/AturJadwal.tscn": {
 		"BackButton": "texture_normal",
@@ -106,9 +107,11 @@ func test_no_scene_still_references_a_superseded_back_asset() -> void:
 
 ## A 512x512 texture_normal sets a TextureButton's minimum size to 512 unless
 ## ignore_texture_size is on -- which would silently blow each of these
-## layouts apart. All four already carry it; this stops an edit dropping it.
+## layouts apart. All three already carry it; this stops an edit dropping it.
 ## (Five until 2026-09-24, when the Penjadwalan picker traded its back arrow
-## for a Batal button beside Pilih.)
+## for a Batal button beside Pilih; four until 2026-09-28, when
+## AchievementDetailSheet's back arrow became the notebook frame's round
+## close.)
 func test_the_texture_buttons_ignore_their_texture_size() -> void:
 	var checked := 0
 	for scene_path in ROSTER:
@@ -128,7 +131,7 @@ func test_the_texture_buttons_ignore_their_texture_size() -> void:
 					"%s : %s must ignore its 512px texture size or its minimum size explodes"
 						% [scene_path, node_path])
 		root.free()
-	assert_eq(checked, 4, "all four TextureButton back controls must be checked")
+	assert_eq(checked, 3, "all three TextureButton back controls must be checked")
 
 
 ## The cap keeps each size step at its authored height. The S step solves

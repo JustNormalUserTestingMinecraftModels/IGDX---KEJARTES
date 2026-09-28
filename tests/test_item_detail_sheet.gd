@@ -62,3 +62,14 @@ func test_setup_hides_rows_with_no_boost() -> void:
 	assert_false(s.find_child("RowAkademis", true, false).visible, "akademis row hidden")
 	assert_true(s.find_child("RowMood", true, false).visible, "mood row shown")
 	s.free()
+
+func test_the_sheet_is_a_notebook_frame() -> void:
+	var popup := (load(_SHEET) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Safe/Center/Sheet") as NotebookFrame
+	assert_true(frame != null, "the sheet is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "DETAIL ITEM")
+		assert_true(frame.tabs.is_empty(), "no tabs")
+	assert_contains(FileAccess.get_file_as_string(_SHEET_SRC), "close_pressed.connect",
+		"the frame's close is wired")

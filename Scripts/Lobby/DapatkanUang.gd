@@ -50,13 +50,12 @@ var _closing: bool = false
 var _is_debug_build: bool = OS.is_debug_build()
 
 @onready var scrim: Control = %Scrim
-@onready var book: Control = %Book
+@onready var book: NotebookFrame = %Book
 @onready var short_ad_button: Button = %IklanSingkat
 @onready var full_ad_button: Button = %VideoPenuh
 @onready var cash_in_small_button: Button = %AmbilDulu4
 @onready var cash_in_large_button: Button = %AmbilDulu8
 @onready var owed_ad_button: Button = %TontonUtang
-@onready var close_button: Button = %Tutup
 @onready var toast: Control = %Toast
 @onready var toast_label: Label = %ToastLabel
 @onready var dev_mode_tag: Control = %DevModeTag
@@ -71,7 +70,7 @@ func _ready() -> void:
 	cash_in_large_button.pressed.connect(
 		_on_cash_in_pressed.bind(CASH_IN_LARGE, CASH_IN_LARGE_ADS))
 	owed_ad_button.pressed.connect(_on_owed_ad_pressed)
-	close_button.pressed.connect(close)
+	(book as NotebookFrame).close_pressed.connect(close)
 	scrim.gui_input.connect(_on_scrim_gui_input)
 
 

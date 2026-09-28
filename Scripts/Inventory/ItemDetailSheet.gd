@@ -69,22 +69,22 @@ const _CAT_TO_PATTERN := {
 }
 
 @onready var _scrim: ColorRect = $Scrim
-@onready var _sheet: PanelContainer = $Sheet
-@onready var _header_band: PanelContainer = $Sheet/Margin/VBox/HeaderBand
-@onready var _stripes: TextureRect = $Sheet/Margin/VBox/HeaderBand/HeaderInner/Stripes
-@onready var _icon: TextureRect = $Sheet/Margin/VBox/HeaderBand/HeaderInner/TopRow/Icon
-@onready var _name_label: Label = $Sheet/Margin/VBox/HeaderBand/HeaderInner/TopRow/TitleCol/NameLabel
-@onready var _category_chip: Label = $Sheet/Margin/VBox/HeaderBand/HeaderInner/TopRow/TitleCol/CategoryChip
-@onready var _desc_header: Label = $Sheet/Margin/VBox/DescHeader
-@onready var _desc_label: Label = $Sheet/Margin/VBox/DescLabel
-@onready var _efek_header: Label = $Sheet/Margin/VBox/EfekHeader
-@onready var _apply_button: Button = $Sheet/Margin/VBox/ApplyButton
+@onready var _sheet: NotebookFrame = $Safe/Center/Sheet
+@onready var _header_band: PanelContainer = $Safe/Center/Sheet/VBox/HeaderBand
+@onready var _stripes: TextureRect = $Safe/Center/Sheet/VBox/HeaderBand/HeaderInner/Stripes
+@onready var _icon: TextureRect = $Safe/Center/Sheet/VBox/HeaderBand/HeaderInner/TopRow/Icon
+@onready var _name_label: Label = $Safe/Center/Sheet/VBox/HeaderBand/HeaderInner/TopRow/TitleCol/NameLabel
+@onready var _category_chip: Label = $Safe/Center/Sheet/VBox/HeaderBand/HeaderInner/TopRow/TitleCol/CategoryChip
+@onready var _desc_header: Label = $Safe/Center/Sheet/VBox/DescHeader
+@onready var _desc_label: Label = $Safe/Center/Sheet/VBox/DescLabel
+@onready var _efek_header: Label = $Safe/Center/Sheet/VBox/EfekHeader
+@onready var _apply_button: Button = $Safe/Center/Sheet/VBox/ApplyButton
 @onready var _rows := {
-	"akademis":    $Sheet/Margin/VBox/EfekList/RowAkademis,
-	"seni_budaya": $Sheet/Margin/VBox/EfekList/RowSeni,
-	"olahraga":    $Sheet/Margin/VBox/EfekList/RowOlahraga,
-	"mood":        $Sheet/Margin/VBox/EfekList/RowMood,
-	"energy":      $Sheet/Margin/VBox/EfekList/RowEnergy,
+	"akademis":    $Safe/Center/Sheet/VBox/EfekList/RowAkademis,
+	"seni_budaya": $Safe/Center/Sheet/VBox/EfekList/RowSeni,
+	"olahraga":    $Safe/Center/Sheet/VBox/EfekList/RowOlahraga,
+	"mood":        $Safe/Center/Sheet/VBox/EfekList/RowMood,
+	"energy":      $Safe/Center/Sheet/VBox/EfekList/RowEnergy,
 }
 
 var _item: ItemData = null
@@ -97,6 +97,8 @@ func _ready() -> void:
 	_scrim.color = DesignTokens.load_default().scrim_color()
 	if not _scrim.gui_input.is_connected(_on_scrim_input):
 		_scrim.gui_input.connect(_on_scrim_input)
+	if not _sheet.close_pressed.is_connected(_dismiss):
+		_sheet.close_pressed.connect(_dismiss)
 	if not _apply_button.pressed.is_connected(_on_apply):
 		_apply_button.pressed.connect(_on_apply)
 	_icon.custom_minimum_size = icon_size

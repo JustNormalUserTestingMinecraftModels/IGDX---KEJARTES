@@ -11,6 +11,8 @@ extends RefCounted
 ## flags "perlu" -- is shown instead of named: its bar gets a category-tinted
 ## GapTail over the stretch still to go and a pulsing TargetDot on the target
 ## end, and the NeedCallout bubble by the portrait says "Aku butuh <mapel>!".
+## The tail sits inside a full-rect GapMask that clips it to the track's
+## rounded ends; showing or hiding the mask shows or hides the tail.
 ## At most one skill is gauged at a time.
 ##
 ## Every node here is authored in AturJadwal.tscn; this only shows, hides,
@@ -30,9 +32,10 @@ const DOT_PULSE_SCALE := 1.25
 ## Seconds for one full pulse, out and back.
 const DOT_PULSE_SECONDS := 1.2
 
-## Alpha of the GapTail's category tint, so the ghost track reads as "still
-## to go" rather than as fill.
-const TAIL_ALPHA := 0.5
+## Alpha of the GapTail's category tint. Full: track_ghost.png is itself only
+## 18-59% opaque, so it already reads as "still to go" rather than as fill; a
+## 0.5 tint measured nearly invisible on the dark track (2026-09-28).
+const TAIL_ALPHA := 1.0
 
 ## The callout's line; %s is the subject's display word.
 const CALLOUT_FORMAT := "Aku butuh %s!"
@@ -96,11 +99,12 @@ func _update_gap_markers(screen: Control, skill: String, bars: Dictionary, token
 		var bar := bars.get(key, null) as StatBar
 		if bar == null:
 			continue
-		var tail := bar.get_node_or_null("GapTail") as Control
+		var mask := bar.get_node_or_null("GapMask") as Control
+		var tail := bar.get_node_or_null("GapMask/GapTail") as Control
 		var dot := bar.get_node_or_null("TargetDot") as Control
 		var on := key == skill
-		if tail != null:
-			tail.visible = on
+		if mask != null:
+			mask.visible = on
 		if dot != null:
 			dot.visible = on
 		if not on:

@@ -2,7 +2,7 @@
 
 **Branch:** `atur-jadwal-polishing-dan-bug-fix` (off `Textures`)
 **Screen:** `Scenes/AturJadwal/AturJadwal.tscn` + `Scripts/AturJadwal/AturJadwal.gd`
-**Status:** handoff — nothing here is built on this branch yet.
+**Status:** built 2026-09-28 (see `docs/superpowers/CHANGELOG.md`). Kept as the record of the design.
 
 This plan is written to be picked up cold by another Claude/engineer. Read it
 top to bottom once before editing anything. It follows the project's own rules

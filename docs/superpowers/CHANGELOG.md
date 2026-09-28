@@ -8,6 +8,29 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Atur Jadwal: "perlu" fix and the need gauge
+
+Plan: `docs/superpowers/plans/2026-09-28-atur-jadwal-perlu-gauge.md`.
+Every target starts as base + one shared uplift, so at the start of a grade
+all three skill gaps tie, and `StatFlags` always flagged Akademis. A tie
+within `GAP_EPSILON` (0.5) now goes to the weakest raw skill; a clearly
+bigger gap still wins. The flagged skill is now shown rather than named:
+its bar gets a category-tinted `GapTail` (`track_ghost.png`) over the
+stretch still to go and a pulsing `StatTargetDot` on the target end, and a
+`NeedCallout` bubble above the name says "Aku butuh <mapel>!". Needs keep
+their "lelah" chip; the skill "perlu" chip stays authored but hidden. The
+logic moved from `AturJadwal.gd` into `NeedGauge`. `StatBar` seats the tail
+and dot from the bar's live width (verified at 324 and 601 px, through the
+resize signal). The tail sits inside a full-rect `GapMask` Panel
+(`StatGapMask`, `clip_children` only): a bare rectangle poked grey corners
+past the track's rounded end, measured on the running screen. Two calls
+differ from the plan: the tail is tinted at full
+alpha, because 0.5 measured nearly invisible on the dark track (the ghost
+texture is already 18–59% opaque); and the callout's text keeps
+`text_primary`, with the category colour carried by its icon. The callout
+sits in tree order after `LabelNama` rather than on a raised `z_index`,
+which would draw it over the Peringatan and Penjadwalan dialogs.
+
 ## 2026-09-28 — Dapatkan Uang pays only in debug builds
 
 The owner decided the dev-mode payouts must not reach players. The panel is

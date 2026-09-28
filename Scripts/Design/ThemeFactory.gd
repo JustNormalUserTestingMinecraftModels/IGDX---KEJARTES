@@ -121,6 +121,7 @@ static func _build_objective_strip(theme: Theme, tokens: DesignTokens) -> void:
 ##
 ##   StatTargetDot      the round marker on a skill bar's target end: white
 ##                      so self_modulate tints it, with a cream rim.
+##   StatGapMask        the pill that clips the GapTail to the track's shape.
 ##   NeedCalloutPanel   the speech bubble by the portrait: a cream card with
 ##   NeedCalloutLabel   a brown rim, and its display-face line.
 static func _build_need_signal(theme: Theme, tokens: DesignTokens) -> void:
@@ -135,6 +136,16 @@ static func _build_need_signal(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("StatTargetDot")
 	theme.set_type_variation("StatTargetDot", "Panel")
 	theme.set_stylebox("panel", "StatTargetDot", dot)
+
+	# A mask only: the GapMask Panel sets clip_children = CLIP_CHILDREN_ONLY,
+	# so this pill is never drawn; it trims the square GapTail to the track's
+	# rounded ends.
+	var mask := StyleBoxFlat.new()
+	mask.bg_color = Color.WHITE
+	mask.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("StatGapMask")
+	theme.set_type_variation("StatGapMask", "Panel")
+	theme.set_stylebox("panel", "StatGapMask", mask)
 
 	var bubble := StyleBoxFlat.new()
 	bubble.bg_color = tokens.surface_card

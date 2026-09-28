@@ -10,6 +10,10 @@
 [ext_resource type="Texture2D" uid="uid://dvgv63qybi5yj" path="res://Assets/Images/CG/Win/win_marcel.png" id="8_85inx"]
 [ext_resource type="Texture2D" uid="uid://bhu1aabi2ko2f" path="res://Assets/Images/CG/Win/win_thea.png" id="9_0pxgx"]
 [ext_resource type="Texture2D" uid="uid://v5uiy2v54wcr" path="res://Assets/Images/UI/Placeholders/shadow_ellipse.png" id="10_cxwa7"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 
 [node name="WinStage" type="Control" unique_id=702781057]
 layout_mode = 3
@@ -53,6 +57,7 @@ offset_bottom = 2048.0
 mouse_filter = 2
 
 [node name="Backdrop" type="TextureRect" parent="Stage" unique_id=934465005]
+material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -101,25 +106,61 @@ anchors_preset = 0
 mouse_filter = 2
 
 [node name="Student1" type="TextureRect" parent="Stage/Students" unique_id=1114318510]
+material = ExtResource("illus_grade_cut")
 visible = false
 layout_mode = 0
 mouse_filter = 2
 expand_mode = 1
 
 [node name="Student2" type="TextureRect" parent="Stage/Students" unique_id=505551122]
+material = ExtResource("illus_grade_cut")
 visible = false
 layout_mode = 0
 mouse_filter = 2
 expand_mode = 1
 
 [node name="Student3" type="TextureRect" parent="Stage/Students" unique_id=528979659]
+material = ExtResource("illus_grade_cut")
 visible = false
 layout_mode = 0
 mouse_filter = 2
 expand_mode = 1
 
 [node name="Student4" type="TextureRect" parent="Stage/Students" unique_id=194445621]
+material = ExtResource("illus_grade_cut")
 visible = false
 layout_mode = 0
 mouse_filter = 2
 expand_mode = 1
+
+[node name="LightPass" type="Control" parent="Stage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Light" parent="Stage/LightPass" instance=ExtResource("look_pool")]
+center = Vector2(0.2, 0.1)
+pool_size = Vector2(2000, 2000)
+intensity = 0.1
+
+[node name="Shafts" parent="Stage/LightPass" instance=ExtResource("look_shafts")]
+
+[node name="LightFail" type="Control" parent="Stage"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Light" parent="Stage/LightFail" instance=ExtResource("look_pool")]
+center = Vector2(0.5, 0.2)
+pool_size = Vector2(2000, 2000)
+light_color = Color(0.7, 0.8, 1, 1)
+intensity = 0.05

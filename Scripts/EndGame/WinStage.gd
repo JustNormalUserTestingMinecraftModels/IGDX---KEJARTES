@@ -76,6 +76,10 @@ const ART_SIZE := Vector2(1536.0, 2048.0)
 @onready var backdrop: TextureRect = $Stage/Backdrop
 @onready var shadows: Control = $Stage/Shadows
 @onready var students: Control = $Stage/Students
+## The warm pool and shafts a pass is lit by (lobby-look spec, amendment 4).
+@onready var light_pass: Control = $Stage/LightPass
+## The dim cool pool a fail is lit by.
+@onready var light_fail: Control = $Stage/LightFail
 
 
 func _ready() -> void:
@@ -108,13 +112,15 @@ static func letterbox(area: Vector2, inset: float = 0.0) -> Dictionary:
 ## Dress the stage for a verdict. Win letterboxes the painting inside its
 ## white PhotoFrame and poses `names` on it; lose covers the viewport with the
 ## lose CG and hides the frame and every slot. Sets BarFill, PhotoFrame,
-## Stage's transform, Backdrop's texture and every Student/Shadow slot --
-## nothing is constructed.
+## Stage's transform, Backdrop's texture and every Student/Shadow slot and
+## which light is shown -- nothing is constructed.
 func dress(failed: bool, names: Array) -> void:
 	var vp := get_viewport_rect().size
 	bar_fill.position = Vector2.ZERO
 	bar_fill.size = vp
 	backdrop.texture = lose_backdrop if failed else win_backdrop
+	light_pass.visible = not failed
+	light_fail.visible = failed
 	if not failed:
 		_fit_stage(vp)
 		_dress_lineup(names)

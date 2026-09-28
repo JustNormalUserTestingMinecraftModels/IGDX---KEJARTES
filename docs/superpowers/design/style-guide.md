@@ -55,15 +55,9 @@ Information badges keep their meaning colours. The palette pairs are the
 white; on a light face they are plain dark ink. `EventSelectCard` stays a
 flat box, because its pressed state means *selected*.
 
-**Lobby-only exception (2026-09-27 scrapbook HUD, Q7):** the Lobby's own
-`BookHeroButton`, `NavTileKoperasi` / `NavTileInventory` / `NavTileRapor` and
-`PlusButton` (all in `ThemeFactory._build_lobby_hud()`) deliberately do
-**not** wear the shared brown Lobby look above — each carries its own
-colour (JADWAL green, the shop's own green, the Akademis blue, a warm
-amber, and green-never-gold for the `+`). They're absent on purpose from
-`tests/test_lobby_style_buttons.gd`'s `LOBBY_LOOK` roster. Every other
-screen still copies the brown look; this exception is scoped to the
-Lobby's bottom HUD only.
+The Lobby's scrapbook tiles (`BookHeroButton`, `NavTileKoperasi`/`Inventory`/
+`Rapor`, `PlusButton`) wear the same role palette with a thicker lip
+(`ThemeFactory.LOBBY_HUD_LIP`).
 
 **Panels**:
 - `Card` — the standard raised surface (white bg, border, shadow).
@@ -174,6 +168,7 @@ Static helpers for consistent motion feel. All read shared timing/easing from
 | `Juice.set_pivot_center(node)` | `Juice.set_pivot_center(my_button)` — center a Control's pivot before scaling it. |
 | `Juice.press(node)` | `Juice.press(button)` on `button_down` — quick squash toward the pivot. |
 | `Juice.release(node)` | `Juice.release(button)` on `button_up`/`pressed` — spring back to scale 1. |
+| `Juice.pop_release(node)` | `Juice.pop_release(button)` on release of a lipped button: its pressed stylebox already sank it, so it bumps to `release_pop_scale` and settles. |
 | `Juice.pop_in(node, delay)` | `Juice.pop_in(card, 0.1)` — scale-and-fade a Control in, optionally staggered. |
 | `Juice.fade_in(node, delay)` | `Juice.fade_in(icon)` — plain alpha fade for a `CanvasItem`. |
 | `Juice.stagger_in(nodes, step)` | `Juice.stagger_in(get_children())` — `pop_in` each node in sequence. |
@@ -182,7 +177,11 @@ Static helpers for consistent motion feel. All read shared timing/easing from
 | `Juice.shake(node, strength)` | `Juice.shake(panel, 18.0)` — a denial/error shake. |
 
 Buttons are auto-juiced (press/release wiring) by `UIPolish` when the scene
-loads — most screens never call `Juice.press`/`release` directly.
+loads — most screens never call `Juice.press`/`release` directly. Lipped
+buttons sink through their pressed stylebox and pop on release (`PressFeel`
+decides, per button), other and flat buttons keep the shrink, and the
+main-action roles tick the motor (`PressFeel.MAIN_ACTION_ROLES`, 8 ms,
+honouring Getar).
 
 ## The rule: never add a `theme_override_*`
 

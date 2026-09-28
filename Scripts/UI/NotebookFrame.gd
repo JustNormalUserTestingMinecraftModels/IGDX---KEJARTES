@@ -118,7 +118,10 @@ func sort_now() -> void:
 	# would bake this editor session's own frame size into the .tscn on the
 	# next save. An INSTANCED frame's inner children are never saved, so
 	# this only matters when the frame's OWN scene is the edited one --
-	# the authored values stay in the .tscn for the editor preview.
+	# Rings keeps its authored separation for the preview; the Well has no
+	# authored rect, so it sits collapsed at the origin when this scene is
+	# opened on its own, and it is laid out only when the frame is
+	# instanced.
 	if _is_edited_scene_root():
 		return
 	var well := get_node_or_null("Chrome/Well") as Control
@@ -142,7 +145,13 @@ func _is_edited_scene_root() -> bool:
 ## Re-gap the shown rings so they always span the Rings box top to bottom,
 ## instead of sitting bunched at the authored separation and alignment --
 ## which only look right at the full MAX_RINGS count. A layout-only constant
-## override, allowed alongside the ThemeFactory-variation rule.
+## override, allowed alongside the ThemeFactory-variation rule. The span is
+## read from Rings' own anchors/offsets against Chrome, not from
+## `rings.size.y`: a Control's size is clamped to at least its combined
+## minimum size, and a VBox's minimum includes `separation * (shown - 1)`,
+## so a gap set once from the clamped size could only ever grow -- a frame
+## first sorted large and later shrunk would keep the old, too-big gap and
+## overflow.
 func _spread_rings() -> void:
 	var rings := get_node_or_null("Chrome/Rings") as BoxContainer
 	if rings == null:
@@ -151,7 +160,10 @@ func _spread_rings() -> void:
 	if shown < 2:
 		return
 	var ring_h := (rings.get_child(0) as Control).get_combined_minimum_size().y
-	var gap := (rings.size.y - shown * ring_h) / (shown - 1)
+	var chrome := rings.get_parent() as Control
+	var span := chrome.size.y * (rings.anchor_bottom - rings.anchor_top) \
+		+ rings.offset_bottom - rings.offset_top
+	var gap := (span - shown * ring_h) / (shown - 1)
 	rings.add_theme_constant_override(&"separation", maxi(floori(gap), 0))
 
 

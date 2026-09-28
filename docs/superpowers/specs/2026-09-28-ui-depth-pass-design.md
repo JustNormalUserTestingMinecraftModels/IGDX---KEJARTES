@@ -178,11 +178,12 @@ Three phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets 
 ## Testing
 
 - **New suites**, all `@tool`, none a coroutine:
-  - `test_lipped_stylebox`:
-    - lip, face and gloss rects for a given rect and lip height
-    - the pressed face offset and margin shift
-    - the disabled lip at half height
-    - survives a save/load round trip
+  - `test_lipped_box`:
+    - the face/lip/gloss fields for resting and held
+    - the padding split and clamp
+    - relip
+    - not-lipped cases
+    - no script in the built theme
   - `test_notebook_frame`:
     - host children land inside the page content rect
     - empty `tabs` hides the tab strip, and `ring_count` hides the extra rings
@@ -203,7 +204,7 @@ Three phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets 
 
 ## Risks
 
-- **A script-backed StyleBox inside the baked theme.** A cold editor restart must keep drawing it; a `@tool` script and `class_name` registration are needed. Phase 1's first task proves the round trip before anything builds on it.
+- Resolved in Phase 1: a script-backed StyleBox in the startup-loaded theme logged a SceneTree error on every debug run, so the look is built natively (`LippedBox`) and `test_lipped_box` guards that the built theme carries no script.
 - **Editor save hazards** (CLAUDE.md 4b): scene work first, then scripts, with a restart in between. Diff every `.tscn` after saves.
 - **Pressed-state margins shift content by `lip_height`.** A button inside a tight container may clip. Phase 3's screenshot pass is the check.
 - **Theme conflicts with parallel branches.** Never hand-merge `kejartes_theme.tres`; rebake.

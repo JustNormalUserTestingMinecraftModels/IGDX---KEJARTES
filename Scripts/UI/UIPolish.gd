@@ -103,7 +103,7 @@ func _on_button_up(button: BaseButton) -> void:
 
 ## True when `button` rests on a lipped face (see PressFeel).
 func _sinks(button: BaseButton) -> bool:
-	return PressFeel.sinks(button.get_theme_stylebox(&"normal"))
+	return PressFeel.sinks_button(button)
 
 
 func _on_button_pressed(button: BaseButton) -> void:

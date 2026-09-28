@@ -105,6 +105,48 @@ func test_the_rings_run_down_the_spine() -> void:
 		"the rings span the spine top to bottom")
 
 
+## The Rings box's minimum size includes `separation * (shown - 1)`, so a
+## Control's clamped `size.y` can only grow once a large gap is set -- the
+## span must instead come from Rings' own anchors/offsets against Chrome, or
+## a frame first sorted large and later shrunk keeps the old, too-big gap
+## and overflows. See NotebookFrame._spread_rings().
+func _rings_span(frame: NotebookFrame) -> float:
+	var chrome := frame.get_node("Chrome") as Control
+	var rings := frame.get_node("Chrome/Rings") as Control
+	return chrome.size.y * (rings.anchor_bottom - rings.anchor_top) \
+		+ rings.offset_bottom - rings.offset_top
+
+
+func _force_rings_sort(frame: NotebookFrame) -> void:
+	var rings := frame.get_node("Chrome/Rings") as Container
+	rings.queue_sort()
+	rings.notification(Container.NOTIFICATION_SORT_CHILDREN)
+
+
+func test_the_ring_gap_shrinks_with_the_frame() -> void:
+	var frame := _frame()
+	frame.ring_count = 7
+	frame.sort_now()
+	_force_rings_sort(frame)
+	frame.size = Vector2(800, 600)
+	frame.sort_now()
+	_force_rings_sort(frame)
+	var ring6 := frame.get_node("Chrome/Rings/Ring6") as Control
+	var span := _rings_span(frame)
+	assert_true(ring6.position.y + ring6.size.y <= span + 4.0,
+		"the shrunk frame's rings fit inside the anchored span")
+	frame.ring_count = 4
+	frame.sort_now()
+	_force_rings_sort(frame)
+	frame.ring_count = 7
+	frame.sort_now()
+	_force_rings_sort(frame)
+	ring6 = frame.get_node("Chrome/Rings/Ring6") as Control
+	span = _rings_span(frame)
+	assert_true(ring6.position.y + ring6.size.y <= span + 4.0,
+		"re-growing the ring count still fits inside the anchored span")
+
+
 func test_the_title_reaches_the_sticker() -> void:
 	var frame := _frame()
 	frame.title_text = "PENGATURAN"

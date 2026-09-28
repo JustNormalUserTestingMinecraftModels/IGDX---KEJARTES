@@ -54,7 +54,19 @@ func test_uipolish_uses_press_feel() -> void:
 	assert_contains(src, "Haptics.buzz(PressFeel.PRESS_TICK_MS)", "the tick")
 	assert_contains(src, "PressFeel.ticks(", "only for main actions")
 	assert_contains(src, "Juice.pop_release(", "lipped buttons pop on release")
-	assert_contains(src, "PressFeel.sinks(", "sink or shrink is decided per button")
+	assert_contains(src, "PressFeel.sinks_button(", "sink or shrink is decided per button")
+
+
+func test_flat_buttons_keep_the_shrink() -> void:
+	var b := Button.new()
+	track(b)
+	b.theme = _theme
+	b.flat = true
+	Engine.get_main_loop().root.add_child(b)
+	assert_false(PressFeel.sinks_button(b), "a flat button draws no lip, so it shrinks")
+	b.flat = false
+	assert_true(PressFeel.sinks_button(b),
+		"an unflat plain Button rests on the lipped base box")
 
 
 func test_pop_release_reads_its_tokens() -> void:

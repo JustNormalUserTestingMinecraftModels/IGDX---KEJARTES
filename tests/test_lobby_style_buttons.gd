@@ -80,6 +80,13 @@ func test_every_role_sinks_onto_its_lip_when_held() -> void:
 		assert_true(held != null and LippedBox.is_pressed(held), name + " sinks when held")
 
 
+func test_disabled_rests_on_half_a_lip() -> void:
+	for name in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
+		var disabled := _box("disabled", name)
+		assert_eq(LippedBox.lip_height_of(disabled), floori(_tokens.lip_height / 2.0),
+			name + " disabled halves the lip")
+
+
 func test_gold_is_never_a_main_action() -> void:
 	for name in ["PrimaryButton", "LobbyCtaButton", "BookHeroButton", "SuccessButton",
 			"ResultButton", "PlusButton"]:

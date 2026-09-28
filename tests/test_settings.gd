@@ -18,6 +18,25 @@ var _saved_bus_state: Array[Dictionary] = []
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const LayoutFrame := preload("res://tests/layout_frame.gd")
+## Each section card: its heading, then its rows in order.
+const _SECTIONS := {
+	"AudioCard": ["SUARA", ["MasterRow", "BgmRow", "SfxRow"]],
+	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
+	"DisplayCard": ["TAMPILAN", ["LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
+}
+## Each switch row's words.
+const _ROW_LABELS := {
+	"TutorialRow": "Tutorial Minigame", "SkipDialogRow": "Lewati Dialog Minigame",
+	"LookLayerRow": "Efek Visual", "AmbientRow": "Efek Suasana",
+	"ReduceMotionRow": "Kurangi Gerakan", "HapticsRow": "Getaran (Haptic)",
+}
+## Each switch row's GameSettings property.
+const _ROW_SETTINGS := {
+	"TutorialRow": "minigame_tutorial_enabled", "SkipDialogRow": "skip_event_dialogue",
+	"LookLayerRow": "look_layer_enabled", "AmbientRow": "ambient_effects_enabled",
+	"ReduceMotionRow": "reduce_motion", "HapticsRow": "haptics_enabled",
+}
+const _ROW_SCRIPT := "res://Scripts/UI/SettingsToggleRow.gd"
 
 
 func setup() -> void:
@@ -55,6 +74,12 @@ func teardown() -> void:
 	_saved_bus_state.clear()
 
 
+## The switch inside the SettingsToggleRow named `row_name`, or null.
+func _toggle(row_name: String) -> CheckButton:
+	var row := _screen.find_child(row_name, true, false)
+	return (row.get_node_or_null("Toggle") as CheckButton) if row != null else null
+
+
 func test_scene_loads() -> void:
 	assert_true(_screen != null, "Settings.tscn must exist and instantiate")
 
@@ -74,18 +99,6 @@ func test_moving_a_slider_changes_the_bus_volume() -> void:
 	var slider := _screen.find_child("SfxSlider", true, false) as Slider
 	slider.value = 0.3
 	assert_true(absf((AudioDirector.get_bus_volume(&"SFX")) - (0.3)) <= 0.02, "the slider must drive the bus")
-
-
-func test_tutorial_toggle_reflects_and_writes_game_settings() -> void:
-	# Same reasoning: BaseButton.button_pressed's setter emits `toggled`
-	# synchronously, so no frame-wait is needed or safe to await here.
-	var toggle := _screen.find_child("TutorialToggle", true, false) as CheckButton
-	assert_true(toggle != null, "the minigame tutorial toggle must exist")
-	var original := GameSettings.minigame_tutorial_enabled
-	toggle.button_pressed = not original
-	assert_eq(GameSettings.minigame_tutorial_enabled, not original,
-		"the toggle must write through to GameSettings")
-	GameSettings.minigame_tutorial_enabled = original
 
 
 func test_back_button_exists_and_is_wired() -> void:
@@ -196,41 +209,156 @@ func test_the_kit_switches_announce_their_flips() -> void:
 	assert_eq(heard, ["ambient", "motion"], "one emit per real flip, none for a repeat")
 
 
-func test_ambient_toggle_reflects_and_writes_game_settings() -> void:
-	var toggle := _screen.find_child("AmbientToggle", true, false) as CheckButton
-	assert_true(toggle != null, "Efek Suasana needs its toggle")
-	if toggle == null:
+func test_backdrop_is_the_blurred_lobby() -> void:
+	var bg := _screen.get_node_or_null("Background") as TextureRect
+	assert_true(bg != null and bg.texture != null, "Settings needs its Background")
+	if bg == null or bg.texture == null:
 		return
-	assert_eq(toggle.button_pressed, GameSettings.ambient_effects_enabled,
-		"the toggle opens on the current value")
-	var original := GameSettings.ambient_effects_enabled
-	toggle.button_pressed = not original
-	assert_eq(GameSettings.ambient_effects_enabled, not original,
-		"the toggle must write through to GameSettings")
-	GameSettings.ambient_effects_enabled = original
+	assert_eq(bg.texture.resource_path, "res://Assets/Images/UI/blur_background.png",
+		"Settings sits on the blurred Lobby, like its siblings")
 
 
-## Efek Suasana sits right after Efek Visual, labelled in Indonesian.
-func test_ambient_card_sits_after_the_look_layer_card() -> void:
-	var layout := _screen.find_child("Layout", true, false)
-	var look := layout.get_node_or_null("LookLayerCard")
-	var ambient := layout.get_node_or_null("AmbientCard")
-	assert_true(ambient != null, "Settings needs an AmbientCard")
-	if look == null or ambient == null:
+## Inventory's header card, holding only the DisplayLabel title.
+func test_header_is_a_title_card() -> void:
+	var header := _screen.get_node_or_null("SafeArea/MainColumn/Header") as PanelContainer
+	assert_true(header != null, "Settings needs SafeArea/MainColumn/Header")
+	if header == null:
 		return
-	assert_eq(ambient.get_index(), look.get_index() + 1,
-		"Efek Suasana sits right after Efek Visual")
-	var label := ambient.find_child("AmbientLabel", true, false) as Label
-	assert_eq(label.text, "Efek Suasana", "the card is labelled in Indonesian")
+	assert_eq(header.theme_type_variation, &"Card", "the header is a Card")
+	var title := header.get_node_or_null("TitleLabel") as Label
+	assert_true(title != null and title.theme_type_variation == &"DisplayLabel",
+		"the header holds the DisplayLabel title")
+	assert_eq(header.get_child_count(), 1, "the header holds the title and nothing else")
 
 
-## Every card and the back button still fit a 1080x1920 screen.
-func test_every_row_fits_the_design_screen() -> void:
+## Kembali sits at the bottom of the screen, centred under the cards, like
+## ShopHub's: the last child of MainColumn, after the scroll.
+func test_back_button_sits_at_the_bottom() -> void:
+	var column := _screen.get_node_or_null("SafeArea/MainColumn")
+	var back := _screen.get_node_or_null("SafeArea/MainColumn/BackButton") as Button
+	assert_true(column != null and back != null, "Kembali is a child of MainColumn")
+	if column == null or back == null:
+		return
+	assert_eq(back.get_index(), column.get_child_count() - 1, "Kembali is the column's last child")
+	assert_eq(back.size_flags_horizontal, Control.SIZE_SHRINK_CENTER, "Kembali is centred")
+	assert_eq(back.theme_type_variation, &"SecondaryButton", "Kembali is a SecondaryButton")
+	assert_eq(back.text, "Kembali", "Kembali, as on ShopHub and Inventory")
+
+
+func test_sections_scroll_under_the_header() -> void:
+	var scroll := _screen.get_node_or_null("SafeArea/MainColumn/Scroll") as ScrollContainer
+	assert_true(scroll != null, "Settings needs SafeArea/MainColumn/Scroll")
+	if scroll == null:
+		return
+	assert_eq(scroll.size_flags_vertical, Control.SIZE_EXPAND_FILL, "the scroll takes the rest")
+	assert_eq(scroll.horizontal_scroll_mode, ScrollContainer.SCROLL_MODE_DISABLED,
+		"it never scrolls sideways")
+	assert_eq(scroll.vertical_scroll_mode, ScrollContainer.SCROLL_MODE_SHOW_NEVER,
+		"it scrolls by drag with no unthemed scrollbar")
+	assert_true(scroll.get_node_or_null("Pad/Sections") != null, "the cards sit in Pad/Sections")
+
+
+## Three titled cards, in order, each holding its rows in order with one
+## SettingsDivider between neighbours.
+func test_settings_are_grouped_into_three_titled_cards() -> void:
+	var sections := _screen.find_child("Sections", true, false)
+	assert_true(sections != null, "Settings needs its Sections column")
+	if sections == null:
+		return
+	var names: Array = []
+	for card in sections.get_children():
+		names.append(String(card.name))
+	assert_eq(names, _SECTIONS.keys(), "the three cards, in order")
+	for card_name in _SECTIONS:
+		var vbox := sections.get_node_or_null("%s/Margin/VBox" % card_name)
+		assert_true(vbox != null, card_name + " needs Margin/VBox")
+		if vbox == null:
+			continue
+		assert_eq((sections.get_node(card_name) as Control).theme_type_variation, &"Card",
+			card_name + " is a Card")
+		var heading := vbox.get_child(0) as Label
+		assert_true(heading != null and heading.theme_type_variation == &"CardSectionLabel",
+			card_name + " opens with a CardSectionLabel")
+		if heading != null:
+			assert_eq(heading.text, _SECTIONS[card_name][0], card_name + " heading")
+		var rows: Array = []
+		for i in range(1, vbox.get_child_count()):
+			var child := vbox.get_child(i)
+			if child is HSeparator:
+				assert_eq((child as HSeparator).theme_type_variation, &"SettingsDivider",
+					card_name + " rules are SettingsDividers")
+			else:
+				rows.append(String(child.name))
+		assert_eq(rows, _SECTIONS[card_name][1], card_name + " rows, in order")
+		assert_eq(vbox.get_child_count(), 2 * rows.size(),
+			card_name + ": heading, rows, and one rule between each pair")
+
+
+func test_every_switch_row_is_the_template_labelled_in_indonesian() -> void:
+	for row_name in _ROW_LABELS:
+		var row := _screen.find_child(row_name, true, false)
+		assert_true(row != null, "Settings needs " + row_name)
+		if row == null:
+			continue
+		assert_eq((row.get_script() as Script).resource_path, _ROW_SCRIPT,
+			row_name + " is a SettingsToggleRow")
+		assert_eq((row.get_node("Label") as Label).text, _ROW_LABELS[row_name],
+			row_name + " is labelled in Indonesian")
+		var toggle := _toggle(row_name)
+		assert_true(toggle != null, row_name + " needs its Toggle")
+		if toggle == null:
+			continue
+		assert_eq(toggle.theme_type_variation, &"SettingsSwitch",
+			row_name + " wears the brand switch")
+		assert_eq(row.toggle, toggle, row_name + ".toggle is its switch")
+
+
+func test_every_slider_wears_the_brand_slider() -> void:
+	for slider_name in ["MasterSlider", "BgmSlider", "SfxSlider"]:
+		var s := _screen.find_child(slider_name, true, false) as HSlider
+		assert_true(s != null and s.theme_type_variation == &"SettingsSlider",
+			slider_name + " is a SettingsSlider")
+
+
+## The entry stagger brings in the title, the three cards, then Kembali.
+func test_entry_stagger_runs_top_to_bottom() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd")
+	assert_true(src.contains("Juice.stagger_in(_collect_entry_nodes())"),
+		"_ready staggers the entry nodes")
+	var nodes: Array = _screen.call("_collect_entry_nodes")
+	var names: Array = []
+	for n in nodes:
+		names.append(String((n as Node).name))
+	assert_eq(names, ["Header", "AudioCard", "GameplayCard", "DisplayCard", "BackButton"],
+		"title, cards, then Kembali")
+
+
+## Every switch opens on its setting and writes it back. It is restored
+## through the switch itself, so any setting it saved is saved back too.
+func test_every_switch_opens_on_and_writes_its_setting() -> void:
+	for row_name in _ROW_SETTINGS:
+		var key: String = _ROW_SETTINGS[row_name]
+		var toggle := _toggle(row_name)
+		assert_true(toggle != null, row_name + " needs its Toggle")
+		if toggle == null:
+			continue
+		var original: bool = GameSettings.get(key)
+		assert_eq(toggle.button_pressed, original, row_name + " opens on " + key)
+		toggle.button_pressed = not original
+		assert_eq(GameSettings.get(key), not original, row_name + " writes " + key)
+		toggle.button_pressed = original
+
+
+## At 1080x1920 all three cards fit above the scroll's bottom edge: 9:16
+## never scrolls.
+func test_every_card_fits_the_design_screen_without_scrolling() -> void:
 	var frame := track(LayoutFrame.stand_up("res://Scenes/UI/Settings.tscn",
 		Vector2(1080, 1920))) as Control
-	var back := frame.find_child("BackButton", true, false) as Control
-	assert_true(back != null, "Settings needs its BackButton")
-	if back == null:
+	var scroll := frame.find_child("Scroll", true, false) as Control
+	var last := frame.find_child("DisplayCard", true, false) as Control
+	assert_true(scroll != null and last != null, "Settings needs Scroll and DisplayCard")
+	if scroll == null or last == null:
 		return
-	assert_true(back.get_global_rect().end.y <= frame.get_global_rect().end.y,
-		"the back button must end inside the screen, not below it")
+	assert_true(last.get_global_rect().end.y <= scroll.get_global_rect().end.y,
+		"TAMPILAN ends at %d, below the scroll's %d" % [
+			last.get_global_rect().end.y, scroll.get_global_rect().end.y])

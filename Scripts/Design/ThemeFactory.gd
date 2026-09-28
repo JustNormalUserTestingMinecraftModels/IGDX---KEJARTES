@@ -40,6 +40,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_picker(theme, tokens)
 	_build_school_day_liveliness(theme, tokens)
 	_build_minigame_kit(theme, tokens)
+	_build_settings(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -274,6 +275,64 @@ static func _build_picker(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_type_variation("PickerLegendLabel", "Label")
 	theme.set_font_size("font_size", "PickerLegendLabel", tokens.font_caption)
 	theme.set_color("font_color", "PickerLegendLabel", tokens.text_secondary)
+
+
+## Settings' track thickness and row-rule thickness, in px.
+const SETTINGS_TRACK_THICKNESS := 20
+const SETTINGS_RULE_THICKNESS := 2
+
+
+## Settings' controls (2026-09-28 settings-layout spec). The three pictures
+## come from DesignTokens, because this file does no I/O.
+##
+##   SettingsSwitch   a CheckButton that draws only its switch picture; the
+##                    row's Label carries the words, so every state is empty.
+##   SettingsSlider   a sunken cream track filled brand brown, with a cream
+##                    grabber disc ringed in brown.
+##   SettingsDivider  the thin sunken rule between rows in a section card.
+static func _build_settings(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("SettingsSwitch")
+	theme.set_type_variation("SettingsSwitch", "CheckButton")
+	_set_icons(theme, "SettingsSwitch", ["checked", "checked_disabled"], tokens.settings_switch_on)
+	_set_icons(theme, "SettingsSwitch", ["unchecked", "unchecked_disabled"], tokens.settings_switch_off)
+	for state in ["normal", "hover", "pressed", "hover_pressed", "focus", "disabled"]:
+		theme.set_stylebox(state, "SettingsSwitch", StyleBoxEmpty.new())
+
+	theme.add_type("SettingsSlider")
+	theme.set_type_variation("SettingsSlider", "HSlider")
+	theme.set_stylebox("slider", "SettingsSlider", _settings_track(tokens, tokens.surface_sunken))
+	var fill := _settings_track(tokens, tokens.brand_primary)
+	theme.set_stylebox("grabber_area", "SettingsSlider", fill)
+	theme.set_stylebox("grabber_area_highlight", "SettingsSlider", fill)
+	_set_icons(theme, "SettingsSlider", ["grabber", "grabber_highlight", "grabber_disabled"],
+		tokens.settings_slider_grabber)
+
+	theme.add_type("SettingsDivider")
+	theme.set_type_variation("SettingsDivider", "HSeparator")
+	var rule := StyleBoxLine.new()
+	rule.color = tokens.surface_sunken
+	rule.thickness = SETTINGS_RULE_THICKNESS
+	theme.set_stylebox("separator", "SettingsDivider", rule)
+	theme.set_constant("separation", "SettingsDivider", SETTINGS_RULE_THICKNESS)
+
+
+## A pill-ended bar of `color`, SETTINGS_TRACK_THICKNESS tall.
+static func _settings_track(tokens: DesignTokens, color: Color) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = color
+	sb.set_corner_radius_all(tokens.radius_pill)
+	sb.content_margin_top = SETTINGS_TRACK_THICKNESS / 2.0
+	sb.content_margin_bottom = SETTINGS_TRACK_THICKNESS / 2.0
+	return sb
+
+
+## Sets every icon in `names` on `variation` to `tex`; a null `tex` leaves the
+## base type's icons in place.
+static func _set_icons(theme: Theme, variation: String, names: Array, tex: Texture2D) -> void:
+	if tex == null:
+		return
+	for icon_name in names:
+		theme.set_icon(icon_name, variation, tex)
 
 
 ## SchoolDay liveliness pass (2026-09-24, spec

@@ -549,3 +549,59 @@ func test_id_card_variations_exist() -> void:
 	var theme := ThemeFactory.build(DesignTokens.load_default())
 	for v in ["IdCardPanel", "RecapMastheadPanel"]:
 		assert_true(theme.get_type_list().has(v), "%s missing" % v)
+
+
+# ── Settings controls (2026-09-28 settings-layout spec) ──────────────────────
+
+func test_settings_variations_extend_their_base_types() -> void:
+	assert_eq(_theme.get_type_variation_base("SettingsSwitch"), &"CheckButton",
+		"SettingsSwitch is a CheckButton variation")
+	assert_eq(_theme.get_type_variation_base("SettingsSlider"), &"HSlider",
+		"SettingsSlider is an HSlider variation")
+	assert_eq(_theme.get_type_variation_base("SettingsDivider"), &"HSeparator",
+		"SettingsDivider is an HSeparator variation")
+
+
+## The switch draws only its picture: every button state is empty, and the
+## icons are the token textures.
+func test_settings_switch_draws_only_the_token_pictures() -> void:
+	assert_true(_tokens.settings_switch_on != null, "tokens carry the on-switch picture")
+	assert_true(_tokens.settings_switch_off != null, "tokens carry the off-switch picture")
+	for icon in ["checked", "checked_disabled"]:
+		assert_eq(_theme.get_icon(icon, "SettingsSwitch"), _tokens.settings_switch_on,
+			"SettingsSwitch/%s is the on picture" % icon)
+	for icon in ["unchecked", "unchecked_disabled"]:
+		assert_eq(_theme.get_icon(icon, "SettingsSwitch"), _tokens.settings_switch_off,
+			"SettingsSwitch/%s is the off picture" % icon)
+	for state in ["normal", "hover", "pressed", "hover_pressed", "focus", "disabled"]:
+		assert_true(_theme.has_stylebox(state, "SettingsSwitch"),
+			"SettingsSwitch defines %s" % state)
+		assert_true(_theme.get_stylebox(state, "SettingsSwitch") is StyleBoxEmpty,
+			"SettingsSwitch/%s draws nothing" % state)
+
+
+## A 20px sunken track filled brand brown, with the token grabber.
+func test_settings_slider_is_a_brand_track() -> void:
+	var track := _theme.get_stylebox("slider", "SettingsSlider") as StyleBoxFlat
+	var fill := _theme.get_stylebox("grabber_area", "SettingsSlider") as StyleBoxFlat
+	assert_true(track != null and fill != null, "SettingsSlider has flat track and fill")
+	if track == null or fill == null:
+		return
+	assert_eq(track.bg_color, _tokens.surface_sunken, "the track is sunken cream")
+	assert_eq(track.content_margin_top + track.content_margin_bottom, 20.0, "the track is 20px thick")
+	assert_eq(fill.bg_color, _tokens.brand_primary, "the fill is brand brown")
+	assert_true(_theme.has_stylebox("grabber_area_highlight", "SettingsSlider"),
+		"the fill stays brown while dragging")
+	assert_true(_tokens.settings_slider_grabber != null, "tokens carry the grabber")
+	for icon in ["grabber", "grabber_highlight", "grabber_disabled"]:
+		assert_eq(_theme.get_icon(icon, "SettingsSlider"), _tokens.settings_slider_grabber,
+			"SettingsSlider/%s is the token grabber" % icon)
+
+
+func test_settings_divider_is_a_thin_sunken_rule() -> void:
+	var rule := _theme.get_stylebox("separator", "SettingsDivider") as StyleBoxLine
+	assert_true(rule != null, "SettingsDivider draws a StyleBoxLine")
+	if rule == null:
+		return
+	assert_eq(rule.color, _tokens.surface_sunken, "the rule is sunken cream")
+	assert_eq(rule.thickness, 2, "the rule is 2px")

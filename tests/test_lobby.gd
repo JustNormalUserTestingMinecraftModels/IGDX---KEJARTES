@@ -52,17 +52,21 @@ func suite_name() -> String:
 var _lobby: Control
 
 
-func setup() -> void:
+## One Lobby for the whole suite, not one per test: the runner gives no
+## frame between tests, so 33 fresh Lobbies flooded the editor's message
+## queue with deferred layout calls and crashed a full run. Every test
+## here only reads it, bar one that puts its label back. Not tracked;
+## suite_teardown frees it.
+func suite_setup(_ctx: Dictionary) -> void:
 	var scene: PackedScene = load(_SCENE_PATH)
 	_lobby = scene.instantiate()
 	_lobby.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(_lobby)
-	track(_lobby)
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_lobby):
-		_lobby.queue_free()
+		_lobby.free()
 	_lobby = null
 
 
@@ -130,7 +134,7 @@ func test_scene_instantiates() -> void:
 	assert_true(_lobby.is_inside_tree(), "scene must enter the tree cleanly")
 	for name in _NAV_BUTTONS:
 		assert_true(_lobby.get_node_or_null("%" + name) != null, "missing nav button: " + name)
-	assert_true(_lobby.get_node_or_null("%JUDUL") != null, "missing JUDUL")
+	assert_true(_lobby.get_node_or_null("%ProgressHeader") != null, "missing ProgressHeader")
 	assert_true(_lobby.get_node_or_null("%DisplayUang/Label") != null, "missing money label")
 	assert_true(_lobby.get_node_or_null("DailyReward/ButtonClaim") != null,
 		"missing claim button")
@@ -185,6 +189,7 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		paths.append("%" + n)
 	paths.append("DailyReward/ButtonClaim")
 	paths.append("%SettingsButton")
+	paths.append("%PlusUang")
 	for p in paths:
 		var b := _lobby.get_node_or_null(p) as Control
 		assert_true(b != null, "missing control: " + p)
@@ -195,24 +200,24 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 
 # ------------------------------------------------------ migration checks
 
+## Scrapbook HUD (Task 4): the three shelf tiles wear their own colour-coded
+## NavTile* variation and the two book buttons share BookHeroButton, not the
+## old shared LobbyNavTile / LobbyCtaButton pair.
 func test_nav_buttons_use_lobby_nav_tile_or_cta_button_variation() -> void:
-	var tile_buttons := ["Koperasi", "Inventory", "ReportStudent"]
+	var tile_variations: Dictionary = {"Koperasi": &"NavTileKoperasi",
+		"Inventory": &"NavTileInventory", "ReportStudent": &"NavTileRapor"}
 	var cta_buttons := ["Student", "Jadwal"]
-	for name in tile_buttons:
+	for name: String in tile_variations:
 		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
-		assert_eq(b.theme_type_variation, &"LobbyNavTile", name + " variation")
+		assert_eq(b.theme_type_variation, tile_variations[name], name + " variation")
 	for name in cta_buttons:
 		var b := _lobby.get_node_or_null("%" + name) as Button
 		assert_true(b != null, "missing nav button: " + name)
-		assert_eq(b.theme_type_variation, &"LobbyCtaButton", name + " variation")
+		assert_eq(b.theme_type_variation, &"BookHeroButton", name + " variation")
 
 
 func test_labels_use_theme_variations() -> void:
-	var judul := _lobby.get_node_or_null("%JUDUL") as Label
-	assert_true(judul != null, "missing JUDUL")
-	assert_eq(judul.theme_type_variation, &"DisplayLabel", "JUDUL variation")
-
 	var money := _lobby.get_node_or_null("%DisplayUang/Label") as Label
 	assert_true(money != null, "missing money label")
 	assert_eq(money.theme_type_variation, &"CoinLabel", "money label variation")
@@ -323,10 +328,10 @@ func test_report_student_button_is_wired() -> void:
 func test_the_money_chip_is_a_themed_panel_with_a_coin_icon() -> void:
 	var chip := _lobby.get_node_or_null("%DisplayUang") as Panel
 	assert_true(chip != null, "DisplayUang must be a Panel now, not a TextureRect")
-	assert_eq(chip.theme_type_variation, &"Card",
+	assert_eq(chip.theme_type_variation, &"CoinPlate",
 		"the chip takes its chrome from the theme")
-	assert_eq(chip.size.y, 96.0,
-		"the chip is 96 tall, matching DailyLogin, got %f" % chip.size.y)
+	assert_eq(chip.size.y, 112.0,
+		"the chip is 112 tall on the coin plate, got %f" % chip.size.y)
 
 	var icon := _lobby.get_node_or_null("%DisplayUang/CoinIcon") as TextureRect
 	assert_true(icon != null, "the chip needs a coin icon")
@@ -444,8 +449,10 @@ func test_the_peak_reward_fits_its_row() -> void:
 	assert_eq(row.get_parent(), panel, "RewardRow sits directly on the panel")
 	assert_eq(coin.get_parent(), row, "the coin lives in the reward row")
 	assert_eq(amount.get_parent(), row, "the amount lives in the reward row")
+	var shown: String = amount.text
 	amount.text = "400G"
 	var row_right: float = row.offset_left + row.get_combined_minimum_size().x
+	amount.text = shown
 	assert_true(row_right <= panel.size.x,
 		"with 400G the row ends at %f, past the panel's %f width" % [row_right, panel.size.x])
 

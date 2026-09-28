@@ -386,6 +386,21 @@ func test_a_zero_loop_duration_starts_no_loop() -> void:
 	assert_true(invite == null, "a zero idle_invite_seconds starts no invite loop")
 
 
+## Task 6: the Lobby's daily-gift badge asks is_claimable() rather than
+## reading GameState itself, so it must track the day the last refresh()
+## drew, not the live claim state alone.
+func test_is_claimable_reflects_the_drawn_days_claim() -> void:
+	var panel: DailyLoginPanel = _lobby_panel()
+	if panel == null:
+		return
+	GameState.last_claim_date = _YESTERDAY
+	panel.refresh(_TODAY)
+	assert_true(panel.is_claimable(), "yesterday's claim date leaves today claimable")
+	GameState.last_claim_date = _TODAY
+	panel.refresh(_TODAY)
+	assert_false(panel.is_claimable(), "today's claim date is no longer claimable")
+
+
 func test_lobby_no_longer_owns_the_claim() -> void:
 	var lobby_src := FileAccess.get_file_as_string(_LOBBY_SCRIPT)
 	for moved: String in ["_on_claim_pressed", "DAILY_REWARD", "DAY_PANELS",

@@ -90,7 +90,20 @@ the 2026-09-28 daily-login reveal's chest, which has no art at all yet:
 `use_chest_sprite` stays off until both exist, so the claim moment ships on the
 gift fallback (Box crops the day-1 slot's gift out of `day1.png`, Lid hidden).
 Drawing them means setting the three exports on the reveal's root in
-`DailyRewardReveal.tscn`; the Lid's hinge pivot is already authored.
+`DailyRewardReveal.tscn`; the Lid's hinge pivot is already authored, and the
+2026-09-27 Lobby scrapbook HUD set in `Assets/Images/UI/LobbyHud/`
+(`book_cover.png`, `book_page.png`, `coin_plate.png`, `progress_plate.png`,
+`chevron_grip.png`, `icon_plus.svg`) standing in for the book/page/plate/grip
+art in `docs/superpowers/specs/2026-09-27-lobby-scrapbook-hud-design.md` § 6,
+drop-replaceable at the same paths with no code change. Every PNG's 9-slice
+margins are whole pixels: `book_cover.png` 96x96, margins L24 R24 T24 B40
+(the bottom margin carries its lip band); `book_page.png` 96x96, margins L18
+R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
+`progress_plate.png` 160x64, margins L20 R20 T18 B26; `chevron_grip.png`
+96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
+a small buffer, not the cap radius). Still pending, waiting on real art: the
+dashed washi rim and tape, and JADWAL!'s washi flutter (deferred by the plan's
+Q4 -- `StyleBoxFlat` cannot draw dashes).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and

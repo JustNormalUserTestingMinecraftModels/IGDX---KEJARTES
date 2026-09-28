@@ -145,9 +145,10 @@ func test_lobby_backdrop_is_black_and_full_rect() -> void:
 	assert_eq(back.mouse_filter, Control.MOUSE_FILTER_IGNORE, "Backdrop takes no clicks")
 
 
-## The HUD sits in Safe/UI: the title on the top edge, the button block in a
-## Bottom Wide bar. Every HUD node is a unique name, so Lobby.gd and the
-## tutorial find it wherever it sits.
+## The HUD sits in Safe/UI: the title on the top edge, the stepped book and
+## the icon rail in Safe/UI/Hud. Every HUD node is a unique name, so Lobby.gd
+## and the tutorial find it wherever it sits (2026-09-27 scrapbook pass,
+## Task 4: BottomBar split into BookHud and IconRail).
 func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 	var lobby := _scene(LOBBY)
 	var safe := lobby.get_node_or_null("Safe")
@@ -160,23 +161,34 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 	var ui := lobby.get_node_or_null("Safe/UI") as Control
 	assert_true(ui != null and ui.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 		"Safe/UI exists and lets clicks through")
-	_assert_under_safe_area(lobby.get_node_or_null("%JUDUL"), "JUDUL")
-	var bar := lobby.get_node_or_null("Safe/UI/BottomBar") as Control
-	assert_true(bar != null, "the Lobby needs Safe/UI/BottomBar")
-	if bar == null:
+	_assert_under_safe_area(lobby.get_node_or_null("%ProgressHeader"), "ProgressHeader")
+	_assert_under_safe_area(lobby.get_node_or_null("%DisplayUang"), "DisplayUang")
+	var book := lobby.get_node_or_null("Safe/UI/Hud/BookHud") as Control
+	assert_true(book != null, "the Lobby needs Safe/UI/Hud/BookHud")
+	if book == null:
 		return
-	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
-	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets clicks through")
-	for n in ["Student", "Jadwal", "Koperasi", "Inventory", "ReportStudent",
-			"DisplayUang", "SettingsButton", "DailyLogin"]:
+	assert_eq(_anchors(book), Vector4(0, 1, 1, 1), "BookHud is Bottom Wide")
+	assert_eq(book.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BookHud lets clicks through")
+	var rail := lobby.get_node_or_null("%IconRail") as Node
+	assert_true(rail != null, "the Lobby needs %IconRail")
+	if rail == null:
+		return
+	for n in ["Student", "Jadwal", "Koperasi", "Inventory", "ReportStudent"]:
 		var c := lobby.get_node_or_null("%" + n) as Control
 		assert_true(c != null, n + " must be a unique name")
 		if c != null:
-			assert_eq(c.get_parent(), bar, n + " rides in BottomBar")
+			assert_true(book.is_ancestor_of(c), n + " rides in BookHud")
+	for n in ["DailyLogin", "SettingsButton", "AchievementButton", "SkinSwitchButton"]:
+		var c := lobby.get_node_or_null("%" + n) as Control
+		assert_true(c != null, n + " must be a unique name")
+		if c != null:
+			assert_true(rail.is_ancestor_of(c), n + " rides in IconRail")
 
 
-## On a 1080x2400 phone the classroom sits 240 px down, centred; the HUD rides
-## the bottom edge 48 px up; the title stays on top; the popup stays centred.
+## On a 1080x2400 phone the classroom sits 240 px down, centred; the book HUD
+## and the icon rail ride the bottom edge, 480 px below their design rects
+## (Task 4's DESIGN_RECTS in test_lobby_layout.gd); the title stays on top;
+## the popup stays centred.
 func test_lobby_on_a_tall_phone() -> void:
 	var lobby := _stood_up(LOBBY, TALL)
 	_assert_placed((lobby.get_node("World/Backdrop") as Control),
@@ -184,13 +196,13 @@ func test_lobby_on_a_tall_phone() -> void:
 	_assert_placed((lobby.get_node("World/Classroom") as Control),
 		Rect2(0, 240, 1080, 1920), "Classroom")
 	_assert_placed((lobby.get_node("%Jadwal") as Control),
-		Rect2(48, 2000, 984, 160), "Jadwal")
+		Rect2(88, 1924, 532, 144), "Jadwal")
 	_assert_placed((lobby.get_node("%ReportStudent") as Control),
-		Rect2(724, 2192, 306, 160), "ReportStudent")
+		Rect2(706, 2136, 285, 160), "ReportStudent")
 	_assert_placed((lobby.get_node("%DailyLogin") as Control),
-		Rect2(48, 1872, 96, 96), "DailyLogin")
-	_assert_placed((lobby.get_node("%JUDUL") as Control),
-		Rect2(381, 40, 323, 100), "JUDUL")
+		Rect2(936, 1520, 96, 96), "DailyLogin")
+	_assert_placed((lobby.get_node("%ProgressHeader") as Control),
+		Rect2(48, 48, 516, 168), "ProgressHeader")
 	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 798, 942, 418), "DailyReward")
 

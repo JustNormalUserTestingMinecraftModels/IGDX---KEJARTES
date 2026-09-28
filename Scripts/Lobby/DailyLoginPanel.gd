@@ -217,6 +217,12 @@ func _is_claimed_today(today: String) -> bool:
 	return GameState.last_claim_date == today
 
 
+## True while the day refresh() last drew is still unclaimed: the Lobby's
+## daily-gift badge asks this rather than reading GameState itself.
+func is_claimable() -> bool:
+	return not _today.is_empty() and not _is_claimed_today(_today)
+
+
 func _on_claim_pressed() -> void:
 	AnimUtils.squash_bounce(claim_button)
 	if _today.is_empty():

@@ -37,8 +37,8 @@ func test_every_delivered_icon_is_in_place() -> void:
 func test_the_daily_login_button_keeps_its_aspect() -> void:
 	var lobby := (load(_LOBBY) as PackedScene).instantiate()
 	track(lobby)
-	for path in ["Safe/UI/BottomBar/DailyLogin", "Safe/UI/BottomBar/SettingsButton",
-			"Safe/UI/BottomBar/AchievementButton", "Safe/UI/BottomBar/SkinSwitchButton"]:
+	for path in ["Safe/UI/Hud/IconRail/DailyLogin", "Safe/UI/Hud/IconRail/SettingsButton",
+			"Safe/UI/Hud/IconRail/AchievementButton", "Safe/UI/Hud/IconRail/SkinSwitchButton"]:
 		var btn := lobby.get_node_or_null(path) as TextureButton
 		assert_true(btn != null, path + " must exist")
 		if btn != null:

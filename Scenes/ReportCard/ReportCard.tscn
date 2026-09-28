@@ -1591,7 +1591,7 @@ offset_left = 42.0
 offset_top = 34.0
 offset_right = 166.0
 offset_bottom = 130.0
-theme_type_variation = &"PrimaryButton"
+theme_type_variation = &"SecondaryButton"
 icon = ExtResource("16_ret")
 
 [connection signal="pressed" from="Safe/UI/BottomBar/NextButtonKiri" to="." method="_on_next_button_kiri_pressed"]

@@ -43,6 +43,7 @@ const PEEK_RISE := 110.0
 		envelope_texture = value
 		if is_node_ready():
 			_body.texture = value
+			_shadow.match_source(_body)
 ## The top flap art, folded back by open().
 @export var flap_texture: Texture2D:
 	set(value):
@@ -68,6 +69,7 @@ const PEEK_RISE := 110.0
 @onready var bob: Control = $Bob
 @onready var _pupils: Control = $Bob/Pupils
 @onready var _body: TextureRect = $Bob/Body
+@onready var _shadow: TextureRect = $Bob/Body/Shadow
 @onready var _flap: TextureRect = $Bob/Flap
 @onready var _seal: TextureRect = $Bob/Seal
 @onready var _tab: Button = $Bob/Tab
@@ -85,6 +87,7 @@ func _ready() -> void:
 	_tab.text = tab_text
 	if envelope_texture != null:
 		_body.texture = envelope_texture
+		_shadow.match_source(_body)
 	if flap_texture != null:
 		_flap.texture = flap_texture
 	if seal_texture != null:

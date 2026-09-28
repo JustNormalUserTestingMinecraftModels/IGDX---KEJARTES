@@ -298,13 +298,22 @@ func test_idle_motion_present() -> void:
 	assert_true(src.contains("card.bob"), "idle drives the Bob pivot")
 
 
-## The fan's geometry knobs (Task A: de-crowd the amplop fan, 2026-09-28) must
-## stay @exports, or a designer's live tuning silently stops taking effect.
-## A light guard; the real acceptance of the fan's look is visual.
+## The fan's geometry knobs must stay @exports, or a designer's live tuning
+## silently stops taking effect. A light guard; the real acceptance of the
+## fan's look is visual. Walks the property list rather than matching
+## "@export var <name>" in the source, so a knob that becomes @export_range
+## (or any other export variant) still passes.
 func test_fan_geometry_knobs_are_still_exported() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var script := load(_SCRIPT_PATH) as Script
+	var by_name := {}
+	for prop in script.get_script_property_list():
+		by_name[prop["name"]] = prop
 	for knob in ["fan_step_x", "fan_drop_y", "fan_step_degrees", "side_scale"]:
-		assert_true(src.contains("@export var %s" % knob), "exports %s" % knob)
+		assert_true(by_name.has(knob), "has property %s" % knob)
+		if not by_name.has(knob):
+			continue
+		var usage: int = by_name[knob]["usage"]
+		assert_true(usage & PROPERTY_USAGE_EDITOR != 0, "exports %s" % knob)
 
 
 # ── Confirmation ─────────────────────────────────────────────────────────────
@@ -339,10 +348,10 @@ func test_confirm_presents_and_dismisses() -> void:
 	assert_false((confirm.card.get_node("Bob/Pupils") as Control).visible, "and reseals")
 
 
-## Task B: the envelope zooms toward the player on its own tween, running
-## beside card.open()'s seal/flap/pupil tween rather than after it (a
-## tw.parallel() after card.open() would only join its last, pupil, step),
-## and rests back at the fan's scale once dismissed.
+## The envelope zooms toward the player on its own tween, running beside
+## card.open()'s seal/flap/pupil tween rather than after it (a tw.parallel()
+## after card.open() would only join its last, pupil, step), and rests back
+## at the fan's scale once dismissed.
 func test_confirm_zooms_the_envelope_open_and_rests_on_dismiss() -> void:
 	var src := FileAccess.get_file_as_string(_CONFIRM_SCRIPT)
 	assert_true(src.contains("open_scale_target"), "exports open_scale_target")
@@ -372,11 +381,11 @@ func test_accept_sets_grade_and_transitions() -> void:
 
 # ── Shadows ──────────────────────────────────────────────────────────────────
 
-## Task D: every amplop card casts a soft drop shadow behind its Body art via
-## the shared PaperShadow template (mirrors test_paper_shadow.gd's
+## Every amplop card casts a soft drop shadow behind its Body art via the
+## shared PaperShadow template (mirrors test_paper_shadow.gd's
 ## test_the_flat_elements_now_cast_a_shadow). The confirm's Letter keeps the
 ## Card variation's own StyleBoxFlat shadow instead -- it has no texture to
-## cast, and the human found that lift enough (plan Task D, Step 2 / "D2").
+## cast, and that lift was judged enough.
 func test_amplop_card_casts_a_shadow_and_the_confirm_letter_keeps_its_card_shadow() -> void:
 	var card := _card()
 	var body := card.get_node("Bob/Body") as TextureRect
@@ -399,6 +408,22 @@ func test_amplop_card_casts_a_shadow_and_the_confirm_letter_keeps_its_card_shado
 		return
 	assert_eq(letter.theme_type_variation, &"Card",
 		"Letter keeps the Card variation's own drop shadow")
+
+
+## Re-texturing the card (envelope_texture) must re-texture its shadow too,
+## or a skinned envelope casts the default art's silhouette.
+func test_amplop_card_shadow_follows_envelope_texture() -> void:
+	var card := _card()
+	var body := card.get_node("Bob/Body") as TextureRect
+	var shadow := body.get_node_or_null("Shadow") as Control
+	assert_true(shadow != null, "Bob/Body has no Shadow")
+	if shadow == null:
+		return
+	var flap_tex := load("res://Assets/Images/LevelSelect/amplop_flap.png") as Texture2D
+	card.envelope_texture = flap_tex
+	assert_eq(body.texture, flap_tex, "Body wears the new texture")
+	assert_eq(shadow.get("shadow_texture"), flap_tex,
+		"the shadow follows Body's new envelope texture")
 
 
 # ── Flow ─────────────────────────────────────────────────────────────────────

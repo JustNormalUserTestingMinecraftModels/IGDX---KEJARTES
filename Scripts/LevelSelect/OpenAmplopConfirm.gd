@@ -5,11 +5,9 @@ extends Control
 ## seal pops, the flap folds back), its pupils peek out, and the surat tugas
 ## rises with the grade's brief and Terima Tugas / Batal. Opening IS the
 ## confirmation ritual. Hidden until present(); the screen owns what happens
-## on accepted and cancelled.
-##
-## Task B (2026-09-28): the envelope also zooms up toward the player on its
-## own tween (see _zoom_envelope()), and the confirm's own nodes are all
-## %UniqueName refs so the Task B letter/button restructure cannot break it.
+## on accepted and cancelled. The envelope also zooms up toward the player on
+## its own tween (see _zoom_envelope()); the confirm's own nodes are all
+## %UniqueName refs so layout changes elsewhere cannot break it.
 ##
 ## @tool so the MCP suite can stand it up. It starts nothing on its own, so
 ## nothing here needs an Engine.is_editor_hint() gate.
@@ -26,10 +24,9 @@ const LETTER_SEC := 0.45
 const LETTER_RISE := 40.0
 
 ## Final scale of the opened envelope: it surges from the fan's card_scale up
-## to this, as if flying toward the player. 1.35, not the original 1.9 design
-## target -- at Envelope's current anchor, 1.9 pushes the top of the envelope
-## and its rising pupils off the top of a 1920-tall screen (human's call,
-## Task B Step 7, 2026-09-28).
+## to this, as if flying toward the player. Capped at 1.35: at Envelope's
+## anchor, a bigger target pushes the envelope and its rising pupils off the
+## top of a 1920-tall screen.
 @export var open_scale_target: float = 1.35
 ## Seconds the opened envelope takes to zoom up to open_scale_target.
 @export var open_zoom_sec: float = 0.35
@@ -87,10 +84,14 @@ func present(grade: int, portraits: Array, brief_line: String) -> Tween:
 
 ## Draw the envelope `rest_scale` times its template size, grown about its
 ## bottom-centre (the card's anchor, at the container's centre) so it rises
-## away from the letter below instead of into it.
+## away from the letter below instead of into it. While the open zoom is
+## mid-flight this only records the new rest scale for later -- snapping
+## envelope.scale here would fight that tween's own writes to it every frame.
 func set_envelope_scale(rest_scale: float) -> void:
 	_envelope_rest_scale = rest_scale
 	envelope.pivot_offset = envelope.size * 0.5
+	if _zoom != null and _zoom.is_valid() and _zoom.is_running():
+		return
 	envelope.scale = Vector2.ONE * rest_scale
 
 

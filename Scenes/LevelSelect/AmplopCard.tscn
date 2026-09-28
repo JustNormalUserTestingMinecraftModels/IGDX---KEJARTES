@@ -70,7 +70,6 @@ expand_mode = 1
 [node name="Shadow" parent="Bob/Body" unique_id=1373524025 instance=ExtResource("7_owlmd")]
 layout_mode = 0
 shadow_texture = ExtResource("2_clx53")
-shadow_size = Vector2(400, 526)
 shadow_offset = Vector2(6, 8)
 follow_parent_rect = true
 blur = 3.0

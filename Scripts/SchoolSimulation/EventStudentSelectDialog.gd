@@ -7,6 +7,10 @@ extends Control
 ## toggle Button (StudentCardButton), showing where the student stands now.
 ## Selecting a card layers the event's effect on top. The dialog's own
 ## chrome is theme-driven; nothing here builds a StyleBoxFlat.
+##
+## Full height, no round close (2026-09-28, UI depth pass Phase 2): the
+## surface is a NotebookFrame (dialog_panel), whose own chrome -- not a
+## panel stylebox -- draws the page. Tolak / Terima is the only way out.
 
 signal event_decision_made(accepted: bool, selected_students: Array[StudentData])
 
@@ -14,12 +18,6 @@ signal event_decision_made(accepted: bool, selected_students: Array[StudentData]
 @export_group("Visual - Background Overlay")
 ## Optional photo behind the dialog. When set it replaces the Scrim panel.
 @export var background_texture: Texture2D = null
-
-# ── Visual - Dialog Card Panel ───────────────────────────────────────────────
-@export_group("Visual - Dialog Card Panel")
-## Art-supplied background for dialog_panel. Null keeps the theme's Card
-## styling.
-@export var dialog_card_texture: Texture2D = null
 
 # ── Visual - Buttons ─────────────────────────────────────────────────────────
 # The three action buttons take their look from the theme's
@@ -50,16 +48,16 @@ const CARD_SCENE := preload("res://Scenes/SchoolSimulation/EventStudentCard.tscn
 
 @onready var background: TextureRect = $Background
 @onready var background_dim: Panel = $BackgroundDim
-@onready var dialog_panel: PanelContainer = $Margin/DialogPanel
-@onready var title_label: Label = $Margin/DialogPanel/Margin/MainVBox/TitleLabel
-@onready var desc_label: Label = $Margin/DialogPanel/Margin/MainVBox/DescLabel
-@onready var benefit_label: Label = $Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/BenefitRow/Text
-@onready var cost_label: Label = $Margin/DialogPanel/Margin/MainVBox/CostBenefitBox/CostRow/Text
-@onready var scroll_container: ScrollContainer = $Margin/DialogPanel/Margin/MainVBox/ScrollContainer
-@onready var students_container: VBoxContainer = $Margin/DialogPanel/Margin/MainVBox/ScrollContainer/StudentsContainer
-@onready var select_all_button: Button = $Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/SelectAllButton
-@onready var cancel_button: Button = $Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/CancelButton
-@onready var confirm_button: Button = $Margin/DialogPanel/Margin/MainVBox/ActionVBox/ConfirmButton
+@onready var dialog_panel: NotebookFrame = $Safe/Frame
+@onready var title_label: Label = $Safe/Frame/MainVBox/TitleLabel
+@onready var desc_label: Label = $Safe/Frame/MainVBox/DescLabel
+@onready var benefit_label: Label = $Safe/Frame/MainVBox/CostBenefitBox/BenefitRow/Text
+@onready var cost_label: Label = $Safe/Frame/MainVBox/CostBenefitBox/CostRow/Text
+@onready var scroll_container: ScrollContainer = $Safe/Frame/MainVBox/ScrollContainer
+@onready var students_container: VBoxContainer = $Safe/Frame/MainVBox/ScrollContainer/StudentsContainer
+@onready var select_all_button: Button = $Safe/Frame/MainVBox/ActionVBox/SecondaryHBox/SelectAllButton
+@onready var cancel_button: Button = $Safe/Frame/MainVBox/ActionVBox/SecondaryHBox/CancelButton
+@onready var confirm_button: Button = $Safe/Frame/MainVBox/ActionVBox/ConfirmButton
 
 var event_data: Dictionary = {}
 var student_list: Array[StudentData] = []
@@ -126,12 +124,6 @@ func _apply_visual_exports() -> void:
 	background.texture = background_texture
 	background.visible = background_texture != null
 	background_dim.visible = background_texture == null
-
-	# A texture card still wins over the theme, for the art-swap workflow.
-	if dialog_panel and dialog_card_texture:
-		var sb = StyleBoxTexture.new()
-		sb.texture = dialog_card_texture
-		dialog_panel.add_theme_stylebox_override("panel", sb)
 
 	for lbl in [title_label, desc_label, benefit_label, cost_label]:
 		if lbl and font:

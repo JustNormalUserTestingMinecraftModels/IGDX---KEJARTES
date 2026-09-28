@@ -251,9 +251,9 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		"res://Scenes/SchoolSimulation/SchoolDay.tscn": [
 			"DayScreen/BackButton", "DayScreen/SkipButton"],
 		"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn": [
-			"Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/SelectAllButton",
-			"Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/CancelButton",
-			"Margin/DialogPanel/Margin/MainVBox/ActionVBox/ConfirmButton"],
+			"Safe/Frame/MainVBox/ActionVBox/SecondaryHBox/SelectAllButton",
+			"Safe/Frame/MainVBox/ActionVBox/SecondaryHBox/CancelButton",
+			"Safe/Frame/MainVBox/ActionVBox/ConfirmButton"],
 		"res://Scenes/SchoolSimulation/DailyDecayOverview.tscn": [
 			"Safe/Frame/VBox/ContinueButton"],
 		"res://Scenes/SchoolSimulation/ResultCheckup.tscn": [

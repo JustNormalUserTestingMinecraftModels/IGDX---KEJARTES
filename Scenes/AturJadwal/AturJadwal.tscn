@@ -7,7 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://bpayde6glp1hm" path="res://Assets/Images/UI/papantulis.png" id="4_ulthj"]
 [ext_resource type="Texture2D" uid="uid://bvc6vlo87qpl0" path="res://Assets/Images/SplashArtMurid/splash_marcel.png" id="5_f4ced"]
 [ext_resource type="PackedScene" uid="uid://ds7r2wlhqoyes" path="res://Scenes/AturJadwal/DayStickyNote.tscn" id="5_ulthj"]
-[ext_resource type="Texture2D" uid="uid://cixngx8hgvgmn" path="res://Assets/Images/UI/penjadwalan_card_bg.png" id="9_cardbg"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="10_return"]
 [ext_resource type="Texture2D" uid="uid://buen031hxfvy4" path="res://Assets/Images/StudentCard/stat_akademis.png" id="13_icon_akademis"]
 [ext_resource type="Material" path="res://Scripts/Shaders/objective_strip_material.tres" id="14_7emk0"]
@@ -24,6 +23,8 @@
 [ext_resource type="Texture2D" uid="uid://cbjish08tay7r" path="res://Assets/Images/UI/Picker/arrow_down.svg" id="23_arrow_down"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yej6c"]
 shader = ExtResource("2_shader")
@@ -791,59 +792,60 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 189.0
-offset_top = 579.0
-offset_right = -175.0
-offset_bottom = -776.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
-[node name="TextureRect" type="NinePatchRect" parent="Peringatan" unique_id=49961884]
-layout_mode = 0
-offset_left = -4.0
-offset_top = -8.0
-offset_right = 736.0
-offset_bottom = 420.0
-texture = ExtResource("9_cardbg")
-region_rect = Rect2(211, 34, 658, 1013)
-patch_margin_left = 32
-patch_margin_top = 32
-patch_margin_right = 32
-patch_margin_bottom = 32
+[node name="Safe" type="MarginContainer" parent="Peringatan"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("nb_safe")
 
-[node name="Label" type="Label" parent="Peringatan/TextureRect" unique_id=1041364249]
-layout_mode = 0
-offset_left = 28.0
-offset_top = 37.0
-offset_right = 710.0
-offset_bottom = 268.0
+[node name="Center" type="CenterContainer" parent="Peringatan/Safe"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Frame" parent="Peringatan/Safe/Center" instance=ExtResource("nb_frame")]
+layout_mode = 2
+custom_minimum_size = Vector2(760, 0)
+title_text = "PERINGATAN"
+ring_count = 4
+show_well = false
+
+[node name="Body" type="VBoxContainer" parent="Peringatan/Safe/Center/Frame"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Label" type="Label" parent="Peringatan/Safe/Center/Frame/Body" unique_id=1041364249]
+layout_mode = 2
+custom_minimum_size = Vector2(620, 0)
 theme_type_variation = &"TitleLabel"
-text = "PERINGATAN
-
-Terdapat murid yang masih
+text = "Terdapat murid yang masih
 belum memiliki jadwal belajar
 optimal!! Teruskan?"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="ButtonYes" type="Button" parent="Peringatan/TextureRect" unique_id=1843912903]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 0
-offset_left = 135.0
-offset_top = 284.0
-offset_right = 285.0
-offset_bottom = 380.0
+[node name="Buttons" type="HBoxContainer" parent="Peringatan/Safe/Center/Frame/Body"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 48
+
+[node name="ButtonYes" type="Button" parent="Peringatan/Safe/Center/Frame/Body/Buttons" unique_id=1843912903]
+custom_minimum_size = Vector2(200, 96)
+layout_mode = 2
 theme_type_variation = &"PrimaryButton"
 text = "YA"
 
-[node name="ButtonNo" type="Button" parent="Peringatan/TextureRect" unique_id=892341999]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 0
-offset_left = 445.0
-offset_top = 284.0
-offset_right = 595.0
-offset_bottom = 380.0
+[node name="ButtonNo" type="Button" parent="Peringatan/Safe/Center/Frame/Body/Buttons" unique_id=892341999]
+custom_minimum_size = Vector2(200, 96)
+layout_mode = 2
 theme_type_variation = &"SecondaryButton"
 text = "TIDAK"
 

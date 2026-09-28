@@ -32,11 +32,17 @@ const POPUPS := {
 	"res://Scenes/Achievements/AchievementDetailSheet.tscn": ["Safe/Center/Sheet", "sheet", "safe"],
 	"res://Scenes/Lobby/DapatkanUang.tscn": ["Safe/Center/Book", "sheet", "safe"],
 	"res://Scenes/UI/Settings.tscn": ["SafeArea/Frame", "tabs", "safe"],
+	"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn": ["Safe/Frame", "dialog", "safe"],
+	# free: the letter rises out of the envelope by tweening its position,
+	# which a container would reset; it is anchored to the screen's centre.
+	"res://Scenes/LevelSelect/OpenAmplopConfirm.tscn": ["Letter", "dialog", "free"],
+	"res://Scenes/AturJadwal/AturJadwal.tscn": ["Peringatan/Safe/Center/Frame", "dialog", "safe"],
 }
 
 ## scene -> the script that wires its frame's close, when that is the
 ## screen's own script rather than the instanced root's.
 const SCREEN_SCRIPTS := {
+	"res://Scenes/AturJadwal/AturJadwal.tscn": "res://Scripts/AturJadwal/AturJadwal.gd",
 }
 
 

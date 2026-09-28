@@ -36,7 +36,7 @@ const LETTER_RISE := 40.0
 ## The CenterContainer holding it. Size goes here, never on the card: a
 ## Container resets its children's scale every time it lays them out.
 @onready var envelope: Control = %Envelope
-@onready var _letter: Control = %Letter
+@onready var _letter: NotebookFrame = %Letter
 @onready var _title: Label = %Title
 @onready var _body: Label = %Body
 @onready var _accept: Button = %Accept
@@ -60,6 +60,7 @@ func _ready() -> void:
 		_set_buttons_enabled(false)
 		accepted.emit(_grade))
 	_cancel.pressed.connect(func() -> void: cancelled.emit())
+	_letter.close_pressed.connect(_on_close_pressed)
 	_letter_rest_offsets = Vector2(_letter.offset_top, _letter.offset_bottom)
 
 
@@ -142,3 +143,10 @@ func _rest_envelope() -> void:
 func _set_buttons_enabled(on: bool) -> void:
 	_accept.disabled = not on
 	_cancel.disabled = not on
+
+
+## The frame's round close is Batal: it cancels, but only while Batal
+## itself could be pressed (the buttons are off while the letter animates).
+func _on_close_pressed() -> void:
+	if not _cancel.disabled:
+		cancelled.emit()

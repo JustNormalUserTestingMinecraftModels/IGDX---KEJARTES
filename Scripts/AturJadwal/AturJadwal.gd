@@ -83,8 +83,8 @@ var _holiday_active: bool = false
 @onready var jumat_btn = $BGHari/Jumat
 
 @onready var peringatan = $Peringatan
-@onready var btn_yes = $Peringatan/TextureRect/ButtonYes
-@onready var btn_no = $Peringatan/TextureRect/ButtonNo
+@onready var btn_yes = $Peringatan/Safe/Center/Frame/Body/Buttons/ButtonYes
+@onready var btn_no = $Peringatan/Safe/Center/Frame/Body/Buttons/ButtonNo
 
 # --- Penjadwalan Popup ---
 # A tile-grid selection box since the 2026-09-24 visual polish (D9-D14):
@@ -482,6 +482,9 @@ func _connect_start_week_button():
 		btn_yes.pressed.connect(_on_peringatan_yes)
 	if btn_no and not btn_no.pressed.is_connected(_on_peringatan_no):
 		btn_no.pressed.connect(_on_peringatan_no)
+	var peringatan_frame := $Peringatan/Safe/Center/Frame as NotebookFrame
+	if not peringatan_frame.close_pressed.is_connected(_on_peringatan_no):
+		peringatan_frame.close_pressed.connect(_on_peringatan_no)
 
 func _setup_phase1_tutorial():
 	current_phase_steps = tutorial_phase1_steps.duplicate()
@@ -867,7 +870,7 @@ func _show_overtired_warning(names: Array[String]):
 	var name_list = ", ".join(names)
 	if not names.is_empty():
 		_last_overtired_student_name = names[0]
-	$Peringatan/TextureRect/Label.text = "PERINGATAN\n\nMurid berikut kehabisan energi:\n" + name_list + "\n\nHarap pilih murid tersebut & jadwalkan Istirahat (Libur)!"
+	$Peringatan/Safe/Center/Frame/Body/Label.text = "Murid berikut kehabisan energi:\n" + name_list + "\n\nHarap pilih murid tersebut & jadwalkan Istirahat (Libur)!"
 	btn_yes.text = "OK"
 	btn_no.hide()
 	_show_peringatan()
@@ -878,7 +881,7 @@ func _show_combined_warning(names: Array[String]):
 	var name_list = ", ".join(names)
 	if not names.is_empty():
 		_last_overtired_student_name = names[0]
-	$Peringatan/TextureRect/Label.text = "PERINGATAN MOOD & JADWAL\n\nMurid \"" + name_list + "\" kehabisan MOOD (Terlalu lelah secara mental) dan masih terdapat jadwal yang belum diisi! Teruskan?"
+	$Peringatan/Safe/Center/Frame/Body/Label.text = "Mood & Jadwal\n\nMurid \"" + name_list + "\" kehabisan MOOD (Terlalu lelah secara mental) dan masih terdapat jadwal yang belum diisi! Teruskan?"
 	btn_yes.text = "YES"
 	btn_no.text = "NO"
 	btn_no.show()
@@ -894,7 +897,7 @@ func _show_mental_fatigue_warning(names: Array[String]):
 	var name_list = ", ".join(names)
 	if not names.is_empty():
 		_last_overtired_student_name = names[0]
-	$Peringatan/TextureRect/Label.text = "PERINGATAN MOOD SANGAT RENDAH\n\nMurid \"" + name_list + "\" kehabisan MOOD (Terlalu lelah secara mental)!\n\nPelajaran yang didapat akan berkurang jika mood habis. Teruskan minggu ini?"
+	$Peringatan/Safe/Center/Frame/Body/Label.text = "Mood Sangat Rendah\n\nMurid \"" + name_list + "\" kehabisan MOOD (Terlalu lelah secara mental)!\n\nPelajaran yang didapat akan berkurang jika mood habis. Teruskan minggu ini?"
 	btn_yes.text = "YES"
 	btn_no.text = "NO"
 	btn_no.show()
@@ -903,7 +906,7 @@ func _show_mental_fatigue_warning(names: Array[String]):
 func _show_incomplete_schedule_warning():
 	current_warning_mode = "incomplete"
 	is_overtired_warning = false
-	$Peringatan/TextureRect/Label.text = "PERINGATAN JADWAL\n\nTerdapat murid yang masih \nbelum memiliki jadwal belajar \noptimal!! Teruskan?"
+	$Peringatan/Safe/Center/Frame/Body/Label.text = "Jadwal\n\nTerdapat murid yang masih \nbelum memiliki jadwal belajar \noptimal!! Teruskan?"
 	btn_yes.text = "YES"
 	btn_no.text = "NO"
 	btn_no.show()
@@ -931,7 +934,7 @@ func _show_peringatan():
 		return
 	AudioDirector.play_sfx(&"popup_open")
 	var t := _get_tokens()
-	var warning_label: Label = $Peringatan/TextureRect/Label
+	var warning_label: Label = $Peringatan/Safe/Center/Frame/Body/Label
 	if warning_label:
 		warning_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

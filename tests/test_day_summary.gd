@@ -1662,19 +1662,14 @@ func test_event_dialog_dropped_the_button_texture_override_path() -> void:
 	# StyleBoxTexture overrides are what let these three buttons drift
 	# out of the theme every other screen uses.
 	var src := FileAccess.get_file_as_string(EVENT_DIALOG_SCRIPT)
-	# dialog_card_texture keeps its own StyleBoxTexture: that is a
-	# separate, pre-existing art-swap hook for the PANEL and is out of
-	# scope here. What had to go is the per-button override path, so the
-	# check is that every remaining override targets the panel.
-	var overrides := 0
-	for line in src.split("
-"):
-		if line.contains("add_theme_stylebox_override"):
-			overrides += 1
-			assert_contains(line, "dialog_panel",
-				"only the dialog panel may override a stylebox, not: %s" % line.strip_edges())
-	assert_eq(overrides, 1,
-		"expected exactly one stylebox override (the panel's), found %d" % overrides)
+	# dialog_panel's own StyleBoxTexture override went too (2026-09-28, UI
+	# depth pass Phase 2): dialog_panel is now a NotebookFrame, whose own
+	# chrome draws the page -- there is nothing left to override a panel
+	# stylebox on, and dialog_card_texture went with it.
+	assert_false(src.contains("add_theme_stylebox_override"),
+		"no stylebox override should remain; the NotebookFrame is the surface")
+	assert_false(src.contains("dialog_card_texture"),
+		"dialog_card_texture should have been removed with the panel override")
 	for retired in ["button_select_all_texture", "button_cancel_texture",
 			"button_confirm_texture"]:
 		assert_false(src.contains(retired),

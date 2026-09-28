@@ -161,6 +161,46 @@ static func load_default() -> DesignTokens:
 ## Coin/money label colour -- CoinLabel, ShopCoinLabel, ResultHeroLabel.
 @export var currency_gold: Color = Color("ffc93c")
 
+@export_group("Depth Palette")
+## Face of the main action and affirm roles -- PrimaryButton, LobbyCtaButton,
+## BookHeroButton, SuccessButton, ResultButton, PlusButton, NavTileKoperasi.
+## Green means "go" on every screen since the 2026-09-28 UI depth pass.
+@export var accent_mint: Color = Color("2EC99A")
+## Lip under accent_mint faces.
+@export var accent_mint_lip: Color = Color("178A68")
+## Face of NavTileInventory and the inactive NotebookTab.
+@export var accent_sky: Color = Color("5EA1E6")
+## Lip under accent_sky faces.
+@export var accent_sky_lip: Color = Color("3469B3")
+## Highlight only, never an action: NavTileRapor and the active NotebookTab.
+## Gold on a button reads as "buy currency" (scrapbook HUD spec, 3.2).
+@export var accent_sunflower: Color = Color("FFC93C")
+## Lip under accent_sunflower faces.
+@export var accent_sunflower_lip: Color = Color("C9801A")
+## Face of DangerButton and NotebookClose.
+@export var accent_tomato: Color = Color("E5553E")
+## Lip under accent_tomato faces.
+@export var accent_tomato_lip: Color = Color("A3301E")
+## Secondary warm accent, reserved for Phase 3's screens.
+@export var accent_tangerine: Color = Color("F58A3C")
+## Lip under accent_tangerine faces.
+@export var accent_tangerine_lip: Color = Color("BD561A")
+## Face of the cream roles -- StudentCardSecondaryButton, FilterChipButton,
+## MinigameChoiceButton.
+@export var button_cream: Color = Color("FFF1DC")
+## Lip under button_cream faces.
+@export var button_cream_lip: Color = Color("C9A57E")
+## How far a lipped surface's lip shows below its face, px (LippedBox).
+@export_range(0, 24) var lip_height: int = 7
+## How much lighter than its face a lipped button's top gloss band starts
+## (Color.lightened amount). 0 draws no gloss.
+@export_range(0.0, 1.0) var gloss_strength: float = 0.35
+## A lipped button whose face is brighter than this gets dark text_primary
+## ink with no outline; a darker face gets outlined text_on_brand.
+@export_range(0.0, 1.0) var lipped_light_face_luminance: float = 0.7
+## Outline width of the white label on a dark lipped face, px.
+@export var lipped_label_outline: int = 8
+
 @export_group("Koperasi")
 ## The price tag's resting pill (PriceTag). Bright green so a price reads as
 ## "you can buy this" against the shelf's warm wood.
@@ -282,6 +322,12 @@ static func load_default() -> DesignTokens:
 @export_range(1.0, 1.25) var release_overshoot: float = 1.06
 ## Delay between consecutive items in a staggered list entry.
 @export var stagger_step: float = 0.05
+## Scale a lipped button bumps to when released, before settling at 1.0
+## (Juice.pop_release). Its pressed stylebox already sank it, so it never
+## shrinks.
+@export_range(1.0, 1.2) var release_pop_scale: float = 1.03
+## Length of that release bump, s.
+@export_range(0.05, 0.5) var release_pop_duration: float = 0.12
 
 @export_group("Layout")
 ## Minimum touch-friendly control size (px) -- checked directly by

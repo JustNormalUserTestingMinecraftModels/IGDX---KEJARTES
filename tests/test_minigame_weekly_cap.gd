@@ -4,6 +4,9 @@ extends McpTestSuite
 ## The per-student weekly minigame-points cap: a student can gain at most
 ## Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_KELAS_* skill from minigame
 ## WINS per week. Losses are never capped.
+##
+## GameState results are declared (`var x: int = GameState...`), never inferred
+## with `:=`; test_use_item_on_students.gd explains why.
 
 func suite_name() -> String:
 	return "minigame_weekly_cap"
@@ -24,8 +27,8 @@ func _win(sm: StudentManager) -> void:
 	sm.record_minigame_result("Sen", "Akademis", "Q", true, 3, 4)
 
 func test_wins_stop_at_the_grade7_cap() -> void:
-	var saved_grade := GameState.current_grade
-	var saved_gain := GameState.minigame_gain_this_week
+	var saved_grade: int = GameState.current_grade
+	var saved_gain: Dictionary = GameState.minigame_gain_this_week
 	GameState.current_grade = 7
 	GameState.minigame_gain_this_week = {}
 	var sm := _fresh_manager()
@@ -48,8 +51,8 @@ func test_wins_stop_at_the_grade7_cap() -> void:
 	GameState.minigame_gain_this_week = saved_gain
 
 func test_losses_are_not_capped() -> void:
-	var saved_grade := GameState.current_grade
-	var saved_gain := GameState.minigame_gain_this_week
+	var saved_grade: int = GameState.current_grade
+	var saved_gain: Dictionary = GameState.minigame_gain_this_week
 	GameState.current_grade = 7
 	GameState.minigame_gain_this_week = {}
 	var sm := _fresh_manager()
@@ -85,8 +88,8 @@ func test_event_category_does_not_consume_weekly_cap_budget() -> void:
 	# to any skill for "Event" -- so the weekly cap tracker must not be
 	# charged for it, or a real Akademis/Olahraga/SeniBudaya win later in the
 	# same week could be wrongly capped for headroom this student never used.
-	var saved_grade := GameState.current_grade
-	var saved_gain := GameState.minigame_gain_this_week
+	var saved_grade: int = GameState.current_grade
+	var saved_gain: Dictionary = GameState.minigame_gain_this_week
 	GameState.current_grade = 7
 	GameState.minigame_gain_this_week = {}
 	var sm := _fresh_manager()

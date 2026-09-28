@@ -11,6 +11,7 @@
 custom_minimum_size = Vector2(640, 520)
 offset_right = 800.0
 offset_bottom = 900.0
+mouse_filter = 0
 script = ExtResource("1_frame")
 tabs = PackedStringArray()
 
@@ -30,16 +31,16 @@ offset_right = 20.0
 offset_bottom = 24.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
+mouse_filter = 1
 theme_type_variation = &"NotebookCover"
 
 [node name="Tabs" type="HBoxContainer" parent="Chrome" unique_id=714731532]
 visible = false
 layout_mode = 0
 offset_left = 72.0
-offset_top = -60.0
+offset_top = -84.0
 offset_right = 640.0
-offset_bottom = 36.0
+offset_bottom = 12.0
 theme_override_constants/separation = 12
 
 [node name="Tab0" type="Button" parent="Chrome/Tabs" unique_id=138391585]

@@ -41,6 +41,7 @@
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
 [ext_resource type="PackedScene" uid="uid://ckv3ev7addti4" path="res://Scenes/Lobby/DapatkanUang.tscn" id="49_7sr8a"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="Script" uid="uid://b7vwvw12t4yux" path="res://Scripts/UI/IdleFade.gd" id="52_rsfel"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
@@ -1341,15 +1342,20 @@ expand_mode = 1
 script = ExtResource("39_2isbc")
 wallet_anchor = NodePath("../Safe/UI/DisplayUang")
 
-[node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
-layout_mode = 0
-offset_left = 300.0
-offset_top = 10.0
-offset_right = 700.0
-offset_bottom = 78.0
-theme_type_variation = &"H1Label"
-text = "Daily Login"
-horizontal_alignment = 1
+[node name="DailyLoginFrame" parent="DailyReward" instance=ExtResource("nb_frame")]
+unique_name_in_owner = true
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -290.0
+offset_right = 0.0
+offset_bottom = 80.0
+title_text = "DAILY LOGIN"
+ring_count = 0
+show_well = false
 
 [node name="ButtonClaim" type="Button" parent="DailyReward" unique_id=1114280413]
 unique_name_in_owner = true

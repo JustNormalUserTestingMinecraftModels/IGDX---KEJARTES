@@ -29,8 +29,11 @@ extends McpTestSuite
 ##
 ## The cream is not wrong everywhere, which is why ResultBodyLabel was not
 ## simply recoloured. The HUD's TargetLabel sits on the dark translucent
-## ScoreHudPanel and needs it -- the last contrast test here holds that line --
-## and TesNotice's body floats on that screen's dark scrim, where it reads.
+## ScoreHudPanel and needs it -- the last contrast test here holds that line.
+## (TesNotice's BodyLabel used to float on that screen's dark scrim in
+## ResultBodyLabel too; the 2026-09-28 notebook-frame pass put it on a cream
+## page instead, so it switched to EventBodyLabel -- see test_tes_notice.gd's
+## test_the_body_reads_on_the_notebook_page.)
 
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const _POPUP_PATH := "res://Scenes/Minigames/UI/MinigameResultPopup.tscn"
@@ -168,7 +171,7 @@ func test_the_item_sheets_effect_values_read_on_its_card() -> void:
 	var sheet := _item_sheet()
 	for row in ["RowAkademis", "RowSeni", "RowOlahraga", "RowMood", "RowEnergy"]:
 		var label: Label = sheet.get_node(
-			"Sheet/Margin/VBox/EfekList/%s/Card/Inner/ValueLabel" % row)
+			"Safe/Center/Sheet/VBox/EfekList/%s/Card/Inner/ValueLabel" % row)
 		var chip := label.get_theme_stylebox("normal") as StyleBoxFlat
 		assert_true(chip != null, "%s's value must sit on a flat chip" % row)
 		if chip == null:
@@ -243,7 +246,7 @@ func test_every_label_here_wears_a_variation_the_bake_declares() -> void:
 		popup.get_node("Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScorePrefixLabel"),
 		hud.get_node("Panel/Row/ComboChip/ComboRow/ComboLabel"),
 		hud.get_node("Panel/Row/TargetLabel"),
-		_item_sheet().get_node("Sheet/Margin/VBox/EfekList/RowAkademis/Card/Inner/ValueLabel"),
+		_item_sheet().get_node("Safe/Center/Sheet/VBox/EfekList/RowAkademis/Card/Inner/ValueLabel"),
 		_apply_row().get_node("Card/StatRow1/Value")]
 	for direction in [1.0, -1.0]:
 		var configured := _configured_popup("Akademis", direction)

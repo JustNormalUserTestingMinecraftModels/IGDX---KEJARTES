@@ -11,7 +11,8 @@ const _PANEL_SCENE := "res://Scenes/Lobby/DapatkanUang.tscn"
 const _LOBBY_SCRIPT := "res://Scripts/Lobby/Lobby.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
 const _NODES := ["IklanSingkat", "VideoPenuh", "AmbilDulu4", "AmbilDulu8",
-	"TontonUtang", "Tutup", "Toast", "ToastLabel", "DevModeTag", "Book", "Scrim"]
+	"TontonUtang", "Toast", "ToastLabel", "DevModeTag", "Book", "Scrim"]
+const _SHEET_SRC := "res://Scripts/Lobby/DapatkanUang.gd"
 
 var _panel: DapatkanUang
 var _saved_money: int
@@ -246,6 +247,40 @@ func test_dash_and_ellipsis_copy_uses_the_body_font() -> void:
 	if panel == null:
 		return
 	for label: Label in [panel.get_node("%ToastLabel") as Label,
-			panel.get_node("Book/Page/Margin/Column/Tip/TipMargin/TipRow/TipLabel") as Label]:
+			panel.get_node("Safe/Center/Book/Column/Tip/TipMargin/TipRow/TipLabel") as Label]:
 		assert_eq(label.theme_type_variation, &"",
 			"%s keeps the body-font default Label" % label.name)
+
+
+func test_the_sheet_is_a_notebook_frame() -> void:
+	var popup := (load(_PANEL_SCENE) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Safe/Center/Book") as NotebookFrame
+	assert_true(frame != null, "the sheet is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "DAPATKAN UANG")
+		assert_true(frame.tabs.is_empty(), "no tabs")
+	assert_contains(FileAccess.get_file_as_string(_SHEET_SRC), "close_pressed.connect",
+		"the frame's close is wired")
+
+
+## book lives inside a CenterContainer, whose layout pass resets scale and
+## rotation after the popup's own frame -- the spring must start deferred, or
+## the container's pass wipes its 0.5-scale/-3deg start before the tween reads
+## it. Deferred through an instance method (_spring_in), not a bare static
+## Callable, so a panel closed before the deferred call runs just drops it
+## instead of erroring on a stale argument. _spring_in also yields to a close
+## already in flight (R1): AnimUtils._safe_tween kills a running tween, so a
+## late spring would kill the spring-out and its hide() callback would never
+## fire, sticking the panel visible.
+func test_the_spring_in_is_deferred() -> void:
+	var src := FileAccess.get_file_as_string(_SHEET_SRC)
+	assert_contains(src, "_spring_in.call_deferred()",
+		"the spring must start after the CenterContainer's layout pass")
+	var body: String = src.get_slice("func _spring_in()", 1).get_slice("\nfunc ", 0)
+	assert_contains(body, "if _closing:\n\t\treturn",
+		"a close already in flight must stop the spring from killing its tween")
+	assert_contains(body, "AnimUtils.popup_spring_in(",
+		"_spring_in must actually run the spring once deferred")
+	assert_contains(body, "is_instance_valid(book)",
+		"a freed panel must not spring a stale node")

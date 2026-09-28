@@ -251,11 +251,11 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 		"res://Scenes/SchoolSimulation/SchoolDay.tscn": [
 			"DayScreen/BackButton", "DayScreen/SkipButton"],
 		"res://Scenes/SchoolSimulation/EventStudentSelectDialog.tscn": [
-			"Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/SelectAllButton",
-			"Margin/DialogPanel/Margin/MainVBox/ActionVBox/SecondaryHBox/CancelButton",
-			"Margin/DialogPanel/Margin/MainVBox/ActionVBox/ConfirmButton"],
+			"Safe/Frame/MainVBox/ActionVBox/SecondaryHBox/SelectAllButton",
+			"Safe/Frame/MainVBox/ActionVBox/SecondaryHBox/CancelButton",
+			"Safe/Frame/MainVBox/ActionVBox/ConfirmButton"],
 		"res://Scenes/SchoolSimulation/DailyDecayOverview.tscn": [
-			"Margin/Panel/Margin/VBox/ContinueButton"],
+			"Safe/Frame/VBox/ContinueButton"],
 		"res://Scenes/SchoolSimulation/ResultCheckup.tscn": [
 			"Margin/VBox/Buttons/LogsButton", "Margin/VBox/Buttons/NextButton"],
 	}
@@ -277,6 +277,19 @@ func test_interactive_controls_meet_the_minimum_touch_target() -> void:
 ## Since the 2026-09-24 liveliness pass the day's progress is the banner's
 ## fill: an invisible Range inside BookClockWidget's header drives it, and the
 ## old bar in DayScreen is gone. The two Juice.fill_bar calls are unchanged.
+## 2026-09-28 UI depth pass, Phase 2 Task 3: the Card panel becomes a
+## NotebookFrame sheet, with no close of its own since Lanjutkan Hari must
+## stay the only way on.
+func test_the_decay_overview_sits_in_a_notebook_sheet_without_a_close() -> void:
+	var overview := (load("res://Scenes/SchoolSimulation/DailyDecayOverview.tscn") as PackedScene).instantiate()
+	track(overview)
+	var frame := overview.get_node_or_null("Safe/Frame") as NotebookFrame
+	assert_true(frame != null, "the overview is a NotebookFrame")
+	if frame != null:
+		assert_false(frame.show_close, "Lanjutkan Hari stays the only way on")
+		assert_true(frame.get_node_or_null("VBox/ContinueButton") != null)
+
+
 func test_day_progress_drives_the_banner_through_juice() -> void:
 	var bar := _day.get_node_or_null("BookClockWidget/Header/DayProgress")
 	assert_true(bar is Range, "the day's progress must be the banner's driver Range")

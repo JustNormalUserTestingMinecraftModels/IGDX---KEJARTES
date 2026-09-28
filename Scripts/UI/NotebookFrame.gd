@@ -10,9 +10,11 @@ extends Container
 ## Host content: drop your nodes in as children of the frame. Every child
 ## except the Chrome node is laid into content_rect(); Chrome -- the
 ## decoration, authored in NotebookFrame.tscn -- stays full-size and, being
-## the first child, behind. A dialog is the same frame with no tabs, four
-## rings and no well. Nothing here is built at runtime: the three tabs and
-## eight rings exist in the scene and are only shown or hidden.
+## the first child, behind. The frame's minimum size is its host content's
+## plus content_padding, so a popup's content sizes its page. A dialog is
+## the same frame with no tabs, four rings and no well. Nothing here is
+## built at runtime: the three tabs and eight rings exist in the scene and
+## are only shown or hidden.
 
 ## Emitted when tab `index` is pressed; it has already become active.
 signal tab_selected(index: int)
@@ -34,6 +36,10 @@ const WELL_BLEED := 16
 const CHROME_META := &"notebook_chrome"
 ## The washi tape's default tint: sunflower, a little see-through.
 const DEFAULT_TAPE := Color("FFC93CCC")
+## Narrowest the title sticker gets, px: its authored width in the scene.
+const STICKER_MIN_WIDTH := 360.0
+## Room the sticker keeps either side of its title, px: clear of the stitching.
+const STICKER_SIDE_PAD := 40.0
 
 ## The title on the stitched sticker.
 @export var title_text: String = "":
@@ -80,6 +86,7 @@ const DEFAULT_TAPE := Color("FFC93CCC")
 @export var content_padding: Vector4i = DEFAULT_PADDING:
 	set(value):
 		content_padding = value
+		update_minimum_size()
 		queue_sort()
 
 
@@ -95,6 +102,20 @@ func _notification(what: int) -> void:
 func content_rect() -> Rect2:
 	var pad := content_padding
 	return Rect2(Vector2(pad.x, pad.y), size - Vector2(pad.x + pad.z, pad.y + pad.w))
+
+
+## The frame is never smaller than its biggest visible host child plus the
+## padding round it, so content bigger than the page grows the page instead
+## of spilling off it. Control keeps custom_minimum_size as a floor on top.
+func _get_minimum_size() -> Vector2:
+	var pad := content_padding
+	var host := Vector2.ZERO
+	for child in get_children():
+		var control := child as Control
+		if control == null or control.has_meta(CHROME_META) or not control.visible:
+			continue
+		host = host.max(control.get_combined_minimum_size())
+	return host + Vector2(pad.x + pad.z, pad.y + pad.w)
 
 
 ## Lay out every child now: Chrome over the whole frame, host content into
@@ -130,6 +151,7 @@ func sort_now() -> void:
 		well.position = r.position
 		well.size = r.size
 	_spread_rings()
+	_fit_sticker()
 
 
 ## True only while this frame IS the scene currently open for editing, not
@@ -167,6 +189,21 @@ func _spread_rings() -> void:
 	rings.add_theme_constant_override(&"separation", maxi(floori(gap), 0))
 
 
+## Widen the sticker to its title -- never narrower than its authored
+## STICKER_MIN_WIDTH -- keeping it centred and its tilt about its middle.
+## Layout only, on an authored node: nothing is built.
+func _fit_sticker() -> void:
+	var sticker := get_node_or_null("Chrome/Sticker") as Control
+	if sticker == null:
+		return
+	var title := sticker.get_node("Title") as Control
+	var half := maxf(STICKER_MIN_WIDTH,
+		title.get_combined_minimum_size().x + 2 * STICKER_SIDE_PAD) * 0.5
+	sticker.offset_left = -half
+	sticker.offset_right = half
+	sticker.pivot_offset.x = half
+
+
 func _wire() -> void:
 	for i in MAX_TABS:
 		_tab(i).pressed.connect(_on_tab_pressed.bind(i))
@@ -177,6 +214,7 @@ func _refresh() -> void:
 	if get_node_or_null("Chrome") == null:
 		return
 	(get_node("Chrome/Sticker/Title") as Label).text = title_text
+	(get_node("Chrome/Sticker") as CanvasItem).visible = title_text != ""
 	(get_node("Chrome/Tabs") as Control).visible = not tabs.is_empty()
 	for i in MAX_TABS:
 		var tab := _tab(i)

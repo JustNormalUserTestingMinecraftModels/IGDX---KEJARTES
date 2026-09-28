@@ -325,6 +325,20 @@ func test_confirm_exposes_present_and_signals() -> void:
 	assert_true(src.contains("signal cancelled"), "has cancelled signal")
 
 
+## The letter became the notebook dialog frame (2026-09-28, UI depth pass
+## Phase 2, Task 6): the kicker label is gone, its title now the frame's
+## stitched sticker, and its round close is wired as Batal.
+func test_the_letter_is_the_notebook_dialog() -> void:
+	var confirm := (load("res://Scenes/LevelSelect/OpenAmplopConfirm.tscn") as PackedScene).instantiate()
+	track(confirm)
+	var letter := confirm.get_node_or_null("Letter") as NotebookFrame
+	assert_true(letter != null, "the letter is a NotebookFrame")
+	if letter != null:
+		assert_eq(letter.title_text, "SURAT TUGAS", "the kicker became the sticker")
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/LevelSelect/OpenAmplopConfirm.gd"),
+		"_letter.close_pressed.connect(_on_close_pressed)")
+
+
 ## present() shows the grade, its pupils and the letter over a scrim that
 ## takes every tap; dismiss() reseals and hides.
 func test_confirm_presents_and_dismisses() -> void:
@@ -383,10 +397,14 @@ func test_accept_sets_grade_and_transitions() -> void:
 
 ## Every amplop card casts a soft drop shadow behind its Body art via the
 ## shared PaperShadow template (mirrors test_paper_shadow.gd's
-## test_the_flat_elements_now_cast_a_shadow). The confirm's Letter keeps the
-## Card variation's own StyleBoxFlat shadow instead -- it has no texture to
-## cast, and that lift was judged enough.
-func test_amplop_card_casts_a_shadow_and_the_confirm_letter_keeps_its_card_shadow() -> void:
+## test_the_flat_elements_now_cast_a_shadow). The confirm's Letter became the
+## notebook dialog frame (2026-09-28, UI depth pass Phase 2, Task 6): its own
+## Chrome art gives it the lift the old Card variation's StyleBoxFlat shadow
+## used to -- specifically Chrome/Cover, the lipped hardcover panel that sits
+## proud of the page on every side. test_the_letter_is_the_notebook_dialog
+## already covers the frame's identity (title_text, the close wiring); this
+## half instead proves the lift claim this comment makes.
+func test_amplop_card_casts_a_shadow_and_the_confirm_letter_is_the_notebook_dialog() -> void:
 	var card := _card()
 	var body := card.get_node("Bob/Body") as TextureRect
 	var shadow := body.get_node_or_null("Shadow") as Control
@@ -402,12 +420,14 @@ func test_amplop_card_casts_a_shadow_and_the_confirm_letter_keeps_its_card_shado
 	var confirm := (load("res://Scenes/LevelSelect/OpenAmplopConfirm.tscn") as PackedScene) \
 		.instantiate()
 	track(confirm)
-	var letter := confirm.get_node_or_null("Letter") as Control
-	assert_true(letter != null, "OpenAmplopConfirm has no Letter")
+	var letter := confirm.get_node_or_null("Letter") as NotebookFrame
+	assert_true(letter != null, "OpenAmplopConfirm's Letter is now a NotebookFrame")
 	if letter == null:
 		return
-	assert_eq(letter.theme_type_variation, &"Card",
-		"Letter keeps the Card variation's own drop shadow")
+	assert_eq(letter.ring_count, 4, "a dialog's four rings, same as any other")
+	var cover := letter.get_node_or_null("Chrome/Cover")
+	assert_true(cover != null,
+		"Chrome/Cover is the lipped hardcover that gives the letter its lift")
 
 
 ## Re-texturing the card (envelope_texture) must re-texture its shadow too,

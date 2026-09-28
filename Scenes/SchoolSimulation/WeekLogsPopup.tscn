@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" uid="uid://cd477m8a8ihf7" path="res://Scripts/SchoolSimulation/WeekLogsPopup.gd" id="1_avpok"]
 [ext_resource type="PackedScene" uid="uid://nb2qunnb3b44" path="res://Scenes/SchoolSimulation/WeekHistoryRow.tscn" id="2_mixvf"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
 
 [node name="WeekLogsPopup" type="Control" unique_id=958401614]
 layout_mode = 3
@@ -19,48 +21,42 @@ anchor_bottom = 1.0
 mouse_filter = 2
 theme_type_variation = &"Scrim"
 
-[node name="Center" type="CenterContainer" parent="." unique_id=955789267]
+[node name="Safe" type="MarginContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
+script = ExtResource("nb_safe")
 
-[node name="Card" type="PanelContainer" parent="Center" unique_id=15774787]
-custom_minimum_size = Vector2(960, 0)
+[node name="Center" type="CenterContainer" parent="Safe" unique_id=955789267]
 layout_mode = 2
-theme_type_variation = &"Card"
+mouse_filter = 2
 
-[node name="Content" type="VBoxContainer" parent="Center/Card" unique_id=2083569943]
+[node name="Frame" parent="Safe/Center" instance=ExtResource("nb_frame")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+title_text = "LOGS"
+
+[node name="Content" type="VBoxContainer" parent="Safe/Center/Frame" unique_id=2083569943]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="TitleLabel" type="Label" parent="Center/Card/Content" unique_id=541191075]
-layout_mode = 2
-theme_type_variation = &"H2Label"
-text = "LOGS"
-horizontal_alignment = 1
-
-[node name="Scroll" type="ScrollContainer" parent="Center/Card/Content" unique_id=1716657454]
+[node name="Scroll" type="ScrollContainer" parent="Safe/Center/Frame/Content" unique_id=1716657454]
 custom_minimum_size = Vector2(0, 1200)
 layout_mode = 2
 horizontal_scroll_mode = 0
 
-[node name="Rows" type="VBoxContainer" parent="Center/Card/Content/Scroll" unique_id=113640969]
+[node name="Rows" type="VBoxContainer" parent="Safe/Center/Frame/Content/Scroll" unique_id=113640969]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 16
 
-[node name="EmptyLabel" type="Label" parent="Center/Card/Content/Scroll/Rows" unique_id=1336914112]
+[node name="EmptyLabel" type="Label" parent="Safe/Center/Frame/Content/Scroll/Rows" unique_id=1336914112]
 visible = false
 layout_mode = 2
 theme_type_variation = &"EmptyStateLabel"
 text = "Tidak ada minigame yang dimainkan minggu ini."
 horizontal_alignment = 1
 autowrap_mode = 2
-
-[node name="CloseButton" type="Button" parent="Center/Card/Content" unique_id=2082085870]
-custom_minimum_size = Vector2(0, 96)
-layout_mode = 2
-theme_type_variation = &"SecondaryButton"
-text = "Tutup"

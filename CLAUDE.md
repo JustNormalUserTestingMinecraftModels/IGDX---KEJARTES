@@ -165,6 +165,9 @@ the point: it is opaque over only the middle of its rect (numbers in
 `docs/superpowers/DEBT.md`). Measure the
 alpha before laying out on any soft-edged texture.
 
+**Popups** sit in `NotebookFrame` (style guide, "The notebook frame");
+`tests/test_popup_frames.gd` is the roster.
+
 **Asset constraints.** Placeholder art is drop-replaceable at the same path
 (inventory in `docs/superpowers/DEBT.md`), but a replacement **must** honour:
 
@@ -172,9 +175,6 @@ alpha before laying out on any soft-edged texture.
   `Assets/Images/UI/BarFill/README.md`. `tests/test_bar_contrast.gd` checks
   the luminance floor, `tests/test_ghost_track.gd` the ghost track; nothing
   tests the tile period.
-- `penjadwalan_card_bg.png` stays exactly 1080x1080: `AturJadwal.tscn`'s
-  Peringatan dialog crops it with a hardcoded `region_rect` that
-  `tests/test_atur_jadwal.gd` pins.
 - `EndCutscene`'s badge words are stroked **paths**, not SVG `<text>`, which
   ThorVG drops on import; `tests/test_end_cutscene.gd` pixel-checks them.
 - `tray_dots.png` stays 26x26 (`tests/test_koperasi_tray.gd`); it tiles via
@@ -200,7 +200,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 173 suites, 2686 tests (2026-09-29).
+the Godot AI MCP `test_run` tool. 174 suites, 2733 tests (2026-09-29).
 
 Hard constraints:
 

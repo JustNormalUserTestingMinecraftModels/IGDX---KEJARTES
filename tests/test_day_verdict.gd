@@ -80,24 +80,27 @@ func test_a_hard_day_scores_one_star_and_encourages() -> void:
 
 func test_the_popup_carries_the_reward_layer() -> void:
 	var popup := (load(POPUP_SCENE) as PackedScene).instantiate()
-	for path in ["DimOverlay/Content/Reward", "DimOverlay/Content/Reward/Rows/Header/Face",
-			"DimOverlay/Content/Reward/Rows/Header/Words/Headline",
-			"DimOverlay/Content/Reward/Rows/Header/Words/Stars",
-			"DimOverlay/Content/Reward/Rows/Tally/GainCell/Col/Value",
-			"DimOverlay/Content/Reward/Rows/Tally/TargetCell/Col/Value",
-			"DimOverlay/Content/Reward/Rows/Tally/MoneyCell/Col/Value",
-			"DimOverlay/Content/Reward/Rows/StarOfDay/Row/Words/Line"]:
+	var base := "DimOverlay/Safe/Content/Frame/Body/"
+	for path in [base + "Reward", base + "Reward/Rows/Header/Face",
+			base + "Reward/Rows/Header/Words/Headline",
+			base + "Reward/Rows/Header/Words/Stars",
+			base + "Reward/Rows/Tally/GainCell/Col/Value",
+			base + "Reward/Rows/Tally/TargetCell/Col/Value",
+			base + "Reward/Rows/Tally/MoneyCell/Col/Value",
+			base + "Reward/Rows/StarOfDay/Row/Words/Line"]:
 		assert_true(popup.get_node_or_null(path) != null, "the popup authors " + path)
-	var content := popup.get_node("DimOverlay/Content")
-	assert_true(content.get_node("TitleBanner").get_index() < content.get_node("Reward").get_index()
-		and content.get_node("Reward").get_index() < content.get_node("RowsScroll").get_index(),
+	var content := popup.get_node("DimOverlay/Safe/Content")
+	assert_true(content.get_node("TitleBanner").get_index() < content.get_node("Frame").get_index(),
+		"the banner sits above the frame")
+	var body := popup.get_node("DimOverlay/Safe/Content/Frame/Body")
+	assert_true(body.get_node("Reward").get_index() < body.get_node("RowsScroll").get_index(),
 		"the verdict sits between the banner and the student rows")
-	assert_eq(popup.get_node("DimOverlay/Content/Reward/Rows/Header/Words/Stars").get_child_count(), 4,
+	assert_eq(popup.get_node(base + "Reward/Rows/Header/Words/Stars").get_child_count(), 4,
 		"a 1-4 star rating")
 	assert_eq((popup.get("teacher_faces") as Array).size(), 4, "four teacher expressions")
 	assert_true(popup.get("star_on_texture") != null and popup.get("star_off_texture") != null,
 		"lit and unlit star art")
-	var stack: Array[Node] = [popup.get_node("DimOverlay/Content/Reward")]
+	var stack: Array[Node] = [popup.get_node(base + "Reward")]
 	while not stack.is_empty():
 		var n: Node = stack.pop_back()
 		if n is Control:

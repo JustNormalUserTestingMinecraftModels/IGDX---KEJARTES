@@ -64,6 +64,6 @@ func test_trait_popup_description_uses_body_font() -> void:
 	var popup: Node = load("res://Scenes/UI/TraitDetailPopup.tscn").instantiate()
 	track(popup)
 	var description: Label = popup.get_node(
-		"Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel")
+		"Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/DescriptionLabel")
 	assert_eq(description.theme_type_variation, &"EventBodyLabel",
 		"the description must be body weight, not a heading variation")

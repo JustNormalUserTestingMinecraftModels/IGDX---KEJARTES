@@ -2,8 +2,9 @@
 extends Control
 class_name WeekLogsPopup
 
-## Weekly Results' Logs sheet (2026-09-14 weekly-results spec): the week's
-## minigames and random events as WeekHistoryRows, over a scrim.
+## Weekly Results' Logs sheet (2026-09-14 weekly-results spec; moved into a
+## NotebookFrame by the 2026-09-28 UI depth pass): the week's minigames and
+## random events as WeekHistoryRows, in a NotebookFrame sheet over a scrim.
 ## ResultCheckup instances it when Logs is tapped; it frees itself once it
 ## closes. Every node is authored in WeekLogsPopup.tscn; the script only
 ## fills the rows, opens, and closes.
@@ -17,19 +18,15 @@ signal closed
 
 ## The history row template, WeekHistoryRow.tscn.
 @export var history_row_scene: PackedScene
-## The sheet's heading.
+## The sheet's heading, on the frame's stitched sticker.
 @export var title_text: String = "LOGS"
-## The close button's label.
-@export var close_text: String = "Tutup"
 ## Shown instead of rows when the week logged nothing.
 @export var empty_text: String = "Tidak ada minigame yang dimainkan minggu ini."
 
 @onready var scrim: Panel = $Scrim
-@onready var card: PanelContainer = $Center/Card
-@onready var title_label: Label = $Center/Card/Content/TitleLabel
-@onready var rows: VBoxContainer = $Center/Card/Content/Scroll/Rows
-@onready var empty_label: Label = $Center/Card/Content/Scroll/Rows/EmptyLabel
-@onready var close_button: Button = $Center/Card/Content/CloseButton
+@onready var card: NotebookFrame = $Safe/Center/Frame
+@onready var rows: VBoxContainer = $Safe/Center/Frame/Content/Scroll/Rows
+@onready var empty_label: Label = $Safe/Center/Frame/Content/Scroll/Rows/EmptyLabel
 
 ## The instanced rows, in history order.
 var _rows: Array = []
@@ -37,10 +34,9 @@ var _is_closed := false
 
 
 func _ready() -> void:
-	close_button.pressed.connect(close)
+	card.close_pressed.connect(close)
 	scrim.gui_input.connect(_on_scrim_gui_input)
-	title_label.text = title_text
-	close_button.text = close_text
+	card.title_text = title_text
 	empty_label.text = empty_text
 
 
@@ -74,7 +70,10 @@ func open(animate_rows: bool = true) -> void:
 		scrim.mouse_filter = Control.MOUSE_FILTER_STOP
 		return
 	AudioDirector.play_sfx(&"popup_open")
-	Juice.pop_in(card)
+	# card sits inside a CenterContainer; its layout pass resets scale after
+	# this frame, wiping pop_in's 0.82 start -- defer so it starts once that
+	# pass has already run.
+	_pop_in.call_deferred()
 	var t := Juice.tokens()
 	var arm := create_tween()
 	arm.tween_interval(t.dur_normal)
@@ -86,6 +85,16 @@ func open(animate_rows: bool = true) -> void:
 		# SceneTree timer would resume on a freed sheet if Tutup is tapped
 		# during the pop-in.
 		arm.tween_callback(_play_rows_entrance)
+
+
+## Pops the card in once the CenterContainer's first layout pass has run
+## (that pass resets scale). Deferred from open(); guards against a sheet
+## closed in its own opening frame, since Tutup or the scrim can free it
+## before this deferred call fires.
+func _pop_in() -> void:
+	if _is_closed or not is_instance_valid(card):
+		return
+	Juice.pop_in(card)
 
 
 ## Close the sheet and hand control back. Safe to call twice.

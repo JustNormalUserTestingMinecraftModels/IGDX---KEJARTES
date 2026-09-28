@@ -35,19 +35,18 @@ func test_scene_exists_and_instantiates() -> void:
 
 func test_scene_supplies_every_node_the_script_binds() -> void:
 	var popup := _make()
-	for path in ["Scrim", "Scrim/Card", "Scrim/Card/Layout/Header",
-			"Scrim/Card/Layout/Header/Row/GlyphIcon",
-			"Scrim/Card/Layout/Header/Row/Titles/KindLabel",
-			"Scrim/Card/Layout/Header/Row/Titles/NameLabel",
-			"Scrim/Card/Layout/Header/Row/CloseButton",
-			"Scrim/Card/Layout/Body/BodyLayout/EffectLabel",
-			"Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel"]:
+	for path in ["Scrim", "Scrim/Safe/Center/Frame", "Scrim/Safe/Center/Frame/Layout/Header",
+			"Scrim/Safe/Center/Frame/Layout/Header/Row/GlyphIcon",
+			"Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/KindLabel",
+			"Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/NameLabel",
+			"Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/EffectLabel",
+			"Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/DescriptionLabel"]:
 		assert_not_null(popup.get_node_or_null(path), "missing node: %s" % path)
 
 
 func test_header_uses_the_theme_variation_not_a_runtime_stylebox() -> void:
 	var popup := _make()
-	var header: PanelContainer = popup.get_node("Scrim/Card/Layout/Header")
+	var header: PanelContainer = popup.get_node("Scrim/Safe/Center/Frame/Layout/Header")
 	assert_eq(header.theme_type_variation, &"TraitPopupHeader")
 	assert_false(header.has_theme_stylebox_override("panel"),
 		"the accent must come from self_modulate, not a stylebox override")
@@ -57,15 +56,15 @@ func test_quirk_and_persona_get_their_own_accent() -> void:
 	var tokens := DesignTokens.load_default()
 	var quirk := _make()
 	quirk.configure("quirk", "Kutu Buku", "Suka membaca.")
-	assert_eq(quirk.get_node("Scrim/Card/Layout/Header").self_modulate,
+	assert_eq(quirk.get_node("Scrim/Safe/Center/Frame/Layout/Header").self_modulate,
 		tokens.brand_primary)
-	assert_eq(quirk.get_node("Scrim/Card/Layout/Header/Row/Titles/KindLabel").text, "QUIRK")
+	assert_eq(quirk.get_node("Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/KindLabel").text, "QUIRK")
 
 	var persona := _make()
 	persona.configure("persona", "Tekun", "Belajar terus.")
-	assert_eq(persona.get_node("Scrim/Card/Layout/Header").self_modulate,
+	assert_eq(persona.get_node("Scrim/Safe/Center/Frame/Layout/Header").self_modulate,
 		tokens.cat_istirahat)
-	assert_eq(persona.get_node("Scrim/Card/Layout/Header/Row/Titles/KindLabel").text, "PERSONA")
+	assert_eq(persona.get_node("Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/KindLabel").text, "PERSONA")
 
 
 ## The header glyph was the literal emoji "⚡" / "🌟" set as a Label's TEXT
@@ -78,13 +77,13 @@ func test_each_trait_kind_gets_its_own_glyph_texture() -> void:
 	var quirk := _make()
 	quirk.configure("quirk", "Kutu Buku", "Suka membaca.")
 	var quirk_tex: Texture2D = quirk.get_node(
-		"Scrim/Card/Layout/Header/Row/GlyphIcon").texture
+		"Scrim/Safe/Center/Frame/Layout/Header/Row/GlyphIcon").texture
 	assert_not_null(quirk_tex, "the quirk header must get a glyph texture")
 
 	var persona := _make()
 	persona.configure("persona", "Tekun", "Belajar terus.")
 	var persona_tex: Texture2D = persona.get_node(
-		"Scrim/Card/Layout/Header/Row/GlyphIcon").texture
+		"Scrim/Safe/Center/Frame/Layout/Header/Row/GlyphIcon").texture
 	assert_not_null(persona_tex, "the persona header must get a glyph texture")
 	assert_true(quirk_tex != persona_tex,
 		"quirk and persona must not share one glyph")
@@ -104,12 +103,12 @@ func test_the_gameplay_effect_heading_is_its_own_display_label() -> void:
 	# project theme -- it would fail whatever the label wore. The variation
 	# is the real contract: TitleLabel is on test_theme_factory.gd's
 	# DISPLAY_ROSTER, which pins it to the display face in the bake.
-	var heading: Label = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/EffectLabel")
+	var heading: Label = popup.get_node("Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/EffectLabel")
 	assert_contains(heading.text, "EFEK GAMEPLAY")
 	assert_eq(heading.theme_type_variation, &"TitleLabel",
 		"the heading must wear a display-roster variation, not the body face")
 
-	var body: Label = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel")
+	var body: Label = popup.get_node("Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/DescriptionLabel")
 	assert_eq(body.text, "Suka membaca.",
 		"the description must no longer carry the heading as a prefix")
 	assert_false(body.text.contains("💡"),
@@ -134,3 +133,19 @@ func test_scene_has_no_theme_overrides() -> void:
 		if line.begins_with("theme_override_") and not line.begins_with("theme_override_constants/"):
 			offenders.append(line)
 	assert_true(offenders.is_empty(), "theme overrides in the scene file:\n" + "\n".join(offenders))
+
+
+func test_the_card_is_the_notebook_dialog() -> void:
+	var popup := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Scrim/Safe/Center/Frame") as NotebookFrame
+	assert_true(frame != null, "the popup's box is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "SIFAT", "its sticker names the popup")
+		assert_true(frame.show_close, "the frame's round close replaces the typed one")
+
+
+func test_the_frame_close_closes() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/TraitDetailPopup.gd")
+	assert_contains(src, "card.close_pressed.connect(close)", "the frame's close runs close()")
+	assert_false(src.contains("close_button"), "the old button is gone")

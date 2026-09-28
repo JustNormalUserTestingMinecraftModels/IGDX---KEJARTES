@@ -39,7 +39,7 @@ func test_dialog_background_photo_has_an_authored_node() -> void:
 			"the photo must not take its minimum size from the texture")
 		assert_eq(Vector4(bg.anchor_left, bg.anchor_top, bg.anchor_right, bg.anchor_bottom),
 			Vector4(0, 0, 1, 1), "the photo must be anchored to the full screen")
-		assert_gt(inst.get_node("Margin").get_index(), bg.get_index(),
+		assert_gt(inst.get_node("Safe").get_index(), bg.get_index(),
 			"the photo must sit behind the dialog card")
 	inst.free()
 
@@ -95,3 +95,16 @@ func test_school_day_event_titles_free_of_emoji() -> void:
 			"🍱 Kejutan", "🌧 Hujan"]:
 		assert_false(src.contains(glyph),
 			"SchoolDay's event-popup titles should not carry emoji: " + glyph)
+
+
+## The picker became the notebook dialog (2026-09-28, UI depth pass Phase 2,
+## Task 6): full height, no round close, since Tolak / Terima is the
+## decision and a third way out would undercut it.
+func test_the_event_picker_is_the_notebook_dialog_without_a_close() -> void:
+	var dialog := (load(DIALOG_SCENE) as PackedScene).instantiate()
+	track(dialog)
+	var frame := dialog.get_node_or_null("Safe/Frame") as NotebookFrame
+	assert_true(frame != null, "the picker is a NotebookFrame")
+	if frame != null:
+		assert_false(frame.show_close, "Tolak / Terima is the decision; no third way out")
+		assert_true(frame.get_node_or_null("MainVBox/ActionVBox/ConfirmButton") != null)

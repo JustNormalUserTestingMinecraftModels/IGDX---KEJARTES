@@ -160,7 +160,8 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 	var ui := lobby.get_node_or_null("Safe/UI") as Control
 	assert_true(ui != null and ui.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 		"Safe/UI exists and lets clicks through")
-	_assert_under_safe_area(lobby.get_node_or_null("%JUDUL"), "JUDUL")
+	_assert_under_safe_area(lobby.get_node_or_null("%ProgressHeader"), "ProgressHeader")
+	_assert_under_safe_area(lobby.get_node_or_null("%DisplayUang"), "DisplayUang")
 	var bar := lobby.get_node_or_null("Safe/UI/BottomBar") as Control
 	assert_true(bar != null, "the Lobby needs Safe/UI/BottomBar")
 	if bar == null:
@@ -168,7 +169,7 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 	assert_eq(_anchors(bar), Vector4(0, 1, 1, 1), "BottomBar is Bottom Wide")
 	assert_eq(bar.mouse_filter, Control.MOUSE_FILTER_IGNORE, "BottomBar lets clicks through")
 	for n in ["Student", "Jadwal", "Koperasi", "Inventory", "ReportStudent",
-			"DisplayUang", "SettingsButton", "DailyLogin"]:
+			"SettingsButton", "DailyLogin"]:
 		var c := lobby.get_node_or_null("%" + n) as Control
 		assert_true(c != null, n + " must be a unique name")
 		if c != null:
@@ -189,8 +190,8 @@ func test_lobby_on_a_tall_phone() -> void:
 		Rect2(724, 2192, 306, 160), "ReportStudent")
 	_assert_placed((lobby.get_node("%DailyLogin") as Control),
 		Rect2(48, 1872, 96, 96), "DailyLogin")
-	_assert_placed((lobby.get_node("%JUDUL") as Control),
-		Rect2(381, 40, 323, 100), "JUDUL")
+	_assert_placed((lobby.get_node("%ProgressHeader") as Control),
+		Rect2(48, 48, 516, 168), "ProgressHeader")
 	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 798, 942, 418), "DailyReward")
 

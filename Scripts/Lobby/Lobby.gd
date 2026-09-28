@@ -69,6 +69,7 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 @onready var money_label = get_node("%DisplayUang/Label")
 @onready var daily_login_btn = %DailyLogin
 @onready var daily_reward: DailyLoginPanel = %DailyReward
+@onready var progress_header: LobbyProgressHeader = %ProgressHeader
 
 @onready var portraits_back: Control = %StudentPortraitsContainer_Back
 @onready var portraits_front: Control = %StudentPortraitsContainer_Front
@@ -139,6 +140,7 @@ func _ready() -> void:
 
 	if GameState.has_method("initialize_grade_targets"):
 		GameState.initialize_grade_targets()
+	progress_header.refresh()
 
 	if chatter:
 		chatter.can_speak = _chatter_allowed

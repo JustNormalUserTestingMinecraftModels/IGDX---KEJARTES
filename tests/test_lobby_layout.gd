@@ -37,10 +37,10 @@ const DESIGN_RECTS := {
 	"Koperasi": Rect2(48, 1712, 306, 160),
 	"Inventory": Rect2(386, 1712, 306, 160),
 	"ReportStudent": Rect2(724, 1712, 306, 160),
-	"DisplayUang": Rect2(700, 1392, 332, 96),
+	"DisplayUang": Rect2(772, 48, 260, 112),
 	"SettingsButton": Rect2(168, 1392, 96, 96),
 	"DailyLogin": Rect2(48, 1392, 96, 96),
-	"JUDUL": Rect2(381, 40, 323, 100),
+	"ProgressHeader": Rect2(48, 48, 516, 168),
 }
 
 var _lobby: Control
@@ -124,7 +124,7 @@ func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 	# mapped through Slot3 and Slot4's rects.
 	var heads := [Vector2(225, 389), Vector2(845, 389)]
 	var radius := 110.0
-	for n in ["DisplayUang", "DailyLogin", "SettingsButton"]:
+	for n in ["DisplayUang", "DailyLogin", "SettingsButton", "ProgressHeader"]:
 		var c := _hud(n)
 		if c == null:
 			continue

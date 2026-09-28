@@ -51,11 +51,11 @@ const ROOMS := {
 const BLOOM := {
 	SHOP_HUB: null,
 	COSMETIC_SHOP: null,
-	TES_NOTICE: 0.9,
-	STAT_CHECK: 0.9,
-	EXAM_PROGRESS: 0.9,
-	END_CUTSCENE: 0.9,
-	RUN_RESULT: 0.9,
+	TES_NOTICE: null,
+	STAT_CHECK: null,
+	EXAM_PROGRESS: null,
+	END_CUTSCENE: null,
+	RUN_RESULT: null,
 }
 
 

@@ -5,7 +5,6 @@
 [ext_resource type="PackedScene" uid="uid://dfh48usjg5eib" path="res://Scenes/EndGame/WinStage.tscn" id="4_iwdes"]
 [ext_resource type="Texture2D" uid="uid://bbxhfytf5wqc5" path="res://Assets/Images/UI/Placeholders/stamp_gagal.svg" id="5_qxnts"]
 [ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="6_el241"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_krlxx"]
 shader = ExtResource("6_el241")
@@ -41,8 +40,6 @@ unique_name_in_owner = true
 layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1774545846]
 visible = false

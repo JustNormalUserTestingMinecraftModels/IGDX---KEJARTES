@@ -5,7 +5,6 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 
 [node name="ExamProgress" type="Control" unique_id=1018216631]
 layout_mode = 3
@@ -52,8 +51,6 @@ intensity = 0.08
 
 [node name="Shafts" parent="World/Room" instance=ExtResource("look_shafts")]
 intensity = 0.15
-
-[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=591100110]
 layout_mode = 1

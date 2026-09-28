@@ -13,7 +13,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="amb_particles"]
 [ext_resource type="Material" path="res://Scripts/Shaders/glint_material.tres" id="amb_glint"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_rclo1"]
 shader = ExtResource("4_hifyx")
@@ -52,8 +51,6 @@ unique_name_in_owner = true
 layout_mode = 1
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1247280518]
 material = SubResource("ShaderMaterial_rclo1")

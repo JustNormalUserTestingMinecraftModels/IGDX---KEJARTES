@@ -8,7 +8,6 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 [ext_resource type="Script" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 
 [node name="TesNotice" type="Control" unique_id=1139053777]
@@ -72,8 +71,6 @@ depth_by_child = {
 "Tint": 1.0
 }
 overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Tint", &"Shafts"])
-
-[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="Scrim" type="Panel" parent="." unique_id=2026307649]
 layout_mode = 0

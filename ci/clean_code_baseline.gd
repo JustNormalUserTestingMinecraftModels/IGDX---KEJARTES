@@ -75,7 +75,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/Inventory/ApplyItemScreen.gd": 4,
 	"res://Scripts/Inventory/ApplyStudentRow.gd": 3,
 	"res://Scripts/Inventory/ItemDatabase.gd": 12,
-	"res://Scripts/Koperasi/Koperasi.gd": 11,
+	"res://Scripts/Koperasi/Koperasi.gd": 10,
 	"res://Scripts/Koperasi/KoperasiStage.gd": 30,
 	"res://Scripts/LevelSelect/AmplopCard.gd": 1,
 	"res://Scripts/Lobby/Lobby.gd": 102,

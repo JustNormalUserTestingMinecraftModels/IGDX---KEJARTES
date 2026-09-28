@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-28 — Older particle bursts finally spin
+
+A 2D `ParticleProcessMaterial` ignores `angle` and `angular_velocity`
+without `particle_flag_disable_z` (found building PaperConfetti on
+2026-09-12). Three older emitters asked for spin and never got it; each now
+sets the flag: `RewardBurst` (its root burst), `CoinShower` (the week-recap
+banner's coins) and `StarBurst`'s star burst. Rescued from a worktree
+stranded since 2026-09-12, minus `CelebrationConfetti` and `ResultConfetti`,
+retired since. `test_every_spinning_particle_material_sets_disable_z`
+(day_summary) scans every scene, so any material asking for spin must
+carry the flag, listed or not.
+
 ## 2026-09-28 — Daily login polish
 
 - Task 1 pulled the daily-login popup out of `Lobby.gd` into a
@@ -42,6 +54,7 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
   `docs/superpowers/specs/2026-09-28-daily-login-polish-design.md`,
   `docs/superpowers/plans/2026-09-28-daily-login-polish.md`.
 
+
 ## 2026-09-28 — Rapor's title clears the back button
 
 The Rapor screen's title still lost the stem of its "R" under the back
@@ -56,6 +69,7 @@ ink, outline included, against the button's real rect, so a wider button,
 font or title fails there rather than on a phone. The test is rescued from
 a worktree stranded since 2026-09-15; `tall_screen_layout` pins the new
 position at both screen sizes.
+
 
 ## 2026-09-28 — Settings layout
 

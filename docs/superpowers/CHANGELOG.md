@@ -42,6 +42,30 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
   `docs/superpowers/specs/2026-09-28-daily-login-polish-design.md`,
   `docs/superpowers/plans/2026-09-28-daily-login-polish.md`.
 
+## 2026-09-28 — Settings layout
+
+- Settings takes Inventory's look: the blurred Lobby (`blur_background.png`)
+  instead of the cutscene sky, a header `Card` holding a `DisplayLabel`
+  PENGATURAN, SUARA / PERMAINAN / TAMPILAN section cards in a scroll, and
+  Kembali at the bottom, centred as on ShopHub (moved out of the header at
+  the user's request after the first build). At 9:16 the cards fit without
+  scrolling; a tall phone gives the extra height to the scroll. The header floats inside the
+  `SafeAreaMargin` rather than bleeding to the edges as Inventory's does
+  (tall-phone rule 3).
+- The switches and sliders were Godot's unthemed defaults (a ~42px switch on
+  a 1080px screen). New `SettingsSwitch`, `SettingsSlider` and
+  `SettingsDivider` variations draw three new SVGs, passed to the pure
+  `ThemeFactory` through new `DesignTokens` exports.
+- The six on/off rows are one `SettingsToggleRow` template, with its words
+  in a root `@export`; `Settings.gd` behaves exactly as before.
+- A windowed desktop run makes `SafeAreaMargin` clamp a bogus bottom inset
+  (48 + 40% of 1920 = 816px) on every screen, because the monitor's safe area
+  exceeds the window; it squeezed the first screenshot. Devices are
+  unaffected. Freeze `use_safe_area = false` in a `game_eval` to judge a
+  layout on desktop.
+- Spec `specs/2026-09-28-settings-layout-design.md`, plan
+  `plans/2026-09-28-settings-layout.md`.
+
 ## 2026-09-28 — Level select polish
 
 - The amplop fan de-crowds: `fan_step_x` 150→220, `fan_drop_y` 34→48,

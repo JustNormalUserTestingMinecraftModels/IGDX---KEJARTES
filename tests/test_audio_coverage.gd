@@ -300,6 +300,15 @@ const _DOUBLE_FIRE_ALLOWLIST := {
 	# fires at runtime; only "tap" plays. This scanner is purely textual
 	# and cannot see that runtime guard across the call boundary.
 	"res://Scripts/Skins/SkinSelect.gd:open": "select_student(0)'s select cue is gated on an index change and never fires for this initial call; tap is the real entrance cue, reviewed",
+	# select_student's own body has exactly one real event: its "select" cue.
+	# The scanner's second "event" is a false match -- `tile.set_open(i ==
+	# index)` calls StudentTile's own API, unrelated to audio, but its text
+	# ends in "open(", and this file's own open() function is a direct
+	# player of "tap", so the other-function-name substring check reads
+	# "set_open(" as if it were a call to open(). StudentTile owns no
+	# play_sfx call of its own; read by hand, select_student plays its cue
+	# exactly once.
+	"res://Scripts/Skins/SkinSelect.gd:select_student": "tile.set_open(...) text-matches this file's open() by substring only; StudentTile plays no audio, reviewed",
 }
 
 

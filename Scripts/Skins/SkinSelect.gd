@@ -200,9 +200,9 @@ func pending_id(who: String) -> String:
 ## choice. Jumps the carousel rather than animating -- every card under it
 ## has just been replaced, so a slide would animate the wrong art. Plays the
 ## rail's select cue only when the open character actually changes, so
-## re-tapping the already-open tile stays silent, and open()'s own initial
-## select_student(0) call -- already covered by open()'s "tap" -- never
-## doubles up on it.
+## re-tapping the already-open tile stays silent, and so does the screen's
+## initial character on arrival -- the entrance already has its own chime,
+## played by the function that fades this screen in.
 func select_student(index: int) -> void:
 	if index < 0 or index >= _names.size():
 		return
@@ -251,8 +251,9 @@ func apply() -> void:
 ##
 ## equip_skin already returns false for a locked or unknown skin and no-ops
 ## when re-equipping the worn one, so this loop needs no guard of its own.
-## Always plays the apply cue once, even with an empty _pending (TERAPKAN
-## with nothing slid still confirms the visit).
+## Plays the apply cue unconditionally, even with an empty _pending: TERAPKAN
+## was pressed and the screen is about to close either way, so the chime
+## confirms the press, not that some skin actually changed.
 func apply_without_closing() -> void:
 	for who in _pending:
 		GameState.equip_skin(str(who), str(_pending[who]))

@@ -722,3 +722,11 @@ func test_the_tray_text_only_uses_glyphs_the_display_face_has() -> void:
 			var code := text.unicode_at(i)
 			assert_true(face.has_char(code),
 				"'%s' in '%s' is not in the display face" % [String.chr(code), text])
+
+
+## TERAPKAN commits every pending skin choice at once -- the same weight as
+## ResultButton or SuccessButton -- so it ticks the phone's motor on press
+## like the game's other main actions (PressFeel.MAIN_ACTION_ROLES).
+func test_terapkan_gets_the_main_action_haptic_tick() -> void:
+	assert_true(PressFeel.ticks(&"SkinApplyButton"),
+		"TERAPKAN must be a main-action role")

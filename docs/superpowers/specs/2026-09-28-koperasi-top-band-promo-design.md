@@ -23,8 +23,9 @@ Confirmed with the reviewer over three rounds of `show_widget` mockups:
   into colour; red + dimmed Beli when the total passes the Kas.
 - Beli: **withdrawal animation** — a `−amount` floats out of the Kas pill, the
   pill shakes, the Kas balance counts down.
-- Promo: **real mechanic** — rotates through a curated promo list by week, with
-  a **per-week discount roll** (deterministic from the `(grade, week)` seed).
+- Promo: **real mechanic** — one item **from this week's shelf** is the promo,
+  with a **per-week discount roll** (both deterministic from the `(grade, week)`
+  seed). No authored item list; the deal is always something already on sale.
 
 ## Scope
 
@@ -38,32 +39,33 @@ and live in the owning scripts.
 
 ## Part 1 — The promo mechanic (the only new system)
 
-### Derivation — deterministic, no stored state beyond the week key
+### Derivation — deterministic, drawn from this week's shelf
 
 Both the promo item and its discount derive from the existing
-`shop_week_key_for(current_grade, minggu_ke)` seed, alongside the shelf roll in
-`shop_stock_for_week()`. No new persistence (the CLAUDE.md persistence rule
-stands — nothing new reaches disk).
+`shop_week_key_for(current_grade, minggu_ke)` seed, chosen the same moment the
+shelf is rolled in `shop_stock_for_week()`. No authored item list, no forced
+stocking: the promo is simply **one of the items already on this week's shelf**,
+so the advertised deal is always visible and buyable. No new persistence (the
+CLAUDE.md persistence rule stands — nothing new reaches disk).
 
-New in `GameState.gd`, rolled in the same `if key != shop_week_key` block that
-rolls the shelf:
+New in `GameState.gd`, set in the same `if key != shop_week_key` block, right
+after `shop_stock` is rolled:
 
-- `PROMO_ITEMS: Array[String]` — a curated const list of promo-eligible item
-  names (a named `const` block in `GameState.gd`, ours to own). Items must
-  exist in `ItemDatabase`.
 - `PROMO_DISCOUNTS: Array[int]` — the allowed discount percentages, e.g.
-  `[15, 20, 25, 30]` (const block, ours).
-- `shop_promo_item: String` — `PROMO_ITEMS[global_week % PROMO_ITEMS.size()]`,
-  where `global_week` is a monotonic week counter across grades (derive from
-  `(current_grade, minggu_ke)`; a pure static helper
-  `promo_index_for(grade, week)` so a test can call it with no instance).
+  `[15, 20, 25, 30]` (a named `const` block in `GameState.gd`, ours to own).
+- `shop_promo_item: String` — one entry of the freshly rolled `shop_stock`,
+  picked by a seeded index on the `(grade, week)` key. Because the shelf can
+  stock a pair (the same name twice), the pick is over the **distinct** names on
+  the shelf so a promo always maps to a real, single advertised item. A pure
+  static helper `promo_item_for(stock: Array, grade: int, week: int) -> String`
+  so a test can call it with a hand-built stock and no instance.
 - `shop_promo_percent: int` — chosen from `PROMO_DISCOUNTS` by a seeded pick on
   the `(grade, week)` key (a pure static `promo_percent_for(grade, week)`), so
   the same week always yields the same discount and tests are deterministic.
-- **The promo item is force-stocked.** After `roll_shop_stock`, if
-  `shop_promo_item` is not in `shop_stock`, replace the last slot with it — the
-  advertised deal is always buyable. (Guarded so it never pushes the shelf over
-  `SHOP_SHELF_SIZE`.)
+
+Both picks key off `shop_week_key_for` directly (a stable `(grade, week)`
+string), so nothing depends on a monotonic cross-grade week counter — the
+earlier `global_week` risk is gone.
 
 Static accessors, callable from `Cart.price_of` (an autoload reference):
 - `GameState.shop_promo_item` (property).
@@ -154,9 +156,9 @@ On a successful `_on_beli_pressed` (after the existing deduction):
 ## Data flow
 
 ```
-(grade, week) seed ─┬─ roll_shop_stock ──────────► shop_stock (+ forced promo item)
-                    ├─ promo_index_for ──────────► shop_promo_item
-                    └─ promo_percent_for ────────► shop_promo_percent
+(grade, week) seed ──► roll_shop_stock ──► shop_stock ─┐
+                    ├─ promo_item_for(stock, …) ───────┴─► shop_promo_item
+                    └─ promo_percent_for ─────────────────► shop_promo_percent
                                    │
 shop_promo_multiplier(name) ◄──────┘
         │
@@ -170,9 +172,10 @@ Promo board ◄─ shop_promo_item + shop_promo_percent
 
 - `test_cart` (or new): `price_of` applies the promo multiplier only to the
   promo item; non-promo items unchanged; achievement multiplier still stacks.
-- New `test_shop_promo`: `promo_index_for`/`promo_percent_for` are deterministic
-  per `(grade, week)` and range-bounded; the promo item is always in the forced
-  stock; discount ∈ `PROMO_DISCOUNTS`.
+- New `test_shop_promo`: `promo_item_for`/`promo_percent_for` are deterministic
+  per `(grade, week)`; the promo item is always one of the names in the stock
+  passed in; discount ∈ `PROMO_DISCOUNTS`; an empty/edge stock returns "" and
+  `shop_promo_multiplier` then leaves every price unchanged.
 - `test_atur_jadwal`-style source scans / `test_theme_factory`: the new pill and
   board variations exist and are pinned; no `theme_override_*` added.
 - `test_tall_screen_layout`: the new band nodes and footer re-anchor correctly
@@ -182,11 +185,8 @@ Promo board ◄─ shop_promo_item + shop_promo_percent
 
 ## Open / risks
 
-- `global_week` monotonic counter: confirm a clean derivation from
-  `(current_grade, minggu_ke)` that survives a grade change (grades restart
-  `minggu_ke` at 1). If none is clean, key the rotation on
-  `shop_week_key_for` directly via a stable hash.
-- `PROMO_ITEMS` curation is a content decision — needs a real list of item
-  names that exist in `ItemDatabase`.
+- Seeded pick from `(grade, week)`: use a stable hash of the week key (not the
+  global RNG, which `roll_shop_stock`'s `shuffle()` advances) so the promo pick
+  is reproducible and independent of shelf-roll order.
 - Removing `CoinHUD` from the ledge: check nothing else references
   `%CoinHUD`/`Stage/CoinHUD` besides `Koperasi.gd`.

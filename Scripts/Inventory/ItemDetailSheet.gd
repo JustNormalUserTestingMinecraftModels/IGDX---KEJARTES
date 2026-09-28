@@ -161,9 +161,9 @@ func setup(item: ItemData, _owned_qty: int) -> void:
 ## Springs the box in once the CenterContainer's first layout pass has run
 ## (that pass resets scale and rotation). Deferred from setup(). Also yields
 ## to a dismiss already in flight: AnimUtils._safe_tween kills a node's
-## running tween, so a spring starting after _dismiss() would kill the
-## spring-out and its queue_free() callback would never run, leaving the
-## sheet stuck visible.
+## running tween, so a spring starting after a dismiss has started would
+## kill the spring-out and its queue_free callback would never run, leaving
+## the sheet stuck visible.
 func _spring_in() -> void:
 	if _dismissing:
 		return

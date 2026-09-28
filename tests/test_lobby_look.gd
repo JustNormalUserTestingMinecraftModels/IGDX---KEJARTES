@@ -31,6 +31,8 @@ const COSMETIC_SHOP := "res://Scenes/Koperasi/CosmeticShop.tscn"
 const TES_NOTICE := "res://Scenes/EndGame/TesNotice.tscn"
 const STAT_CHECK := "res://Scenes/EndGame/StatCheck.tscn"
 const EXAM_PROGRESS := "res://Scenes/EndGame/ExamProgress.tscn"
+const END_CUTSCENE := "res://Scenes/EndGame/EndCutscene.tscn"
+const RUN_RESULT := "res://Scenes/EndGame/RunResult.tscn"
 
 ## Screen -> its Room's children, in draw order.
 const ROOMS := {
@@ -39,6 +41,8 @@ const ROOMS := {
 	TES_NOTICE: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
 	STAT_CHECK: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
 	EXAM_PROGRESS: ["Backdrop", "Light", "Shafts"],
+	END_CUTSCENE: ["WinStage"],
+	RUN_RESULT: ["WinStage"],
 }
 
 ## Screen -> its measured glow_threshold, or null where no threshold bloomed
@@ -50,6 +54,8 @@ const BLOOM := {
 	TES_NOTICE: 0.9,
 	STAT_CHECK: 0.9,
 	EXAM_PROGRESS: 0.9,
+	END_CUTSCENE: 0.9,
+	RUN_RESULT: 0.9,
 }
 
 
@@ -206,3 +212,25 @@ func test_exam_progress_pans_its_own_backdrop() -> void:
 		"the backdrop is %Backdrop")
 	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/ExamProgress.gd")
 	assert_true(src.contains("backdrop: TextureRect = %Backdrop"), "ExamProgress.gd finds it by name")
+
+
+## EndCutscene hands over to RunResult with an invisible swap of the same
+## frame, so both must bloom it alike (planning amendment 4).
+func test_the_two_verdict_screens_bloom_alike() -> void:
+	assert_eq(BLOOM[END_CUTSCENE], BLOOM[RUN_RESULT],
+		"EndCutscene and RunResult share one glow decision")
+
+
+## A CanvasLayer ignores its parent's modulate, so RunResult's exit fade must
+## fade the Room as well as its root, or the painting stays lit to the end.
+func test_run_result_fades_its_room_on_the_way_out() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	assert_true(src.contains("@onready var room: Control = %Room"), "RunResult finds its Room")
+	assert_true(src.contains("tween.parallel().tween_property(room, \"modulate:a\", 0.0,"),
+		"and fades it alongside the root")
+
+
+func test_both_hosts_find_the_moved_stage_by_name() -> void:
+	for path in ["res://Scripts/EndGame/EndCutscene.gd", "res://Scripts/EndGame/RunResult.gd"]:
+		assert_true(FileAccess.get_file_as_string(path).contains("win_stage: WinStage = %WinStage"),
+			path + " finds the stage by unique name")

@@ -672,8 +672,10 @@ const RUN_RESULT := "res://Scenes/EndGame/RunResult.tscn"
 
 func test_run_result_carries_both_moods_over_the_blur() -> void:
 	var c := _census(RUN_RESULT)
-	assert_eq(_children_of(c, ".").slice(0, 4),
-		["WinStage", "BlurLayer", "AmbientPass", "AmbientFail"] as Array[String],
+	var order := _children_of(c, ".")
+	order.erase("Glow")
+	assert_eq(order.slice(0, 4),
+		["World", "BlurLayer", "AmbientPass", "AmbientFail"] as Array[String],
 		"both moods draw over the blurred stage, under the report")
 	assert_eq(_prop(_entry(c, "AmbientPass/Tint"), "mood"), MoodTint.Mood.PAGI, "a pass is warm")
 	assert_eq(_entry(c, "AmbientPass/Warm").get("instance"), LIGHT_POOL, "with light behind the grade")

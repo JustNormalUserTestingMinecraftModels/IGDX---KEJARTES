@@ -11,8 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="4_ld8mh"]
 [ext_resource type="Texture2D" uid="uid://whtj1qktee40" path="res://Assets/Images/StudentCard/portrait_frame.png" id="6_otsk7"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
-[ext_resource type="Texture2D" uid="uid://0n6i1ep0ugkv" path="res://Assets/Images/UI/Nav/icon_chevron_right.png" id="11_nhavo"]
-[ext_resource type="Texture2D" uid="uid://cwvk65ofc5rgl" path="res://Assets/Images/UI/Nav/icon_chevron_left.png" id="12_otsk7"]
+[ext_resource type="Texture2D" uid="uid://bge3qhtji6lh4" path="res://Assets/Images/UI/Icons/chevron_right.svg" id="11_nhavo"]
+[ext_resource type="Texture2D" uid="uid://b7uie5ch7i7os" path="res://Assets/Images/UI/Icons/chevron_left.svg" id="12_otsk7"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="13_mynxg"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 [ext_resource type="Texture2D" uid="uid://t8h6mqxkw5k" path="res://Assets/Images/UI/Nav/return_button.png" id="16_ret"]
@@ -1522,6 +1522,7 @@ offset_right = 162.0
 offset_bottom = 122.0
 theme_type_variation = &"CardArrowButton"
 icon = ExtResource("12_otsk7")
+icon_alignment = 1
 expand_icon = true
 
 [node name="NextButtonKanan" type="Button" parent="Safe/UI/BottomBar" unique_id=1157739970]
@@ -1533,6 +1534,7 @@ offset_right = 942.0
 offset_bottom = 122.0
 theme_type_variation = &"CardArrowButton"
 icon = ExtResource("11_nhavo")
+icon_alignment = 1
 expand_icon = true
 
 [node name="PageLabel" type="Label" parent="Safe/UI/BottomBar" unique_id=977170758]

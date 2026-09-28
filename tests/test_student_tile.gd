@@ -73,7 +73,10 @@ func test_tile_turns_the_frames_own_border_off() -> void:
 	assert_true(src.contains("show_border = false"))
 
 
-func test_variations_differ_in_ring_colour() -> void:
+## The transparent black-rimmed square (2026-09-23) was retired for a
+## lipped photo card (2026-09-29 skin-select-polish Task 2): cream at rest,
+## sunflower when open -- the palette's highlight colour, never an action.
+func test_variations_differ_in_face_colour() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 	assert_eq(theme.get_type_variation_base("SkinStudentTile"), &"Button")
@@ -83,15 +86,16 @@ func test_variations_differ_in_ring_colour() -> void:
 	assert_true(idle != null and open != null, "both variations must carry a normal stylebox")
 	if idle == null or open == null:
 		return
-	assert_eq(idle.border_color, Color.BLACK)
-	assert_eq(open.border_color, tokens.brand_primary)
-	assert_eq(open.bg_color, tokens.outline_card)
+	assert_eq(idle.bg_color, tokens.button_cream)
+	assert_eq(open.bg_color, tokens.accent_sunflower)
 
 
-## Measured off skinselection_mockup.png: an 8px black rim on the tray's
-## cream, with no fill of its own.
-func test_idle_tile_is_an_8px_black_rim_with_no_fill() -> void:
-	var theme := ThemeFactory.build(DesignTokens.load_default())
+## The idle tile is a lipped, opaque photo card -- not the mockup's
+## transparent square with an 8px black rim.
+func test_idle_tile_is_a_lipped_opaque_face() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
 	var idle := theme.get_stylebox("normal", "SkinStudentTile") as StyleBoxFlat
-	assert_eq(idle.border_width_top, 8)
-	assert_eq(idle.bg_color.a, 0.0)
+	assert_true(LippedBox.is_lipped(idle), "idle tile must be a lipped face")
+	assert_eq(LippedBox.lip_height_of(idle), tokens.lip_height)
+	assert_eq(idle.bg_color.a, 1.0, "the photo card is opaque, not a see-through rim")

@@ -238,7 +238,7 @@ func test_commit_button_is_indonesian_and_not_danger_red() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
 	assert_true(src.contains('text = "TERAPKAN"'), "UI text is Indonesian; APPLY is not")
 	assert_false(src.contains('text = "APPLY"'))
-	assert_true(src.contains('theme_type_variation = &"SkinApplyButton"'), "the mockup's red button")
+	assert_true(src.contains('theme_type_variation = &"SkinApplyButton"'), "the lipped mint TERAPKAN")
 
 
 func test_backdrop_still_blurs_the_live_lobby() -> void:
@@ -439,25 +439,44 @@ func test_worn_chip_sits_under_the_title() -> void:
 	assert_true(src.contains('[node name="WornChip" type="PanelContainer" parent="."'))
 
 
-func test_mockup_styles_exist_with_measured_values() -> void:
+## SkinTray and SkinApplyButton moved to the depth pass's lipped look
+## (2026-09-29 skin-select-polish Task 2): a paper tray with no rim, and a
+## lipped mint TERAPKAN in place of the 2026-09-23 mockup's flat red/black
+## rim. The title keeps its own measured mockup values, untouched by Task 2.
+func test_skin_theme_styles_use_the_depth_pass_look() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 	var tray := theme.get_stylebox("panel", "SkinTray") as StyleBoxFlat
 	assert_true(tray != null, "SkinTray must be a StyleBoxFlat panel")
 	if tray != null:
-		assert_eq(tray.bg_color, tokens.surface_card)
-		assert_eq(tray.border_width_top, 8)
-		assert_eq(tray.border_width_bottom, 0)
-		assert_eq(tray.border_color, Color.BLACK)
+		assert_eq(tray.bg_color, tokens.surface_card, "the lighter of the two paper tokens")
+		assert_eq(tray.border_width_top, 0, "the depth pass drops the mockup's black top rim")
 	var btn := theme.get_stylebox("normal", "SkinApplyButton") as StyleBoxFlat
 	assert_true(btn != null, "SkinApplyButton must be a StyleBoxFlat button")
 	if btn != null:
-		assert_eq(btn.bg_color, Color("D21919"))
-		assert_eq(btn.border_width_left, 8)
+		assert_true(LippedBox.is_lipped(btn), "TERAPKAN is a lipped face, not the flat mockup rim")
+		assert_eq(btn.bg_color, tokens.accent_mint, "the main-action colour, never gold")
 		assert_eq(btn.corner_radius_top_left, tokens.radius_button)
-	assert_eq(theme.get_color("font_color", "SkinApplyButton"), Color("F2F2F2"))
+	assert_eq(theme.get_color("font_color", "SkinApplyButton"), tokens.text_on_brand)
 	assert_eq(theme.get_font_size("font_size", "SkinApplyButton"), 73)
 	assert_eq(theme.get_color("font_color", "SkinTitleLabel"), Color("F2F2F2"))
 	assert_eq(theme.get_color("font_outline_color", "SkinTitleLabel"), Color("201934"))
 	assert_eq(theme.get_font_size("font_size", "SkinTitleLabel"), 79)
 	assert_eq(theme.get_constant("outline_size", "SkinTitleLabel"), 48)
+
+
+## SkinStudentTile / SkinStudentTileActive are lipped photo cards: cream at
+## rest, sunflower when open (the palette's highlight colour, never an
+## action -- ui-depth-pass-design.md, "Palette").
+func test_skin_tiles_are_lipped_cream_and_sunflower() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var idle := theme.get_stylebox("normal", "SkinStudentTile") as StyleBoxFlat
+	var open := theme.get_stylebox("normal", "SkinStudentTileActive") as StyleBoxFlat
+	assert_true(idle != null and open != null, "both variations must carry a normal stylebox")
+	if idle == null or open == null:
+		return
+	assert_true(LippedBox.is_lipped(idle), "idle tile is a lipped button_cream face")
+	assert_eq(idle.bg_color, tokens.button_cream)
+	assert_true(LippedBox.is_lipped(open), "open tile is a lipped accent_sunflower face")
+	assert_eq(open.bg_color, tokens.accent_sunflower)

@@ -7,6 +7,8 @@
 [ext_resource type="Script" uid="uid://dgnuip2j7os0p" path="res://Scripts/Minigames/Olahraga/ShuttlecockSprite.gd" id="5_8t8ik"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_77y7n"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
+[ext_resource type="Texture2D" path="res://Assets/Images/Textures/lapanganBadminton.jpg" id="court_tex"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_puck"]
 friction = 0.0
@@ -39,6 +41,18 @@ shuttlecock_texture = ExtResource("2_budfj")
 player_racket_texture = ExtResource("3_77y7n")
 enemy_racket_texture = ExtResource("3_77y7n")
 racket_hit_texture = ExtResource("4_8t8ik")
+
+[node name="Background" type="TextureRect" parent="."]
+material = ExtResource("illus_grade")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("court_tex")
+expand_mode = 1
 
 [node name="Puck" type="RigidBody2D" parent="." unique_id=1694826156]
 position = Vector2(540, 960)

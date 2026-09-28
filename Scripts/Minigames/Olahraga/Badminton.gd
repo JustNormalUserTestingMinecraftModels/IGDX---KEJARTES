@@ -139,8 +139,7 @@ func _on_countdown_end() -> void:
 func _ready() -> void:
 	super._ready()
 	screen_size = get_viewport_rect().size
-	_add_background()
-	
+
 	# Position walls at court edge with active collision to safely bounce puck inward
 	var wall_left = get_node_or_null("WallLeft")
 	if wall_left:
@@ -241,19 +240,6 @@ func _apply_visual_exports() -> void:
 		player_paddle_sprite.texture = player_racket_texture
 	if enemy_racket_texture != null:
 		enemy_paddle_sprite.texture = enemy_racket_texture
-
-func _add_background() -> void:
-	var tex_path := "res://Assets/Images/Textures/lapanganBadminton.jpg"
-	if not ResourceLoader.exists(tex_path):
-		return
-	var bg := TextureRect.new()
-	bg.name = "Background"
-	bg.texture = load(tex_path)
-	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(bg)
-	move_child(bg, 0)
 
 var _puck_hit_cooldown: float = 0.0
 ## Each racket sprite's resting scale and idle art, remembered once in

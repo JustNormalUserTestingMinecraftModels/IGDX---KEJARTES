@@ -14,6 +14,7 @@ const Census := preload("res://tests/scene_census.gd")
 const LIGHT_POOL := "res://Scenes/Look/LightPool.tscn"
 const SUN_SHAFTS := "res://Scenes/Look/SunShafts.tscn"
 const AMBIENT_GLOW := "res://Scenes/Look/AmbientGlow.tscn"
+const SCREEN_GLOW := "res://Scenes/Look/ScreenGlow.tscn"
 const MOOD_TINT := "res://Scenes/Look/MoodTint.tscn"
 const WIN_STAGE := "res://Scenes/EndGame/WinStage.tscn"
 const PARALLAX_SCRIPT := "res://Scripts/UI/ParallaxDiorama.gd"
@@ -36,11 +37,11 @@ const RUN_RESULT := "res://Scenes/EndGame/RunResult.tscn"
 
 ## Screen -> its Room's children, in draw order.
 const ROOMS := {
-	SHOP_HUB: ["Backdrop", "Light", "Shafts", "Parallax"],
-	COSMETIC_SHOP: ["Backdrop", "Light", "Shafts", "Parallax"],
-	TES_NOTICE: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
-	STAT_CHECK: ["Backdrop", "Tint", "Light", "Shafts", "Parallax"],
-	EXAM_PROGRESS: ["Backdrop", "Light", "Shafts"],
+	SHOP_HUB: ["Backdrop", "Light", "Shafts", "Bloom", "Parallax"],
+	COSMETIC_SHOP: ["Backdrop", "Light", "Shafts", "Bloom", "Parallax"],
+	TES_NOTICE: ["Backdrop", "Tint", "Light", "Shafts", "Bloom", "Parallax"],
+	STAT_CHECK: ["Backdrop", "Tint", "Light", "Shafts", "Bloom", "Parallax"],
+	EXAM_PROGRESS: ["Backdrop", "Light", "Shafts", "Bloom"],
 	END_CUTSCENE: ["WinStage"],
 	RUN_RESULT: ["WinStage"],
 }
@@ -57,6 +58,34 @@ const BLOOM := {
 	END_CUTSCENE: null,
 	RUN_RESULT: null,
 }
+
+## Screen -> [its ScreenGlow's path, its tuned threshold]. The screen-read
+## bloom replaced the Environment glow on every screen above plus Koperasi and
+## the minigames (2026-09-29), placed right after the light so only the
+## picture blooms. EndCutscene and RunResult share WinStage's, so the two
+## verdict screens bloom alike by construction. Thresholds come from a full-size
+## sweep (0.3-0.9): the highest that visibly blooms the light while the
+## backdrop's median pixel moves by under +0.01. Pale wood fogs below 0.8;
+## the scrimmed exam notices need 0.4 at intensity 0.8 to show at all.
+const SCREEN_BLOOM := {
+	SHOP_HUB: ["World/Room/Bloom", 0.7],
+	COSMETIC_SHOP: ["World/Room/Bloom", 0.7],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Bloom", 0.7],
+	TES_NOTICE: ["World/Room/Bloom", 0.4],
+	STAT_CHECK: ["World/Room/Bloom", 0.4],
+	EXAM_PROGRESS: ["World/Room/Bloom", 0.5],
+	WIN_STAGE: ["Stage/Bloom", 0.7],
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Bloom", 0.8],
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Bloom", 0.8],
+	"res://Scenes/Minigames/Akademis/Password.tscn": ["Bloom", 0.8],
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Bloom", 0.8],
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["Bloom", 0.75],
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["Bloom", 0.75],
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Bloom", 0.75],
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Bloom", 0.8],
+}
+## ScreenGlow.gd's own threshold default, read when a scene leaves it.
+const SCREEN_GLOW_DEFAULT := 0.7
 
 
 func suite_name() -> String:
@@ -90,6 +119,7 @@ func _assert_room(scene_path: String, want: Array) -> void:
 	_assert_piece(c, scene_path, "World/Room/Shafts", SUN_SHAFTS)
 	_assert_piece(c, scene_path, "World/Room/Tint", MOOD_TINT)
 	_assert_piece(c, scene_path, "World/Room/WinStage", WIN_STAGE)
+	_assert_piece(c, scene_path, "World/Room/Bloom", SCREEN_GLOW)
 	if want.has("Backdrop"):
 		var mat: Variant = Census.prop(Census.entry(c, "World/Room/Backdrop"), "material")
 		assert_true(mat is Material and (mat as Material).resource_path == GRADE,
@@ -113,8 +143,10 @@ func _assert_flat_parallax(c: Array[Dictionary], scene_path: String, want: Array
 		scene_path + ": Parallax runs ParallaxDiorama")
 	var depths: Dictionary = Census.prop(driver, "depth_by_child", {})
 	var overscan: Array = Census.prop(driver, "overscan_children", [])
+	assert_false(depths.has(&"Bloom") or depths.has("Bloom"),
+		scene_path + ": Bloom reads the screen where it is, so it never drifts")
 	for band: String in want:
-		if band == "Parallax":
+		if band == "Parallax" or band == "Bloom":
 			continue
 		assert_eq(float(depths.get(band, 0.0)), FLAT_DEPTH,
 			"%s: %s drifts with the picture" % [scene_path, band])
@@ -140,6 +172,37 @@ func test_every_bloom_decision_is_pinned() -> void:
 			scene_path + ": Glow is the root's second child, right after World")
 		assert_eq(float(Census.prop(Census.entry(c, "Glow"), "glow_threshold", GLOW_DEFAULT)),
 			float(BLOOM[scene_path]), scene_path + ": the measured threshold")
+
+
+## Each screen blooms through exactly one ScreenGlow, at its tuned threshold,
+## and nothing tappable is drawn before it: a button under the read would
+## bloom with the picture.
+func test_every_screen_blooms_through_one_screen_glow() -> void:
+	for scene_path in SCREEN_BLOOM:
+		var c := Census.of(scene_path)
+		var want: String = SCREEN_BLOOM[scene_path][0]
+		var found: Array[String] = []
+		for e in c:
+			if e["instance"] == SCREEN_GLOW:
+				found.append(e["path"])
+		assert_eq(found, [want] as Array[String], scene_path + ": one ScreenGlow, at " + want)
+		var at := -1
+		for i in c.size():
+			if c[i]["path"] == want:
+				at = i
+		for i in at:
+			assert_false(BUTTON_TYPES.has(c[i]["type"]),
+				"%s: %s is tappable and drawn under the bloom" % [scene_path, c[i]["path"]])
+		assert_eq(float(Census.prop(Census.entry(c, want), "threshold", SCREEN_GLOW_DEFAULT)),
+			float(SCREEN_BLOOM[scene_path][1]), scene_path + ": the tuned threshold")
+
+
+## WinStage draws its lights last in Stage; the bloom follows both, so the
+## verdict's light blooms whichever one dress() shows.
+func test_the_win_stage_blooms_after_both_lights() -> void:
+	var kids := Census.children_of(Census.of(WIN_STAGE), "Stage")
+	assert_eq(kids.slice(-3), ["LightPass", "LightFail", "Bloom"] as Array[String],
+		"the pass light, the fail light, then the bloom")
 
 
 func test_every_lit_screen_wears_the_lobby_room() -> void:
@@ -178,11 +241,14 @@ const KOPERASI_BACK_DEPTH := 0.15
 func test_koperasi_lights_its_stage_under_the_goods() -> void:
 	var c := Census.of(KOPERASI)
 	var kids := Census.children_of(c, "Stage")
-	assert_eq(kids.slice(0, 4), ["Background", "Light", "Shafts", "Barang1"] as Array[String],
-		"the backdrop, its light, then the goods")
+	assert_eq(kids.slice(0, 5), ["Background", "Light", "Shafts", "Bloom", "Barang1"] as Array[String],
+		"the backdrop, its light, its bloom, then the goods")
 	assert_eq(Census.entry(c, "Stage/Light").get("instance"), LIGHT_POOL, "Light is a LightPool")
 	assert_eq(Census.entry(c, "Stage/Shafts").get("instance"), SUN_SHAFTS, "Shafts are SunShafts")
+	assert_eq(Census.entry(c, "Stage/Bloom").get("instance"), SCREEN_GLOW, "Bloom is a ScreenGlow")
 	var depths: Dictionary = Census.prop(Census.entry(c, "Stage/Parallax"), "depth_by_child", {})
+	assert_false(depths.has(&"Bloom") or depths.has("Bloom"),
+		"Bloom reads the screen where it is, so it never drifts")
 	for band in ["Light", "Shafts"]:
 		assert_eq(float(depths.get(band, 0.0)), KOPERASI_BACK_DEPTH,
 			band + " rides the backdrop's depth, so it stays on its window")
@@ -199,6 +265,8 @@ func test_the_exam_notices_light_is_cool() -> void:
 		assert_true(colour.b > colour.r, scene_path + ": the pool is cool, blue over red")
 		var shafts: Color = Census.prop(Census.entry(c, "World/Room/Shafts"), "shaft_color", Color.WHITE)
 		assert_true(shafts.b > shafts.r, scene_path + ": and so are the shafts")
+		var bloom: Color = Census.prop(Census.entry(c, "World/Room/Bloom"), "bloom_tint", Color.WHITE)
+		assert_true(bloom.b > bloom.r, scene_path + ": and so is the bloom")
 		assert_eq(_drawn(scene_path).slice(0, 2), ["World", "Scrim"] as Array[String],
 			scene_path + ": the scrim draws over the room, under the card")
 
@@ -283,6 +351,8 @@ func test_every_minigame_lights_its_backdrop_on_layer_0() -> void:
 			assert_eq(Census.entry(c, "Shafts").get("instance"), SUN_SHAFTS, scene_path + ": SunShafts")
 		else:
 			assert_eq(kids.find("Shafts"), -1, scene_path + ": no shafts")
+		assert_eq(kids.find("Bloom"), 3 if throws_shafts else 2,
+			scene_path + ": the bloom right after the light, under everything the player reads")
 		for e in c:
 			assert_ne(e["instance"], AMBIENT_GLOW, scene_path + ": no Glow on layer 0")
 			if e["type"] == "CanvasLayer":

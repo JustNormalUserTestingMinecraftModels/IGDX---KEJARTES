@@ -11,6 +11,7 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_puck"]
 friction = 0.0
@@ -63,6 +64,9 @@ intensity = 0.1
 
 [node name="Shafts" parent="." instance=ExtResource("look_shafts")]
 origin = Vector2(0.1, -0.1)
+
+[node name="Bloom" parent="." instance=ExtResource("look_bloom")]
+threshold = 0.75
 
 [node name="Puck" type="RigidBody2D" parent="." unique_id=1694826156]
 position = Vector2(540, 960)

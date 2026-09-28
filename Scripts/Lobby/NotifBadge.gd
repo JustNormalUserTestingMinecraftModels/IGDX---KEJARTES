@@ -44,6 +44,16 @@ func set_count(count: int) -> void:
 		_arrive()
 
 
+## reduce_motion flipped while the badge is up: stop the wiggle, or start
+## it again. LobbyHud calls this down from its reduce_motion_changed.
+func follow_reduce_motion() -> void:
+	if GameSettings.reduce_motion or not visible:
+		_stop_wiggle()
+		return
+	if _wiggle == null:
+		_start_wiggle()
+
+
 ## What the pill reads for `count`: MARK_TEXT when it only marks rather than
 ## counts, OVERFLOW_TEXT past MAX_SHOWN, otherwise the number itself.
 func _text_for(count: int) -> String:

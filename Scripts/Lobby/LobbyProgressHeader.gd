@@ -20,6 +20,9 @@ const STAR_FORMAT := "%.1f / %.1f"
 ## The count this session last drew. Session memory, not persistence: the
 ## bar slides from here on the next Lobby entry and sparkles on a rise (Q8).
 static var _last_shown_stars: float = 0.0
+## The grade _last_shown_stars belongs to. A new grade starts from an empty
+## bar rather than draining the last grade's count on its first Lobby.
+static var _last_shown_grade: int = 0
 
 @onready var grade_number: Label = %GradeNumber
 @onready var week_label: Label = %WeekLabel
@@ -34,6 +37,9 @@ func refresh() -> void:
 	week_label.text = WEEK_FORMAT % [GameState.minggu_ke, GameState.max_minggu]
 	var stars: float = GameState.run_stars()
 	star_label.text = STAR_FORMAT % [stars, Balance.STARS_TOTAL]
+	if GameState.current_grade != _last_shown_grade:
+		_last_shown_grade = GameState.current_grade
+		_last_shown_stars = 0.0
 	_slide_bar(_last_shown_stars, stars)
 	_last_shown_stars = stars
 

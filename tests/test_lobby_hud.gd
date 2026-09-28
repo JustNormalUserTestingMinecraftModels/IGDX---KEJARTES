@@ -120,6 +120,27 @@ func test_header_draws_grade_week_and_stars() -> void:
 		"an empty roster has no stars")
 
 
+## Review: the remembered count belongs to one grade. A new grade's first
+## Lobby starts from an empty bar instead of draining the last grade's
+## stars. With motion on, the bar starts the slide at its from-count.
+func test_a_new_grade_does_not_drain_the_last_grades_stars() -> void:
+	var header := _lobby.get_node_or_null("%ProgressHeader") as LobbyProgressHeader
+	if header == null:
+		return
+	var saved_stars: float = LobbyProgressHeader._last_shown_stars
+	var saved_grade: int = LobbyProgressHeader._last_shown_grade
+	GameSettings.reduce_motion = false
+	GameState.approved_students = []
+	GameState.current_grade = 8
+	LobbyProgressHeader._last_shown_grade = 7
+	LobbyProgressHeader._last_shown_stars = 2.5
+	header.refresh()
+	var value: float = (header.get_node("%StarBar") as ProgressBar).value
+	LobbyProgressHeader._last_shown_stars = saved_stars
+	LobbyProgressHeader._last_shown_grade = saved_grade
+	assert_eq(value, 0.0, "grade 8 starts from empty, not from grade 7's 2.5")
+
+
 func test_header_and_coin_plate_wear_the_scrapbook_plates() -> void:
 	var header := _lobby.get_node_or_null("%ProgressHeader") as Panel
 	var coin := _lobby.get_node_or_null("%DisplayUang") as Panel
@@ -316,6 +337,27 @@ func test_the_hud_hands_the_chatter_its_blockers() -> void:
 func _badge_fixture() -> NotifBadge:
 	assert_true(_badge != null, "Scenes/Lobby/NotifBadge.tscn must exist and instance as NotifBadge")
 	return _badge
+
+
+## Review: a reduce_motion flip mid-session reaches a badge already up. On
+## stops its wiggle at rest; off again starts it back.
+func test_notif_badge_follows_a_reduce_motion_flip() -> void:
+	var badge := _badge_fixture()
+	if badge == null:
+		return
+	GameSettings.reduce_motion = true
+	badge.set_count(0)
+	GameSettings.reduce_motion = false
+	badge.set_count(2)
+	assert_true(badge._wiggle != null, "a badge that arrives with motion on wiggles")
+	GameSettings.reduce_motion = true
+	badge.follow_reduce_motion()
+	assert_true(badge._wiggle == null, "reduce_motion on stops the wiggle")
+	assert_eq(badge.rotation_degrees, 0.0, "and leaves the badge at rest")
+	GameSettings.reduce_motion = false
+	badge.follow_reduce_motion()
+	assert_true(badge._wiggle != null, "reduce_motion off starts it again")
+	badge.set_count(0)
 
 
 func test_notif_badge_hides_at_zero() -> void:

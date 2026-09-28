@@ -277,9 +277,12 @@ func _set_book_live(live: bool) -> void:
 		part.mouse_behavior_recursive = behavior
 
 
-## Settings or the debug overlay flipped reduce_motion: the loops follow.
+## Settings or the debug overlay flipped reduce_motion: the loops follow,
+## the badges' wiggles included.
 func _on_reduce_motion_changed(_still: bool) -> void:
 	_update_breathe()
+	for badge: NotifBadge in [daily_badge, achievement_badge, inventory_badge]:
+		badge.follow_reduce_motion()
 	if is_active and not is_open:
 		_start_peek_bob()
 
@@ -289,7 +292,10 @@ func _on_reduce_motion_changed(_still: bool) -> void:
 func _on_book_gui_input(event: InputEvent) -> void:
 	if not is_active:
 		return
-	if event is InputEventMouseButton or event is InputEventScreenTouch:
+	var click := event as InputEventMouseButton
+	if click != null and click.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if click != null or event is InputEventScreenTouch:
 		var pressed: bool = event.get("pressed")
 		var at: Vector2 = event.get("position")
 		_drag_start_y = at.y if pressed else NAN

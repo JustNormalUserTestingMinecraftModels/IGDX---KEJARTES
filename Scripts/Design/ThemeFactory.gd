@@ -2491,6 +2491,9 @@ const _LOBBY_HUD_ART := "res://Assets/Images/UI/LobbyHud/"
 ## default -- a solid rim with a thick bottom lip stands in for the dashed
 ## washi rim and tape until real art lands).
 const LOBBY_HUD_LIP := 10
+## How much darker than state_success the scrapbook's green ink runs: the
+## hero and plus buttons' pressed shade, and the star count's text.
+const LOBBY_HUD_INK_DARKEN := 0.25
 
 ## Each placeholder's 9-slice margin as (left, right, top, bottom) px,
 ## measured directly off the art (task-0-1-report.md). A single flat
@@ -2533,7 +2536,7 @@ static func _thicken_lip(theme: Theme, name: String, lip: int) -> void:
 static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	# -- BookHeroButton: "JADWAL!", the greenest element on the screen. --
 	_add_button_variation(theme, tokens, "BookHeroButton",
-		tokens.state_success, tokens.state_success.darkened(0.25),
+		tokens.state_success, tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN),
 		tokens.outline_card, tokens.text_on_brand)
 	theme.set_font_size("font_size", "BookHeroButton", tokens.font_h1)
 	theme.set_constant("icon_max_width", "BookHeroButton", tokens.btn_icon_l)
@@ -2567,7 +2570,7 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	# its authored 96x96 node, with the house radius_button corners
 	# (test_button_geometry's one-fixed-radius rule). --
 	_add_button_variation(theme, tokens, "PlusButton",
-		tokens.state_success, tokens.state_success.darkened(0.25),
+		tokens.state_success, tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN),
 		tokens.outline_card, tokens.text_on_brand)
 
 	# -- ChevronGripButton: the swipe handle. Texture only, every state --
@@ -2652,7 +2655,7 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("StarNumLabel")
 	theme.set_type_variation("StarNumLabel", "Label")
 	theme.set_font_size("font_size", "StarNumLabel", tokens.font_caption)
-	theme.set_color("font_color", "StarNumLabel", tokens.state_success.darkened(0.25))
+	theme.set_color("font_color", "StarNumLabel", tokens.state_success.darkened(LOBBY_HUD_INK_DARKEN))
 	if tokens.font_display != null:
 		theme.set_font("font", "StarNumLabel", tokens.font_display)
 

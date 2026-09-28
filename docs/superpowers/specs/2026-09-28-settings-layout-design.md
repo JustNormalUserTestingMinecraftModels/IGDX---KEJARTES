@@ -23,7 +23,7 @@ siblings:
 
 | Question | Decision |
 |---|---|
-| Sibling screen to match | **Inventory** — full-bleed header `Card` with the back button and a `DisplayLabel` title |
+| Sibling screen to match | **Inventory** — a header `Card` with the back button and a `DisplayLabel` title |
 | Backdrop | **Blurred Lobby**, `Assets/Images/UI/blur_background.png` (already used by AturJadwal, ResultCheckup) |
 | Body | **Three titled section cards**: SUARA / PERMAINAN / TAMPILAN, inside a `ScrollContainer` |
 | Switches and sliders | **Brand-styled** (mockup option B), via new `ThemeFactory` variations |
@@ -31,11 +31,12 @@ siblings:
 ## Layout
 
 ```
-Settings (Control, full rect, theme = kejartes_theme.tres, script Settings.gd)
+Settings (Control, full rect, script Settings.gd)
 ├─ Background    TextureRect · blur_background.png · Full Rect, expand_mode 1,
-│                stretch_mode 6 (Keep Aspect Covered)
-└─ SafeArea      MarginContainer · Full Rect · SafeAreaMargin.gd · margins 0
-   └─ MainColumn VBoxContainer · separation 0
+│                stretch_mode 6 (Keep Aspect Covered) · mouse_filter IGNORE
+└─ SafeArea      MarginContainer · Full Rect · SafeAreaMargin.gd (48px screen
+   │             margin plus device insets)
+   └─ MainColumn VBoxContainer · separation 32
       ├─ Header  PanelContainer [Card]
       │   └─ HeaderCol  VBoxContainer · separation 18
       │       ├─ Row  HBoxContainer
@@ -43,19 +44,24 @@ Settings (Control, full rect, theme = kejartes_theme.tres, script Settings.gd)
       │       │                  · icon return_button.png · min height 96
       │       │                  · size_flags_horizontal 0
       │       └─ TitleLabel  Label [DisplayLabel] · "PENGATURAN"
-      └─ Body    MarginContainer · margin_left/right/top/bottom 48
-                 · size_flags_vertical 3 (expand, takes the rest)
-         └─ Scroll  ScrollContainer · horizontal scroll disabled
+      └─ Scroll  ScrollContainer · size_flags_vertical 3 (takes the rest)
+         │       · horizontal scroll disabled
+         └─ Pad  MarginContainer · margin_top 8, margin_bottom 24 (room for
+            │    the cards' shadow, which the scroll would otherwise clip)
             └─ Sections  VBoxContainer · separation 32 · size_flags_horizontal 3
                ├─ AudioCard     PanelContainer [Card]
                ├─ GameplayCard  PanelContainer [Card]
                └─ DisplayCard   PanelContainer [Card]
 ```
 
-This is Inventory's header (`MainColumn/Header/HeaderCol/Row/BackButton`, the
+This is Inventory's header (the back button in a `Card`, with the
 `DisplayLabel` title under it) minus the coin pill. Settings is also reached
-from MainMenu, where money means nothing. It keeps the `SafeAreaMargin` wrapper
-the screen already has, so the header clears a notch.
+from MainMenu, where money means nothing. One deliberate difference: the header
+sits **inside** the `SafeAreaMargin`, as a floating card with all four corners
+rounded, rather than bleeding to the screen edges the way Inventory's does.
+Tall-phone rule 3 (UI inside a `SafeAreaMargin`) requires it, and it matches
+the section cards below. The safe area already supplies the side margins, so
+the body needs no margin wrapper of its own.
 
 ### The three section cards
 
@@ -170,10 +176,10 @@ becomes `_collect_cards()`, returning `%Sections`' three children, so
 
 | Suite | Change |
 |---|---|
-| `test_settings` | The slider tests pass unchanged. `TutorialToggle` is looked up as `find_child("TutorialRow")` and then `.toggle`. New tests: the three cards exist under `Sections` in order, with the rows listed above in order; `Background.texture` is `blur_background.png`; a `ScrollContainer` sits between `Body` and `Sections`; `TitleLabel` uses `DisplayLabel`. `test_scene_has_no_theme_overrides` stays and now also walks the row instances. |
+| `test_settings` | The slider tests pass unchanged. `TutorialToggle` is looked up as `find_child("TutorialRow")` and then `.toggle`. New tests: the three cards exist under `Sections` in order, with the rows listed above in order; `Background.texture` is `blur_background.png`; `Sections` sits in `SafeArea/MainColumn/Scroll/Pad`; `TitleLabel` uses `DisplayLabel`. `test_scene_has_no_theme_overrides` stays and now also walks the row instances. |
 | `test_back_controls` | The Settings roster path becomes `SafeArea/MainColumn/Header/HeaderCol/Row/BackButton`, still checked through `icon`. |
 | `test_theme_factory` | New: `SettingsSwitch`, `SettingsSlider` and `SettingsDivider` are variations of `CheckButton`, `HSlider` and `HSeparator`; their icons are the token textures; the switch's styleboxes are all `StyleBoxEmpty`. |
-| `test_tall_screen_layout` | New Settings block, following the suite's per-screen pattern: the backdrop fills at 1080×2400, the header is pinned to the top of the safe area, `Body` grows to take the extra height, and the design size is unchanged. |
+| `test_tall_screen_layout` | New Settings block, following the suite's per-screen pattern: the backdrop fills at 1080×2400, the header is pinned to the top of the safe area at (48, 48), and `Scroll` grows to the bottom margin at both 1080x1920 and 1080x2400. |
 | `test_script_documentation` | Covers `SettingsToggleRow.gd` automatically (file header plus `##` on its export). |
 | `test_viewport_editability` | Nothing new is built at runtime, so `BASELINE` and `ALLOWED` do not change. |
 | `test_shorten`, `test_device_back_button`, `test_audio_coverage` | Unaffected: they scan `Settings.gd` for strings that survive. |

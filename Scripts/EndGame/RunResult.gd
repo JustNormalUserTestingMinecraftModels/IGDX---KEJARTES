@@ -104,6 +104,7 @@ var _passed: bool = false
 
 func _ready() -> void:
 	btn_selesai.pressed.connect(_on_selesai_pressed)
+	btn_selesai.text = exit_label(GameState.run_failed, GameState.current_grade)
 	AudioDirector.play_bgm(&"run_result")
 
 	_dress_backdrop()
@@ -271,6 +272,23 @@ func _on_selesai_pressed() -> void:
 	tween.parallel().tween_property(room, "modulate:a", 0.0, EXIT_FADE_SECONDS)
 	await tween.finished
 	Transition.change_scene(destination)
+
+
+## The exit button's label for a run that `run_failed` at `grade`, naming
+## where _apply_progression() sends the player; keep the two in step. The
+## menu only for a Kelas 7 loss or a beaten Kelas 9; otherwise the next
+## grade's roster, or a retry of this one.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func exit_label(run_failed: bool, grade: int) -> String:
+	if run_failed:
+		return "Kembali ke Menu" if grade == FIRST_GRADE else "Ulangi Kelas %d" % grade
+	return "Lanjut ke Kelas %d" % (grade + 1) if grade < FINAL_GRADE else "Kembali ke Menu"
+
+## The first grade: losing it restarts the whole run from the menu.
+const FIRST_GRADE: int = 7
+## The last grade: passing it beats the game.
+const FINAL_GRADE: int = 9
 
 
 func _apply_progression() -> String:

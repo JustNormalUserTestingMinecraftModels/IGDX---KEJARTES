@@ -30,7 +30,7 @@ This pass gives KejarTes those traits while keeping its identity.
 | Accents | Sampled from the references. Each accent is a gloss / base / lip trio (table below). |
 | Buttons | **No cream rim.** Depth comes from the lip plus a gloss band. White display text, outlined and hard-dropped in the button's lip colour. On cream buttons the text is brown with no outline. |
 | Lobby | **Keep the mentor-approved scrapbook HUD** (`2026-09-27-lobby-scrapbook-hud-design.md`, live on `Textures`): its book, layout, washi-taped tiles, header plates and the four rail icons stay. This pass only **harmonises** it. Its buttons get the lipped stylebox and outlined lettering; its tile hues keep their meaning but take the palette's tones (JADWAL! and Koperasi mint, Inventory sky, Rapor sunflower); and its tiles' thin nav icons move to the new icon paths. The rail icons (`setting.png`, `achievement_button.png`, `icon_daily_login.png`, `skin_switch.png`) are finished assets and are not touched. |
-| Popup frame | **Notebook:** brown hardcover with a lip, a cream ruled page with two paper edges and a red margin line, chunky spiral rings through punched holes, lipped tabs, a stitched sticker title, controls in a sunken well, torn-end washi tape, and a round tomato ✕. There are two variants, `SHEET` and `DIALOG`. |
+| Popup frame | **Notebook:** brown hardcover with a lip, a cream ruled page with two paper edges and a red margin line, chunky spiral rings through punched holes, lipped tabs, a stitched sticker title, controls in a sunken well, torn-end washi tape, and a round tomato ✕. A dialog is the same frame with fewer decorations. |
 | Press | **Sink onto the lip:** the face drops by the lip height on touch, then gets a small pop on release. Buttons without a lip keep today's shrink. |
 | Haptics | A ~10 ms tick on press, for **main-action roles only**. It respects the existing Getar setting. |
 | Sound | The existing tap SFX on every button, unchanged. |
@@ -59,11 +59,11 @@ The stat categories already own blue (Akademis), red (Olahraga), green (Seni) an
 `Scripts/Design/LippedStyleBox.gd` is a `@tool class_name LippedStyleBox extends StyleBox`. `_draw(canvas_item, rect)` draws three internal `StyleBoxFlat`s, which keeps Godot's anti-aliased corners:
 
 1. **Lip:** `lip_color`, the full rect, drawn with its top edge `lip_height` below the face's top.
-2. **Face:** `face_color`, the rect minus `lip_height` at the bottom. It carries the existing soft shadow (`shadow_color`/`shadow_size`/`shadow_offset` tokens).
+2. **Face:** `bg_color`, the rect minus `lip_height` at the bottom. The soft shadow is drawn under the lip, the bottom-most shape.
 3. **Gloss:** white at `gloss_strength` alpha fading to near zero, inset 8 px left/right and 4 px from the top, covering the top third of the face.
 
 Exported properties:
-- `face_color`, `lip_color`, `lip_height`, `corner_radius`, `gloss_strength`
+- `bg_color` (the face; named like `StyleBoxFlat`'s), `lip_color`, `lip_height`, `corner_radius`, `gloss_strength`, and the soft shadow (`shadow_color`/`shadow_size`/`shadow_offset`)
 - `pressed: bool`. When true, no lip is drawn and the face moves down by `lip_height`.
 
 The content margins are the base `StyleBox` margins. For the pressed state, the factory adds `lip_height` to `content_margin_top` and subtracts it from `content_margin_bottom`, so the label sinks with the face.
@@ -86,7 +86,7 @@ The content margins are the base `StyleBox` margins. For the pressed state, the 
 - **New variations:** `NotebookTab`, `NotebookTabActive`, `NotebookClose`, `NotebookSticker` (label).
 - **The Lobby scrapbook variations** (`BookHeroButton`, `NavTileKoperasi`/`Inventory`/`Rapor`, `PlusButton`) already go through `_add_button_variation`, so they become lipped with everything else. `_thicken_lip()` sets `lip_height` to its `LOBBY_HUD_LIP` instead of `border_width_bottom`. Their fills move to the palette trios above. The textured plates (`BookCoverPanel`, `BookPagePanel`, `CoinPlate`, `ChevronGripButton`) keep their art.
 - **Code that casts a button stylebox to `StyleBoxFlat` switches to `StyleBox`.** That covers `_set_content_margins`, `_add_size_step` and any test or runtime reader.
-- **Text:** button font colour is white, `font_outline_color` is the lip colour, `outline_size` is 8, and there is a font shadow in the lip colour at offset (0, 3). Cream roles use brown text with no outline.
+- **Text:** chosen by the face's brightness. A face at or below `lipped_light_face_luminance` (0.7) gets `text_on_brand` with `font_outline_color` = the lip colour and `outline_size` = `lipped_label_outline` (8). A brighter face (cream, sunflower, sunken) gets `text_primary` with no outline. Godot Buttons have no font shadow, so there is no drop under the letters.
 
 ### 2. `NotebookFrame`
 
@@ -102,14 +102,15 @@ The content margins are the base `StyleBox` margins. For the pressed state, the 
   - `Tape` (`washi_tape` texture, tinted)
   - `Close` (a `NotebookClose` Button with the close icon)
 - **Root `@export`s.** Overrides only serialise on an instanced root, so everything a screen changes lives here:
-  - `variant: SHEET | DIALOG`
   - `title_text`
-  - `tabs: PackedStringArray`
+  - `tabs: PackedStringArray` (up to 3; empty hides the tab strip)
   - `active_tab`
-  - `ring_count`
+  - `ring_count` (0–8)
+  - `show_well`
   - `show_tape`, `tape_color`
   - `show_close`
   - `content_padding`
+- **A dialog is not a separate mode.** It is the same frame with no tabs, `ring_count` 4 and `show_well` off. The three tab Buttons and eight rings are authored in the scene and shown or hidden, never built at runtime.
 - **Signals:** `tab_selected(index: int)`, `close_pressed`.
 - **Opening and closing:** `AnimUtils.popup_spring_in/out`. The scrim stays the `Scrim` variation, and the frame centres inside `SafeAreaMargin` (the tall-phone rule).
 
@@ -128,7 +129,7 @@ All four are generated placeholders at first and listed in `DEBT.md`.
   - on release, a scale bump 1.0 → `release_pop_scale` → 1.0 over `release_pop_duration`, through a new `Juice.pop_release()`
 - **Other buttons** keep `Juice.press`/`release`.
 - **The tick:** on `button_down`, `Haptics.buzz(PRESS_TICK_MS)` fires for roles in `MAIN_ACTION_ROLES`. Both are named consts in `UIPolish.gd`:
-  - `PRESS_TICK_MS = 10`
+  - `PRESS_TICK_MS = 8` (Haptics' existing "Tick" tier)
   - `MAIN_ACTION_ROLES` = `BookHeroButton`, `LobbyCtaButton`, `PrimaryButton`, `PrimaryButtonL`, `PrimaryButtonM`, `SuccessButton`, `DangerButton`, `NotebookClose`
 - `Haptics.buzz` already no-ops when Getar is off, and shows its pip on desktop.
 
@@ -165,9 +166,9 @@ Three phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets 
    - The 16 placeholder icons.
    - After this phase every button in the game, the Lobby's included, is lipped.
 2. **Popups into `NotebookFrame`.**
-   - `SHEET` with tabs: Settings (SUARA / MAIN), AchievementDetailSheet.
-   - `SHEET`: ItemDetailSheet, DapatkanUang, DailyLoginPanel, WeekLogsPopup, DaySummaryPopup, DailyDecayOverview.
-   - `DIALOG`: StatDetailPopup, TraitDetailPopup, WeekRecapPillInfoPopup, EventStudentSelectDialog, OpenAmplopConfirm, AturJadwal's Peringatan dialog, TesNotice's scrim card, the scrim card inside StatCheck, TutorialPanel.
+   - With tabs: Settings (SUARA / MAIN), AchievementDetailSheet.
+   - Without tabs: ItemDetailSheet, DapatkanUang, DailyLoginPanel, WeekLogsPopup, DaySummaryPopup, DailyDecayOverview.
+   - As dialogs (no tabs, 4 rings, no well): StatDetailPopup, TraitDetailPopup, WeekRecapPillInfoPopup, EventStudentSelectDialog, OpenAmplopConfirm, AturJadwal's Peringatan dialog, TesNotice's scrim card, the scrim card inside StatCheck, TutorialPanel.
    - Each popup keeps its behaviour and signals. Only its box and close control move into the frame.
 3. **Full screens.** A button-role, icon and screenshot pass over:
    - the Lobby (tile icons only)
@@ -187,11 +188,10 @@ Three phases, each its own plan-driven branch and `ship-pr` PR. Each phase gets 
     - survives a save/load round trip
   - `test_notebook_frame`:
     - host children land inside the page content rect
-    - the `DIALOG` variant hides tabs
+    - empty `tabs` hides the tab strip, and `ring_count` hides the extra rings
     - `tab_selected` and `close_pressed` fire
     - the decoration is behind the content
     - the root exports serialise
-    - it fills a 1080×2400 viewport
   - `test_ui_icons`: size, alpha, contrast on cream and brown, the expected files present.
   - `test_press_feel`: `MAIN_ACTION_ROLES` gets the tick, lipped buttons get the sink/pop path, and lipless buttons get the shrink.
 - **Existing suites that assume `StyleBoxFlat` or a rim are updated, never deleted:**

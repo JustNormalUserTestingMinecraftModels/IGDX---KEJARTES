@@ -178,6 +178,30 @@ and apply four rules (spec
 the embedded run then gets a 1080×2400 viewport in a 317×705 window. Set it
 back to 640 afterwards, and never commit the override.
 
+## Ambient kit
+
+Five pieces in `Scenes/Look/`: `MoodTint` (multiply colour over the
+backdrop), `LightPool` (additive glow, optional rays child, breathing
+intensity), `AmbientParticles` (a `CPUParticles2D` filling its own
+`Control` rect, DEBU/KILAU presets), the shared glint
+(`Scripts/Shaders/glint.gdshader` + `glint_material.tres`, switched by
+`LookLayer`), and `DeskAmbience` (tint + lamp + particles, instanced once
+per desk screen, forwarding its knobs to its children — per-screen values
+live on the instance root, never a child override a save would drop).
+`AmbientGlow` is built and tested but placed nowhere: with `hdr_2d` off no
+threshold blooms a light pool without also blooming the near-white paper
+and sky (spec amendment 7; DEBT.md's `hdr_2d` entry).
+
+**Tree order, glow-shaped screens** (MainMenu, the four desk screens) — a
+`World` CanvasLayer at -1, so a future `AmbientGlow` could bloom it alone:
+`Background`, `MoodTint`, `LightPool`(s), `AmbientParticles`,
+non-interactive art, an optional spill `LightPool`, then
+`SafeAreaMargin`/`UI` on layer 0, untouched. Only non-interactive art
+moves into `World`; anything tappable stays on layer 0. Plain screens
+(CutScene, TesNotice/StatCheck, RunResult) skip `World` and put the same
+pieces after the backdrop on layer 0 instead. Glow, once it ships, is
+tuned in the Inspector against the cream catch.
+
 ## Editor and game recipes
 
 **Clicking, when you must.** Send a `motion` event to the target before the

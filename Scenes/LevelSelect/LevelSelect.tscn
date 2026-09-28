@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://bhm0dl8akdkge" path="res://Assets/Images/LevelSelect/week_cell.svg" id="7_cell"]
 [ext_resource type="Texture2D" uid="uid://62a76bldik1a" path="res://Assets/Images/LevelSelect/gauge_pill.svg" id="8_pill"]
 [ext_resource type="PackedScene" uid="uid://dqxim1g5tg32a" path="res://Scenes/LevelSelect/OpenAmplopConfirm.tscn" id="9_confirm"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
 
 [node name="LevelSelect" type="Control" unique_id=434616453]
 layout_mode = 3
@@ -19,7 +20,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ls")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=2029502251]
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Backdrop" type="TextureRect" parent="World" unique_id=2029502251]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,6 +34,8 @@ mouse_filter = 2
 texture = ExtResource("2_meja")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Desk" parent="World" instance=ExtResource("amb_desk")]
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=1889630274]
 layout_mode = 1

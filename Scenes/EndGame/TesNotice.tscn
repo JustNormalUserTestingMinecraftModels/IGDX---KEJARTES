@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://csno01mdnqmpx" path="res://Assets/Images/UI/blur_background.png" id="2_jutky"]
 [ext_resource type="Texture2D" uid="uid://b0xshiyjwr8x6" path="res://Assets/Images/UI/notice.png" id="3_y2lp5"]
 [ext_resource type="Texture2D" uid="uid://bvm7lkgmoqcn" path="res://Assets/Images/EndGame/ujian_nasional.png" id="4_jutky"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="amb_tint"]
 
 [node name="TesNotice" type="Control" unique_id=1139053777]
 layout_mode = 3
@@ -22,6 +23,10 @@ mouse_filter = 2
 texture = ExtResource("2_jutky")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Tint" parent="." instance=ExtResource("amb_tint")]
+mood = 4
+strength = 0.3
 
 [node name="Scrim" type="Panel" parent="." unique_id=2026307649]
 layout_mode = 0

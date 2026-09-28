@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://ca46604g10808" path="res://Assets/Images/MuridPortrait/Citra.png" id="9_y2vk7"]
 [ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="11_y2vk7"]
 [ext_resource type="PackedScene" uid="uid://c50fsdshij16h" path="res://Scenes/StudentList/RosterAvatar.tscn" id="13_35ggc"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]
 shader = ExtResource("3_ovxc5")
@@ -29,7 +30,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_wr76l")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=1201077660]
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Backdrop" type="TextureRect" parent="World" unique_id=1201077660]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -40,6 +44,9 @@ mouse_filter = 2
 texture = ExtResource("2_j8vmn")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Desk" parent="World" instance=ExtResource("amb_desk")]
+particle_density = 0.5
 
 [node name="CardContainer" type="Control" parent="." unique_id=987123456]
 layout_mode = 1

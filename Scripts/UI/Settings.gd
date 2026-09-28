@@ -24,6 +24,7 @@ extends Control
 @onready var _tutorial: CheckButton = %TutorialToggle
 @onready var _skip_dialog: CheckButton = %SkipDialogToggle
 @onready var _look_layer: CheckButton = %LookLayerToggle
+@onready var _ambient: CheckButton = %AmbientToggle
 @onready var _haptics: CheckButton = %HapticsToggle
 @onready var _reduce_motion: CheckButton = %ReduceMotionToggle
 @onready var _back: Button = %BackButton
@@ -40,6 +41,7 @@ func _ready() -> void:
 	_tutorial.button_pressed = GameSettings.minigame_tutorial_enabled
 	_skip_dialog.button_pressed = GameSettings.skip_event_dialogue
 	_look_layer.button_pressed = GameSettings.look_layer_enabled
+	_ambient.button_pressed = GameSettings.ambient_effects_enabled
 	_haptics.button_pressed = GameSettings.haptics_enabled
 	_reduce_motion.button_pressed = GameSettings.reduce_motion
 
@@ -49,6 +51,7 @@ func _ready() -> void:
 	_tutorial.toggled.connect(_on_tutorial_toggled)
 	_skip_dialog.toggled.connect(_on_skip_dialog_toggled)
 	_look_layer.toggled.connect(_on_look_layer_toggled)
+	_ambient.toggled.connect(_on_ambient_toggled)
 	_haptics.toggled.connect(_on_haptics_toggled)
 	_reduce_motion.toggled.connect(_on_reduce_motion_toggled)
 	_back.pressed.connect(_on_back_pressed)
@@ -107,6 +110,15 @@ func _on_skip_dialog_toggled(pressed: bool) -> void:
 ## is listening to, so the layer fades in without leaving this screen.
 func _on_look_layer_toggled(pressed: bool) -> void:
 	GameSettings.look_layer_enabled = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Efek Suasana": the ambient kit -- colour moods, soft light, drifting
+## particles and glints. On by default. Setting the property emits
+## ambient_effects_changed, which every kit piece follows at once. Saved.
+func _on_ambient_toggled(pressed: bool) -> void:
+	GameSettings.ambient_effects_enabled = pressed
 	if not Engine.is_editor_hint():
 		GameSettings.save_settings()
 

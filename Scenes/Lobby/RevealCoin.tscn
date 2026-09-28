@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c4tsb84nujnau"]
 
-[ext_resource type="Texture2D" uid="uid://diguw0yukcqd3" path="res://Assets/Images/Particles/particle_coin.png" id="1_pk8mf"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="1_pk8mf"]
 
 [node name="RevealCoin" type="TextureRect" unique_id=478116689]
 offset_right = 48.0

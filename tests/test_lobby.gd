@@ -506,10 +506,12 @@ func test_the_reveal_sits_on_the_panel_and_aims_at_the_wallet() -> void:
 		"DailyReward's wallet_anchor is wired to %DisplayUang")
 
 
-## Daily-login polish, Task 7: the "besok" teaser under the strip.
+## Daily-login polish, Task 7: the "besok" teaser under the strip. It reads
+## ResultDeltaLabel (white with a dark outline), not CaptionLabel -- a dark
+## caption was unreadable over the Lobby's blurred backdrop.
 func test_the_besok_teaser_is_a_caption() -> void:
 	var teaser := _lobby.get_node_or_null("%BesokTeaser") as Label
 	assert_true(teaser != null, "missing BesokTeaser")
 	if teaser == null:
 		return
-	assert_eq(teaser.theme_type_variation, &"CaptionLabel", "the teaser is a caption")
+	assert_eq(teaser.theme_type_variation, &"ResultDeltaLabel", "the teaser is readable over the blur")

@@ -627,6 +627,11 @@ and inside the panel.
 
 Commit: `fix(lobby): give the daily reward amount its own row so 400G fits`.
 
+**Update (fix pass):** the greeting and `StreakLabel` moved from `H2Label` to
+`ResultHeroLabel` in the same fix pass as Task 7's teaser, below — dark text
+over the Lobby's blurred backdrop was unreadable, and `ResultHeroLabel` is a
+gold display face with a dark outline instead.
+
 ## Task 5 — Welcome-back header + streak (old Phase 4)
 
 Needs a flame icon. None exists in the repo, so a placeholder SVG is written
@@ -860,6 +865,10 @@ Commit: `feat(lobby): prize-box reveal, burst and coin-to-wallet on claim`.
    Take a screenshot before and after a claim.
 
 Commit: `feat(lobby): idle claim invite and a "besok" reward teaser`.
+
+**Update (fix pass):** `%BesokTeaser` moved from `CaptionLabel` to
+`ResultDeltaLabel` (white text, dark outline) — the dark caption text was
+unreadable over the Lobby's blurred backdrop.
 
 ## Task 8 — Docs, full run, ship
 

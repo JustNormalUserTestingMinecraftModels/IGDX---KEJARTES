@@ -220,6 +220,10 @@ func _play_claim_moment(amount: int, claimed_day: int, previous_money: int) -> v
 
 
 func _on_reveal_burst_started() -> void:
+	# _show_day dimmed these for the "already claimed" cue before the reveal
+	# played; restore full brightness so the count-up pays off bright.
+	reward_coin.modulate.a = 1.0
+	reward_amount.modulate.a = 1.0
 	AnimUtils.spring_pop_in(reward_row)
 	Juice.count_up(reward_amount, 0.0, float(_pending_amount), AMOUNT_FORMAT)
 
@@ -237,7 +241,10 @@ func _show_day(day: int, is_claimed: bool) -> void:
 	texture = DAY_PANELS[clampi(day, 1, STREAK_DAYS) - 1]
 	claim_button.disabled = is_claimed
 	reward_amount.text = AMOUNT_FORMAT % reward_for_day(day)
-	reward_amount.modulate = _peak_tint(day)
+	# CoinLabel's font colour is already currency_gold, so tinting the same
+	# gold here would multiply it darker instead of standing out; leave the
+	# amount untinted even on the peak day (the flame still gets the tint).
+	reward_amount.modulate = Color.WHITE
 	# The art has no separate "claimed" frame, so dim the affordance nodes
 	# directly -- restore full modulate once a new day makes the claim
 	# available again.

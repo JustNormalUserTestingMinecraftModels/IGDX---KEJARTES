@@ -374,6 +374,11 @@ func show_kas(amount: int, animate: bool = true) -> void:
 	_ensure_nodes()
 	var old := _kas
 	_kas = amount
+	# Re-derive the Total pill's state against the new Kas before touching
+	# the Kas label -- _apply_total_state() has its own bail for its own
+	# nodes, so a missing KasLabel must not also skip the Total pill, which
+	# does not depend on it.
+	_apply_total_state(CART_SCRIPT.total_of(_entries), _entries.is_empty())
 	if not is_instance_valid(_kas_label):
 		return
 	if is_instance_valid(_kas_tween) and _kas_tween.is_valid():
@@ -383,7 +388,6 @@ func show_kas(amount: int, animate: bool = true) -> void:
 			func(v: float) -> String: return format_koin(int(round(v))))
 	else:
 		_kas_label.text = format_koin(amount)
-	_apply_total_state(CART_SCRIPT.total_of(_entries), _entries.is_empty())
 
 
 ## Reads the Kas Kelas pill's balance -- format_koin(_kas), never the label's

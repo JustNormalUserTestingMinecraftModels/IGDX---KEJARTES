@@ -127,15 +127,26 @@ func test_two_quick_kas_updates_leave_the_last_amount() -> void:
 ## and the caller must bail rather than silently skip its write -- but the
 ## Kas balance itself, which does not live on that node, must still be
 ## tracked so a later working label immediately reads the right amount.
+##
+## Fix round 2: show_kas() must re-derive the Total pill's state (against
+## its OWN nodes, which are unaffected by a missing KasLabel) before it
+## bails on the missing KasLabel -- a regression the round 1 fix introduced
+## by bailing before that call. Proven here by dropping the Kas so an
+## already-awake cart turns over, with the label gone the whole time.
 func test_a_missing_kas_label_bails_without_crashing() -> void:
 	var tray = _tray()
 	if tray == null:
 		return
+	tray.show_kas(5000, false)
+	tray.refresh(_entries_costing(4000))
+	assert_eq(tray.get_total_state(), &"TotalPillAwake", "affordable before the Kas drops")
 	var kas_label: Label = tray.get_node("%KasLabel")
 	kas_label.free()
-	tray.show_kas(5000)
-	assert_eq(tray.get_kas_text(), "5.000",
+	tray.show_kas(3000)
+	assert_eq(tray.get_kas_text(), "3.000",
 		"the balance is still tracked even though the label is gone")
+	assert_eq(tray.get_total_state(), &"TotalPillOver",
+		"show_kas() must still re-derive the Total pill even with its own label gone")
 
 
 func test_koin_amounts_group_thousands_with_dots() -> void:

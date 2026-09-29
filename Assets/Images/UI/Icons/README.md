@@ -34,6 +34,10 @@ Checked 2026-09-29 (UI depth pass, Phase 3). A new caller adds its row.
 | `close.svg` | Close a popup | `NotebookFrame`'s `Chrome/Close` | — |
 | `cat_istirahat.svg` | Istirahat (rest) | `RosterCard.SPECIALTY_ICONS`, `StudentList.CATEGORY_ICONS`, `DayStickyNote.category_icons` | `test_category_icons`, `test_student_list` |
 | `cat_wirausaha.svg` | Wirausaha (earning) | the same three maps, and Dapatkan Uang's `TipIcon` | `test_category_icons`, `test_student_list` |
+| `pause.svg` | Pause a minigame | `MinigameHeader`'s `PauseButton/Glyph` | `test_minigame_layout_kit` |
+| `timer.svg` | Time left | `MinigameHeader`'s `TimerButton/Glyph` | `test_minigame_layout_kit` |
+| `swipe_up.svg` | Swipe up | MainBola's hint pill | `test_minigame_layout_kit` |
+| `howto_tap.svg`, `howto_swipe.svg`, `howto_drag.svg`, `howto_read.svg`, `howto_timer.svg`, `howto_target.svg` | How-to steps | the `CARA MAIN` card's step rows, via `Resources/Minigames/HowTo/*.tres` | `test_minigame_layout_kit` |
 | `home.svg`, `info.svg`, `music.svg`, `sound.svg`, `vibrate.svg` | — | nothing yet | `test_ui_icons` only |
 
 Not here on purpose: Back keeps `UI/Nav/return_button.png` (one arrow for

@@ -31,8 +31,7 @@ const TARGETS := {
 	"res://Assets/Images/UI/skin_switch.png": 5.63,
 	"res://Assets/Images/UI/setting.png": 5.33,
 	"res://Assets/Images/UI/Nav/return_button.png": 5.33,
-	# 5.58 since 2026-09-30: the daily verdict's 64 px Bintang Hari Ini icon.
-	"res://Assets/Images/UI/star.png": 5.58,
+	"res://Assets/Images/UI/star.png": 5.10,
 	"res://Assets/Images/UI/uang.png": 4.29,
 	"res://Assets/Images/UI/icon_daily_login.png": 4.01,
 	"res://Assets/Images/UI/Placeholders/shadow_ellipse.png": 14.22,

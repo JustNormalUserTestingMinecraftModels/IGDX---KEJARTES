@@ -15,7 +15,9 @@ extends Control
 ## the Lobby -- the live pixels are gone by the time the new scene loads, and
 ## the project's other answer to that (Achievements' baked
 ## bg_achievements_blur.jpg) cannot show the room the student is standing in.
-## Blur here is shop_hub_blur_material.tres over the live screen.
+## Blur here is skin_select_backdrop_material.tres over the live screen: the shop
+## hub's blur, dimmed 25% less (darkness 0.4375, not 0.55) so the room behind
+## the characters reads lighter.
 ##
 ## Sliding the carousel records a PENDING choice per character; nothing is
 ## equipped until TERAPKAN, which commits every pending character at once.

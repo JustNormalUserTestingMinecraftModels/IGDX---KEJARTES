@@ -11,6 +11,26 @@ uniform float sigma_texels = 0.0;
 // Multiplier on rgb: 1.0 untouched, the neighbour slot uses 0.71.
 uniform float brightness = 1.0;
 
+// The illustration grade (illustration_grade.gdshader), the warm look every
+// other painted plate in the game wears. A card needs this shader for its
+// focus blur and can wear only one material, so the grade's colour half is
+// copied here -- same maths, same order. The defaults MUST equal
+// Scripts/Shaders/illustration_grade_material.tres; tests/test_skin_card.gd
+// compares them so a retune of the game's grade cannot leave the cards behind.
+// Pull towards or away from grey. 1.0 is untouched.
+uniform float saturation : hint_range(0.0, 2.0) = 0.865;
+// Contrast about mid-grey. 1.0 is untouched.
+uniform float contrast : hint_range(0.5, 2.0) = 1.0086625;
+// Overall gain, applied last.
+uniform float exposure : hint_range(0.5, 2.0) = 0.995;
+// Multiplied per channel: the warm paper-diorama tint.
+uniform vec4 tint : source_color = vec4(1.022, 1.0, 0.972, 1.0);
+// How much of the grade to apply, 0 = off.
+uniform float amount : hint_range(0.0, 1.0) = 1.0;
+
+// Rec. 709 luma, for a saturation that does not shift hues.
+const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
+
 // Golden-angle spiral taps covering ~3 sigma. A 2D Gaussian truncated at
 // 2 sigma under-blurs (effective sigma ~0.83x what was asked for); 3 sigma
 // keeps it close to the true value (~0.97x). TAPS is raised to keep the
@@ -49,5 +69,9 @@ void fragment() {
 	// * COLOR reapplies the node's (and every inherited parent's) modulate,
 	// which canvas_item shaders otherwise discard; SkinSelect fades cards by
 	// tweening modulate.a, so dropping this stopped the splash art fading.
-	COLOR = vec4(c.rgb * brightness, c.a) * COLOR;
+	vec3 rgb = mix(vec3(dot(c.rgb, LUMA)), c.rgb, saturation);
+	rgb = (rgb - vec3(0.5)) * contrast + vec3(0.5);
+	rgb *= tint.rgb * exposure;
+	vec3 graded = clamp(mix(c.rgb, rgb, amount), vec3(0.0), vec3(1.0));
+	COLOR = vec4(graded * brightness, c.a) * COLOR;
 }

@@ -130,3 +130,25 @@ func test_menjodohkan_text_has_no_swipe_captions_or_emoji() -> void:
 
 func test_menjodohkan_reports_pairs_on_the_bar() -> void:
 	assert_contains(FileAccess.get_file_as_string(MJ_GD), "\"Pasangan %d/%d\"")
+
+
+const BATIK := "res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn"
+const BATIK_GD := "res://Scripts/Minigames/SeniBudaya/BuatBatik.gd"
+
+
+func test_batik_tools_live_in_the_tray_and_the_title_is_gone() -> void:
+	var root := _scene(BATIK)
+	assert_true(root.get_node_or_null("Safe/Column/MinigameTray/ToolsContainer/Tool0") != null)
+	for gone: String in ["TitleLabel", "InstructionLabel", "CanvasRect/ProgressStepsLabel"]:
+		assert_true(root.get_node_or_null(gone) == null, gone + " is gone")
+	var header := root.get_node("%MinigameHeader") as MinigameHeader
+	assert_false(header.show_score, "Batik has no score pill")
+	assert_true(header.segmented, "the bar reads as four steps")
+
+
+func test_batik_names_the_next_step_in_the_hint() -> void:
+	var src := FileAccess.get_file_as_string(BATIK_GD)
+	assert_contains(src, "show_hint(")
+	assert_contains(src, "\"Langkah %d/%d\"")
+	for glyph: String in ["🔧", "🟨", "✅", "❌", "⬜"]:
+		assert_false(src.contains(glyph), glyph + " is gone")

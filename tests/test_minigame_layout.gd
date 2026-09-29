@@ -87,3 +87,20 @@ func test_pilihan_ganda_no_longer_writes_the_badge() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
 	assert_false(src.contains("Pertanyaan %d dari %d"), "the long badge rewrite is gone")
 	assert_contains(src, "set_progress(")
+
+
+const KALK_GAMES: Array[String] = ["res://Scenes/Minigames/Akademis/Password.tscn",
+	"res://Scenes/Minigames/Akademis/Variabel.tscn"]
+
+
+func test_the_calculator_games_share_one_layout() -> void:
+	for path: String in KALK_GAMES:
+		var root := _scene(path)
+		assert_true(_under_safe(root.get_node_or_null("%MinigameHeader")), path + " strip")
+		var tray := root.get_node_or_null("%MinigameTray")
+		assert_true(_under_safe(tray), path + " tray")
+		var kirim := root.get_node_or_null("%BtnKirim") as Button
+		assert_true(kirim != null and kirim.get_parent().get_parent() == tray,
+			path + ": Hapus/Kirim ride in the tray")
+		assert_eq(kirim.theme_type_variation, &"PrimaryButtonM", path + ": Kirim is mint, tray-sized")
+		assert_true(root.get_node_or_null("HeaderRow") == null, path + ": the old header row is gone")

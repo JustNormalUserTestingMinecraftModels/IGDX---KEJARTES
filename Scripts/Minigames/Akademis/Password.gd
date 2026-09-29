@@ -62,12 +62,12 @@ const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
 ## What the player has typed so far; the LCD shows it.
 var typed_answer: String = ""
 
-@onready var score_hud: MinigameScoreHUD = $HeaderRow/ScoreHUD
-@onready var progress_label: Label       = $SoalCard/StatusBadge/BadgeLabel
-@onready var problem_label: Label        = $SoalCard/VBox/TextLabel
-@onready var kalkulator: Control         = $KalkulatorSlot/Kalkulator
-@onready var clear_button: Button        = $AksiRow/BtnHapus
-@onready var submit_button: Button       = $AksiRow/BtnKirim
+@onready var score_hud: MinigameHeader = %MinigameHeader
+@onready var progress_label: Label       = %SoalCard/StatusBadge/BadgeLabel
+@onready var problem_label: Label        = %SoalCard/VBox/TextLabel
+@onready var kalkulator: Control         = %Kalkulator
+@onready var clear_button: Button        = %BtnHapus
+@onready var submit_button: Button       = %BtnKirim
 
 func _ready() -> void:
 	super._ready()
@@ -101,7 +101,7 @@ func _refit_problem() -> void:
 ## Largest size, from problem_font_size down to min_problem_font_size, at
 ## which `text` fits the question card without clipping or touching its badge.
 func _fit_font_size(text: String) -> int:
-	return SoalFit.font_size(problem_label, get_node_or_null("SoalCard/StatusBadge") as Control,
+	return SoalFit.font_size(problem_label, null,
 		text, problem_font_size, min_problem_font_size)
 
 # ── Build 3 random arithmetic problems ───────────────────────────────────────
@@ -181,11 +181,15 @@ func _show_current_question() -> void:
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	await tween_in.finished
 
-## Shows "Soal N/M" on the question card's badge. The score already lives in
-## the shared ScoreHUD, and the badge is a narrow pill.
+## Shows "Soal N/M" on the strip's progress bar. The score already lives in
+## the shared header, and the card's badge no longer reserves room, so it
+## stays hidden.
 func _update_progress() -> void:
-	if progress_label:
-		progress_label.text = "Soal %d/%d" % [current_question_index + 1, active_questions.size()]
+	set_progress(current_question_index, active_questions.size(),
+		"Soal %d/%d" % [current_question_index + 1, active_questions.size()])
+	var badge := get_node_or_null("%SoalCard/StatusBadge") as Control
+	if badge:
+		badge.hide()
 
 ## Stores and displays the player's entry.
 func _set_typed(value: String) -> void:
@@ -231,6 +235,8 @@ func _on_enter_pressed() -> void:
 
 	if answered == expected_answer:
 		score += 1
+		if score == 1:
+			hint_settle()
 		if score_hud:
 			score_hud.set_score(score)
 		if kalkulator:

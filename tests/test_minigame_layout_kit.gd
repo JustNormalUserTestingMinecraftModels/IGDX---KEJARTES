@@ -96,13 +96,15 @@ func _tray_with(children: int) -> MinigameTray:
 		tray.add_child(c)
 	tray.hint_text = "Ketuk jawaban yang benar"
 	tray.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	var frame := Control.new()
+	# A VBox frame sizes the tray (full width, content height), so the test
+	# never calls set_size on a node whose anchors are unequal.
+	var frame := VBoxContainer.new()
 	frame.size = Vector2(984, 1000)
 	frame.theme = load(THEME_PATH)
 	frame.add_child(tray)
 	Engine.get_main_loop().root.add_child(frame)
 	track(frame)
-	tray.size = Vector2(984, tray.get_combined_minimum_size().y)
+	frame.notification(Container.NOTIFICATION_SORT_CHILDREN)
 	tray.sort_now()
 	return tray
 

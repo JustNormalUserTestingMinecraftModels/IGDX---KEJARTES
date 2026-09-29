@@ -53,6 +53,7 @@
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
+[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="37_ayldy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -1188,10 +1189,10 @@ expand_icon = true
 [node name="Inventory" type="Button" parent="Safe/UI/Hud/BookHud/Shelf/ShelfPage" unique_id=1524317152]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 314.00003
-offset_top = 29.0
-offset_right = 620.0
-offset_bottom = 189.0
+offset_left = 325.0
+offset_top = 32.0
+offset_right = 610.0
+offset_bottom = 192.0
 rotation = 0.017453
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileInventory"
@@ -1231,6 +1232,19 @@ offset_top = -40.0
 offset_right = 446.0
 offset_bottom = 56.0
 theme_type_variation = &"ChevronGripButton"
+
+[node name="ChevronGlyph" type="TextureRect" parent="Safe/UI/Hud/BookHud/ChevronGrip" unique_id=198550015]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 116.0
+offset_top = 36.0
+offset_right = 164.0
+offset_bottom = 84.0
+pivot_offset = Vector2(24, 24)
+mouse_filter = 2
+texture = ExtResource("37_ayldy")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="IconRail" type="VBoxContainer" parent="Safe/UI/Hud" unique_id=1064107887]
 unique_name_in_owner = true

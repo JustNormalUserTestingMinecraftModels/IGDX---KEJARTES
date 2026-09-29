@@ -220,3 +220,20 @@ func test_every_outfit_is_a_splash_canvas_imported_like_the_default() -> void:
 			assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
 			assert_eq(cfg.get_value("params", "compress/mode"), 2, path + " is VRAM-compressed like splash_thea")
 			assert_eq(cfg.get_value("params", "mipmaps/generate"), true, path + " carries mipmaps like splash_thea")
+
+
+## The default splashes, portraits and outfits are the only VRAM-compressed
+## art. Low-quality VRAM (S3TC on desktop) leaves 4x4 block artifacts on their
+## smooth shading and line work; high quality (BPTC) costs no extra memory.
+func test_vram_compressed_student_art_is_high_quality() -> void:
+	var paths: Array[String] = []
+	for n in StudentSkins.NAMES:
+		paths.append(StudentSkins.layer_path(n, StudentSkins.DEFAULT_ID, "splash"))
+		paths.append(StudentSkins.layer_path(n, StudentSkins.DEFAULT_ID, "portrait"))
+		for outfit in StudentSkins.DAY_OUTFITS.values():
+			paths.append(StudentSkins.day_outfit_path(n, outfit))
+	for path in paths:
+		var cfg := ConfigFile.new()
+		assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
+		assert_eq(cfg.get_value("params", "compress/mode"), 2, path + " is VRAM-compressed")
+		assert_eq(cfg.get_value("params", "compress/high_quality"), true, path + " uses high-quality VRAM compression")

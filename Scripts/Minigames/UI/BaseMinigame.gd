@@ -854,22 +854,28 @@ func _play_jump_animation(node: Control) -> void:
 
 	# Force update node pivot to exact center of node size
 	node.pivot_offset = node.size / 2.0
-	
+
+	# Every pose is relative to the scale the node rests at, and the jump
+	# lands back on it: Menjodohkan's wheel rests a tall card below 1.0 to fit
+	# its slot, and a hard landing at (1, 1) popped it back out. Nodes at
+	# scale 1 animate exactly as before.
+	var rest_scale := node.scale
+
 	# Scale animation tween
 	var tween = create_tween()
-	
+
 	# Phase 1: Pre-jump squash down (flatten wide)
-	tween.tween_property(node, "scale", Vector2(1.18, 0.72), 0.08)\
+	tween.tween_property(node, "scale", Vector2(1.18, 0.72) * rest_scale, 0.08)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
+
 	# Phase 2: Stretch jump (tall & thin)
-	tween.tween_property(node, "scale", Vector2(0.82, 1.35), 0.14)\
+	tween.tween_property(node, "scale", Vector2(0.82, 1.35) * rest_scale, 0.14)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
+
 	# Phase 3: Landing bounce (squash wide again)
-	tween.tween_property(node, "scale", Vector2(1.12, 0.85), 0.10)\
+	tween.tween_property(node, "scale", Vector2(1.12, 0.85) * rest_scale, 0.10)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	
-	# Phase 4: Elastic return to standard scale (1.0, 1.0)
-	tween.tween_property(node, "scale", Vector2(1.0, 1.0), 0.12)\
+
+	# Phase 4: Elastic return to the resting scale
+	tween.tween_property(node, "scale", rest_scale, 0.12)\
 		.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)

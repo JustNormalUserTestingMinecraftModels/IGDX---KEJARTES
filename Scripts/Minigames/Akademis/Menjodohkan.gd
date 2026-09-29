@@ -464,19 +464,11 @@ func _update_action_bar_ui() -> void:
 	# Update Lock/Cancel Button (`BtnLock`)
 	if is_q_locked:
 		btn_lock.text = "" if button_lock_texture else "Batalkan"
-		if not button_lock_texture:
-			# Batalkan clears a pair the player can lock again: a reversible,
-			# neutral action, so it keeps the same brown as Kunci.
-			btn_lock.theme_type_variation = &"SecondaryButtonM"
 		btn_lock.disabled = false
 	else:
 		btn_lock.text = "" if button_lock_texture else "Kunci"
 		var is_a_used = (current_a_focus in locked_matches.values())
 		btn_lock.disabled = is_a_used
-
-		if not button_lock_texture:
-			# Kunci is neutral brown; Selesai is the screen's one mint action.
-			btn_lock.theme_type_variation = &"SecondaryButtonM"
 
 	# Update Submit Button (`BtnSubmit`)
 	var all_locked = (locked_matches.size() >= questions_count)

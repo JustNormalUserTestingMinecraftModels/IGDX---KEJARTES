@@ -170,8 +170,9 @@ const SETTINGS_PATH := "user://audio.cfg"
 ]
 ## `play_sfx(&"achievement_prize")`: an achievement that carries a prize.
 @export var sfx_achievement_prize: AudioStream = preload("res://Assets/Audio/SFX/achievementNotificationPrize.ogg")
-## `play_sfx(&"achievement_success")`: the full-set achievement flourish.
-@export var sfx_achievement_success: AudioStream = preload("res://Assets/Audio/SFX/notificationAchievementSuccess.ogg")
+## `play_sfx(&"achievement_success")`: the "achievement unlocked" banner cue
+## (RewardFeedback's `achievement_unlocked`).
+@export var sfx_achievement_success: AudioStream = preload("res://Assets/Audio/SFX/amazingReward.ogg")
 
 ## EndCutscene's badge reveal, one cue per grade band. A tier, not one sound:
 ## the badge word is the payoff of a whole grade, and a single sting would

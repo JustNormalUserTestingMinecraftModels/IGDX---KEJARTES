@@ -32,7 +32,7 @@ Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
 Every mid-day minigame and random event opens with the sliding EventWarning,
-then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
+then an EventDialogue line (`EventDialogueCatalog`, drawn from `EventDialogueLines`); the three pick-students
 events ask Tolak / Terima there, before their picker. Settings' **Lewati Dialog
 Minigame** toggle (`GameSettings.skip_event_dialogue`, saved; the Lobby's gear
 opens Settings) skips the minigame lines;

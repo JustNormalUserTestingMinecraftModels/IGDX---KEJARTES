@@ -8,6 +8,24 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Every event and win line has five voices
+
+Every EventDialogue line and every MinigameWinScreen line is now drawn from a
+pool of at least five variations in the speaker's own voice: about 365 lines in
+all, covering 6 students x 8 events and x 3 win categories, plus Mom, both
+teachers and the Hujan narrator. They live in
+`Scripts/SchoolSimulation/EventDialogueLines.gd`, as drafts for the owner's
+writer. `EventDialogueCatalog.pick_line` and `win_line_for` draw without an
+immediate repeat and fall back to each entry's own `line`. Students now say
+"Pak" (the win fallback is "Terima kasih, Pak!"), and the win bubble grew
+upward to fit two lines (Bubble height 144 to 160 px).
+
+Every word was checked against KBBI: casual variants such as tapi and dulu stay
+in student speech, adults use standard forms; the checked list is the spec's
+appendix. `tests/test_event_dialogue_lines.gd` pins pool coverage, language,
+the question ending on choice lines and the real-font fit of the win lines.
+Spec: `specs/2026-09-29-dialogue-variations-design.md`.
+
 ## 2026-09-29 — The real Guru Seni Budaya splash
 
 The flat placeholder silhouette behind Workshop Seni and the SeniBudaya win

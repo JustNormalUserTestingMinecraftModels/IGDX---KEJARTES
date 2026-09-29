@@ -78,34 +78,34 @@ NPCs speak as adults: mostly standard language, without teen particles.
 **Marcel** (Tekun, Kutu Buku; Akademis). Polite and orderly, in full
 sentences with few particles. He talks about notes and books, and about
 having studied it already.
-> *Menjodohkan:* "Tenang, Pak. Rumus-rumus ini sudah kucatat semalam. Kita jodohkan satu per satu."
+> *Menjodohkan:* "Tenang, Pak. Materi ini sudah kucatat semalam. Kita jodohkan satu per satu."
 > *Win, Olahraga:* "Ternyata olahraga juga ada rumusnya, Pak!"
 
 **Doni** (Aktif, Semangat Juang; Olahraga). Loud short bursts with
 exclamation marks. Everything is a competition, and he never gives up.
-> *PilihanGanda:* "Kuis dadakan? Oke, anggap saja ini pertandingan. Aku enggak mau kalah!"
+> *PilihanGanda:* "Oke, anggap saja kuis ini pertandingan. Aku enggak mau kalah!"
 > *Win, Akademis:* "Hore! Otakku ikut berkeringat, Pak!"
 
 **Andi** (Kreatif, Penasaran; SeniBudaya). Asks "kenapa" and "kalau..." and
 turns tasks into imaginative play.
-> *BuatBatik:* "Pak, kenapa malamnya harus dipanaskan dulu? Ayo kita coba, biar tahu!"
-> *Win, SeniBudaya:* "Pak, lain kali boleh aku coba motif yang lebih aneh?"
+> *BuatBatik:* "Pak, kenapa kompornya dipakai paling akhir? Ayo kita coba, biar tahu!"
+> *Win, SeniBudaya:* "Pak, lain kali boleh lebih aneh lagi?"
 
 **Citra** (Pendiam / Seni Dalam Kesunyian, Penyendiri; Olahraga). Few words
 that open with `...`. She is soft, likes quiet and keeps her pride
 understated.
 > *Badminton:* "...Aku lebih suka main tanpa penonton. Tapi aku siap, Pak."
-> *Win, Olahraga:* "...Aku senang. Terima kasih sudah percaya, Pak."
+> *Win, Olahraga:* "...Terima kasih sudah percaya, Pak."
 
 **Shinta** (Santai, Biang Onar; Akademis). Laid-back and cheeky. She jokes
 and then retracts it ("Bercanda!"), bargains, and is secretly capable.
-> *PilihanGanda:* "Kuis dadakan? Tenang, Pak, jawabannya pasti C. Bercanda!"
-> *Win, Akademis:* "Tuh kan, Pak, santai saja juga bisa menang!"
+> *PilihanGanda:* "Kuisnya gampang, Pak. Jawabannya pasti C semua. Bercanda!"
+> *Win, Akademis:* "Tuh kan, Pak, santai pun bisa menang!"
 
 **Thea** (Kreatif, Pekerja Keras; SeniBudaya). A diligent perfectionist. She
 mentions practice, sore hands and "sekali lagi".
 > *LombaMenari:* "Gerakan ini sudah kulatih sampai kakiku pegal. Ayo, Pak, kita tunjukkan!"
-> *Win, SeniBudaya:* "Latihan berhari-hari akhirnya terbayar, Pak!"
+> *Win, SeniBudaya:* "Latihan berhari-hari terbayar, Pak!"
 
 ### NPCs and narrator
 
@@ -113,25 +113,25 @@ mentions practice, sore hands and "sekali lagi".
 goatee and hands on hips: a drill coach. He speaks in short commands, is
 serious about discipline, and praises dryly, often with an extra lap attached.
 He talks to the player as a colleague.
-> *latihan_olahraga:* "Lapangan kosong sore ini, Pak. Kalau {nama} dan yang lain mau latihan tambahan, saya tunggu di sana. Bagaimana?"
-> *MainBola:* "Kuda-kuda yang kokoh, lalu tendang sekuat tenaga! Kiper ini tidak akan memberi ampun."
-> *Win:* "Lumayan. Besok kita tambah dua putaran lari, ya!"
+> *latihan_olahraga:* "Lapangan sedang kosong sore ini. Bagaimana kalau {nama} dan yang lain ikut latihan tambahan bersamaku?"
+> *MainBola:* "Kuda-kuda yang kukuh, lalu tendang dengan keras! Kiper ini tidak akan memberi ampun."
+> *Win:* "Lumayan. Besok kita latihan lebih pagi!"
 
 **Guru Seni Budaya** (`workshop_seni`, SeniBudaya wins). A woman (per the
 new art): apron, smirk, hand on hip. She is a warm, hands-on craftswoman,
 a little playful and proud of the kids' work.
-> *workshop_seni:* "Pak, sanggar sedang membuka lokakarya batik dan tari daerah. Bagaimana kalau {nama} dan teman-temannya ikut?"
+> *workshop_seni:* "Sanggar seni sedang mengadakan lokakarya batik dan tari daerah. Boleh {nama} dan teman-temannya ikut bergabung?"
 
 English loanwords that KBBI lacks are replaced by KBBI's own term, for
 example *workshop* becomes *lokakarya*.
-> *Win:* "Lihat karya mereka, Pak. Cantik sekali, bukan?"
+> *Win:* "Lihat karya mereka, Pak. Cantik, bukan?"
 
 **Mom** (`nasi_kotak`). {nama}'s mother: polite and warm to "Pak Guru",
 uses *saya*, and fusses over the kids eating well.
-> "Permisi, Pak Guru. Ini ada nasi kotak untuk {nama} dan teman-temannya. Semoga belajarnya makin semangat!"
+> "Permisi, Pak Guru. Saya bawakan nasi kotak untuk {nama} dan teman-temannya. Semoga belajarnya makin semangat!"
 
 **Hujan narrator** (no speaker). Neutral, descriptive, fully standard.
-> "Hujan turun sejak subuh. Jalan menuju sekolah licin, dan beberapa murid tiba dengan seragam basah kuyup."
+> "Hujan deras sejak pagi membuat jalanan licin. Beberapa murid basah kuyup dan terpeleset di jalan menuju sekolah."
 
 ## Architecture
 

@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Weekly results under the design rules
+
+The weekly report (`ResultCheckup`) now follows the role palette. The red
+English "WEEKLY RESULTS" ribbon is a brown `ResultTitlePanel` plate reading
+HASIL MINGGUAN, and the summary panel is sunken cream with a cream-lip rim
+instead of butter yellow (`recap_banner_fill` is gone). On the weekly cards
+only, energy and mood wear the game-wide yellow and pink (`WeekEnergyBar`,
+`WeekMoodBar`) instead of Istirahat's purple and the warning orange, and each
+stat's week change is a green (`DeltaChipGain`) or red (`DeltaChipLoss`)
+chip followed by the run target, replacing the gold chevron. The nightly
+popup, the apply-item rows and the event picker share the card and are
+unchanged: `DaySummaryStudentRow._apply_look(week)` runs first in every entry
+point. Picked by the owner in the visual companion (header A, chips A,
+weekly only). Logs brown, cream tiles and the brown scroll fade came earlier
+the same day in #131. Checked live: the weekly report shows the plate, cream
+panel, yellow/pink needs and green/red chips, and a card through the nightly
+path keeps purple/orange needs, the gold chevron and `+6/52`; a weekly gain
+rewards from its chip (pop, burst, gain cue).
+
 ## 2026-09-29 — The Lobby look and 30% less colour on the event dialogue
 
 EventDialogue (the character line before every minigame and event) now wears

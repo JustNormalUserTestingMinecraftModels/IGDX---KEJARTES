@@ -185,11 +185,7 @@ func _show_current_question() -> void:
 ## the shared header, and the card's badge no longer reserves room, so it
 ## stays hidden.
 func _update_progress() -> void:
-	set_progress(current_question_index, active_questions.size(),
-		"Soal %d/%d" % [current_question_index + 1, active_questions.size()])
-	var badge := get_node_or_null("%SoalCard/StatusBadge") as Control
-	if badge:
-		badge.hide()
+	show_question_progress(current_question_index, active_questions.size(), %SoalCard)
 
 ## Stores and displays the player's entry.
 func _set_typed(value: String) -> void:

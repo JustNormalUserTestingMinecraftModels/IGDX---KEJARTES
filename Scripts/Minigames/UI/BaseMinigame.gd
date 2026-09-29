@@ -507,6 +507,17 @@ func set_progress(value: int, max_value: int, label: String) -> void:
 		strip.set_progress(value, max_value, label)
 
 
+## Show "Soal n/m" on the strip's bar and hide the question card's own
+## StatusBadge (the bar carries the count now).
+func show_question_progress(index: int, total: int, card: Node) -> void:
+	set_progress(index, total, "Soal %d/%d" % [index + 1, total])
+	if card == null:
+		return
+	var badge := card.get_node_or_null("StatusBadge") as Control
+	if badge != null:
+		badge.hide()
+
+
 var result_subtitle: String = ""
 
 func win_game() -> void:

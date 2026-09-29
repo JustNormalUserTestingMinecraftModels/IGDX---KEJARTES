@@ -165,7 +165,6 @@ var max_score: int = 3
 @onready var question_label: Label = soal_card.find_child("TextLabel", true, false) as Label
 @onready var question_image: TextureRect = soal_card.find_child("RowImage", true, false) as TextureRect
 @onready var progress_label: Label = soal_card.find_child("BadgeLabel", true, false) as Label
-@onready var status_badge: Control = soal_card.find_child("StatusBadge", true, false) as Control
 @onready var choices_container: GridContainer = %ChoicesGrid
 ## The answer tray; it fades with the card between questions.
 @onready var answer_tray: Control = %MinigameTray
@@ -251,10 +250,7 @@ func _show_current_question() -> void:
 
 	# The counter lives on the strip's progress bar now; the card's badge
 	# no longer reserves room, so it stays hidden.
-	set_progress(current_question_index, active_questions.size(),
-		"Soal %d/%d" % [current_question_index + 1, active_questions.size()])
-	if status_badge:
-		status_badge.hide()
+	show_question_progress(current_question_index, active_questions.size(), soal_card)
 
 	if question_label:
 		question_label.text = q_data.get("question", "")

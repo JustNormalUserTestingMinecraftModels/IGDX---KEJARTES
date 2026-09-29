@@ -85,8 +85,8 @@ read-only for us.
 | `ItemDatabase`, `Cart` | Shop item catalog and cart. |
 | `Achievements`, `AchievementToast` | Achievement tracker (saved), prize multipliers, unlock banner. |
 | `_mcp_game_helper` | Godot AI MCP runtime hook. |
-| `LookLayer` | Bloom, vignette and grain over every screen; off unless `GameSettings.look_layer_enabled`. |
-| `RewardFeedback` | `play(moment, anchor, opts)` fires sound, particles, haptics and shake by tier. |
+| `LookLayer` | Bloom, vignette, grain; off unless `GameSettings.look_layer_enabled`. |
+| `RewardFeedback` | `play(moment, anchor, opts)`: tiered sound, particles, haptics, shake. |
 
 ### The two student representations — know which you're holding
 
@@ -356,7 +356,7 @@ never `git switch` or `git checkout` there on an old reading. Re-check
 `git status` and `git reflog -1` in the same command, or put a second task in a
 worktree.
 
-**A full `test_run` drops the bridge.** The runner instances scenes test after
+**A full `test_run` can drop the bridge.** The runner instances scenes test after
 test with no frame between, so deferred layout calls flood the MessageQueue
 and the editor dies. A suite that instances a big scene per test builds it
 once in `suite_setup` instead.

@@ -46,21 +46,37 @@ Kelas 8 retry locking its own pick; the coin cue; three always-false
 `in get_node_or_null("/root")` debug checks. Left: DEBT.md, "Bug-sweep
 leftovers".
 
+## 2026-09-30 — Thea, Shinta and Citra desk items back to their own size
+
+The 2026-09-29 fit pass below shrank these three below 1x and the owner found
+them wrong, so their pre-shrink scales and offsets are back in all four
+slots. `test_lobby_desk_items_fit` exempts them (`OWNER_SIZED`) from the fit
+check and pins their scales above 1.04x instead; the other students still fit.
+
 ## 2026-09-30 — CLAUDE.md context audit
 
-Every claim in `CLAUDE.md` was checked against source at `a1ddd315`. Fixed:
+Every claim in `CLAUDE.md` was checked against source on 2026-09-30. Fixed:
 the pass rule's timing, the end-of-grade route (RunResult goes on to
 StudentCard or MainMenu), StudentList's place in the loop, Wirausaha's cost
 (flat, not higher), the efficiency multipliers (0.55/0.85/1.28, not
 0.6/0.85/1.20), two missing autoloads, the debug Scenes tab's reach,
 `ActivityRow` → `ActivityTile`, and the cause of the full-run crash. Two user
 rules joined it: KBBI-natural Indonesian copy, and a screenshot for every
-visual change. Four stale pointers into `CLAUDE.md` were repointed.
+visual change. Three stale pointers into `CLAUDE.md` were repointed.
 
 Moved out of `CLAUDE.md` as history:
 
-- The test count, rewritten by nearly every pass: 188 suites, 3011 tests (2026-09-30).
+- The test count, rewritten by nearly every pass: 184 suites, 2939 tests (2026-09-29).
 - The superseded full-run explanation: "A full run is 15-20s of near-continuous main-thread work, and the plugin's transport does not survive it (the `test_run` docs warn that a single test blocking for 20s+ can drop the session). It is not memory pressure; that was ruled out." The real cause is the MessageQueue flood from per-test scene instancing.
+
+## 2026-09-30 — The daily verdict's star of the day
+
+The Bintang Hari Ini row on the daily result wore a placeholder crown
+(`Assets/Images/DaySummary/Verdict/crown.svg`, now deleted). It now wears
+`UI/star.png`, the star the end-of-grade StatCheck meter and the verdict's own
+rating already use. Its node is renamed `Crown` -> `StarIcon`, and the slot
+goes from 64x50 to 64x64 so the square star is not squeezed. `star.png`
+already generates mipmaps, so the new draw needs no import change.
 
 ## 2026-09-29–30 — Minigame mobile layout
 
@@ -157,15 +173,6 @@ brand-filled answers with a gold edge (`c228b4ef` and the button-role rule);
 CARA MAIN card and the strip has no room for it. Part 2's author still has to
 hear that Phase 8 shrinks to key feel and LCD styling, and that `ScorePill`
 becomes a ×badge inside `MinigameScoreHUD`. Follow-ons are in `DEBT.md`.
-
-## 2026-09-30 — The daily verdict's star of the day
-
-The Bintang Hari Ini row on the daily result wore a placeholder crown
-(`Assets/Images/DaySummary/Verdict/crown.svg`, now deleted). It now wears
-`UI/star.png`, the star the end-of-grade StatCheck meter and the verdict's own
-rating already use. Its node is renamed `Crown` -> `StarIcon`, and the slot
-goes from 64x50 to 64x64 so the square star is not squeezed. `star.png`
-already generates mipmaps, so the new draw needs no import change.
 
 ## 2026-09-30 — The daily verdict's final faces
 

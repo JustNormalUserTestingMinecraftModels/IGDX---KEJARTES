@@ -82,6 +82,8 @@ func test_the_chevron_sinks_and_dims_with_its_button() -> void:
 	arrow.offset_top = INSET
 	arrow.offset_bottom = -INSET
 	button.add_child(arrow)
+	# In the tree, so the button resolves its theme's styleboxes.
+	Engine.get_main_loop().root.add_child(button)
 	track(button)
 	arrow._rest_top = INSET
 	arrow._rest_bottom = -INSET
@@ -96,7 +98,9 @@ func test_the_chevron_sinks_and_dims_with_its_button() -> void:
 	assert_eq(arrow.offset_top, INSET, "let go: back to its authored inset")
 	button.disabled = true
 	arrow.follow()
-	assert_eq(arrow.self_modulate.a, arrow.disabled_alpha, "disabled: the chevron dims")
+	# Color channels are 32-bit floats, so compare the alpha approximately.
+	assert_true(is_equal_approx(snappedf(arrow.self_modulate.a, 0.001), snappedf(arrow.disabled_alpha, 0.001)),
+		"disabled: the chevron dims to disabled_alpha (got %s)" % arrow.self_modulate.a)
 	button.disabled = false
 	arrow.follow()
 	assert_eq(arrow.self_modulate.a, 1.0, "enabled again: full strength")

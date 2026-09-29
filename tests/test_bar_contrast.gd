@@ -62,6 +62,25 @@ func test_the_two_needs_fills_clear_the_floor() -> void:
 				% [spec[0], ratio, FLOOR])
 
 
+## The weekly report's needs bars wear the game-wide energy yellow and mood
+## pink (2026-09-29). Each fill must clear the floor on the dark track; the
+## needs word is white on a dark outline, so the outline is what must clear
+## the floor against each fill.
+func test_the_week_needs_fills_and_their_word_clear_the_floor() -> void:
+	var tokens := DesignTokens.load_default()
+	for spec in [["energy", tokens.cat_energy_on_dark],
+			["mood", tokens.cat_mood_on_dark]]:
+		var fill: Color = spec[1]
+		var ratio := _contrast(fill, tokens.day_bar_track)
+		assert_true(ratio >= FLOOR,
+			"week %s fill is %.2f:1 against day_bar_track, floor is %.1f"
+				% [spec[0], ratio, FLOOR])
+		var rim := _contrast(tokens.day_glyph_outline, fill)
+		assert_true(rim >= FLOOR,
+			"the needs word's outline is %.2f:1 against the week %s fill, floor is %.1f"
+				% [rim, spec[0], FLOOR])
+
+
 func test_light_chrome_accents_stay_legible() -> void:
 	# surface_sunken is no longer any progress bar's track -- StatBar and
 	# its six siblings moved to the dark stat_bar_track on 2026-09-09. But

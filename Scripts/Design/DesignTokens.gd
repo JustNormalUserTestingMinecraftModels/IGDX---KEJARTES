@@ -404,10 +404,8 @@ static func load_default() -> DesignTokens:
 ## icons and the +N/T numbers alike.
 @export var day_glyph_outline: Color = Color("2E2118")
 
-## Weekly Results banner fill: the mockup's butter yellow (2026-09-19).
-@export var recap_banner_fill: Color = Color("FFE17D")
 ## Weekly Results tile fill: the card cream (surface_card), so the tiles sit
-## on the butter banner the way the student cards sit on the page. It was a
+## on the cream summary panel the way the student cards sit on the page. It was a
 ## cool grey-white (F6F4F2) until 2026-09-29, which read dirty on the yellow.
 @export var recap_tile_fill: Color = Color("FFFDF8")
 ## Weekly Results' Logs button face: the neutral brown (brand_primary_light).

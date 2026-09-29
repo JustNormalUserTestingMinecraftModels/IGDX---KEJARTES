@@ -8,6 +8,15 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — The real Guru Seni Budaya splash
+
+The flat placeholder silhouette behind Workshop Seni and the SeniBudaya win
+screen is replaced by the artist's Guru Seni Budaya (`GuruSBK.png`), dropped in
+at `Assets/Images/EventDialogue/splash_gurusenibudaya.png` on the same
+1080x1920 transparent frame; its `.import` and UID are unchanged, and no code
+moved. Her figure sits in a slightly smaller box than Guru Penjas's (alpha y
+104-1884 against 28-1916), as drawn. Its DEBT.md placeholder entry is gone.
+
 ## 2026-09-29 — ResultCheckup clarity pass
 
 The week banner's pills now say what they count (UANG DIDAPAT, MINIGAME

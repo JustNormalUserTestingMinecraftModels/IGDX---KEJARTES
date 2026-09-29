@@ -13,10 +13,12 @@
 [ext_resource type="Texture2D" uid="uid://whtj1qktee40" path="res://Assets/Images/StudentCard/portrait_frame.png" id="6_kiyav"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/stamp_original.png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
-[ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="13_kiyav"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="15_jyy3b"]
 [ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
+[ext_resource type="Texture2D" uid="uid://b7uie5ch7i7os" path="res://Assets/Images/UI/Icons/chevron_left.svg" id="20_chevl"]
+[ext_resource type="Texture2D" uid="uid://bge3qhtji6lh4" path="res://Assets/Images/UI/Icons/chevron_right.svg" id="21_chevr"]
+[ext_resource type="Script" path="res://Scripts/UI/ButtonGlyph.gd" id="glyph_follow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
 shader = ExtResource("3_ovxc5")
@@ -1717,19 +1719,21 @@ offset_bottom = 128.0
 theme_type_variation = &"StudentCardSecondaryButtonL"
 
 [node name="Arrow" type="TextureRect" parent="Safe/UI/BottomBar/NextButtonKiri" unique_id=1879901438]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 28.0
-offset_right = -40.0
-offset_bottom = -28.0
-rotation = 1.5708
-pivot_offset = Vector2(40, 36)
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("13_kiyav")
+texture = ExtResource("20_chevl")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="NextButtonKanan" type="Button" parent="Safe/UI/BottomBar" unique_id=1157739970]
 unique_name_in_owner = true
@@ -1741,19 +1745,21 @@ offset_bottom = 128.0
 theme_type_variation = &"StudentCardSecondaryButtonL"
 
 [node name="Arrow" type="TextureRect" parent="Safe/UI/BottomBar/NextButtonKanan" unique_id=1794432009]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 28.0
-offset_right = -40.0
-offset_bottom = -28.0
-rotation = -1.5708
-pivot_offset = Vector2(40, 36)
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("13_kiyav")
+texture = ExtResource("21_chevr")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="PageLabel" type="Label" parent="Safe/UI/BottomBar" unique_id=977170758]
 unique_name_in_owner = true

@@ -50,6 +50,12 @@ error. Its colours say its role — mint is the main
 action and affirm on every screen, tomato is danger, brown is neutral,
 cream is quiet; sky and sunflower belong to the Lobby tiles and the
 notebook tabs, and sunflower is never an action (gold reads as "buy").
+A Back is a return, so it is brown, not mint (ReportCard's included); a
+routine, reversible clear beside the main action is brown too, never
+tomato (the minigames' Hapus beside a mint Kirim). The one exception is a
+screen whose only way forward is "back": SchoolDay's end-of-week
+"Kembali ke Menu" and RunResult's single CTA are that screen's main action,
+so they stay mint.
 Information badges keep their meaning colours. The palette pairs are the
 `accent_*` / `button_cream*` tokens. Labels on a dark face are outlined
 white; on a light face they are plain dark ink. `EventSelectCard` stays a
@@ -212,6 +218,38 @@ name, a step title — stays in the host content, not the sticker.
   positioned against the old (smaller) box — `OpenAmplopConfirm`'s
   Batal/Terima moved into `Letter/VBox` once the taller frame started
   overlapping them.
+
+## Icons
+
+**One picture per job, from `Assets/Images/UI/Icons/`** (placeholders for
+the owner's chunky set, drop-replaceable at the same path; the folder's
+README has the replacement rules and the full "where each icon is used"
+table). The Lobby's five nav tiles wear `nav_*`; every paging arrow
+(LevelSelect, StudentCard, StudentList, ReportCard) wears `chevron_left` /
+`chevron_right`; MainMenu's Quit wears `exit`; the notebook frame's ✕ wears
+`close`; and the two categories with no stat of their own wear
+`cat_istirahat` / `cat_wirausaha` wherever a screen names them (the roster
+card's chip, the day notes, Dapatkan Uang's tip). A paging arrow draws its
+chevron as a child `Arrow` `TextureRect` (full rect, 24 px inset,
+unrotated, taps ignored), not as the Button's `icon`: the lipped buttons'
+content margins squeeze an icon to about 15 px. `Scripts/UI/ButtonGlyph.gd`
+on the child makes it act like an icon, sinking while held and dimming
+while disabled; give any future picture-on-a-button child the same script. **Back is not a chevron:**
+every Back keeps `UI/Nav/return_button.png`, the arrow unified on
+2026-09-22 (`tests/test_back_controls.gd`). The four Lobby rail icons
+(settings, achievements, daily login, skins) are finished art and stay
+where they are.
+
+**No emoji or dingbats in UI text.** A pictograph typed into a label
+renders in whatever emoji font the phone has, at the wrong weight and
+colour; a picture is a texture from `Icons/` (or a placeholder SVG) on a
+`TextureRect` or a Button's `icon`. Banned: U+2300–23FF, U+2600–27BF,
+U+2B00–2BFF, U+1F000–1FAFF and U+FE0F. Typography stays allowed: the
+Arrows block (`12 → 9`), `×`, and anything in a code comment.
+`tests/test_ui_text_glyphs.gd` scans every `.tscn` and `.gd` under
+`Scenes/` and `Scripts/` (minigames and the debug overlay excepted, both
+outside the design system); its `ALLOWED` dict is the reviewed list of
+exceptions, and a new one needs a comment saying why.
 
 ## The Juice API (`Scripts/Design/Juice.gd`)
 

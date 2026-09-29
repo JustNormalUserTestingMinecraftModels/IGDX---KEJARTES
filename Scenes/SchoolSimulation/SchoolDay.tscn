@@ -180,7 +180,7 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"TitleLabel"
-text = "✨ Klik di mana saja untuk melanjutkan ➔"
+text = "Klik di mana saja untuk melanjutkan"
 horizontal_alignment = 1
 autowrap_mode = 2
 
@@ -199,7 +199,7 @@ custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_type_variation = &"SecondaryButton"
-text = "⏭ Skip (Tekan O)"
+text = "Skip (Tekan O)"
 
 [node name="DayStamp" type="PanelContainer" parent="."]
 modulate = Color(1, 1, 1, 0)

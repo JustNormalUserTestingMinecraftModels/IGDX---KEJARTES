@@ -71,6 +71,9 @@ func test_back_button_node_exists_and_is_wired() -> void:
 	var btn := scene.find_child("BackButton", true, false)
 	assert_true(btn != null, "the report card must have a real, tappable back button")
 	assert_true(btn is BaseButton, "the back control must be a button")
+	if btn is Control:
+		assert_eq((btn as Control).theme_type_variation, &"SecondaryButton",
+			"back is brown, like every other screen's; mint is the one thing to press")
 	scene.free()
 
 

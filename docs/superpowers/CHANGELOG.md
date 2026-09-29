@@ -8,6 +8,85 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — UI depth pass, Phase 3: icons, roles and the glyph rule
+
+Plan: `docs/superpowers/plans/2026-09-29-ui-depth-pass-phase3.md`.
+
+The screen pass. Every screen's tiles, arrows, exit and category pictures
+now come from `Assets/Images/UI/Icons/`, so the owner's chunky set drops in
+at those paths with no scene change; two buttons got their right role; and
+typed emoji and dingbats left the UI text, with a suite that keeps them out
+(style guide, "Icons"; the folder README's "Where each icon is used").
+
+- **Lobby and MainMenu.** The five nav tiles wear `nav_students`,
+  `nav_jadwal`, `nav_koperasi`, `nav_inventory` and `nav_rapor`; MainMenu's
+  Quit wears `exit.svg`. The four rail icons are finished art and stayed.
+- **Paging arrows** (LevelSelect, StudentCard, StudentList, ReportCard)
+  wear `chevron_left` / `chevron_right`.
+- **Istirahat and Wirausaha** wear `cat_istirahat` / `cat_wirausaha` in
+  `RosterCard.SPECIALTY_ICONS`, `DayStickyNote.category_icons` and Dapatkan
+  Uang's tip, replacing the energy glyph, the coin and the generated
+  placeholder PNGs. `StudentList.CATEGORY_ICONS` (the card's day-note
+  preview) moved too, so a card's chip and its day notes agree; one shared
+  table in `test_student_list` pins both maps.
+- **Roles.** ReportCard's Back is brown (`SecondaryButton`), a return like
+  Inventory's and ShopHub's. Password/Variabel's Hapus, which only clears the
+  unsent answer, is brown beside the mint Kirim.
+- **Glyphs.** SchoolDay's tutorial, click-to-continue and skip, AturJadwal's
+  holiday line, DaySummaryBadge, DailyDecayOverview and CutScene's skip lost
+  their emoji. DayStickyNote's padlock is a `TextureRect` wearing
+  `icon_lock.svg`, not a "lock" emoji in a `Label`.
+
+Seven decisions taken while planning (the plan's table has the full
+rationale):
+
+- **P1** — The canonical back arrow stays: every Back keeps
+  `UI/Nav/return_button.png`; `chevron_left` is for paging, not Back.
+- **P2** — SchoolDay's end-of-week "Kembali ke Menu" stays mint: it is the
+  only way forward, that screen's main action, like RunResult's single CTA.
+- **P3** — Hapus is brown, not tomato: clearing an unsent answer is routine
+  and reversible, and `DangerButton` would tick the motor on every clear.
+- **P4** — StudentCard's page arrows keep `StudentCardSecondaryButtonL`
+  (cream, quiet); only the picture changed, so no pinned geometry moved.
+- **P5** — *Revised in Task 2.* The plan had each arrow draw its chevron as
+  the Button's own `icon` so it would sink with the face. The render showed
+  the lipped buttons' content margins squeezing the icon to about 15 px, so
+  each arrow instead draws its chevron as a child `Arrow` `TextureRect`: full
+  rect minus a 24 px inset, unrotated, `expand_mode` 1, `stretch_mode` 5, taps
+  ignored, and the Button's `icon` cleared. The chevrons now read at about
+  70 px. The local review caught that a child does not sink or dim like an
+  icon, so `Scripts/UI/ButtonGlyph.gd` on each `Arrow` drops it by the
+  button's own label drop while held and dims it while disabled.
+- **P6** — The glyph rule bans pictographs and dingbats (U+2300–23FF,
+  U+2600–27BF, U+2B00–2BFF, U+1F000–1FAFF, U+FE0F), not typography: the
+  Arrows block (`12 → 9`), `×` and code comments stay allowed. Two
+  reviewed exceptions: `StatInfo.gd`'s glyph fallback and CutScene's
+  debug-only level-select toggle.
+- **P7** — Phase 3 ran in the Phase 2 worktree on a new branch.
+
+Also decided along the way:
+
+- **Hapus wears `SecondaryButtonM`**, not the base `SecondaryButton` the plan
+  named: the base step's 36 px label looked lost beside Kirim's 64 px, and
+  the L step (166 px) overflows `AksiRow`'s 156 px band.
+- **The tutorial's cycle line was reworded**, not just stripped: with its
+  heavy arrows gone it reads "Atur Jadwal, Simulasi Hari Sekolah, lalu
+  Evaluasi Mingguan".
+- **The trait chips' gloss: checked, 14 px reads as a highlight on a 96 px
+  pill.** StudentList's trait row rendered at 1080x1920 and cropped 2x; no
+  crescent, so no code change and no `CHIP_GLOSS_WIDTH`.
+
+New suites: `lobby_tile_icons`, `paging_arrows`, `category_icons`,
+`button_roles_phase3` and `ui_text_glyphs` (the ratchet; its `ALLOWED` dict
+is the reviewed exception list). Suites that pinned an old path or variation
+(`main_menu`, `student_list`, `kalkulator`, `report_card`,
+`day_sticky_note`) were updated, not deleted.
+
+One hazard met again, no new rule: an editor `scene_save` of ReportCard, an
+`@tool`-scripted scene, baked `SafeAreaMargin`'s 48 px margin overrides into
+the file. The save was reverted and the one-line variation change made as
+text (the editor-save hazard CLAUDE.md 4b already covers).
+
 ## 2026-09-29 — Bloom on the shops, end game and minigames
 
 The Lobby's bloom is a Canvas-mode `WorldEnvironment`, which reaches only

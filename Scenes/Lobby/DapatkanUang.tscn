@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://djkv8fsw8x2uu" path="res://Scripts/Lobby/DapatkanUang.gd" id="1_earn"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="2_coin"]
-[ext_resource type="Texture2D" uid="uid://kg50k0mbem87" path="res://Assets/Images/UI/Placeholders/icon_wirausaha.svg" id="3_wirausaha"]
+[ext_resource type="Texture2D" uid="uid://qoy7ggc1bnjv" path="res://Assets/Images/UI/Icons/cat_wirausaha.svg" id="3_wirausaha"]
 [ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
 

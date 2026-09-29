@@ -338,6 +338,25 @@ func test_the_dialogue_keeps_seventy_percent_of_its_colour() -> void:
 		"the knob reaches the shader")
 
 
+## The speaker's shadow is a visible contact glow (2026-09-29). As plain outer
+## AO (alpha 0.34, blur 1.2, scale 1) it sat exactly behind the art and showed
+## as a one-pixel hairline: hiding it changed 0.10% of the frame. Zero offset
+## stays (the 2026-09-23 rule: no drop shadow, the floor darkening where the
+## art occludes it), but this one is denser (0.7), wider (blur 4.0) and 2%
+## larger so it reads against a photographic backdrop. It follows the splash's
+## rect and stretch, so it stays under the art on a tall phone.
+func test_the_speakers_shadow_is_a_visible_contact_glow() -> void:
+	var shadow := Census.entry(Census.of(_SCENE), "Splash/Shadow")
+	assert_eq(Census.prop(shadow, "shadow_offset", Vector2.ZERO), Vector2.ZERO,
+		"still outer AO: no drop shadow")
+	assert_true(float(Census.prop(shadow, "shadow_alpha", 0.34)) >= 0.6, "dense enough to read")
+	assert_true(float(Census.prop(shadow, "blur", 1.2)) >= 3.0, "and wide enough to show past the outline")
+	assert_true(float(Census.prop(shadow, "shadow_scale", 1.0)) > 1.0, "a little larger than the art")
+	assert_eq(Census.prop(shadow, "follow_parent_rect", false), true, "it follows the splash's rect")
+	assert_eq(int(Census.prop(shadow, "shadow_stretch_mode", 0)), TextureRect.STRETCH_KEEP_ASPECT_CENTERED,
+		"and its stretch, so the two never diverge")
+
+
 # ── theme ────────────────────────────────────────────────────────────────────
 
 const _VARIATIONS := {

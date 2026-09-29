@@ -39,12 +39,13 @@ const WIN_LINE_STUDENT := "Terima kasih, Pak!"
 ## about 113) fits the dialogue box with room to spare.
 const MAX_EVENT_LINE_CHARS := 120
 
-## The line last drawn for each pool, keyed like pick_line's and
-## win_line_for's `memo` keys, so the next draw skips it.
-static var _last_line: Dictionary = {}
-
 ## The teacher who may thank the player for each category's win.
 const WIN_TEACHER := {"SeniBudaya": SPLASH_GURU_SENI, "Olahraga": SPLASH_GURU_PENJAS}
+
+## The line last drawn from each pool, keyed per pool (pick_line: the event key,
+## plus the student's name for a student's own pool; win_line_for: the category
+## with the student's name or the teacher's splash), so the next draw skips it.
+static var _last_line: Dictionary = {}
 
 ## mode: MODE_TAP or MODE_CHOICE. speaker: "" for none, SPEAKER_STUDENT, or a
 ## texture path. category: the specialty the featured student is picked from
@@ -191,14 +192,19 @@ static func draw(pool: Array, last: String) -> String:
 	if pool.size() == 1:
 		return str(pool[0])
 	var fresh: Array = pool.filter(func(l: Variant) -> bool: return str(l) != last)
+	if fresh.is_empty():
+		fresh = pool
 	return str(fresh[randi() % fresh.size()])
 
 
 ## The line EventDialogue shows for `key`: drawn from pool_for without
 ## repeating the last one, with {nama} filled in.
 static func pick_line(key: String, featured: StudentData) -> String:
-	var line: String = draw(pool_for(key, featured), str(_last_line.get(key, "")))
-	_last_line[key] = line
+	var memo: String = key
+	if featured != null and entry(key).get("speaker", "") == SPEAKER_STUDENT:
+		memo = key + "|" + featured.student_name
+	var line: String = draw(pool_for(key, featured), str(_last_line.get(memo, "")))
+	_last_line[memo] = line
 	return fill_line(line, featured)
 
 
@@ -218,7 +224,9 @@ static func win_pool_for(speaker_path: String, category: String, featured: Stude
 ## The win screen's line: drawn from win_pool_for without repeating the last
 ## one for the same speaker and category.
 static func win_line_for(speaker_path: String, category: String, featured: StudentData) -> String:
-	var memo := "win|%s|%s" % [speaker_path, category]
+	var memo := "win|%s|%s" % [category, speaker_path]
+	if featured != null and speaker_path != WIN_TEACHER.get(category, ""):
+		memo = "win|%s|%s" % [category, featured.student_name]
 	var line: String = draw(win_pool_for(speaker_path, category, featured), str(_last_line.get(memo, "")))
 	_last_line[memo] = line
 	return line

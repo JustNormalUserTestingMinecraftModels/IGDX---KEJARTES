@@ -595,6 +595,24 @@ func test_pick_line_fills_the_name() -> void:
 		assert_false(EventDialogueCatalog.pick_line("nasi_kotak", thea).contains("{nama}"))
 
 
+func test_pick_line_never_repeats_back_to_back() -> void:
+	var last: String = ""
+	for i in 30:
+		var got: String = EventDialogueCatalog.pick_line("hujan", null)
+		assert_false(got.is_empty(), "a line is drawn")
+		assert_ne(got, last, "the same line never plays twice in a row")
+		last = got
+
+
+func test_win_line_never_repeats_back_to_back() -> void:
+	var last: String = ""
+	for i in 30:
+		var got: String = EventDialogueCatalog.win_line_for(EventDialogueCatalog.SPLASH_GURU_PENJAS, "Olahraga", null)
+		assert_false(got.is_empty(), "a line is drawn")
+		assert_ne(got, last, "the same line never plays twice in a row")
+		last = got
+
+
 func test_win_pools_follow_the_speaker_and_the_category() -> void:
 	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
 	var fallback := [EventDialogueCatalog.WIN_LINE_STUDENT]
@@ -622,3 +640,5 @@ func test_school_day_hands_over_the_picked_lines() -> void:
 		"the dialogue shows a drawn line")
 	assert_true(src.contains("EventDialogueCatalog.win_line_for(speaker, category, featured)"),
 		"the win screen draws for its speaker and category")
+	assert_true(src.contains("EventDialogueCatalog.entry(key).duplicate()"),
+		"the picked line lands on a copy, never the catalog's own entry")

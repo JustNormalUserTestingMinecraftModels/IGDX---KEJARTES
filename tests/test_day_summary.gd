@@ -1468,19 +1468,17 @@ func test_reward_burst_uses_the_new_particle_sprites() -> void:
 ## coverage of format_needs_delta stays meaningful) but is never
 ## rendered; DeltaChevron is what the player actually sees.
 ##
-## setup_week_row reads its delta from StudentData.get_energy_delta()/
-## get_mood_delta(), which are simply `energy - initial_energy` /
-## `mood - initial_mood` (StudentData.gd) -- so a test controls the
-## delta by setting `initial_energy`/`energy` (or the mood pair) apart,
-## not by passing a delta directly.
+## Since the 2026-09-29 clarity pass the weekly card shows no needs
+## arrows; the chevron belongs to the preview path (the event picker and
+## the item screen), so these drive it through setup_current_row +
+## preview_need, whose delta is the proposed change.
 func test_needs_delta_chevron_points_up_on_a_gain() -> void:
 	var row := _make_row()
 	var student := StudentData.new()
-	student.initial_energy = 40.0
-	student.energy = 48.0  # +8
-	student.initial_mood = 50.0
-	student.mood = 50.0  # +0
-	row.setup_week_row(student)
+	student.energy = 40.0
+	student.mood = 50.0
+	row.setup_current_row(student)
+	row.preview_need("energy", 8.0)
 	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
 	assert_true(chevron.visible, "a gain shows the chevron")
 	assert_eq(chevron.rotation_degrees, 0.0, "a gain points up")
@@ -1492,11 +1490,10 @@ func test_needs_delta_chevron_points_up_on_a_gain() -> void:
 func test_needs_delta_chevron_points_down_on_a_loss() -> void:
 	var row := _make_row()
 	var student := StudentData.new()
-	student.initial_energy = 52.0
-	student.energy = 40.0  # -12
-	student.initial_mood = 50.0
-	student.mood = 50.0  # +0
-	row.setup_week_row(student)
+	student.energy = 52.0
+	student.mood = 50.0
+	row.setup_current_row(student)
+	row.preview_need("energy", -12.0)
 	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
 	assert_true(chevron.visible, "a loss shows the chevron")
 	assert_eq(chevron.rotation_degrees, 180.0, "a loss points down")
@@ -1506,11 +1503,10 @@ func test_needs_delta_chevron_points_down_on_a_loss() -> void:
 func test_needs_delta_chevron_hidden_at_exactly_zero() -> void:
 	var row := _make_row()
 	var student := StudentData.new()
-	student.initial_energy = 40.0
-	student.energy = 40.0  # +0
-	student.initial_mood = 50.0
-	student.mood = 50.0  # +0
-	row.setup_week_row(student)
+	student.energy = 40.0
+	student.mood = 50.0
+	row.setup_current_row(student)
+	row.preview_need("energy", 0.0)
 	var chevron: TextureRect = row.get_node("EnergyBar/DeltaChevron")
 	assert_false(chevron.visible, "no movement, no arrow")
 	row.queue_free()

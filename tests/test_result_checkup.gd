@@ -4,8 +4,8 @@ extends McpTestSuiteCompat
 ## The end-of-week report (ResultCheckup), rebuilt on the Daily Results
 ## card. The card's own geometry, art and daily behaviour belong to
 ## tests/test_day_summary.gd; this suite owns the WEEKLY reading of it --
-## week deltas instead of day deltas, and the two needs numbers the daily
-## card does not show.
+## week deltas instead of day deltas, on a card that otherwise looks and
+## replays exactly like the daily one (2026-09-29 clarity spec).
 ##
 ## Suite constraints, carried from tests/test_day_summary.gd:
 ##  * @tool, or the runner reports the class abstract.
@@ -167,52 +167,6 @@ func test_the_chip_reads_the_change_and_its_colour() -> void:
 	assert_false(DaySummaryStatRow.shows_chip(false, 12.0), "no chip outside chip mode")
 
 
-## Option A: a gain is a green chip, a loss a red one, each followed by the
-## run target; a flat stat keeps the plain "+0/65". The plain label keeps
-## the full reading as data either way.
-func test_the_week_card_marks_gains_and_losses_with_chips() -> void:
-	var inst := _card()
-	var s := _student_with_week(
-		{"akademis": 40.0, "seni_budaya": 30.0, "olahraga": 55.0},
-		{"akademis": 58.0, "seni_budaya": 30.0, "olahraga": 49.0})
-
-	inst.setup_week_row(s)
-
-	var gain: DaySummaryStatRow = inst.stat_rows[0]
-	var flat: DaySummaryStatRow = inst.stat_rows[1]
-	var loss: DaySummaryStatRow = inst.stat_rows[2]
-	assert_true(gain.chip_row.visible, "a gain shows the chip")
-	assert_false(gain.value.visible, "in place of the plain number")
-	assert_eq(gain.delta_chip.theme_type_variation, &"DeltaChipGain", "green")
-	assert_eq(gain.chip_label.text, "+18", "carrying the week's change")
-	assert_eq(gain.target_label.text, "/65", "then the run target")
-	assert_false(gain.chevron.visible, "the chip replaces the gold chevron")
-	assert_eq(gain.value.text, "+18/65", "the plain label still holds the reading")
-	assert_true(loss.chip_row.visible, "a loss shows the chip too")
-	assert_eq(loss.delta_chip.theme_type_variation, &"DeltaChipLoss", "red")
-	assert_eq(loss.chip_label.text, "-6", "with a minus")
-	assert_false(flat.chip_row.visible, "a flat stat shows no chip")
-	assert_true(flat.value.visible, "and keeps the plain number")
-	assert_eq(flat.value.text, "+0/65", "reading +0")
-
-
-## The weekly reveal opens the chip at +0, transparent, and the skip lands
-## it on the week's change, fully shown and at rest.
-func test_the_weekly_reveal_rewinds_and_lands_the_chip() -> void:
-	var inst := _card()
-	inst.setup_week_row(_student_with_week({"akademis": 40.0}, {"akademis": 58.0}))
-	var row: DaySummaryStatRow = inst.stat_rows[0]
-
-	row.rewind()
-	assert_eq(row.chip_label.text, "+0", "the reveal opens the chip at +0")
-	assert_eq(row.delta_chip.modulate.a, 0.0, "armed but transparent until its turn")
-
-	row.land()
-	assert_eq(row.chip_label.text, "+18", "the skip lands the week's change")
-	assert_eq(row.delta_chip.modulate.a, 1.0, "fully shown")
-	assert_eq(row.delta_chip.scale, Vector2.ONE, "at rest")
-
-
 ## The weekly report plays its cards through play_gain, which keys the
 ## reward (pop, burst, gain cue, card sparkle) off the row's gain marker. In
 ## chip mode that marker is the gain chip, so a weekly gain still rewards
@@ -230,36 +184,29 @@ func test_a_weekly_gain_keeps_its_reward_marker() -> void:
 	assert_true(inst.stat_rows[0].chevron.visible, "which is the chevron itself")
 
 
-## A row re-armed after a reveal starts from a visible chip: set_stat undoes
-## what the reveal's pop-in left on it, the way it already does for the chevron.
-func test_a_rearmed_row_resets_its_chip() -> void:
+## The weekly card is the daily card showing a week (2026-09-29 clarity
+## spec): nightly needs colours, the plain "+18/65" readout with the gold
+## chevron, and no needs numbers or arrows.
+func test_the_week_card_wears_the_daily_look() -> void:
 	var inst := _card()
-	var s := _student_with_week({"akademis": 40.0}, {"akademis": 58.0})
-	inst.setup_week_row(s)
-	var row: DaySummaryStatRow = inst.stat_rows[0]
-	row.rewind()
-	row.delta_chip.scale = Vector2(0.5, 0.5)
-	inst.setup_week_row(s)
-	assert_eq(row.delta_chip.modulate.a, 1.0, "the chip is visible again")
-	assert_eq(row.delta_chip.scale, Vector2.ONE, "and at rest")
+	inst.setup_week_row(_student_with_week(
+		{"akademis": 40.0, "energy": 80.0, "mood": 70.0},
+		{"akademis": 58.0, "energy": 62.0, "mood": 85.0}))
+	assert_eq(inst.energy_bar.theme_type_variation, &"DaySummaryEnergyBar",
+		"the nightly energy colour")
+	assert_eq(inst.mood_bar.theme_type_variation, &"DaySummaryMoodBar",
+		"the nightly mood colour")
+	assert_true(inst.stat_rows[0].value.visible, "the plain number shows")
+	assert_eq(inst.stat_rows[0].value.text, "+18/65", "the week's movement")
+	assert_true(inst.stat_rows[0].chevron.visible, "with the gold chevron on a gain")
+	for n in [inst.energy_delta_label, inst.mood_delta_label,
+			inst.energy_delta_chevron, inst.mood_delta_chevron]:
+		assert_false(n.visible, "%s is hidden, as on the daily card" % n.name)
 
 
-## The weekly card wears the game-wide energy yellow and mood pink.
-func test_the_week_card_wears_the_week_needs_bars() -> void:
-	var inst := _card()
-	inst.setup_week_row(_student_with_week({"energy": 80.0}, {"energy": 60.0}))
-	assert_eq(inst.energy_bar.theme_type_variation, &"WeekEnergyBar",
-		"energy is the game-wide yellow")
-	assert_eq(inst.mood_bar.theme_type_variation, &"WeekMoodBar",
-		"mood is the game-wide pink")
-	var ink := DesignTokens.load_default().text_primary
-	assert_eq(inst.energy_delta_chevron.self_modulate, ink, "the energy arrow is dark on the yellow bar")
-	assert_eq(inst.mood_delta_chevron.self_modulate, ink, "and the mood arrow matches")
-
-
-## Scope is the weekly report only: a card re-armed for the nightly popup or
-## a picker drops the week look entirely.
-func test_a_reused_card_drops_the_week_look() -> void:
+## A card re-armed after a weekly report keeps the daily look for the
+## nightly popup and for a picker.
+func test_a_reused_card_keeps_the_daily_look() -> void:
 	var inst := _card()
 	var s := _student_with_week({"akademis": 40.0}, {"akademis": 58.0})
 	inst.setup_week_row(s)
@@ -269,54 +216,14 @@ func test_a_reused_card_drops_the_week_look() -> void:
 		"the nightly energy colour is back")
 	assert_eq(inst.mood_bar.theme_type_variation, &"DaySummaryMoodBar",
 		"the nightly mood colour is back")
-	assert_false(inst.stat_rows[0].chip_row.visible, "no chip in the nightly popup")
 	assert_true(inst.stat_rows[0].value.visible, "the plain number is back")
 	assert_true(inst.stat_rows[0].chevron.visible, "with the gold chevron on a gain")
-	assert_eq(inst.energy_delta_chevron.self_modulate, Color.WHITE, "the nightly arrows keep their gold")
 
 	inst.setup_week_row(s)
 	inst.setup_current_row(s)
 	assert_eq(inst.energy_bar.theme_type_variation, &"DaySummaryEnergyBar",
 		"a picker card keeps the nightly colours")
-	assert_false(inst.stat_rows[0].chip_row.visible, "and shows no chip")
 	assert_true(inst.stat_rows[0].value.visible, "only its standing number")
-
-
-## The bars still read tonight's value -- what is new is the number
-## beside them, which is the week's movement and is shown here (and only
-## here). Energy usually falls over a week and mood usually does not; the
-## pair below is deliberately one of each.
-func test_the_week_card_shows_both_needs_deltas() -> void:
-	var inst := _card()
-	var s := _student_with_week(
-		{"energy": 80.0, "mood": 70.0},
-		{"energy": 62.0, "mood": 85.0})
-
-	inst.setup_week_row(s)
-
-	# The number itself is never rendered any more (2026-09-03
-	# interactivity spec, section 4) -- direction now reads as the
-	# DeltaChevron's rotation. The label still carries the correct text
-	# as data (format_needs_delta's own coverage stays meaningful) but
-	# stays permanently hidden.
-	assert_false(inst.energy_delta_label.visible,
-		"the number is never rendered, even for a real delta")
-	assert_false(inst.mood_delta_label.visible,
-		"same for the mood number")
-	assert_eq(inst.energy_delta_label.text, "-18",
-		"energy fell 80 -> 62 across the week")
-	assert_eq(inst.mood_delta_label.text, "+15",
-		"mood rose 70 -> 85 across the week")
-	var energy_chevron: TextureRect = inst.get_node("EnergyBar/DeltaChevron")
-	var mood_chevron: TextureRect = inst.get_node("MoodBar/DeltaChevron")
-	assert_true(energy_chevron.visible, "a real loss shows the energy chevron")
-	assert_eq(energy_chevron.rotation_degrees, 180.0, "energy fell, so it points down")
-	assert_true(mood_chevron.visible, "a real gain shows the mood chevron")
-	assert_eq(mood_chevron.rotation_degrees, 0.0, "mood rose, so it points up")
-	assert_true(is_equal_approx(inst.energy_bar.value, 62.0),
-		"the bar itself still reads tonight's energy")
-	assert_true(is_equal_approx(inst.mood_bar.value, 85.0),
-		"the bar itself still reads tonight's mood")
 
 
 ## ResultCheckup iterates StudentManager.students and cannot hand over a
@@ -352,7 +259,7 @@ func test_both_entry_points_share_one_stat_row_writer() -> void:
 # ---------------------------------------------------- the week's replay
 
 ## setup_week_row must land the final value on its own, so a card that is
-## never animated is still correct; play_week_gain then rewinds and grows
+## never animated is still correct; play_gain then rewinds and grows
 ## back. 26 -> 52 against a target of 65 is 40% -> 80%.
 func test_the_week_card_rewinds_its_tracks_to_monday() -> void:
 	var inst := _card()
@@ -361,29 +268,41 @@ func test_the_week_card_rewinds_its_tracks_to_monday() -> void:
 	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01,
 		"setup alone must leave tonight's 52/65 on the track")
 
-	inst.play_week_gain()
+	inst.play_gain()
 
 	assert_true(absf(inst.stat_rows[0].track.value - 40.0) <= 0.01,
-		"play_week_gain must rewind the track to Monday's 26/65 = 40%")
+		"play_gain must rewind the track to Monday's 26/65 = 40%")
 
 
-## The needs bars DO move on the weekly card. The spec refuses to animate
-## them on the daily one, because one day's decay replayed beside three
-## growing skill tracks reads as a contradiction -- but the week's
-## movement is exactly what this screen was asked to show, so it moves.
-func test_the_week_card_rewinds_its_needs_bars_to_monday() -> void:
+## play_gain replays the week: the needs bars rewind to Monday and travel
+## back, and every gauge lands on tonight's value.
+func test_the_week_card_replays_with_play_gain() -> void:
 	var inst := _card()
 	var s := _student_with_week(
-		{"energy": 80.0, "mood": 40.0},
-		{"energy": 62.0, "mood": 55.0})
+		{"akademis": 26.0, "energy": 80.0, "mood": 40.0},
+		{"akademis": 52.0, "energy": 62.0, "mood": 55.0})
 	inst.setup_week_row(s)
-
-	inst.play_week_gain()
-
+	inst.play_gain()
+	assert_true(absf(inst.stat_rows[0].track.value - 40.0) <= 0.01,
+		"the track rewinds to Monday's 26/65")
 	assert_true(absf(inst.energy_bar.value - 80.0) <= 0.01,
-		"energy must rewind to Monday's 80 so the week's LOSS is visible as movement")
-	assert_true(absf(inst.mood_bar.value - 40.0) <= 0.01,
-		"mood must rewind to Monday's 40")
+		"energy rewinds to Monday's 80")
+	var tokens := DesignTokens.load_default()
+	var fresh := _card()
+	fresh.setup_week_row(s)
+	_run_and_step(func(): fresh.play_gain(), tokens.dur_slow + 0.2)
+	assert_true(absf(fresh.stat_rows[0].track.value - 80.0) <= 0.01,
+		"the track lands on tonight's 52/65")
+	assert_true(absf(fresh.energy_bar.value - 62.0) <= 0.01, "energy lands")
+	assert_true(absf(fresh.mood_bar.value - 55.0) <= 0.01, "mood lands")
+
+
+## The staged weekly reveal is gone: the card has one replay, play_gain.
+func test_the_card_has_no_weekly_only_replay() -> void:
+	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
+	for dead in ["func play_week_gain", "func rewind_week", "func play_needs_week",
+			"func land_week", "var _needs_tweens", "var _energy_to", "var _energy_delta"]:
+		assert_false(src.contains(dead), "%s left with the weekly reveal" % dead)
 
 
 ## ...and every gauge must end exactly where setup_week_row put it.
@@ -397,7 +316,7 @@ func test_a_played_week_lands_on_tonights_values() -> void:
 	inst.setup_week_row(s)
 	var tokens := DesignTokens.load_default()
 
-	_run_and_step(func(): inst.play_week_gain(), tokens.dur_slow + 0.2)
+	_run_and_step(func(): inst.play_gain(), tokens.dur_slow + 0.2)
 
 	assert_true(absf(inst.stat_rows[0].track.value - 80.0) <= 0.01,
 		"the stat track must end on tonight's 52/65")
@@ -405,34 +324,6 @@ func test_a_played_week_lands_on_tonights_values() -> void:
 		"energy must end on tonight's value")
 	assert_true(absf(inst.mood_bar.value - 55.0) <= 0.01,
 		"mood must end on tonight's value")
-	assert_eq(inst.energy_delta_label.text, "-18",
-		"replaying the week must land exactly on the number, not a float-eased approximation")
-
-
-## Superseded by the 2026-09-03 interactivity pass (spec section 4):
-## the needs delta LABEL is never visible any more, so play_gain's own
-## "if energy_delta_label.visible: count_up_formatted(...)" branch
-## (Scripts/SchoolSimulation/DaySummaryStudentRow.gd) is permanently
-## dead for this label -- there is no more rewind-to-zero-then-count
-## animation to verify. What play_week_gain must still get right is
-## that it does NOT touch the label's already-correct text at all,
-## since the chevron (not the label) is what the player actually sees,
-## and the chevron has no "rewind" concept -- rotation is not a counted
-## number.
-func test_the_week_cards_needs_delta_text_is_untouched_by_play_gain() -> void:
-	var inst := _card()
-	var s := _student_with_week(
-		{"energy": 80.0, "mood": 40.0},
-		{"energy": 62.0, "mood": 55.0})
-	inst.setup_week_row(s)
-
-	assert_eq(inst.energy_delta_label.text, "-18",
-		"setup_week_row already wrote the final text")
-	inst.play_week_gain()
-	assert_eq(inst.energy_delta_label.text, "-18",
-		"play_week_gain leaves it exactly as setup wrote it -- no rewind, no count")
-	assert_eq(inst.mood_delta_label.text, "+15",
-		"same for mood")
 
 
 ## The daily card's needs bars now animate too (2026-08-31 request:
@@ -548,13 +439,13 @@ func test_the_checkup_builds_one_week_card_per_student() -> void:
 	assert_eq(first.stat_rows[0].value.text,
 		"+12/%d" % int(round(manager.students[0].target_akademis)),
 		"the card must read the WEEK's gain against that student's target")
-	# The number label is never rendered any more (2026-09-03
-	# interactivity spec, section 4); the DeltaChevron is what shows
-	# the weekly movement now.
+	# The weekly card shows no needs number or arrow (2026-09-29 clarity
+	# spec); the daily card's hidden delta nodes stay in the scene.
 	assert_false(first.energy_delta_label.visible,
 		"the number itself stays hidden")
 	var chevron: TextureRect = first.get_node("EnergyBar/DeltaChevron")
-	assert_not_null(chevron, "the weekly card still shows its needs delta, as a chevron")
+	assert_not_null(chevron, "the card still carries the chevron node")
+	assert_false(chevron.visible, "but the weekly card shows no needs arrow")
 
 
 ## The old screen hand-built a five-StatBar panel per student, plus an
@@ -572,7 +463,7 @@ func test_the_checkup_no_longer_hand_builds_its_stat_bars() -> void:
 		"the card is built inline, after add_child -- there is no builder left")
 	assert_true(src.contains("setup_week_row("),
 		"the checkup must feed the card the week")
-	assert_true(src.contains("play_week_gain("),
+	assert_true(src.contains("play_gain("),
 		"the checkup must replay the week")
 
 
@@ -582,9 +473,12 @@ func test_the_checkup_no_longer_hand_builds_its_stat_bars() -> void:
 func test_the_checkup_fills_its_cards_after_they_land() -> void:
 	var src := FileAccess.get_file_as_string(_CHECKUP_SCRIPT)
 	assert_true(src.contains("Juice.stagger_in(cards)"),
-		"the cards must still stagger in")
-	assert_true(src.find("Juice.stagger_in(cards)") < src.find("play_week_gain("),
-		"the fill must be kicked off after stagger_in, not before it")
+		"the cards stagger in, as in the daily popup")
+	assert_true(src.contains("cards[i].play_gain("),
+		"each card replays through the daily play_gain")
+	assert_true(src.find("Juice.stagger_in(cards)") < src.find("cards[i].play_gain("),
+		"the fill is kicked off after stagger_in")
+	assert_false(src.contains("play_week_gain"), "the weekly replay is retired")
 
 
 ## A card's @onready nodes -- name_label, energy_bar, stat_rows -- are

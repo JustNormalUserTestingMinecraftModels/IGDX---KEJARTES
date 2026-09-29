@@ -8,6 +8,16 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — The daily verdict's star of the day
+
+The Bintang Hari Ini row on the daily result wore a placeholder crown
+(`Assets/Images/DaySummary/Verdict/crown.svg`, now deleted). It now wears
+`UI/star.png`, the star the end-of-grade StatCheck meter and the verdict's own
+rating already use. Its node is renamed `Crown` -> `StarIcon`, and the slot
+goes from 64x50 to 64x64 so the square star is not squeezed. That is the
+star's smallest draw (357 px into 64), so its `test_texture_mipmaps.gd`
+record moves from 5.10 to 5.58.
+
 ## 2026-09-30 — The daily verdict's final faces
 
 The four placeholder teacher faces on the daily result

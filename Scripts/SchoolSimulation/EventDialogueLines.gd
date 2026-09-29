@@ -410,7 +410,146 @@ const NPC_LINES := {
 }
 
 ## student name -> {category -> lines}: their thanks on the win screen.
-const WIN_STUDENT_LINES := {}
+const WIN_STUDENT_LINES := {
+	"Marcel": {
+		"Akademis": [
+			"Persiapan semalam tidak sia-sia, Pak.",
+			"Catatanku terbukti berguna, Pak!",
+			"Terima kasih atas bimbingannya, Pak.",
+			"Semuanya sesuai dengan yang kubaca, Pak.",
+			"Hasil hari ini akan kucatat di bukuku.",
+		],
+		"SeniBudaya": [
+			"Seni pun bisa dipelajari dari buku, Pak.",
+			"Karya kelas kita rapi sekali, Pak.",
+			"Terima kasih sudah sabar mengajari, Pak.",
+			"Halaman seni di catatanku bertambah, Pak.",
+			"Ketelitian juga penting dalam seni, Pak.",
+		],
+		"Olahraga": [
+			"Ternyata olahraga juga ada rumusnya, Pak!",
+			"Aku sudah membaca strateginya, Pak.",
+			"Hasilnya sepadan dengan lelahnya, Pak.",
+			"Menang berkat persiapan yang matang, Pak.",
+			"Akan kutulis di jurnal harianku, Pak.",
+		],
+	},
+	"Doni": {
+		"Akademis": [
+			"Hore! Otakku ikut berkeringat, Pak!",
+			"Soal pun bisa kukalahkan, Pak!",
+			"Skor kita paling tinggi, Pak! Menang!",
+			"Aku sendiri kaget, Pak! Kita menang!",
+			"Mantap! Terima kasih, Pak!",
+		],
+		"SeniBudaya": [
+			"Juara seni juga kita rebut, Pak!",
+			"Wah! Tanganku kaku, tapi kita menang!",
+			"Lawan berikutnya mana, Pak? Aku siap!",
+			"Terima kasih, Pak! Aku makin semangat!",
+			"Siapa bilang aku cuma jago lari, Pak?",
+		],
+		"Olahraga": [
+			"Menang telak! Ini memang bidangku, Pak!",
+			"Hore! Juara, Pak! Juara!",
+			"Keringatku terbayar lunas, Pak!",
+			"Besok kita tanding lagi, ya, Pak!",
+			"Enggak ada lawan yang sanggup, Pak!",
+		],
+	},
+	"Andi": {
+		"Akademis": [
+			"Pak, kenapa menang rasanya seru sekali?",
+			"Kalau otakku lampu, sekarang terang, Pak!",
+			"Besok ada teka-teki lagi, kan, Pak?",
+			"Aku penasaran, soal berikutnya apa, Pak?",
+			"Seperti menemukan harta karun, Pak!",
+		],
+		"SeniBudaya": [
+			"Pak, lain kali boleh lebih aneh lagi?",
+			"Kenapa seni selalu bikin aku senang, ya?",
+			"Kalau jadi pelangi, kita paling cerah!",
+			"Terima kasih! Kepalaku penuh ide, Pak!",
+			"Wah, karya kita seperti hidup, Pak!",
+		],
+		"Olahraga": [
+			"Pak, kenapa menang bikin kaki ringan?",
+			"Kalau ini dongeng, kita pahlawannya, Pak!",
+			"Bagaimana kalau kita rayakan, Pak?",
+			"Wah, jantungku berdebar kayak genderang!",
+			"Aku mau jadi atlet saja, Pak! Boleh?",
+		],
+	},
+	"Citra": {
+		"Akademis": [
+			"...Jawabanku benar semua. Syukurlah.",
+			"...Aku senang. Terima kasih.",
+			"...Ternyata aku bisa juga, Pak.",
+			"...Tidak usah dipuji keras-keras, Pak.",
+			"...Kelas tenang, pikiranku juga tenang.",
+		],
+		"SeniBudaya": [
+			"...Karya kecil. Tapi aku bangga, Pak.",
+			"...Terima kasih. Hari ini menyenangkan.",
+			"...Aku suka yang sunyi seperti ini.",
+			"...Hatiku hangat. Itu saja, Pak.",
+			"...Boleh kucoba lagi kapan-kapan, Pak?",
+		],
+		"Olahraga": [
+			"...Terima kasih sudah percaya, Pak.",
+			"...Menang. Pelan-pelan, tapi menang.",
+			"...Napasku habis. Tapi rasanya lega.",
+			"...Aku tidak menyangka. Tapi aku senang.",
+			"...Diam-diam aku bangga, Pak.",
+		],
+	},
+	"Shinta": {
+		"Akademis": [
+			"Tuh kan, Pak, santai pun bisa menang!",
+			"Hadiahnya libur sehari, kan, Pak?",
+			"Aku cuma pakai setengah otak. Bercanda!",
+			"Boleh tidur siang sekarang, Pak?",
+			"Sudah kubilang, soalnya gampang, Pak.",
+		],
+		"SeniBudaya": [
+			"Karya asal-asalan pun menang. Bercanda!",
+			"Tuh kan, bakat terpendamku keluar, Pak!",
+			"Menang, Pak! Traktir es teh, ya?",
+			"Tanpa latihan pun jadi. Hebat, kan, Pak?",
+			"Sekarang waktunya bersantai, Pak!",
+		],
+		"Olahraga": [
+			"Siapa bilang aku malas? Tuh kan, menang!",
+			"Besok aku bebas piket, kan, Pak?",
+			"Capek juga, Pak. Bercanda! Seru, kok.",
+			"Santai, Pak. Menang itu memang gampang.",
+			"Terima kasih, Pak! Boleh aku duduk dulu?",
+		],
+	},
+	"Thea": {
+		"Akademis": [
+			"Belajar tiap malam ada hasilnya, Pak!",
+			"Jariku pegal, tapi semua jawaban benar!",
+			"Lega sekali, Pak! Terima kasih!",
+			"Besok aku mau berlatih sekali lagi, Pak.",
+			"Hampir sempurna, Pak! Nanti kuperbaiki.",
+		],
+		"SeniBudaya": [
+			"Latihan berhari-hari terbayar, Pak!",
+			"Pegal semua, tapi hasilnya indah, Pak!",
+			"Sekali lagi, Pak? Biar lebih sempurna!",
+			"Berkat Bapak, latihanku berbuah!",
+			"Akhirnya tidak ada yang meleset, Pak!",
+		],
+		"Olahraga": [
+			"Latihan tiap sore tidak sia-sia, Pak!",
+			"Lenganku pegal, tapi kita menang, Pak!",
+			"Syukurlah, latihanku ada gunanya!",
+			"Skornya bagus. Besok kuulang sekali lagi!",
+			"Aku lega sekali. Terima kasih banyak!",
+		],
+	},
+}
 
 ## category -> lines: the subject teacher's thanks on the win screen
 ## ("Olahraga" is Guru Penjas, "SeniBudaya" is Guru Seni Budaya).

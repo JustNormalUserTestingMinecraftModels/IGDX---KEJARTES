@@ -170,7 +170,9 @@ func test_the_coin_box_rides_in_the_book() -> void:
 
 ## Only the tag idles to a fade: the coin box leaves with the book instead.
 func test_only_the_progress_tag_idles_to_a_fade() -> void:
-	var fade := _lobby.get_node("IdleFade") as IdleFade
+	var fade := _idle_fade()
+	if fade == null:
+		return
 	assert_eq(fade.targets.size(), 1, "one idle-fade target")
 	if fade.targets.size() == 1:
 		assert_eq(fade.targets[0], _lobby.get_node("%ProgressHeader"),
@@ -611,7 +613,7 @@ func test_the_breathe_stops_while_hidden() -> void:
 	hud.set_open(true)
 
 
-## Task 7: IdleFade on the header and coin plate. Fails loudly until the
+## Task 7: IdleFade on the progress tag. Fails loudly until the
 ## [editor] scene step adds an IdleFade node (with an IdleTimer child) at
 ## the Lobby root and wires its targets, matching this suite's Task 3-6
 ## fixture pattern.
@@ -622,7 +624,7 @@ func _idle_fade() -> IdleFade:
 
 
 ## Review M3: an editor event reaching the edited Lobby must not start a
-## fade, or the next scene_save bakes the faded alpha into both plates.
+## fade, or the next scene_save bakes the faded alpha into the progress tag.
 ## A source scan: the editor's own input routing cannot be driven here.
 func test_idle_fade_is_inert_in_the_edited_scene() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/IdleFade.gd")

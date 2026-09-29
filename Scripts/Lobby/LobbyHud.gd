@@ -8,12 +8,12 @@ extends Control
 ## slides down to its chevron peek and the rail slides off the right edge
 ## in the same tween (Q5); the chevron, a vertical drag on the book, or a
 ## double tap anywhere brings it back. Hidden, only the grip peeks above
-## the screen's bottom edge, and the book's buttons ignore input all the same, so a tap during the
-## slide or a reopening tap cannot press one. It also plays the
-## entrance, JADWAL's breathe and the roster-count chip. It stays
-## inactive until the Lobby calls activate(), so the tutorial's spotlight
-## never measures a moving target. Calls come
-## down from Lobby.gd; nothing here reaches up. @tool so the lobby_hud
+## the screen's bottom edge, and the book's buttons ignore input all the
+## same, so a tap during the slide or a reopening tap cannot press one. It
+## also plays the entrance, JADWAL's breathe and the roster-count chip. It
+## stays inactive until the Lobby calls activate(), so the tutorial's
+## spotlight never measures a moving target. Calls come down from Lobby.gd;
+## nothing here reaches up. @tool so the lobby_hud
 ## suite can drive it: _ready wires its own signals ungated and the
 ## autoload ones only in game, and every writer runs from the non-@tool
 ## Lobby or a suite's own instance. It also keeps the three notification

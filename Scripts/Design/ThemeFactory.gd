@@ -2806,7 +2806,7 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_stylebox("panel", "BookPagePanel",
 		_lobby_hud_nine_patch("book_page.png", _BOOK_PAGE_MARGIN))
 
-	# -- CoinPlate / ProgressPlate: the header's cream plates. --
+	# -- CoinPlate / ProgressPlate: the progress tag's and the coin box's cream plates. --
 	theme.add_type("CoinPlate")
 	theme.set_type_variation("CoinPlate", "Panel")
 	theme.set_stylebox("panel", "CoinPlate",

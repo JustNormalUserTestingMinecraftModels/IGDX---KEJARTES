@@ -244,6 +244,8 @@ const BREATH_PEAK := Vector2(1.01, 1.02)
 ## StudentFace.canvas_size: the square every face rig's layers draw on.
 const RIG_CANVAS := Vector2(1280, 1280)
 ## Every nth row and column of the art is checked, to keep the suite fast.
+## 2 art pixels are about 0.57 screen px at the rig's 0.285 scale, so the
+## step misses nothing that matters; do not raise it to speed the suite up.
 const HAIR_SAMPLE_STEP := 2
 
 
@@ -254,6 +256,7 @@ func _gap(a: Rect2, b: Rect2) -> float:
 	return maxf(dx, dy)
 
 
+## Every pair in SPACED keeps its gap, except the authored overlaps.
 func test_hud_pieces_keep_their_spacing() -> void:
 	for i in SPACED.size():
 		for j in range(i + 1, SPACED.size()):
@@ -286,6 +289,8 @@ func _assert_inside_margin(lobby: Control, screen: Vector2) -> void:
 				% [n, str(r), str(screen), EDGE_MARGIN])
 
 
+## Every HUD piece stays EDGE_MARGIN inside the sides and bottom, at 1080x1920
+## and on a 20:9 screen.
 func test_the_hud_sits_inside_the_screen_margin() -> void:
 	_assert_inside_margin(_lobby, Vector2(SCREEN_W, SCREEN_H))
 	var tall_screen := Vector2(SCREEN_W, TALL_SCREEN_H)
@@ -305,6 +310,7 @@ func _assert_fits_rect(c: Control) -> void:
 		"%s needs %s but its rect is %s" % [c.name, str(need), str(room)])
 
 
+## The tag's labels fit their rects at the longest grade, week and star text.
 func test_the_progress_tag_fits_its_longest_lines() -> void:
 	var tag := _hud("ProgressHeader")
 	if tag == null:
@@ -316,6 +322,7 @@ func test_the_progress_tag_fits_its_longest_lines() -> void:
 		_assert_fits_rect(child as Control)
 
 
+## The coin box's Label fits its rect at the largest balance, 999999G.
 func test_the_largest_balance_fits_the_coin_box() -> void:
 	var label := _lobby.get_node_or_null("%DisplayUang/Label") as Label
 	assert_true(label != null, "the coin box needs its Label")
@@ -397,6 +404,8 @@ func _first_hair_in(keep_out: Rect2, tex: Texture2D, portrait: Rect2, bob: float
 			for y in range(y0, y1, HAIR_SAMPLE_STEP):
 				for x in range(x0, x1, HAIR_SAMPLE_STEP):
 					scanned += 1
+					# Opaque means alpha above 0.5: fringe below half alpha falls
+					# inside HAIR_CLEARANCE, so it is not hair. Do not lower it.
 					if img.get_pixel(x, y).a <= 0.5:
 						continue
 					var at := pivot + (origin + Vector2(x, y) * per_pixel - pivot) * peak

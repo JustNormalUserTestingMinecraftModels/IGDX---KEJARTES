@@ -15,7 +15,9 @@ The progress plate is now a 232x192 tag in the gap between the two back-row
 heads. It clears every student's hair and face, in every skin, breathing and at
 full parallax tilt; the art was measured, and `test_lobby_layout` checks it
 pixel by pixel. `Minggu` moved to its own caption (`WEEK_FORMAT` is `"%d / %d"`),
-because the one-line week is 264 px wide. To fit beside the week, the grade badge's padding dropped from `space_sm` to `space_xs` (the `GradeBadge` variation, used only here; one rebake). The coin box moved into the book's
+because the one-line week is 264 px wide. To fit beside the week, the grade
+badge's padding dropped from `space_sm` to `space_xs` (the `GradeBadge`
+variation, used only here; one rebake). The coin box moved into the book's
 step beside JADWAL! and rides the HUD swipe; only the tag idle-fades now. The
 book is back on the 48 px grid (`60d6d7d7`'s nudge had clipped the nav tiles),
 and the rail ends 24 px above the coin box. Spec:

@@ -92,10 +92,12 @@ func test_pools_only_name_real_events() -> void:
 func test_every_line_is_plain_ascii() -> void:
 	for row in _every_line():
 		var line: String = row[1]
+		var clean := true
 		for i in line.length():
 			if line.unicode_at(i) > 0x7E:
-				assert_true(false, "%s: non-ASCII in %s" % [row[0], line])
+				clean = false
 				break
+		assert_true(clean, "%s: non-ASCII in %s" % [row[0], line])
 
 
 func test_no_line_uses_a_banned_form() -> void:

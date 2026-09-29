@@ -20,7 +20,7 @@ Spec: `docs/superpowers/specs/2026-09-29-result-checkup-clarity-design.md`.
 - No test may `await`. Every new `@export`/script keeps a `##` doc line (`test_script_documentation`).
 - Navy is `tokens.event_warning_ink` (#1D196E); no second token with the same hex.
 - Captions: `UANG DIDAPAT`, `MINIGAME MENANG`, `EVENT TERJADI`.
-- Caption style: `font_display`, `tokens.font_body_size` (28), navy `font_color`, no outline.
+- Caption style: `font_display`, `tokens.font_caption` (22), navy `font_color`, no outline.
 - Pill number: white `font_color`, navy `font_outline_color`, `outline_size` unchanged (`tokens.text_outline_size`).
 - Money icon on the banner: `res://Assets/Images/UI/uang.png`. `Placeholders/icon_uang.svg` stays (RunResult uses it).
 - Daily Results popup behaviour must not change.
@@ -60,7 +60,7 @@ func test_pill_number_and_caption_wear_the_navy() -> void:
 	assert_eq(theme.get_font("font", "RecapPillCaptionLabel"), tokens.font_display,
 		"the caption is the heading face")
 	assert_eq(theme.get_font_size("font_size", "RecapPillCaptionLabel"),
-		tokens.font_body_size, "at body size")
+		tokens.font_caption, "at caption size, so each caption fits on one line")
 	assert_eq(theme.get_color("font_color", "RecapPillCaptionLabel"),
 		tokens.event_warning_ink, "in navy")
 ```
@@ -86,10 +86,10 @@ Expected: FAIL (`font_color` is `text_primary`, caption type missing).
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
 
-	# What the number counts, under it: the heading face in the same navy.
+	# What the number counts, under it: the heading face at caption size.
 	theme.add_type("RecapPillCaptionLabel")
 	theme.set_type_variation("RecapPillCaptionLabel", "Label")
-	theme.set_font_size("font_size", "RecapPillCaptionLabel", tokens.font_body_size)
+	theme.set_font_size("font_size", "RecapPillCaptionLabel", tokens.font_caption)
 	theme.set_color("font_color", "RecapPillCaptionLabel", tokens.event_warning_ink)
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillCaptionLabel", tokens.font_display)

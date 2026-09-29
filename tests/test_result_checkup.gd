@@ -625,7 +625,7 @@ func test_pill_number_and_caption_wear_the_navy() -> void:
 	assert_eq(theme.get_font("font", "RecapPillCaptionLabel"), tokens.font_display,
 		"the caption is the heading face")
 	assert_eq(theme.get_font_size("font_size", "RecapPillCaptionLabel"),
-		tokens.font_body_size, "at body size")
+		tokens.font_caption, "at caption size, so each caption fits on one line")
 	assert_eq(theme.get_color("font_color", "RecapPillCaptionLabel"),
 		tokens.event_warning_ink, "in navy")
 

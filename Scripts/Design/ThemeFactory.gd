@@ -3290,10 +3290,11 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
 
-	# What the number counts, under it: the heading face in the same navy.
+	# What the number counts, under it: the heading face at caption size,
+	# so the longest caption (MINIGAME MENANG) fits on one line.
 	theme.add_type("RecapPillCaptionLabel")
 	theme.set_type_variation("RecapPillCaptionLabel", "Label")
-	theme.set_font_size("font_size", "RecapPillCaptionLabel", tokens.font_body_size)
+	theme.set_font_size("font_size", "RecapPillCaptionLabel", tokens.font_caption)
 	theme.set_color("font_color", "RecapPillCaptionLabel", tokens.event_warning_ink)
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillCaptionLabel", tokens.font_display)

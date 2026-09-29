@@ -44,7 +44,7 @@ harder to read than the nightly Daily Results popup it grew out of:
   - `RecapPillValueLabel` changes to white `font_color`, navy
     `font_outline_color`, keeping `outline_size`.
   - New variation `RecapPillCaptionLabel`: `font_display`,
-    `font_body_size` (28 px), navy `font_color`, no outline.
+    `font_caption` (22 px; 28 px wrapped MINIGAME MENANG onto two lines in the live check, so the owner chose the smaller size), navy `font_color`, no outline.
   - Rebake `kejartes_theme.tres`; add `RecapPillCaptionLabel` to
     `DISPLAY_ROSTER` in `tests/test_theme_factory.gd`.
   - ThemeFactory reads `tokens.event_warning_ink` directly for both

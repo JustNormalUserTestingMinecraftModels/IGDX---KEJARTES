@@ -2,8 +2,9 @@
 extends McpTestSuite
 
 ## LobbyProgressHeader and the coin plate (2026-09-27 scrapbook HUD, Task 3):
-## the grade/week/star header at Safe/UI's top left and the restyled money
-## chip at top right, still wired to DailyLoginPanel's flying reward coin.
+## the grade/week/star tag, since the 2026-09-29 layout grid pass in the gap
+## between the back-row heads, and the money chip, now in the book's step
+## beside JADWAL!, still wired to DailyLoginPanel's flying reward coin.
 ##
 ## Suite is @tool and no test here is a coroutine, per the runner
 ## constraints. One Lobby is instanced for the whole suite in suite_setup
@@ -116,6 +117,8 @@ func test_header_draws_grade_week_and_stars() -> void:
 	assert_eq((header.get_node("%GradeNumber") as Label).text, "8")
 	assert_eq((header.get_node("%WeekLabel") as Label).text,
 		LobbyProgressHeader.WEEK_FORMAT % [3, GameState.max_minggu])
+	assert_eq((header.get_node("%WeekCaption") as Label).text, "Minggu",
+		"the word Minggu sits on its own caption above the week")
 	assert_eq((header.get_node("%StarBar") as ProgressBar).value, 0.0,
 		"an empty roster has no stars")
 
@@ -155,6 +158,23 @@ func test_the_reward_coin_still_flies_to_the_wallet() -> void:
 	var panel := _lobby.get_node("DailyReward") as DailyLoginPanel
 	assert_eq(panel.wallet_anchor, _lobby.get_node("%DisplayUang"),
 		"wallet_anchor must follow DisplayUang out of BottomBar")
+
+
+## The 2026-09-29 layout grid pass: the coin box sits in the book's step
+## beside JADWAL!, so it rides the swipe with the book.
+func test_the_coin_box_rides_in_the_book() -> void:
+	var book := _lobby.get_node("%BookHud") as Node
+	var coins := _lobby.get_node("%DisplayUang") as Node
+	assert_true(book.is_ancestor_of(coins), "DisplayUang rides in BookHud")
+
+
+## Only the tag idles to a fade: the coin box leaves with the book instead.
+func test_only_the_progress_tag_idles_to_a_fade() -> void:
+	var fade := _lobby.get_node("IdleFade") as IdleFade
+	assert_eq(fade.targets.size(), 1, "one idle-fade target")
+	if fade.targets.size() == 1:
+		assert_eq(fade.targets[0], _lobby.get_node("%ProgressHeader"),
+			"the tag fades; the coins leave with the book")
 
 
 ## Task 4: the stepped book housing (RaisedBlock/RaisedPage over JADWAL! and
@@ -220,6 +240,9 @@ func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
 	var open_rail := Vector2(rail.offset_left, rail.offset_right)
 	hud.set_open(false)
 	assert_false(hud.is_open)
+	var coins := hud.get_node("%DisplayUang") as Control
+	assert_eq(coins.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_DISABLED,
+		"the hidden book's + cannot be pressed")
 	_assert_only_the_grip_peeks(hud, "the design screen")
 	assert_eq(rail.offset_left, open_rail.x + hud.rail_slide_pixels,
 		"the rail leaves by the right edge with the book (Q5)")
@@ -229,6 +252,8 @@ func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
 		"a hide says how to come back")
 	hud.set_open(true)
 	assert_true(hud.is_open)
+	assert_eq(coins.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_INHERITED,
+		"the reopened book's + works again")
 	assert_eq(Vector2(book.offset_top, book.offset_bottom), open_book,
 		"open returns to the authored rest")
 	assert_eq(Vector2(rail.offset_left, rail.offset_right), open_rail,
@@ -284,6 +309,9 @@ func _assert_only_the_grip_peeks(hud: LobbyHud, where: String) -> void:
 		% [where, grip.position.y, grip.end.y, screen_bottom])
 	assert_true(glyph.end.y <= screen_bottom,
 		"%s: the chevron glyph (bottom %.1f) shows whole" % [where, glyph.end.y])
+	var coins: Rect2 = _drawn_rect(hud.get_node("%DisplayUang") as Control)
+	assert_true(coins.position.y >= screen_bottom,
+		"%s: the coin box (top %.1f) leaves with the book" % [where, coins.position.y])
 	var chip := hud.get_node("%RosterChip") as Control
 	assert_true(is_zero_approx(chip.modulate.a)
 		or _drawn_rect(chip).position.y >= screen_bottom,

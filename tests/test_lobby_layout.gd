@@ -14,6 +14,8 @@ extends McpTestSuite
 ## IconRail) and the art in a centred Classroom, so a node's offsets are no
 ## longer screen coordinates. The Lobby is stood up on the 1080x1920 design
 ## screen (tests/layout_frame.gd) and every check reads real global rects.
+## The 2026-09-29 layout grid pass added the spacing, margin, fit and
+## hair-clearance checks at the end of this file.
 ##
 ## The Meja_* desk layers' 8-10 px nudges inside the Classroom are deliberate
 ## (2026-09-10): at zero offset the desks stopped short of the students'
@@ -32,25 +34,25 @@ const NAV_TILES := ["Koperasi", "Inventory", "ReportStudent"]
 ## Where every HUD control sits on the 1080x1920 design screen. The
 ## 2026-09-27 scrapbook pass (Task 4) replaced the flat BottomBar row with a
 ## stepped book (RaisedPage over Student/Jadwal, ShelfPage over the three
-## tiles) plus ChevronGrip and a right-edge IconRail; these rects are
-## measured from Scenes/Lobby/Lobby.tscn's authored offsets.
-## The owner's nudge of the whole Hud (60d6d7d7, 2026-09-29): every control
-## inside %Hud sits this far from where the scrapbook pass drew it.
-const HUD_NUDGE := Vector2(-41, 112)
+## tiles) plus ChevronGrip and a right-edge IconRail. The 2026-09-29 layout
+## grid pass put the book back on Safe's 48 px margin (undoing 60d6d7d7's
+## nudge), moved the coin box into the book's step beside JADWAL!, lifted the
+## rail to end 24 px above it, and made the progress plate a tag in the gap
+## between the two back-row heads.
 const DESIGN_RECTS := {
-	"Student": Rect2(Vector2(88, 1444) + HUD_NUDGE, Vector2(532, 144)),
-	"Jadwal": Rect2(Vector2(88, 1444) + HUD_NUDGE, Vector2(532, 144)),
-	"Koperasi": Rect2(Vector2(88, 1656) + HUD_NUDGE, Vector2(285, 160)),
-	"Inventory": Rect2(Vector2(397, 1656) + HUD_NUDGE, Vector2(285, 160)),
-	"ReportStudent": Rect2(Vector2(706, 1656) + HUD_NUDGE, Vector2(285, 160)),
-	"ChevronGrip": Rect2(Vector2(214, 1352) + HUD_NUDGE, Vector2(280, 96)),
-	"DisplayUang": Rect2(672, 48, 360, 112),
-	"IconRail": Rect2(Vector2(936, 1040) + HUD_NUDGE, Vector2(96, 456)),
-	"DailyLogin": Rect2(Vector2(936, 1040) + HUD_NUDGE, Vector2(96, 96)),
-	"SettingsButton": Rect2(Vector2(936, 1160) + HUD_NUDGE, Vector2(96, 96)),
-	"AchievementButton": Rect2(Vector2(936, 1280) + HUD_NUDGE, Vector2(96, 96)),
-	"SkinSwitchButton": Rect2(Vector2(936, 1400) + HUD_NUDGE, Vector2(96, 96)),
-	"ProgressHeader": Rect2(48, 48, 516, 168),
+	"Student": Rect2(88, 1444, 532, 144),
+	"Jadwal": Rect2(88, 1444, 532, 144),
+	"Koperasi": Rect2(88, 1656, 285, 160),
+	"Inventory": Rect2(397, 1656, 285, 160),
+	"ReportStudent": Rect2(706, 1656, 285, 160),
+	"ChevronGrip": Rect2(214, 1352, 280, 96),
+	"DisplayUang": Rect2(684, 1444, 348, 112),
+	"IconRail": Rect2(936, 964, 96, 456),
+	"DailyLogin": Rect2(936, 964, 96, 96),
+	"SettingsButton": Rect2(936, 1084, 96, 96),
+	"AchievementButton": Rect2(936, 1204, 96, 96),
+	"SkinSwitchButton": Rect2(936, 1324, 96, 96),
+	"ProgressHeader": Rect2(420, 48, 232, 184),
 }
 
 var _lobby: Control
@@ -217,3 +219,173 @@ func test_front_desks_still_reach_the_rim_at_full_tilt() -> void:
 		"the left front desk starts at x=%.1f; a tilt slides it in %.1f px" % [left_edge, left_swing])
 	assert_true(right_edge >= width + right_swing,
 		"the right front desk ends at x=%.1f; a tilt slides it in %.1f px" % [right_edge, right_swing])
+
+
+# ── the layout grid (2026-09-29) ───────────────────────────────────────────
+
+## Neighbouring HUD pieces sit at least this far apart, px.
+const MIN_GAP := 24.0
+## The HUD pieces the spacing rule covers.
+const SPACED: Array[String] = ["ProgressHeader", "IconRail", "DisplayUang",
+	"RaisedBlock", "Shelf", "ChevronGrip"]
+## Pairs drawn overlapping on purpose: the grip caps the raised block, and
+## the raised block sits on the shelf.
+const AUTHORED_OVERLAPS := [["ChevronGrip", "RaisedBlock"], ["RaisedBlock", "Shelf"]]
+## How far, px, the book, the coin box and the rail keep from the screen's
+## sides and bottom (Safe's margin).
+const EDGE_MARGIN := 48.0
+## A 20:9 phone in the 1080-wide space.
+const TALL_SCREEN_H := 2400.0
+## How far, px, the tag keeps from the nearest back-row hair beyond the
+## parallax swing. The owner wants hair clear, not only faces (spec §2).
+const HAIR_CLEARANCE := 4.0
+## Lobby._animate_breathing's inhale scale, about the rig's bottom centre.
+const BREATH_PEAK := Vector2(1.01, 1.02)
+## StudentFace.canvas_size: the square every face rig's layers draw on.
+const RIG_CANVAS := Vector2(1280, 1280)
+## Every nth row and column of the art is checked, to keep the suite fast.
+const HAIR_SAMPLE_STEP := 2
+
+
+## The distance between two rects: negative when they overlap.
+func _gap(a: Rect2, b: Rect2) -> float:
+	var dx := maxf(a.position.x - b.end.x, b.position.x - a.end.x)
+	var dy := maxf(a.position.y - b.end.y, b.position.y - a.end.y)
+	return maxf(dx, dy)
+
+
+func test_hud_pieces_keep_their_spacing() -> void:
+	for i in SPACED.size():
+		for j in range(i + 1, SPACED.size()):
+			var a: String = SPACED[i]
+			var b: String = SPACED[j]
+			if [a, b] in AUTHORED_OVERLAPS or [b, a] in AUTHORED_OVERLAPS:
+				continue
+			var ca := _hud(a)
+			var cb := _hud(b)
+			if ca == null or cb == null:
+				continue
+			var gap := _gap(_authored_rect(ca), _authored_rect(cb))
+			assert_true(gap >= MIN_GAP - 0.5,
+				"%s and %s are %.1f px apart; the grid wants %d" % [a, b, gap, MIN_GAP])
+
+
+## `lobby`'s book, coin box and rail sit EDGE_MARGIN inside `screen`'s sides
+## and bottom.
+func _assert_inside_margin(lobby: Control, screen: Vector2) -> void:
+	for n: String in ["BookHud", "DisplayUang", "IconRail"]:
+		var c := lobby.get_node_or_null("%" + n) as Control
+		assert_true(c != null, "lobby is missing %" + n)
+		if c == null:
+			continue
+		var r := c.get_global_rect()
+		assert_true(r.position.x >= EDGE_MARGIN - 0.5
+				and r.end.x <= screen.x - EDGE_MARGIN + 0.5
+				and r.end.y <= screen.y - EDGE_MARGIN + 0.5,
+			"%s spans %s on a %s screen; it must sit %d px inside the sides and bottom"
+				% [n, str(r), str(screen), EDGE_MARGIN])
+
+
+func test_the_hud_sits_inside_the_screen_margin() -> void:
+	_assert_inside_margin(_lobby, Vector2(SCREEN_W, SCREEN_H))
+	var tall_screen := Vector2(SCREEN_W, TALL_SCREEN_H)
+	var tall := track(LayoutFrame.stand_up(SCENE, tall_screen)) as Control
+	_assert_inside_margin(tall.get_child(0) as Control, tall_screen)
+
+
+## `c`'s minimum size fits its authored rect. A Control whose minimum size
+## outgrows its rect draws past it: the old 88x84 grade badge really drew
+## 106 wide.
+func _assert_fits_rect(c: Control) -> void:
+	if c == null:
+		return
+	var room := Vector2(c.offset_right - c.offset_left, c.offset_bottom - c.offset_top)
+	var need := c.get_combined_minimum_size()
+	assert_true(need.x <= room.x + 0.5 and need.y <= room.y + 0.5,
+		"%s needs %s but its rect is %s" % [c.name, str(need), str(room)])
+
+
+func test_the_progress_tag_fits_its_longest_lines() -> void:
+	var tag := _hud("ProgressHeader")
+	if tag == null:
+		return
+	(tag.get_node("%GradeNumber") as Label).text = "9"
+	(tag.get_node("%WeekLabel") as Label).text = LobbyProgressHeader.WEEK_FORMAT % [8, 8]
+	(tag.get_node("%StarNum") as Label).text = LobbyProgressHeader.STAR_FORMAT % [3.0, 3.0]
+	for child in tag.get_children():
+		_assert_fits_rect(child as Control)
+
+
+func test_the_largest_balance_fits_the_coin_box() -> void:
+	var label := _lobby.get_node_or_null("%DisplayUang/Label") as Label
+	assert_true(label != null, "the coin box needs its Label")
+	if label == null:
+		return
+	label.text = "999999G"
+	_assert_fits_rect(label)
+
+
+## The rect no back-row hair may enter: the tag grown by the back seats'
+## parallax swing and HAIR_CLEARANCE.
+func _tag_keep_out(tag: Control) -> Rect2:
+	var parallax := _lobby.get_node("World/Classroom/Parallax")
+	var depths := parallax.get("depth_by_child") as Dictionary
+	var depth: float = depths.get("StudentPortraitsContainer_Back", 0.0)
+	var reach: Vector2 = (parallax.get("travel") as Vector2) * depth \
+		+ Vector2.ONE * HAIR_CLEARANCE
+	return _authored_rect(tag).grow_individual(reach.x, reach.y, reach.x, reach.y)
+
+
+## The first on-screen point where `tex`, drawn as a face rig into
+## `portrait` (StudentFace.fit_canvas: keep aspect, centred) at rest or at
+## its breathing peak, puts an opaque pixel inside `keep_out`; Vector2.INF
+## when none does.
+func _first_hair_in(keep_out: Rect2, tex: Texture2D, portrait: Rect2) -> Vector2:
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()
+	var fit := minf(portrait.size.x / RIG_CANVAS.x, portrait.size.y / RIG_CANVAS.y)
+	var drawn := RIG_CANVAS * fit
+	var origin := portrait.position + (portrait.size - drawn) * 0.5
+	var per_pixel := drawn / Vector2(img.get_width(), img.get_height())
+	var pivot := Vector2(portrait.get_center().x, portrait.end.y)
+	for peak: Vector2 in [Vector2.ONE, BREATH_PEAK]:
+		# Only the art pixels that can land in keep_out at this breath.
+		var lo := (pivot + (keep_out.position - pivot) / peak - origin) / per_pixel
+		var hi := (pivot + (keep_out.end - pivot) / peak - origin) / per_pixel
+		var x0 := clampi(floori(lo.x), 0, img.get_width())
+		var x1 := clampi(ceili(hi.x) + 1, 0, img.get_width())
+		var y0 := clampi(floori(lo.y), 0, img.get_height())
+		var y1 := clampi(ceili(hi.y) + 1, 0, img.get_height())
+		for y in range(y0, y1, HAIR_SAMPLE_STEP):
+			for x in range(x0, x1, HAIR_SAMPLE_STEP):
+				if img.get_pixel(x, y).a <= 0.5:
+					continue
+				var at := pivot + (origin + Vector2(x, y) * per_pixel - pivot) * peak
+				if keep_out.has_point(at):
+					return at
+	return Vector2.INF
+
+
+## The owner's rule for the tag (spec §2): it clears every back-row student's
+## hair and face, for every student and skin, in both back seats, breathing
+## and swaying with the parallax.
+func test_the_progress_tag_clears_every_back_row_head() -> void:
+	var tag := _hud("ProgressHeader")
+	if tag == null:
+		return
+	var keep_out := _tag_keep_out(tag)
+	var back := _lobby.get_node("World/Classroom/StudentPortraitsContainer_Back")
+	for slot: String in ["Slot1", "Slot2"]:
+		var portrait := (back.get_node(slot + "/Portrait") as Control).get_global_rect()
+		for student: String in StudentSkins.NAMES:
+			for id: String in StudentSkins.skins_for(student):
+				var path := StudentSkins.layer_path(student, id, "face_base")
+				var tex := load(path) as Texture2D
+				assert_true(tex != null, "no face base at " + path)
+				if tex == null:
+					continue
+				var hit := _first_hair_in(keep_out, tex, portrait)
+				assert_eq(hit, Vector2.INF,
+					"%s (%s) in %s reaches the tag's keep-out %s at %s"
+						% [student, id, slot, str(keep_out), str(hit)])

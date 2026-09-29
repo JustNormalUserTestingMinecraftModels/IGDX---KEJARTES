@@ -31,10 +31,6 @@ var has_time_limit: bool = false
 
 # ─── Tutorial Settings (Inspector Editable) ─────────────────────────────────
 @export_group("Tutorial")
-## Title shown on the pre-game tutorial popup, if this game shows one.
-@export var tutorial_title: String = ""
-## Body text for the same pre-game tutorial popup.
-@export_multiline var tutorial_instructions: String = ""
 ## This game's CARA MAIN card (Resources/Minigames/HowTo/<Game>.tres).
 @export var how_to: MinigameHowTo
 
@@ -182,10 +178,20 @@ func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 		max_game_time = time_limit
 		game_time_left = time_limit
 		has_time_limit = true
-		_create_visual_timer()
 	else:
 		has_time_limit = false
-	_create_pause_button()
+	var strip := header()
+	if strip != null:
+		strip.show_timer = has_time_limit
+		strip.set_time(game_time_left, max_game_time)
+		strip.set_pause_enabled(true)
+		if not strip.pause_pressed.is_connected(_on_pause_button_pressed):
+			strip.pause_pressed.connect(_on_pause_button_pressed)
+	else:
+		# Legacy chrome for a scene not yet migrated; Task 16 deletes it.
+		if has_time_limit:
+			_create_visual_timer()
+		_create_pause_button()
 
 func _create_pause_button() -> void:
 	if pause_button:
@@ -271,7 +277,9 @@ func _notification(what: int) -> void:
 func _on_pause_button_pressed() -> void:
 	if not is_game_active or is_paused:
 		return
-		
+	if header() != null:
+		pause_minigame()
+		return
 	_play_pause_button_boing_animation()
 
 func _play_pause_button_boing_animation() -> void:
@@ -432,6 +440,9 @@ func _process(delta: float) -> void:
 			lose_game()
 		if visual_timer:
 			visual_timer.queue_redraw()
+		var strip := header()
+		if strip != null:
+			strip.set_time(game_time_left, max_game_time)
 
 func apply_time_penalty(seconds: float) -> void:
 	if not is_game_active or not has_time_limit or is_paused:
@@ -441,56 +452,60 @@ func apply_time_penalty(seconds: float) -> void:
 		game_time_left = 0.0
 		lose_game()
 
-func _get_active_tutorial_title() -> String:
-	if tutorial_title != "":
-		return tutorial_title
-	var s_name = ""
-	if get_script() and get_script().resource_path != "":
-		s_name = get_script().resource_path.get_file().get_basename()
-	if s_name == "" or s_name == "BaseMinigame":
-		s_name = name
-	match s_name:
-		"PilihanGanda": return "🎓 Pilihan Ganda"
-		"Menjodohkan": return "🔗 Menjodohkan"
-		"Password": return "🔢 Password"
-		"Variabel": return "🧮 Variabel"
-		"MainBola": return "⚽ Tendangan Penalti"
-		"Badminton": return "🏸 Badminton"
-		"BuatBatik": return "🎨 Membuat Batik"
-		"LombaMenari": return "💃 Lomba Menari"
-		_: return "🎮 Tutorial Minigame"
-
-func _get_active_tutorial_instructions() -> String:
-	if tutorial_instructions != "":
-		return tutorial_instructions
-	var s_name = ""
-	if get_script() and get_script().resource_path != "":
-		s_name = get_script().resource_path.get_file().get_basename()
-	if s_name == "" or s_name == "BaseMinigame":
-		s_name = name
-	match s_name:
-		"PilihanGanda": return "Baca pertanyaan dengan teliti, lalu pilih satu jawaban yang paling benar dari pilihan yang tersedia.\n\nJawaban salah akan mengurangi waktu 3 detik!"
-		"Menjodohkan": return "Geser kartu pertanyaan dan jawaban menggunakan tombol panah kiri/kanan.\n\nPasangkan pertanyaan dengan jawaban yang benar, lalu tekan tombol Kunci (🔒).\n\nSetelah semua pasangan terkunci, tekan tombol Kirim untuk menyelesaikan!"
-		"Password": return "Selesaikan soal matematika (penjumlahan/pengurangan) yang ditampilkan di layar.\n\nGunakan keypad angka untuk memasukkan jawaban.\n\nJawaban benar akan lanjut ke soal berikutnya!"
-		"Variabel": return "Temukan nilai variabel yang belum diketahui dari persamaan yang diberikan.\n\nMasukkan jawaban menggunakan numpad, lalu tekan tombol Kirim.\n\nSetiap jawaban benar akan menampilkan nilai variabel yang tersembunyi!"
-		"MainBola": return "Geser jari ke arah gawang untuk menendang bola.\n\nArahkan tendangan ke kotak target yang bergerak di dalam gawang.\n\nCetak gol sebanyak-banyaknya sebelum kesempatan habis!"
-		"Badminton": return "Geser jari di area bawah layar untuk menggerakkan pemukul.\n\nPantulkan shuttlecock melewati lawan untuk mencetak poin.\n\nRaih skor target lebih dulu untuk menang!"
-		"BuatBatik": return "Seret alat-alat batik ke kanvas dalam urutan yang benar:\nPensil → Canting → Pewarna → Kompor\n\nTahan alat untuk melihat deskripsinya.\n\nUrutan salah akan mengurangi waktu!"
-		"LombaMenari": return "Geser jari ke arah panah saat not musik memasuki zona target di layar.\n\nGeser tepat waktu untuk mendapatkan skor lebih tinggi!\n\nRaih skor target untuk menang, tapi terlalu banyak not terlewat berarti kalah!"
-		_: return "Selesaikan minigame dengan baik!"
-
 func activate_minigame() -> void:
-	var active_title = _get_active_tutorial_title()
-	var active_instructions = _get_active_tutorial_instructions()
-	if active_title != "" and GameSettings.minigame_tutorial_enabled:
-		var tut_scene = load("res://Scenes/Minigames/UI/MinigameTutorial.tscn")
-		var tutorial = tut_scene.instantiate() if tut_scene else preload("res://Scripts/Minigames/UI/MinigameTutorial.gd").new()
+	var key := how_to.resource_path if how_to != null else ""
+	if should_show_how_to(GameSettings.minigame_tutorial_enabled,
+			GameState.seen_minigame_how_to, key):
+		GameState.seen_minigame_how_to[key] = true
+		var tutorial: MinigameTutorial = (load("res://Scenes/Minigames/UI/MinigameTutorial.tscn")
+			as PackedScene).instantiate()
 		_get_or_create_ui_layer().add_child(tutorial)
 		tutorial.setup(how_to)
 		await tutorial.tutorial_finished
 		tutorial.queue_free()
-		await _play_countdown()
+	await _play_countdown()
 	is_game_active = true
+
+
+## Whether to show the CARA MAIN card: the Settings switch is on, the game
+## has a card, and it has not shown this session. Pure, so it is testable.
+static func should_show_how_to(enabled: bool, seen: Dictionary, key: String) -> bool:
+	return enabled and key != "" and not seen.has(key)
+
+
+# --- mobile layout (spec 2026-09-29 minigame mobile layout, 6) ---------
+
+## The scene's shared top strip, or null in a game not yet migrated.
+func header() -> MinigameHeader:
+	return get_node_or_null("%MinigameHeader") as MinigameHeader
+
+
+## The scene's tray or hint pill -- whichever it has -- or null.
+func _hint_host() -> Node:
+	var tray := get_node_or_null("%MinigameTray")
+	return tray if tray != null else get_node_or_null("%MinigameHintPill")
+
+
+## Show `text` in the hint line, at full strength.
+func show_hint(text: String) -> void:
+	var host := _hint_host()
+	if host != null:
+		host.set_hint(text)
+
+
+## Fade the hint once the player has shown they know what to do.
+func hint_settle() -> void:
+	var host := _hint_host()
+	if host != null:
+		host.settle()
+
+
+## Fill the strip's progress bar (value of max_value) and write its label.
+func set_progress(value: int, max_value: int, label: String) -> void:
+	var strip := header()
+	if strip != null:
+		strip.set_progress(value, max_value, label)
+
 
 var result_subtitle: String = ""
 
@@ -500,6 +515,8 @@ func win_game() -> void:
 	if pause_button:
 		pause_button.disabled = true
 		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if header() != null:
+		header().set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)
@@ -513,6 +530,8 @@ func abandon_game() -> void:
 	if pause_button:
 		pause_button.disabled = true
 		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if header() != null:
+		header().set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)
@@ -526,6 +545,8 @@ func lose_game() -> void:
 	if pause_button:
 		pause_button.disabled = true
 		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if header() != null:
+		header().set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)
@@ -723,7 +744,7 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 		var popup: MinigameResultPopup = result_popup_scene.instantiate()
 		add_child(popup)
 		popup.configure(is_win, stars, mg_score, mg_max_score,
-			_get_active_tutorial_title(), mg_category, stat_delta, energy_delta, mood_delta,
+			(how_to.title if how_to != null else name), mg_category, stat_delta, energy_delta, mood_delta,
 			{
 				"popup_card_texture": popup_card_texture, "popup_card_color": popup_card_color,
 				"popup_border_color": popup_border_color, "popup_dim_color": popup_dim_color,

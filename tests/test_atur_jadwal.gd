@@ -512,8 +512,8 @@ func test_peringatan_pops_in_over_a_scrim_with_shake_and_fail_sfx() -> void:
 		"an incomplete-schedule attempt must play the fail sfx")
 
 
-## CLAUDE.md flags AturJadwal.gd as holding its own copies of numbers that
-## also live in Balance.gd. A shadow constant means the tester edits Balance,
+## AturJadwal.gd once held its own copies of numbers that also live in
+## Balance.gd (removed in 3b72fc1a). A shadow constant means the tester edits Balance,
 ## reruns, and the screen does not move -- the exact failure Balance.gd exists
 ## to prevent.
 func test_no_shadow_balance_constants_remain() -> void:

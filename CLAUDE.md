@@ -9,8 +9,8 @@ Indonesian-language school-management sim. Main scene:
 You play a teacher. Approve a roster, assign each student a daily activity for
 the school week, then watch the week simulate: stats move, minigames and random
 events fire, and a report lands at week's end. Clear two-thirds of the roster's
-academic targets — `run_stars() >= 2.0` of 3.0 — before the grade's final week
-to pass. It is a roster-wide fraction, not a per-student gate: three students
+academic targets — `run_stars() >= 2.0` of 3.0 — by the end of the grade's
+final week to pass. It is a roster-wide fraction, not a per-student gate: three students
 clearing everything while a fourth clears nothing is 9 of 12 = 2.25 stars, and
 passes.
 
@@ -28,9 +28,10 @@ Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
 
 **Loop:** **MainMenu (boot)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →
-**Lobby (hub)** → AturJadwal (assign week) → StudentList → SchoolDay (simulate
-5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
-**TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
+**Lobby (hub)** → AturJadwal (assign week; StudentList is its picker) → SchoolDay
+(simulate 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay then
+runs **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult** →
+StudentCard (next grade, or a retry) or MainMenu (`RunResult.destination_for()`).
 Every mid-day minigame and random event opens with the sliding EventWarning,
 then an EventDialogue line (`EventDialogueCatalog`, drawn from `EventDialogueLines`); the three pick-students
 events ask Tolak / Terima there, before their picker. Settings' **Lewati Dialog
@@ -55,11 +56,11 @@ needs (`energy`, `mood`), all 0–100. Five schedule categories:
 
 - `Akademis` / `SeniBudaya` / `Olahraga` — gain that skill, cost energy+mood.
 - `Istirahat` — recover energy+mood, no skill gain.
-- `Wirausaha` — no skill gain; earns money at a higher mood/energy cost, accrued
-  into `GameState.pending_earnings` and paid out at week end.
+- `Wirausaha` — no skill gain; earns money for a flat, unscaled 10 energy + 6
+  mood, accrued into `GameState.pending_earnings` and paid out at week end.
 
-Costs scale by `get_category_efficiency_multiplier()`: 0.6× for the student's
-specialty, 0.85× for `Seimbang`, 1.20× otherwise. A student at energy ≤ 5
+Costs scale by `get_category_efficiency_multiplier()` (`Balance.BIAYA_KALAU_*`):
+0.55× for the student's specialty, 0.85× for `Seimbang`, 1.28× otherwise. A student at energy ≤ 5
 auto-takes "Izin" (forced Istirahat).
 
 **Personalities** (`Aktif`/`Tekun`/`Kreatif`/`Santai`/`Seni Dalam Kesunyian`)
@@ -84,6 +85,8 @@ read-only for us.
 | `ItemDatabase`, `Cart` | Shop item catalog and cart. |
 | `Achievements`, `AchievementToast` | Achievement tracker (saved), prize multipliers, unlock banner. |
 | `_mcp_game_helper` | Godot AI MCP runtime hook. |
+| `LookLayer` | Bloom, vignette and grain over every screen; off unless `GameSettings.look_layer_enabled`. |
+| `RewardFeedback` | `play(moment, anchor, opts)` fires sound, particles, haptics and shake by tier. |
 
 ### The two student representations — know which you're holding
 
@@ -105,12 +108,10 @@ event screens and result portraits dress for the day via `splash_for_day`.
 Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
 disk (`user://inventory.cfg`, flushed at the top of every
 `Transition.change_scene`, loaded in `GameState._ready`), plus achievement
-progress (`user://achievements.cfg`, saved by `Achievements` on every change,
-but wiped on every launch while the debug `Achievements.RESET_ON_LAUNCH` is on). Roster, money, week,
+progress (`user://achievements.cfg`, saved by `Achievements` on every change;
+the debug `RESET_ON_LAUNCH` wipe is in DEBT.md). Roster, money, week,
 grade and schedules are session-scoped by design. **Do not add further
-persistence without being asked.** Item boosts land on `approved_students`,
-which is not persisted, so a boost applied and not simulated before quit is
-lost. Debug > General > **🧹 Forget Session** wipes `GameState` and deletes the
+persistence without being asked.** Debug > General > **🧹 Forget Session** wipes `GameState` and deletes the
 save; the three `*_inventory` functions no-op under `Engine.is_editor_hint()`.
 
 `-REFERENCE-/prototype/` is the original prototype — reference only, not built,
@@ -140,19 +141,16 @@ overrides (`separation`, `margin_*`).
 
 Full detail: `docs/superpowers/design/style-guide.md`. **Buttons are lipped**
 faces from `LippedBox`, native only: a script StyleBox in the theme errors on
-every debug start. Mint is the main action, never gold. **Popups sit in
-`NotebookFrame`.**
+every debug start. Mint is the main action, never gold.
 
 **The second rule: no visual is built at runtime.** Static chrome is a node in
 the `.tscn`; repeated rows are a `PackedScene` template; responsive geometry
 is a `@tool` script driven by documented `@export` knobs. Every script's
 documentation (a `##` file header, a `##` line on every `@export`) is a hard
 rule (`tests/test_script_documentation.gd`). Runtime visual construction is
-still a ratchet (`tests/test_viewport_editability.gd`): a `BASELINE` dict of
-real remaining debt, frozen and only ever lowered, plus an `ALLOWED` dict of
-reviewed, commented, permanent exceptions (per-call-dynamic content, or a
-conditional texture-vs-procedural swap) — see the authoring guide's "Known
-gaps" section.
+still a ratchet (`tests/test_viewport_editability.gd`): `BASELINE` debt is
+only ever lowered, `ALLOWED` holds reviewed permanent exceptions (authoring
+guide, "How this is enforced" and "Known gaps").
 
 Full detail: `docs/superpowers/design/authoring-guide.md`.
 
@@ -195,8 +193,8 @@ alpha before laying out on any soft-edged texture.
   `coin_pulse`, `create_floating_text`, …). It is a plain
   static-function script, **not** an autoload.
 
-Minigames share one layout (strip · field · tray/hint pill, CARA MAIN card;
-spec `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
+Minigames share one layout
+(`docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
 and follow the glyph and popup rules; their inner play art still had no
 polish pass. The debug overlay is out of scope for the design system.
 
@@ -204,7 +202,7 @@ polish pass. The debug overlay is out of scope for the design system.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 188 suites, 3011 tests (2026-09-30).
+the Godot AI MCP `test_run` tool.
 
 Hard constraints:
 
@@ -273,9 +271,9 @@ Verification, not implementation, dominates the cost of a session here.
 **1. Never play the game to reach a state — seed it.** Debug overlay (`F1`, or
 5 taps top-right) → General → **⚡ Seed Playtest State**: roster approved,
 999999G, full inventory, lobby tutorial bypassed. Its **Scenes** tab teleports
-to MainMenu / Lobby / StudentCard / AturJadwal / SchoolDay / SemesterEnd /
-Splashscreen. Seed, teleport, screenshot once. The seed does **not** fill
-`day_schedules`, so schedule-driven screens (SchoolDay, AturJadwal) still need
+to every loop and hub screen (all but EndCutscene), plus Splashscreen. Seed,
+teleport, screenshot once. The seed does **not** fill
+`day_schedules`, so schedule-driven screens (SchoolDay, StudentList) still need
 a pass through Atur Jadwal first. The weekly report needs neither: the Scenes
 tab's **📊 Laporan Mingguan** opens ResultCheckup over the current screen with
 a fixed sample week, leaving the run untouched.
@@ -297,6 +295,8 @@ Autoloads answer to `/root/<Name>` but the reply echoes scene-relative paths
 in seconds; one screenshot costs more tokens than the entire run. Reach for a
 screenshot only to judge something genuinely visual — and when you do, judge it
 at full size. A scaled-down capture cannot show 1px detail, spacing or weight.
+This is about verifying: a visual change still ends with a full-size
+screenshot sent to the user, unasked.
 
 **4. Never hand-edit a `.tscn` while the editor is attached.** Its in-memory
 copy wins and the next `scene_save` silently overwrites your text edit — `scan`,
@@ -321,7 +321,7 @@ guide, "Editor and game recipes".
   instance's **children** report success and are dropped on save. Give the
   sub-scene `@export`s on its root instead — why `ShopHubTile` carries
   `icon_texture`/`caption_text` rather than the hub reaching into
-  `Content/Icon`, and why `ActivityRow` carries `watermark_texture`.
+  `Content/Icon`, and why `ActivityTile` carries `watermark_texture`.
 - *An editor left open across a pull writes its stale tabs back.* Close Godot
   **without saving** before every pull, or any checkout or merge that rewrites
   tracked files, then fully restart it (a new Resource `@export` needs one; see
@@ -356,10 +356,10 @@ never `git switch` or `git checkout` there on an old reading. Re-check
 `git status` and `git reflog -1` in the same command, or put a second task in a
 worktree.
 
-**A full `test_run` drops the bridge.** A full run is 15-20s of
-near-continuous main-thread work, and the plugin's transport does not survive
-it (the `test_run` docs warn that a single test blocking for 20s+ can drop the
-session). It is not memory pressure; that was ruled out.
+**A full `test_run` drops the bridge.** The runner instances scenes test after
+test with no frame between, so deferred layout calls flood the MessageQueue
+and the editor dies. A suite that instances a big scene per test builds it
+once in `suite_setup` instead.
 
 So: **prefer targeted `test_run(suite=...)`** — milliseconds, never dropped.
 Budget one editor restart for each full run you take, and take them at
@@ -375,8 +375,7 @@ savings come from cheaper verification loops, not from fewer tests.
 ## Outstanding debt & placeholders
 
 Placeholders, deferred passes and known bugs live in `docs/superpowers/DEBT.md`;
-grep it before changing a screen or asset. New debt goes there,
-and an entry is deleted once resolved, not marked done. Constraints on future changes stay here, under `## Visual system`.
+grep it before changing a screen or asset. Constraints on future changes stay here, under `## Visual system`.
 
 ## Current work
 
@@ -407,7 +406,8 @@ it costs context on every single run, so it earns its place or it moves.
 ## Conventions
 
 - Game-facing identifiers and all UI text are **Indonesian**; engine and systems code
-  is English. Match whatever the surrounding file does.
+  is English. Match whatever the surrounding file does. Player-facing Indonesian
+  must read naturally and use KBBI-standard words.
 - **File names:** PascalCase `.gd`/`.tscn`; assets `A–Z a–z 0–9 _ - .`
   only (`clean-code.md` rule 1).
 - Commits: Conventional Commits with a scope, e.g.

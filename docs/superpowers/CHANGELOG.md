@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — CLAUDE.md context audit
+
+Every claim in `CLAUDE.md` was checked against source at `a1ddd315`. Fixed:
+the pass rule's timing, the end-of-grade route (RunResult goes on to
+StudentCard or MainMenu), StudentList's place in the loop, Wirausaha's cost
+(flat, not higher), the efficiency multipliers (0.55/0.85/1.28, not
+0.6/0.85/1.20), two missing autoloads, the debug Scenes tab's reach,
+`ActivityRow` → `ActivityTile`, and the cause of the full-run crash. Two user
+rules joined it: KBBI-natural Indonesian copy, and a screenshot for every
+visual change. Four stale pointers into `CLAUDE.md` were repointed.
+
+Moved out of `CLAUDE.md` as history:
+
+- The test count, rewritten by nearly every pass: 188 suites, 3011 tests (2026-09-30).
+- The superseded full-run explanation: "A full run is 15-20s of near-continuous main-thread work, and the plugin's transport does not survive it (the `test_run` docs warn that a single test blocking for 20s+ can drop the session). It is not memory pressure; that was ruled out." The real cause is the MessageQueue flood from per-test scene instancing.
+
 ## 2026-09-29–30 — Minigame mobile layout
 
 The eight minigames now share one screen skeleton, taken from three famous

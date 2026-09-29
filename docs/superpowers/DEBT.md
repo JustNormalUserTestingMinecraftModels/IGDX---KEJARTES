@@ -340,6 +340,10 @@ by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
 
+**Unsimulated item boosts die on quit (moved from CLAUDE.md, 2026-09-30).**
+Item boosts land on `approved_students`, which is not persisted, so a boost applied and not simulated before quit is lost.
+It follows from the session-scoped-run rule; fixing it means persisting the roster, which needs the owner's go-ahead.
+
 **Ambient kit gaps (2026-09-27).** `hdr_2d` is the clean way to bloom only
 the lights without also blooming the near-white paper and sky; it is a
 project-wide rendering change `test_look_layer` pins off today. Measured

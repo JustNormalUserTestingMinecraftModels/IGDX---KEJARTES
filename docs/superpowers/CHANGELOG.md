@@ -8,6 +8,13 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Skin Select's splashes 25% brighter
+
+Every card in the Skin Select carousel (opened from the Lobby) draws its
+splash 25% brighter: `skin_card_focus.gdshader` gains a flat `splash_gain`
+of 1.25, applied on top of the neighbour dimming, so the centred card still
+leads. `test_skin_card` pins the value.
+
 ## 2026-09-30 — Skin Select's splashes lose the colour grade
 
 The warm illustration grade copied into `skin_card_focus.gdshader` on

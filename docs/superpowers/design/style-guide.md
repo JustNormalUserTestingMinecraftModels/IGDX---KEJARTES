@@ -138,12 +138,17 @@ backdrop and its light move into a `World` CanvasLayer at −1 holding one
 `Room` Control; the light is a `LightPool` plus a full-screen `SunShafts`
 (`Scenes/Look/SunShafts.tscn`); the blurred shops (and, in later passes, the
 exam notices) add a flat `ParallaxDiorama`. Minigames and Koperasi keep their
-backdrop on layer 0. **Bloom off the Lobby is a `ScreenGlow`**
-(`Scenes/Look/ScreenGlow.tscn`), named `Bloom`, placed right after the
-screen's last light piece and before anything the player reads: it reads the
-screen drawn so far, so it works on any layer and never blooms the UI. Tune
-its `threshold` per screen on a full-size capture; the values and the method
-are pinned in `tests/test_lobby_look.gd`'s `SCREEN_BLOOM`.
+backdrop on layer 0. **Bloom off the Lobby.** A screen with a `World` layer (ShopHub,
+CosmeticShop, the end-game screens) carries the Lobby's own bloom: an
+`AmbientGlow` named `Glow`, second in the root, whose defaults are
+`lobby_environment.tres`'s values. It blooms layer −1 only, so the UI stays
+crisp. A screen whose art shares layer 0 with its UI (Koperasi, every
+minigame) cannot take it: it blooms whole layers, and measured, it washed
+Koperasi's text out. Those carry a `ScreenGlow` named `Bloom` right after
+their light, which reads only the art drawn before it; thresholds and its 0.8
+intensity are pinned in `tests/test_lobby_look.gd`. Measure an Environment
+glow in the running game, never in an offscreen `SubViewport`, where it does
+not render at all.
 
 ## Swapping fonts
 

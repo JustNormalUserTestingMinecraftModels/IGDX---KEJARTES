@@ -45,12 +45,14 @@ func test_key_press_squishes_and_darkens() -> void:
 
 ## User amendment 2026-09-16: key digits use the heading font, in white.
 ## DisplayLabel is on test_theme_factory's DISPLAY_ROSTER, so it is Boohong.
+## 2026-09-30 (minigame hierarchy): the digit is MinigameKeyLabel -- the
+## heading face at T3 (73), light ink -- so the colour override is gone.
 func test_key_digit_is_the_heading_font_in_white() -> void:
 	var src := FileAccess.get_file_as_string(KEY_SCENE)
-	assert_true(src.contains("theme_type_variation = &\"DisplayLabel\""),
-		"the digit uses the heading face")
-	assert_true(src.contains("theme_override_colors/font_color = Color(1, 1, 1, 1)"),
-		"the digit is white")
+	assert_true(src.contains("theme_type_variation = &\"MinigameKeyLabel\""),
+		"the digit uses the heading face on the minigame ladder")
+	assert_false(src.contains("theme_override_colors/font_color"),
+		"the digit's light ink comes from the variation, not an override")
 
 
 ## Instances `path` into the live tree and registers it for the runner to
@@ -158,10 +160,10 @@ func test_variabel_action_buttons_use_the_lobby_design() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Variabel.tscn")
 	# Kirim is the one mint action; Hapus only clears, so it is brown
 	# (UI depth pass Phase 3, decision P3).
-	assert_eq(src.count("theme_type_variation = &\"PrimaryButtonM\""), 1,
+	assert_eq(src.count("theme_type_variation = &\"MinigameCtaButton\""), 1,
 		"only Kirim wears the mint main-action design")
-	assert_eq(src.count("theme_type_variation = &\"SecondaryButtonM\""), 1,
-		"Hapus wears the brown secondary design, one size step under Kirim")
+	assert_eq(src.count("theme_type_variation = &\"MinigameSecondaryButton\""), 1,
+		"Hapus wears the brown minigame secondary design, at Kirim's T2 size")
 	assert_true(src.contains("text = \"Hapus\""), "clear reads Hapus, not CLear")
 	assert_true(src.contains("text = \"Kirim\""), "submit reads Kirim, not submit")
 
@@ -256,10 +258,10 @@ func test_password_action_buttons_use_the_lobby_design() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Password.tscn")
 	# Kirim is the one mint action; Hapus only clears, so it is brown
 	# (UI depth pass Phase 3, decision P3).
-	assert_eq(src.count("theme_type_variation = &\"PrimaryButtonM\""), 1,
+	assert_eq(src.count("theme_type_variation = &\"MinigameCtaButton\""), 1,
 		"only Kirim wears the mint main-action design")
-	assert_eq(src.count("theme_type_variation = &\"SecondaryButtonM\""), 1,
-		"Hapus wears the brown secondary design, one size step under Kirim")
+	assert_eq(src.count("theme_type_variation = &\"MinigameSecondaryButton\""), 1,
+		"Hapus wears the brown minigame secondary design, at Kirim's T2 size")
 	assert_true(src.contains("text = \"Hapus\""), "clear reads Hapus")
 	assert_true(src.contains("text = \"Kirim\""), "submit reads Kirim")
 

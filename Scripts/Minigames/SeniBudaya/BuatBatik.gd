@@ -11,7 +11,7 @@ extends BaseMinigame
 # ─── Tool 0 (Pencil) ─────────────────────────────────────────────────────────
 @export_group("Tool 0 (Pencil)")
 ## Name shown on the Pencil tool slot and its tooltip.
-@export var tool0_display_name: String = "Specialized Pencil"
+@export var tool0_display_name: String = "Pensil"
 ## Tooltip body text for the Pencil tool.
 @export_multiline var tool0_description: String = "Pengadaan akan sketsa pola awal untuk membuat pola yang kelihatan jelas diatas kain kosong."
 
@@ -104,6 +104,9 @@ const WRONG_LAYER_COLOR: Color = Color(0.8, 0.1, 0.1, 0.45)
 var correct_sequence: Array = ["Tool0", "Tool1", "Tool2", "Tool3"]
 ## The hint's name for each tool, in correct_sequence order.
 const STEP_TOOL_NAMES := ["Pensil", "Canting", "Pewarna", "Kompor"]
+## Where a tool card splits between its picture (above) and its name (below),
+## as a fraction of the card's height; the scene's anchors use the same value.
+const TOOL_NAME_SPLIT := 0.7
 ## Wrong tool placements this run. The star rubric's only input -- BuatBatik
 ## has no score, so a clean sequence is what mastery means here.
 var wrong_attempts: int = 0
@@ -222,11 +225,22 @@ func _apply_visual_exports() -> void:
 		"Tool2": tool2_texture,
 		"Tool3": tool3_texture,
 	}
+	var tool_names := {
+		"Tool0": tool0_display_name,
+		"Tool1": tool1_display_name,
+		"Tool2": tool2_display_name,
+		"Tool3": tool3_display_name,
+	}
 	for tool_node in tools_container.get_children():
 		var tool_tex: Texture2D = tool_texs.get(str(tool_node.name))
 		var tex_rect := tool_node.get_node_or_null("ToolTextureRect") as TextureRect
 		if tool_tex and tex_rect:
 			tex_rect.texture = tool_tex
+		# B4 (2026-09-30): the name each slot's export promises, under its
+		# picture, matched by node name like the art.
+		var name_label := tool_node.get_node_or_null("NameLabel") as Label
+		if name_label:
+			name_label.text = tool_names.get(str(tool_node.name), name_label.text)
 
 	# Tooltip style
 	if tooltip_panel and tooltip_bg_texture:
@@ -709,5 +723,17 @@ func _update_progress_label() -> void:
 	var done := player_sequence.size()
 	var total := correct_sequence.size()
 	set_progress(done, total, "Langkah %d/%d" % [mini(done + 1, total), total])
+	_ring_next_tool()
 	if done < total:
 		show_hint("Seret %s ke kanvas" % STEP_TOOL_NAMES[done])
+
+
+## Rings the tool the next step wants (MinigameToolRing, spec 2026-09-30
+## minigame hierarchy 5.3) and no other; none once every step is placed.
+func _ring_next_tool() -> void:
+	var done := player_sequence.size()
+	var next_name := str(correct_sequence[done]) if done < correct_sequence.size() else ""
+	for tool_node in tools_container.get_children():
+		var ring := tool_node.get_node_or_null("Ring") as Control
+		if ring:
+			ring.visible = str(tool_node.name) == next_name

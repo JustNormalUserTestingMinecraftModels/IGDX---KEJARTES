@@ -19,66 +19,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6wcp2"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.2, 0.5019608, 0.8509804, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_11aq8"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.2, 0.5019608, 0.8509804, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2sjcu"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.2, 0.5019608, 0.8509804, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_brsgn"]
-bg_color = Color(1, 1, 1, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.2, 0.5019608, 0.8509804, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 6
-shadow_offset = Vector2(0, 3)
-
 [node name="BuatBatik" type="Control" unique_id=503659427]
 layout_mode = 3
 anchors_preset = 15
@@ -199,14 +139,15 @@ layout_mode = 2
 hint_text = "Seret Pensil ke kanvas"
 
 [node name="ToolsContainer" type="HBoxContainer" parent="Safe/Column/MinigameTray" unique_id=386440903]
-custom_minimum_size = Vector2(0, 200)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
 [node name="Tool0" type="Control" parent="Safe/Column/MinigameTray/ToolsContainer" unique_id=118316300]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 4
 
 [node name="Bg" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool0" unique_id=1966269172]
@@ -217,21 +158,51 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_6wcp2")
+theme_type_variation = &"MinigameToolCard"
 
 [node name="ToolTextureRect" type="TextureRect" parent="Safe/Column/MinigameTray/ToolsContainer/Tool0" unique_id=1098143081]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.7
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
 mouse_filter = 2
 texture = ExtResource("4_11aq8")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="NameLabel" type="Label" parent="Safe/Column/MinigameTray/ToolsContainer/Tool0"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.7
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"MinigameToolNameLabel"
+text = "Pensil"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Ring" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool0"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"MinigameToolRing"
+
 [node name="Tool1" type="Control" parent="Safe/Column/MinigameTray/ToolsContainer" unique_id=600421237]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 4
 
 [node name="Bg" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool1" unique_id=493038280]
@@ -242,21 +213,51 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_11aq8")
+theme_type_variation = &"MinigameToolCard"
 
 [node name="ToolTextureRect" type="TextureRect" parent="Safe/Column/MinigameTray/ToolsContainer/Tool1" unique_id=264258213]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.7
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
 mouse_filter = 2
 texture = ExtResource("5_2sjcu")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="NameLabel" type="Label" parent="Safe/Column/MinigameTray/ToolsContainer/Tool1"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.7
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"MinigameToolNameLabel"
+text = "Canting"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Ring" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool1"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"MinigameToolRing"
+
 [node name="Tool2" type="Control" parent="Safe/Column/MinigameTray/ToolsContainer" unique_id=1362480527]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 4
 
 [node name="Bg" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool2" unique_id=923123314]
@@ -267,21 +268,51 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_2sjcu")
+theme_type_variation = &"MinigameToolCard"
 
 [node name="ToolTextureRect" type="TextureRect" parent="Safe/Column/MinigameTray/ToolsContainer/Tool2" unique_id=2120831536]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.7
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
 mouse_filter = 2
 texture = ExtResource("6_brsgn")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="NameLabel" type="Label" parent="Safe/Column/MinigameTray/ToolsContainer/Tool2"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.7
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"MinigameToolNameLabel"
+text = "Pewarna"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Ring" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool2"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"MinigameToolRing"
+
 [node name="Tool3" type="Control" parent="Safe/Column/MinigameTray/ToolsContainer" unique_id=1479460138]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 4
 
 [node name="Bg" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool3" unique_id=102506433]
@@ -292,14 +323,43 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_brsgn")
+theme_type_variation = &"MinigameToolCard"
 
 [node name="ToolTextureRect" type="TextureRect" parent="Safe/Column/MinigameTray/ToolsContainer/Tool3" unique_id=1762462214]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.7
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
 mouse_filter = 2
 texture = ExtResource("7_3e0kn")
 expand_mode = 1
 stretch_mode = 5
+
+[node name="NameLabel" type="Label" parent="Safe/Column/MinigameTray/ToolsContainer/Tool3"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.7
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_type_variation = &"MinigameToolNameLabel"
+text = "Kompor"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Ring" type="Panel" parent="Safe/Column/MinigameTray/ToolsContainer/Tool3"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_type_variation = &"MinigameToolRing"

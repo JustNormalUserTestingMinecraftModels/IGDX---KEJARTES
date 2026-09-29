@@ -28,10 +28,11 @@ extends BaseMinigame
 ## Assign a custom Font resource. Leave null to use the project theme font.
 @export var font: Font = null
 ## Font size a short problem is shown at; a longer one shrinks from here
-## until it fits the card (see SoalFit.gd).
-@export var problem_font_size: int  = 96
-## Smallest size SoalFit will shrink a problem to.
-@export var min_problem_font_size: int = 28
+## until it fits the card (see SoalFit.gd). T4 (118): a sum is short.
+@export var problem_font_size: int  = MinigameType.T4
+## Smallest size SoalFit will shrink a problem to: T2 (45), one rung below
+## the question, never lower (spec 2026-09-30 minigame hierarchy, 3).
+@export var min_problem_font_size: int = MinigameType.T2
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
@@ -63,8 +64,8 @@ const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
 var typed_answer: String = ""
 
 @onready var score_hud: MinigameHeader = %MinigameHeader
-@onready var progress_label: Label       = %SoalCard/StatusBadge/BadgeLabel
-@onready var problem_label: Label        = %SoalCard/VBox/TextLabel
+@onready var progress_label: Label       = %SoalCard/Inner/StatusBadge/BadgeLabel
+@onready var problem_label: Label        = %SoalCard/Inner/VBox/TextLabel
 @onready var kalkulator: Control         = %Kalkulator
 @onready var clear_button: Button        = %BtnHapus
 @onready var submit_button: Button       = %BtnKirim
@@ -72,6 +73,9 @@ var typed_answer: String = ""
 func _ready() -> void:
 	super._ready()
 	_apply_visual_exports()
+	# The card shares the calculator's column (spec 2026-09-30 minigame
+	# hierarchy, H6): as wide as the calculator body, never wider.
+	kalkulator.follow_width(%SoalCard)
 	setup_game()
 	if submit_button:
 		submit_button.pressed.connect(_on_enter_pressed)

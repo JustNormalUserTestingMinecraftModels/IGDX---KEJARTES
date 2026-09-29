@@ -19,8 +19,10 @@ const HINT_META := &"minigame_tray_hint"
 ## The hint's alpha after the player's first correct action (ours; spec 6).
 const SETTLED_ALPHA := 0.6
 ## Inner padding (left, top, right, bottom) between the plank's edge and
-## its content.
-const PADDING := Vector4i(28, 28, 28, 24)
+## its content. No side padding since 2026-09-30 (minigame hierarchy, 4):
+## the host's SafeAreaMargin already holds everything 48 px (screen_margin)
+## from the screen edge, and the tray's content keeps that one edge.
+const PADDING := Vector4i(0, 28, 0, 24)
 
 ## The one-line hint under the controls.
 @export var hint_text: String = "":

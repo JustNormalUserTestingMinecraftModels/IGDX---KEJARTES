@@ -34,14 +34,18 @@ const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
 ## The rungs a tile's text may take, font_display_size down to font_title.
 ## A tile is a short phrase on a big card, so it starts at the top of the
 ## ladder rather than the question rung.
-const TILE_TEXT_MAX := 96
-const TILE_TEXT_MIN := 36
+const TILE_TEXT_MAX := MinigameType.T3
+const TILE_TEXT_MIN := MinigameType.T2
 
 @export_group("Card Templates")
 ## Template instantiated once per question into the question carousel.
 @export var question_card_scene: PackedScene = preload("res://Scenes/Minigames/Akademis/QuestionCard.tscn")
 ## Template instantiated once per answer into the answer carousel.
 @export var answer_card_scene: PackedScene   = preload("res://Scenes/Minigames/Akademis/AnswerCard.tscn")
+## Width of every wheel card: the space between the two 96 px arrow lanes,
+## 28 px clear of each, inside the 48 px screen margin (spec 2026-09-30
+## minigame hierarchy, 5.3): 1080 - 2 * (48 + 96 + 28).
+@export var card_width: float = 736.0
 
 # ─── Visual - Background ─────────────────────────────────────────────────────
 @export_group("Visual - Background")
@@ -73,19 +77,6 @@ const TILE_TEXT_MIN := 36
 @export var button_press_duration: float = 0.07
 ## Margin (pixels) inside the button texture where content is drawn.
 @export var button_texture_margin: int   = 8
-## Submit button's style once every question is locked and it's pressable.
-@export var submit_btn_active_style:   StyleBox = null
-## Submit button's style while questions remain unmatched.
-@export var submit_btn_disabled_style: StyleBox = null
-## Style for both carousels' paging buttons.
-@export var nav_btn_style:             StyleBox = null
-
-# ─── Visual - Colors ─────────────────────────────────────────────────────────
-@export_group("Visual - Colors")
-## Flash tint for a correctly-locked pair.
-@export var correct_color: Color         = Color(0.3, 0.85, 0.4, 1)
-## Flash tint for an incorrect submission.
-@export var wrong_color: Color           = Color(0.9, 0.3, 0.3, 1)
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
@@ -179,15 +170,11 @@ func _apply_visual_exports() -> void:
 		if btn:
 			if button_nav_texture:
 				_apply_custom_button(btn, button_nav_texture)
-			elif nav_btn_style:
-				btn.add_theme_stylebox_override("normal", nav_btn_style)
 	# Apply initial lock and submit button textures
 	if btn_lock and button_lock_texture:
 		_apply_custom_button(btn_lock, button_lock_texture)
 	if btn_submit and button_submit_texture:
 		_apply_custom_button(btn_submit, button_submit_texture)
-	elif btn_submit and submit_btn_disabled_style:
-		btn_submit.add_theme_stylebox_override("normal", submit_btn_disabled_style)
 
 func _apply_custom_button(btn: Button, tex: Texture2D) -> void:
 	if not btn or not tex:
@@ -371,6 +358,7 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 	# Question cards
 	for i in range(questions.size()):
 		var card = question_card_scene.instantiate() as Control
+		card.custom_minimum_size.x = card_width
 		q_wheel_parent.add_child(card)
 		question_cards.append(card)
 		
@@ -415,6 +403,7 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 	# Answer cards
 	for i in range(answers.size()):
 		var card = answer_card_scene.instantiate() as Control
+		card.custom_minimum_size.x = card_width
 		a_wheel_parent.add_child(card)
 		answer_cards.append(card)
 		

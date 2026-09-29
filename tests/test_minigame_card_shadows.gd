@@ -24,6 +24,9 @@ const MIN_SHADOW_SIZE := 8
 
 func _panel_box(scene_path: String) -> StyleBoxFlat:
 	var card = load(scene_path).instantiate()
+	# Since 2026-09-30 the cards' boxes come from the theme (MinigameCard,
+	# MinigameAnswerCard), so the card needs the baked theme to resolve them.
+	card.theme = load("res://Assets/Theme/kejartes_theme.tres")
 	var box := card.get_theme_stylebox("panel") as StyleBoxFlat
 	card.free()
 	return box
@@ -52,27 +55,19 @@ func test_the_answer_card_casts_a_readable_shadow() -> void:
 
 
 ## All three states, not just normal: PilihanGanda swaps between them when
-## the player answers, and a shadow on only one would flicker at that swap.
-func test_every_choice_button_state_carries_the_same_shadow() -> void:
-	var screen = load(PILIHAN_GANDA).instantiate()
-	var boxes := {
-		"normal": screen.answer_btn_normal_style,
-		"correct": screen.answer_btn_correct_style,
-		"wrong": screen.answer_btn_wrong_style,
-	}
-	var report := {}
-	for key in boxes:
-		var b = boxes[key]
-		report[key] = {
-			"is_flat": b is StyleBoxFlat,
-			"alpha": (b.shadow_color.a if b is StyleBoxFlat else -1.0),
-			"size": (b.shadow_size if b is StyleBoxFlat else -1),
-		}
-	screen.free()
-	for key in report:
-		assert_true(report[key]["is_flat"],
-			"answer_btn_%s_style must be an authored StyleBoxFlat, not null" % key)
-		assert_true(report[key]["alpha"] >= MIN_SHADOW_ALPHA,
-			"%s shadow alpha %f is below the floor" % [key, report[key]["alpha"]])
-		assert_true(report[key]["size"] >= MIN_SHADOW_SIZE,
-			"%s shadow size %d is below the floor" % [key, report[key]["size"]])
+## the player answers, and a lip on only one would flicker at that swap.
+## Since 2026-09-30 (minigame hierarchy) the three are theme variations --
+## MinigameChoiceButton and its Correct/Wrong flashes -- all lipped faces from
+## LippedBox, so the pin is one lip height across the three, not a shadow.
+func test_every_choice_button_state_carries_the_same_lip() -> void:
+	var theme := load("res://Assets/Theme/kejartes_theme.tres") as Theme
+	var lips := {}
+	for name in ["MinigameChoiceButton", "MinigameChoiceButtonCorrect",
+			"MinigameChoiceButtonWrong"]:
+		var box := theme.get_stylebox("normal", name) as StyleBoxFlat
+		assert_true(box != null and LippedBox.is_lipped(box), name + " is a lipped face")
+		if box != null:
+			lips[name] = LippedBox.lip_height_of(box)
+	var heights := lips.values()
+	for h in heights:
+		assert_eq(h, heights[0], "every answer state stands on the same lip: %s" % lips)

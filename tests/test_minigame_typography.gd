@@ -30,8 +30,6 @@ const VARIATIONS: Dictionary = {
 	"MinigameMetaLabel": 36,
 	"MinigameBadgeLabel": 28,
 	"MinigameOverlayLabel": 36,
-	"MinigameWheelHeaderWarm": 36,
-	"MinigameWheelHeaderCool": 36,
 }
 
 
@@ -141,10 +139,18 @@ func test_pilihan_ganda_drops_the_loose_trio() -> void:
 ## (seen on device, 2026-09-21). Sizing to content fixes that without
 ## bringing back the reflow -- the Spacer absorbs the difference, so the
 ## buttons sit in the same place whether or not the question has a picture.
+##
+## 2026-09-30 (minigame hierarchy, owner's option A): the card itself now
+## expands to fill the field, 72 px above the tray, and centres the 73 px
+## question in it; the Spacer is gone. The choices still never move, and a
+## picture fills the card's own slot instead of reflowing the screen.
 func test_pilihan_ganda_pins_the_choices_without_reserving_dead_space() -> void:
 	var src := FileAccess.get_file_as_string(PILIHAN)
-	assert_true(src.contains('name="Spacer"'),
-		"a Spacer must hold the choices at the bottom")
+	assert_false(src.contains('name="Spacer"'), "the expanding card replaced the Spacer")
+	var card_at := src.find('[node name="SoalCard"')
+	var card_block := src.substr(card_at, src.find("[node", card_at + 1) - card_at)
+	assert_true(card_block.contains("size_flags_vertical = 3"),
+		"the card expands, so the choices stay at the bottom")
 	assert_false(src.contains("custom_minimum_size = Vector2(0, 960)"),
 		"the card must size to its content, not reserve 960px on every question")
 
@@ -206,7 +212,9 @@ func test_menjodohkan_headers_clear_the_contrast_floor() -> void:
 	for ink in DEAD_INKS:
 		assert_false(src.contains(ink),
 			"Menjodohkan.tscn still carries the mid-tone ink %s" % ink)
-	for name in ["MinigameWheelHeaderWarm", "MinigameWheelHeaderCool"]:
+	# 2026-09-30: SOAL and JAWABAN moved onto the kit's carved plank (gold on
+	# dark brown), which retired the two wheel-header variations.
+	for name in ["MinigamePlankPanel", "MinigamePlankLabel"]:
 		assert_true(src.contains(name),
 			"Menjodohkan.tscn must use the %s variation" % name)
 

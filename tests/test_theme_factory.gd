@@ -341,12 +341,13 @@ const DISPLAY_ROSTER := [
 	"EventDialogHeaderLabel",
 	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.
 	"EventWarningCaptionLabel",
-	# 2026-09-21 minigame type ladder: the badge, the two Menjodohkan wheel
-	# headers and PilihanGanda's choice buttons. The other three variations
+	# 2026-09-21 minigame type ladder: the badge and PilihanGanda's choice
+	# buttons (the two Menjodohkan wheel headers left on 2026-09-30, for the
+	# kit's plank). The other three variations
 	# from that pass -- MinigameQuestionLabel, MinigameMetaLabel and
 	# MinigameOverlayLabel -- are deliberately absent: a quiz question and
 	# its meta are body copy, so they keep the body face.
-	"MinigameBadgeLabel", "MinigameWheelHeaderWarm", "MinigameWheelHeaderCool",
+	"MinigameBadgeLabel",
 	"MinigameChoiceButton",
 	# 2026-09-25 minigame win screen: the bubble line and the stat numbers.
 	"MinigameWinLine", "MinigameWinStatLabel",

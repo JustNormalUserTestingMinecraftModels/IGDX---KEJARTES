@@ -32,14 +32,13 @@ expand_mode = 1
 [node name="Layar" type="Label" parent="Body" unique_id=49057292]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.0968
-anchor_top = 0.0943
-anchor_right = 0.9028
-anchor_bottom = 0.274
+anchor_left = 0.0963
+anchor_top = 0.0935
+anchor_right = 0.9037
+anchor_bottom = 0.2495
 offset_left = 28.0
 offset_right = -28.0
-theme_type_variation = &"DisplayLabel"
-theme_override_constants/outline_size = 0
+theme_type_variation = &"MinigameLcdLabel"
 text = "0"
 horizontal_alignment = 2
 vertical_alignment = 1
@@ -48,13 +47,13 @@ clip_text = true
 [node name="KeyGrid" type="GridContainer" parent="Body" unique_id=922673989]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.1242
-anchor_top = 0.2896
-anchor_right = 0.856
-anchor_bottom = 0.8188
+anchor_left = 0.085
+anchor_top = 0.3
+anchor_right = 0.948
+anchor_bottom = 0.787
 mouse_filter = 2
-theme_override_constants/h_separation = 6
-theme_override_constants/v_separation = 6
+theme_override_constants/h_separation = 44
+theme_override_constants/v_separation = 34
 columns = 3
 
 [node name="Key1" parent="Body/KeyGrid" unique_id=78758206 instance=ExtResource("3_84ox4")]
@@ -131,12 +130,12 @@ metadata/no_auto_juice = true
 [node name="ZeroRow" type="HBoxContainer" parent="Body" unique_id=384263541]
 layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.1242
-anchor_top = 0.8245
-anchor_right = 0.856
-anchor_bottom = 0.9971
+anchor_left = 0.085
+anchor_top = 0.807
+anchor_right = 0.948
+anchor_bottom = 0.955
 mouse_filter = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 44
 alignment = 1
 
 [node name="SpacerKiri" type="Control" parent="Body/ZeroRow" unique_id=1372999956]

@@ -2,38 +2,12 @@
 
 [ext_resource type="Texture2D" uid="uid://bsu4hxxxajoaa" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="1_srhfx"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kthfr"]
-content_margin_left = 24.0
-content_margin_top = 24.0
-content_margin_right = 24.0
-content_margin_bottom = 24.0
-bg_color = Color(0.95686275, 0.972549, 0.99215686, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.12156863, 0.43529412, 0.7294118, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.22)
-shadow_size = 12
-shadow_offset = Vector2(0, 6)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lock"]
-bg_color = Color(0.1, 0.12, 0.16, 0.8)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
 [node name="AnswerCard" type="PanelContainer" unique_id=452346541]
 custom_minimum_size = Vector2(850, 0)
 offset_right = 850.0
 offset_bottom = 430.0
 pivot_offset = Vector2(425, 215)
-theme_override_styles/panel = SubResource("StyleBoxFlat_kthfr")
+theme_type_variation = &"MinigameAnswerCard"
 
 [node name="CardBgTexture" type="TextureRect" parent="." unique_id=317037946]
 layout_mode = 2
@@ -69,7 +43,7 @@ clip_text = true
 [node name="LockOverlay" type="PanelContainer" parent="." unique_id=962033926]
 visible = false
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_lock")
+theme_type_variation = &"MinigameCardLock"
 
 [node name="LockVBox" type="VBoxContainer" parent="LockOverlay" unique_id=563519800]
 layout_mode = 2

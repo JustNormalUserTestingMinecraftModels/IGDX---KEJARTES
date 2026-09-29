@@ -33,10 +33,11 @@ extends BaseMinigame
 ## Assign a custom Font resource. Leave null to use the project theme font.
 @export var font: Font = null
 ## Font size a short question is shown at; longer ones shrink from here
-## until they fit the card (see SoalFit.gd).
-@export var equation_font_size: int       = 64
-## Smallest size _fit_font_size() will shrink a long question to.
-@export var min_equation_font_size: int   = 28
+## until they fit the card (see SoalFit.gd). T3 (73), the question rung.
+@export var equation_font_size: int       = MinigameType.T3
+## Smallest size _fit_font_size() will shrink a long question to: T2 (45),
+## never lower (spec 2026-09-30 minigame hierarchy, 3).
+@export var min_equation_font_size: int   = MinigameType.T2
 ## Font size for the floating time-boost popup text.
 @export var time_boost_font_size: int     = 48
 
@@ -80,8 +81,8 @@ var typed_answer: String = ""
 var _card_text_color: Color = Color.BLACK
 
 @onready var score_hud: MinigameHeader = %MinigameHeader
-@onready var progress_label: Label       = %SoalCard/StatusBadge/BadgeLabel
-@onready var equation_label: Label       = %SoalCard/VBox/TextLabel
+@onready var progress_label: Label       = %SoalCard/Inner/StatusBadge/BadgeLabel
+@onready var equation_label: Label       = %SoalCard/Inner/VBox/TextLabel
 @onready var kalkulator: Control         = %Kalkulator
 @onready var clear_button: Button        = %BtnHapus
 @onready var submit_button: Button       = %BtnKirim
@@ -89,6 +90,9 @@ var _card_text_color: Color = Color.BLACK
 func _ready() -> void:
 	super._ready()
 	_apply_visual_exports()
+	# The card shares the calculator's column (spec 2026-09-30 minigame
+	# hierarchy, H6): as wide as the calculator body, never wider.
+	kalkulator.follow_width(%SoalCard)
 	setup_game()
 	if submit_button:
 		submit_button.pressed.connect(_on_submit_pressed)

@@ -116,7 +116,7 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	sync_score_alias()
 	last_conceding_side = "player"
 	if score_hud:
-		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), target_score)
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), 0)  # "0 - 0" has no target
 	_update_score_ui()
 
 func activate_minigame() -> void:
@@ -589,10 +589,15 @@ func _reset_puck(receiver_side: String = "player") -> void:
 			puck.linear_velocity = target_vel
 		)
 
+## The plaque's gold number is the rally score; its bar is the player's
+## points toward the goal, and the caption names that goal rather than
+## repeating the count (spec 2026-09-30 minigame hierarchy, 5.1). The court
+## art sits 48 px higher than the screen (Background offsets, with Surround
+## filling the strip below) so its painted baseline clears the hint pill (B5).
 func _update_score_ui() -> void:
 	if score_hud:
 		score_hud.set_label_text("%d - %d" % [enemy_score, player_score])
-	set_progress(player_score, target_score, "Poin %d/%d" % [player_score, target_score])
+	set_progress(player_score, target_score, "Capai %d poin" % target_score)
 
 func _check_win_condition() -> void:
 	if player_score >= target_score:

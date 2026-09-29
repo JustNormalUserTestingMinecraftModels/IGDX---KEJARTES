@@ -12,63 +12,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_doxun"]
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-bg_color = Color(0.98, 0.98, 0.98, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.2, 0.5, 0.85, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 12
-shadow_offset = Vector2(0, 6)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b17uc"]
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-bg_color = Color(0.18431373, 0.72156864, 0.41960785, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 12
-shadow_offset = Vector2(0, 6)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4ughg"]
-content_margin_left = 16.0
-content_margin_top = 10.0
-content_margin_right = 16.0
-content_margin_bottom = 10.0
-bg_color = Color(0.76862746, 0.16862746, 0.43137255, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.25)
-shadow_size = 12
-shadow_offset = Vector2(0, 6)
-
 [node name="PilihanGanda" type="Control" unique_id=1850730347]
 layout_mode = 3
 anchors_preset = 15
@@ -79,9 +22,6 @@ grow_vertical = 2
 script = ExtResource("1_pilihanganda")
 how_to = ExtResource("howto_pg")
 background_texture = ExtResource("4_doxun")
-answer_btn_normal_style = SubResource("StyleBoxFlat_doxun")
-answer_btn_correct_style = SubResource("StyleBoxFlat_b17uc")
-answer_btn_wrong_style = SubResource("StyleBoxFlat_4ughg")
 
 [node name="Background" type="TextureRect" parent="." unique_id=1882836415]
 material = ExtResource("illus_grade")
@@ -120,7 +60,7 @@ script = ExtResource("safe_margin")
 [node name="Column" type="VBoxContainer" parent="Safe"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 28
 
 [node name="MinigameHeader" parent="Safe/Column" instance=ExtResource("mg_header")]
 unique_name_in_owner = true
@@ -131,11 +71,11 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
-
-[node name="Spacer" type="Control" parent="Safe/Column" unique_id=1859218808]
-layout_mode = 2
 size_flags_vertical = 3
+
+[node name="TrayGap" type="Control" parent="Safe/Column"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
 mouse_filter = 2
 
 [node name="MinigameTray" parent="Safe/Column" instance=ExtResource("mg_tray")]
@@ -148,5 +88,5 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 12
+theme_override_constants/v_separation = 16
 columns = 1

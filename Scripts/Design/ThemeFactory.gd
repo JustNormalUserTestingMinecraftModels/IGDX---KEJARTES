@@ -2144,26 +2144,9 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	theme.set_constant("outline_size", "MinigameOverlayLabel", 8)
 	theme.set_color("font_outline_color", "MinigameOverlayLabel", Color(0, 0, 0, 0.75))
 
-	# Menjodohkan's two carousel headers. The colours these replace --
-	# Color(0.85,0.45,0.1) and Color(0.2,0.5,0.85) -- are mid-tone (relative
-	# luminance 0.27 and 0.21) and unoutlined over painted card art: they cap
-	# at 3.3:1 and 4.0:1 against pure white and fall toward 1.5:1 on the card
-	# they actually sit on, so neither could reach the 4.5:1 body floor on any
-	# ground. The question header sits on the wood table and takes
-	# brand_primary (7.2:1 on surface_card). The answer header rides the brown
-	# MinigameTrayPanel plank since the mobile layout (2026-09-29), where the
-	# old cat_akademis blue barely read, so it takes the cream text_on_brand
-	# that every label on that plank uses. The name keeps "Cool" because the
-	# scene and tests pin it.
-	for pair in [["MinigameWheelHeaderWarm", tokens.brand_primary],
-			["MinigameWheelHeaderCool", tokens.text_on_brand]]:
-		var wheel: String = pair[0]
-		theme.add_type(wheel)
-		theme.set_type_variation(wheel, "Label")
-		theme.set_font_size("font_size", wheel, tokens.font_title)
-		theme.set_color("font_color", wheel, pair[1])
-		if tokens.font_display != null:
-			theme.set_font("font", wheel, tokens.font_display)
+	# Menjodohkan's two carousel headers (MinigameWheelHeaderWarm/Cool) left
+	# on 2026-09-30: SOAL and JAWABAN now sit on the kit's carved plank,
+	# MinigamePlankPanel + MinigamePlankLabel (gold on dark brown).
 
 	# PilihanGanda's answer buttons. The house helper gives them the full
 	# five-state set at radius_button, plus font_title and the display face,

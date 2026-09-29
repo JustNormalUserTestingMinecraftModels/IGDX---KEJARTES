@@ -62,7 +62,7 @@ script = ExtResource("safe_margin")
 [node name="Column" type="VBoxContainer" parent="Safe"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 28
 
 [node name="MinigameHeader" parent="Safe/Column" instance=ExtResource("mg_header")]
 unique_name_in_owner = true
@@ -72,24 +72,27 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="TopHeaderLabel" type="Label" parent="Safe/Column/TopCarousel" unique_id=608331201]
+[node name="SoalPlank" type="PanelContainer" parent="Safe/Column/TopCarousel"]
 layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.022000002
-anchor_right = 1.0
-anchor_bottom = 0.086
-offset_top = 9.1728
-offset_bottom = -7.2336006
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
 grow_horizontal = 2
-theme_type_variation = &"MinigameWheelHeaderWarm"
+mouse_filter = 2
+theme_type_variation = &"MinigamePlankPanel"
+
+[node name="Label" type="Label" parent="Safe/Column/TopCarousel/SoalPlank"]
+layout_mode = 2
+theme_type_variation = &"MinigamePlankLabel"
 text = "SOAL"
 horizontal_alignment = 1
 
 [node name="QuestionWheelParent" type="Control" parent="Safe/Column/TopCarousel" unique_id=992953981]
 layout_mode = 1
-anchor_top = 0.1
+anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 84.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -99,14 +102,13 @@ z_index = 25
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 0.55
-anchor_bottom = 0.55
-offset_left = 8.0
-offset_top = -48.0
-offset_right = 104.0
-offset_bottom = 48.0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -6.0
+offset_right = 96.0
+offset_bottom = 90.0
 grow_vertical = 2
-theme_type_variation = &"SecondaryButton"
+theme_type_variation = &"WoodNavArrow"
 
 [node name="Arrow" type="TextureRect" parent="Safe/Column/TopCarousel/BtnPrevQ"]
 layout_mode = 1
@@ -131,16 +133,15 @@ custom_minimum_size = Vector2(96, 96)
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 1.0
-anchor_top = 0.55
+anchor_top = 0.5
 anchor_right = 1.0
-anchor_bottom = 0.55
-offset_left = -104.0
-offset_top = -48.0
-offset_right = -8.0
-offset_bottom = 48.0
+anchor_bottom = 0.5
+offset_left = -96.0
+offset_top = -6.0
+offset_bottom = 90.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_type_variation = &"SecondaryButton"
+theme_type_variation = &"WoodNavArrow"
 
 [node name="Arrow" type="TextureRect" parent="Safe/Column/TopCarousel/BtnNextQ"]
 layout_mode = 1
@@ -163,29 +164,33 @@ script = ExtResource("glyph_follow")
 unique_name_in_owner = true
 layout_mode = 2
 hint_text = "Pilih jawaban, lalu tekan Kunci"
+separation = 44
 
 [node name="BottomCarousel" type="Control" parent="Safe/Column/MinigameTray" unique_id=773851323]
-custom_minimum_size = Vector2(0, 520)
+custom_minimum_size = Vector2(0, 420)
 layout_mode = 2
 
-[node name="BottomHeaderLabel" type="Label" parent="Safe/Column/MinigameTray/BottomCarousel" unique_id=2040668810]
+[node name="JawabanPlank" type="PanelContainer" parent="Safe/Column/MinigameTray/BottomCarousel"]
 layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.086
-anchor_right = 1.0
-anchor_bottom = 0.141
-offset_top = -0.23360062
-offset_bottom = -11.801598
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
 grow_horizontal = 2
-theme_type_variation = &"MinigameWheelHeaderCool"
+mouse_filter = 2
+theme_type_variation = &"MinigamePlankPanel"
+
+[node name="Label" type="Label" parent="Safe/Column/MinigameTray/BottomCarousel/JawabanPlank"]
+layout_mode = 2
+theme_type_variation = &"MinigamePlankLabel"
 text = "JAWABAN"
 horizontal_alignment = 1
 
 [node name="AnswerWheelParent" type="Control" parent="Safe/Column/MinigameTray/BottomCarousel" unique_id=394742388]
 layout_mode = 1
-anchor_top = 0.1
+anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 84.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -195,14 +200,13 @@ z_index = 25
 custom_minimum_size = Vector2(96, 96)
 layout_mode = 1
 anchors_preset = -1
-anchor_top = 0.55
-anchor_bottom = 0.55
-offset_left = 8.0
-offset_top = -48.0
-offset_right = 104.0
-offset_bottom = 48.0
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -6.0
+offset_right = 96.0
+offset_bottom = 90.0
 grow_vertical = 2
-theme_type_variation = &"SecondaryButton"
+theme_type_variation = &"WoodNavArrow"
 
 [node name="Arrow" type="TextureRect" parent="Safe/Column/MinigameTray/BottomCarousel/BtnPrevA"]
 layout_mode = 1
@@ -227,16 +231,15 @@ custom_minimum_size = Vector2(96, 96)
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 1.0
-anchor_top = 0.55
+anchor_top = 0.5
 anchor_right = 1.0
-anchor_bottom = 0.55
-offset_left = -104.0
-offset_top = -48.0
-offset_right = -8.0
-offset_bottom = 48.0
+anchor_bottom = 0.5
+offset_left = -96.0
+offset_top = -6.0
+offset_bottom = 90.0
 grow_horizontal = 0
 grow_vertical = 2
-theme_type_variation = &"SecondaryButton"
+theme_type_variation = &"WoodNavArrow"
 
 [node name="Arrow" type="TextureRect" parent="Safe/Column/MinigameTray/BottomCarousel/BtnNextA"]
 layout_mode = 1
@@ -257,20 +260,20 @@ script = ExtResource("glyph_follow")
 
 [node name="ActionRow" type="HBoxContainer" parent="Safe/Column/MinigameTray" unique_id=1977700009]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 16
 alignment = 1
 
 [node name="BtnLock" type="Button" parent="Safe/Column/MinigameTray/ActionRow" unique_id=1063846498]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
-theme_type_variation = &"SecondaryButtonM"
+theme_type_variation = &"MinigameSecondaryButton"
 text = "Kunci"
 
 [node name="BtnSubmit" type="Button" parent="Safe/Column/MinigameTray/ActionRow" unique_id=1651264593]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_default_cursor_shape = 2
-theme_type_variation = &"PrimaryButtonM"
+theme_type_variation = &"MinigameCtaButton"
 disabled = true
 text = "Selesai"

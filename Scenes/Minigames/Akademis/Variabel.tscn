@@ -61,17 +61,27 @@ script = ExtResource("safe_margin")
 [node name="Column" type="VBoxContainer" parent="Safe"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 0
 
 [node name="MinigameHeader" parent="Safe/Column" instance=ExtResource("mg_header")]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="HeaderGap" type="Control" parent="Safe/Column"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="SoalCard" parent="Safe/Column" unique_id=82108006 instance=ExtResource("4_0wcns")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 size_flags_horizontal = 4
+
+[node name="CardGap" type="Control" parent="Safe/Column"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="KalkulatorSlot" type="Control" parent="Safe/Column" unique_id=1116326643]
 layout_mode = 2
@@ -83,6 +93,11 @@ unique_name_in_owner = true
 layout_mode = 1
 show_zero_key = false
 
+[node name="TrayGap" type="Control" parent="Safe/Column"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+mouse_filter = 2
+
 [node name="MinigameTray" parent="Safe/Column" instance=ExtResource("mg_tray")]
 unique_name_in_owner = true
 layout_mode = 2
@@ -90,18 +105,18 @@ hint_text = "Cari nilai hurufnya, lalu Kirim"
 
 [node name="AksiRow" type="HBoxContainer" parent="Safe/Column/MinigameTray" unique_id=1444221622]
 layout_mode = 2
-theme_override_constants/separation = 76
+theme_override_constants/separation = 16
 
 [node name="BtnHapus" type="Button" parent="Safe/Column/MinigameTray/AksiRow" unique_id=1845003456]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"SecondaryButtonM"
+theme_type_variation = &"MinigameSecondaryButton"
 text = "Hapus"
 
 [node name="BtnKirim" type="Button" parent="Safe/Column/MinigameTray/AksiRow" unique_id=1233537524]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_type_variation = &"PrimaryButtonM"
+theme_type_variation = &"MinigameCtaButton"
 text = "Kirim"

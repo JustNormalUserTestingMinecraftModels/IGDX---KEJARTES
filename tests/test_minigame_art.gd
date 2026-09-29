@@ -115,8 +115,11 @@ func test_menjodohkan_cards_are_rounded_and_use_heading_text() -> void:
 	for p in ["res://Scenes/Minigames/Akademis/QuestionCard.tscn",
 			"res://Scenes/Minigames/Akademis/AnswerCard.tscn"]:
 		var src := FileAccess.get_file_as_string(p)
-		assert_true(src.contains("corner_radius_top_left = 24"),
-			p + " card needs the radius_md corner")
+		# 2026-09-30: the rounded card box moved into the theme (MinigameCard,
+		# MinigameAnswerCard); the pin is now that the card wears one.
+		assert_true(src.contains("theme_type_variation = &\"MinigameCard\"")
+			or src.contains("theme_type_variation = &\"MinigameAnswerCard\""),
+			p + " card needs a rounded kit card variation")
 		# 2026-09-21: the two cards left H2Label (48) for the minigame type
 		# ladder's own rung, MinigameQuestionLabel (64 = font_h1). The pin
 		# stays -- the card's text must still reach its size through a
@@ -131,15 +134,18 @@ func test_menjodohkan_has_no_placeholder_card_art() -> void:
 	assert_false(src.contains("Kiper"),
 		"Menjodohkan.tscn still references a Kiper meme placeholder")
 
+## 2026-09-30 (minigame hierarchy, B2): the scene's three hand-authored
+## blue-rimmed StyleBoxFlats gave way to the theme. The answers are the
+## lipped MinigameChoiceButton, rounded at radius_button like every button.
 func test_pilihanganda_answer_buttons_are_rounded_rects() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
-	for prop in ["answer_btn_normal_style", "answer_btn_correct_style", "answer_btn_wrong_style"]:
-		assert_true(src.contains(prop + " = SubResource("),
-			prop + " must be authored as a StyleBox in the scene")
-	assert_true(src.contains("corner_radius_top_left = 24"),
-		"answer buttons must be rounded rectangles, not the theme's default pill")
-	assert_false(src.contains("choice_btn_normal_texture = ExtResource"),
-		"the meme placeholder texture must be cleared")
+	assert_false(src.contains("StyleBoxFlat"), "the answers author no box of their own")
+	assert_false(src.contains("choice_btn_normal_texture"),
+		"the meme placeholder texture export is gone")
+	var theme := load("res://Assets/Theme/kejartes_theme.tres") as Theme
+	var box := theme.get_stylebox("normal", "MinigameChoiceButton") as StyleBoxFlat
+	assert_true(box != null and box.corner_radius_top_left > 0,
+		"answer buttons are rounded rectangles")
 
 ## 2026-09-21: the scene's raw `font` export went away with the type ladder.
 ## The display face still reaches this screen, but through variations that
@@ -154,28 +160,20 @@ func test_pilihanganda_uses_the_display_font() -> void:
 	assert_true(src.contains("MinigameChoiceButton"),
 		"the answer buttons must take the display-face choice variation")
 
+## Since 2026-09-30 there is one chrome path (the theme), so the press feel
+## is wired once, at the top level of _wire_choice_btn.
 func test_choice_buttons_animate_on_both_style_paths() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
 	assert_false(src.contains("_make_choice_shadow"),
-		"the per-button shadow Panel is superseded by the stylebox's own shadow")
-	var flat_branch := src.find("if choice_btn_normal_texture == null:")
-	assert_true(flat_branch != -1, "_apply_choice_btn_textures should branch on a null texture")
-	var else_branch := src.find("\telse:", flat_branch)
-	assert_true(else_branch > flat_branch, "the texture branch should follow the flat branch")
-	if else_branch <= flat_branch:
-		return
-	var flat_body := src.substr(flat_branch, else_branch - flat_branch)
-	for state in ["\"hover\"", "\"pressed\"", "\"disabled\""]:
-		assert_true(flat_body.contains("add_theme_stylebox_override(" + state),
-			"the flat path must style the " + state + " state, not just normal")
-	assert_false(flat_body.contains("return"),
-		"the flat path must fall through to the shared press-animation wiring")
-	# One leading tab means function-body level: shared by both branches rather
-	# than nested inside either, which is the regression this guards.
-	assert_true(src.contains("\n\tbtn.button_down.connect(_on_choice_btn_down.bind(btn))"),
-		"press wiring must sit at the function's top level so both paths reach it")
-	assert_true(src.contains("\n\tbtn.pivot_offset = Vector2("),
-		"pivot setup must sit at the function's top level so both paths reach it")
+		"the per-button shadow Panel is superseded by the lipped face")
+	assert_true(src.contains("func _wire_choice_btn(btn: Button) -> void:"),
+		"every answer button goes through one wiring function")
+	assert_true(src.contains("
+	btn.button_down.connect(_on_choice_btn_down.bind(btn))"),
+		"press wiring sits at the function's top level")
+	assert_true(src.contains("
+	btn.pivot_offset = Vector2("),
+		"the pivot is set once for the press squash")
 
 func test_flash_keeps_white_ink_on_the_coloured_fill() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
@@ -211,62 +209,19 @@ func test_no_placeholder_quiz_photos_remain() -> void:
 		for stale_name in stale:
 			assert_false(src.contains(stale_name), p + " still references " + stale_name)
 
-## Parses `bg_color = Color(r, g, b, a)` out of every `[sub_resource]` block,
-## keyed by sub-resource id, so a test can follow a SubResource reference to
-## the colour it actually resolves to.
-func _sub_resource_fills(src: String) -> Dictionary:
-	var out := {}
-	var current := ""
-	for raw in src.split("\n"):
-		if raw.begins_with("[sub_resource"):
-			var id_at := raw.find(" id=\"")
-			if id_at == -1:
-				current = ""
-			else:
-				var id_end := raw.find("\"", id_at + 5)
-				current = raw.substr(id_at + 5, id_end - id_at - 5)
-		elif raw.begins_with("["):
-			current = ""
-		elif current != "" and raw.begins_with("bg_color = Color("):
-			var open_at := raw.find("(")
-			var inner := raw.substr(open_at + 1, raw.rfind(")") - open_at - 1)
-			var rgba := PackedFloat32Array()
-			for part in inner.split(","):
-				rgba.append(float(part.strip_edges()))
-			out[current] = rgba
-	return out
-
+## The flash is two theme variations since 2026-09-30; the guard against a
+## transposed green/red stays, read from the bake.
 func test_pilihanganda_flash_styles_are_not_transposed() -> void:
-	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/PilihanGanda.tscn")
-	var fills := _sub_resource_fills(src)
-	var ids := {}
-	for prop in ["answer_btn_normal_style", "answer_btn_correct_style", "answer_btn_wrong_style"]:
-		var needle: String = prop + " = SubResource(\""
-		var at := src.find(needle)
-		assert_true(at != -1, prop + " must be assigned a StyleBox sub-resource")
-		if at == -1:
-			continue
-		var start := at + needle.length()
-		ids[prop] = src.substr(start, src.find("\"", start) - start)
-	assert_eq(ids.size(), 3, "all three answer-button styles must be assigned")
-	var seen := {}
-	for prop in ids:
-		seen[ids[prop]] = true
-	assert_eq(seen.size(), 3, "the three answer-button styles must be three distinct sub-resources")
-	var normal: PackedFloat32Array = fills.get(ids.get("answer_btn_normal_style", ""), PackedFloat32Array())
-	var correct: PackedFloat32Array = fills.get(ids.get("answer_btn_correct_style", ""), PackedFloat32Array())
-	var wrong: PackedFloat32Array = fills.get(ids.get("answer_btn_wrong_style", ""), PackedFloat32Array())
-	assert_eq(normal.size(), 4, "the resting style needs a bg_color")
-	assert_eq(correct.size(), 4, "the correct-flash style needs a bg_color")
-	assert_eq(wrong.size(), 4, "the wrong-flash style needs a bg_color")
-	if normal.size() < 4 or correct.size() < 4 or wrong.size() < 4:
-		return
-	assert_true(normal[0] > 0.9 and normal[1] > 0.9 and normal[2] > 0.9,
-		"the resting answer button must stay a near-white card")
-	assert_true(correct[1] > correct[0] and correct[1] > correct[2],
-		"the correct-answer flash must resolve to the green fill")
-	assert_true(wrong[0] > wrong[1] and wrong[0] > wrong[2],
-		"the wrong-answer flash must resolve to the red fill")
+	var theme := load("res://Assets/Theme/kejartes_theme.tres") as Theme
+	var rest := (theme.get_stylebox("normal", "MinigameChoiceButton") as StyleBoxFlat).bg_color
+	var right := (theme.get_stylebox("normal", "MinigameChoiceButtonCorrect") as StyleBoxFlat).bg_color
+	var wrong := (theme.get_stylebox("normal", "MinigameChoiceButtonWrong") as StyleBoxFlat).bg_color
+	assert_true(rest.r > 0.85 and rest.g > 0.85 and rest.b > 0.8,
+		"the resting answer button stays a light cream card")
+	assert_true(right.g > right.r and right.g > right.b,
+		"the correct-answer flash resolves to the green fill")
+	assert_true(wrong.r > wrong.g and wrong.r > wrong.b,
+		"the wrong-answer flash resolves to the red fill")
 
 func test_quiz_labels_use_ink_that_reads_on_the_wood_table() -> void:
 	# 2026-09-21: the counter is no longer a loose label on the wood table --
@@ -374,7 +329,7 @@ func test_batik_tools_carry_no_emoji() -> void:
 	assert_false(FileAccess.get_file_as_string(_BATIK_SCRIPT).contains("func _get_tool_icon"),
 		"_get_tool_icon() only ever returned emoji, and nothing called it")
 
-## Each picture must fill its slot once the scene is loaded back. A
+## Each picture must fill its part of the slot once the scene is loaded back. A
 ## TextureRect left in position mode (layout_mode = 0) is saved WITHOUT its
 ## anchors, so it reloads as a zero-size rect and the tool shows no picture
 ## at all -- which the texture-path check above cannot see (2026-09-10).
@@ -388,9 +343,11 @@ func test_each_batik_picture_fills_its_slot() -> void:
 			continue
 		var anchors := Vector4(tex_rect.anchor_left, tex_rect.anchor_top,
 			tex_rect.anchor_right, tex_rect.anchor_bottom)
-		assert_eq(anchors, Vector4(0, 0, 1, 1),
-			"%s's picture must be anchored to fill its slot, got %s" % [tool.name, anchors])
+		# Since 2026-09-30 (minigame hierarchy B4) the picture fills the card
+		# above its name: anchored down to TOOL_NAME_SPLIT, inset 16 px.
+		assert_eq(anchors, Vector4(0, 0, 1, 0.7),
+			"%s's picture must be anchored over its name, got %s" % [tool.name, anchors])
 		var offsets := Vector4(tex_rect.offset_left, tex_rect.offset_top,
 			tex_rect.offset_right, tex_rect.offset_bottom)
-		assert_eq(offsets, Vector4.ZERO,
-			"%s's picture must sit flush in its slot, got %s" % [tool.name, offsets])
+		assert_eq(offsets, Vector4(16, 16, -16, 0),
+			"%s's picture must sit 16 px inside its card, got %s" % [tool.name, offsets])

@@ -102,7 +102,7 @@ func test_the_calculator_games_share_one_layout() -> void:
 		var kirim := root.get_node_or_null("%BtnKirim") as Button
 		assert_true(kirim != null and kirim.get_parent().get_parent() == tray,
 			path + ": Hapus/Kirim ride in the tray")
-		assert_eq(kirim.theme_type_variation, &"PrimaryButtonM", path + ": Kirim is mint, tray-sized")
+		assert_eq(kirim.theme_type_variation, &"MinigameCtaButton", path + ": Kirim is the mint minigame CTA")
 		assert_true(root.get_node_or_null("HeaderRow") == null, path + ": the old header row is gone")
 
 
@@ -181,7 +181,7 @@ func test_badminton_has_the_strip_the_pill_and_a_covering_court() -> void:
 	assert_eq((root.get_node("Background") as TextureRect).stretch_mode,
 		TextureRect.STRETCH_KEEP_ASPECT_COVERED, "the court covers, never stretches")
 	assert_contains(FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd"),
-		"\"Poin %d/%d\"")
+		"\"Capai %d poin\"")
 
 
 const MENARI := "res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn"

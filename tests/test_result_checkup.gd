@@ -151,6 +151,102 @@ func test_the_week_card_pairs_each_stat_with_its_own_target() -> void:
 	assert_eq(inst.stat_rows[2].value.text, "+3/75", "olahraga reads target_olahraga")
 
 
+# ------------------------------------------- the 2026-09-29 weekly colours
+
+## The chip's text, its target and its colour, without a scene.
+func test_the_chip_reads_the_change_and_its_colour() -> void:
+	assert_eq(DaySummaryStatRow.chip_text(12.0), "+12", "a gain carries its plus")
+	assert_eq(DaySummaryStatRow.chip_text(-3.0), "-3", "a loss reads '-3', never '+-3'")
+	assert_eq(DaySummaryStatRow.chip_text(2.6), "+3", "rounded, not truncated")
+	assert_eq(DaySummaryStatRow.chip_text(0.0), "+0", "a count starts at +0")
+	assert_eq(DaySummaryStatRow.target_text(52.0), "/52", "the run target after a slash")
+	assert_eq(DaySummaryStatRow.chip_variation(5.0), &"DeltaChipGain", "a gain is green")
+	assert_eq(DaySummaryStatRow.chip_variation(-5.0), &"DeltaChipLoss", "a loss is red")
+	assert_true(DaySummaryStatRow.shows_chip(true, -3.0), "a loss in chip mode shows a chip")
+	assert_false(DaySummaryStatRow.shows_chip(true, 0.4), "a change that rounds to zero shows none")
+	assert_false(DaySummaryStatRow.shows_chip(false, 12.0), "no chip outside chip mode")
+
+
+## Option A: a gain is a green chip, a loss a red one, each followed by the
+## run target; a flat stat keeps the plain "+0/65". The plain label keeps
+## the full reading as data either way.
+func test_the_week_card_marks_gains_and_losses_with_chips() -> void:
+	var inst := _card()
+	var s := _student_with_week(
+		{"akademis": 40.0, "seni_budaya": 30.0, "olahraga": 55.0},
+		{"akademis": 58.0, "seni_budaya": 30.0, "olahraga": 49.0})
+
+	inst.setup_week_row(s)
+
+	var gain: DaySummaryStatRow = inst.stat_rows[0]
+	var flat: DaySummaryStatRow = inst.stat_rows[1]
+	var loss: DaySummaryStatRow = inst.stat_rows[2]
+	assert_true(gain.chip_row.visible, "a gain shows the chip")
+	assert_false(gain.value.visible, "in place of the plain number")
+	assert_eq(gain.delta_chip.theme_type_variation, &"DeltaChipGain", "green")
+	assert_eq(gain.chip_label.text, "+18", "carrying the week's change")
+	assert_eq(gain.target_label.text, "/65", "then the run target")
+	assert_false(gain.chevron.visible, "the chip replaces the gold chevron")
+	assert_eq(gain.value.text, "+18/65", "the plain label still holds the reading")
+	assert_true(loss.chip_row.visible, "a loss shows the chip too")
+	assert_eq(loss.delta_chip.theme_type_variation, &"DeltaChipLoss", "red")
+	assert_eq(loss.chip_label.text, "-6", "with a minus")
+	assert_false(flat.chip_row.visible, "a flat stat shows no chip")
+	assert_true(flat.value.visible, "and keeps the plain number")
+	assert_eq(flat.value.text, "+0/65", "reading +0")
+
+
+## The weekly reveal opens the chip at +0, transparent, and the skip lands
+## it on the week's change, fully shown and at rest.
+func test_the_weekly_reveal_rewinds_and_lands_the_chip() -> void:
+	var inst := _card()
+	inst.setup_week_row(_student_with_week({"akademis": 40.0}, {"akademis": 58.0}))
+	var row: DaySummaryStatRow = inst.stat_rows[0]
+
+	row.rewind()
+	assert_eq(row.chip_label.text, "+0", "the reveal opens the chip at +0")
+	assert_eq(row.delta_chip.modulate.a, 0.0, "armed but transparent until its turn")
+
+	row.land()
+	assert_eq(row.chip_label.text, "+18", "the skip lands the week's change")
+	assert_eq(row.delta_chip.modulate.a, 1.0, "fully shown")
+	assert_eq(row.delta_chip.scale, Vector2.ONE, "at rest")
+
+
+## The weekly card wears the game-wide energy yellow and mood pink.
+func test_the_week_card_wears_the_week_needs_bars() -> void:
+	var inst := _card()
+	inst.setup_week_row(_student_with_week({"energy": 80.0}, {"energy": 60.0}))
+	assert_eq(inst.energy_bar.theme_type_variation, &"WeekEnergyBar",
+		"energy is the game-wide yellow")
+	assert_eq(inst.mood_bar.theme_type_variation, &"WeekMoodBar",
+		"mood is the game-wide pink")
+
+
+## Scope is the weekly report only: a card re-armed for the nightly popup or
+## a picker drops the week look entirely.
+func test_a_reused_card_drops_the_week_look() -> void:
+	var inst := _card()
+	var s := _student_with_week({"akademis": 40.0}, {"akademis": 58.0})
+	inst.setup_week_row(s)
+
+	inst.setup_row("Marcel", [{"stat_key": "akademis", "delta": 6.0}], s)
+	assert_eq(inst.energy_bar.theme_type_variation, &"DaySummaryEnergyBar",
+		"the nightly energy colour is back")
+	assert_eq(inst.mood_bar.theme_type_variation, &"DaySummaryMoodBar",
+		"the nightly mood colour is back")
+	assert_false(inst.stat_rows[0].chip_row.visible, "no chip in the nightly popup")
+	assert_true(inst.stat_rows[0].value.visible, "the plain number is back")
+	assert_true(inst.stat_rows[0].chevron.visible, "with the gold chevron on a gain")
+
+	inst.setup_week_row(s)
+	inst.setup_current_row(s)
+	assert_eq(inst.energy_bar.theme_type_variation, &"DaySummaryEnergyBar",
+		"a picker card keeps the nightly colours")
+	assert_false(inst.stat_rows[0].chip_row.visible, "and shows no chip")
+	assert_true(inst.stat_rows[0].value.visible, "only its standing number")
+
+
 ## The bars still read tonight's value -- what is new is the number
 ## beside them, which is the week's movement and is shown here (and only
 ## here). Energy usually falls over a week and mood usually does not; the

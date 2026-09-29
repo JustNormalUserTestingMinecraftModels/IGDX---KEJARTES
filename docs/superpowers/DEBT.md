@@ -191,6 +191,14 @@ shadow. Prefer that for any new card; reach for `paper.png` only where the
 cut corner is the point. Measure the alpha before laying out on any
 soft-edged texture.
 
+**MURIDMU RosterCard leftovers (2026-09-29).** `paperclip.svg` and
+`pencil.svg` have no README rules. `RosterAvatar`'s overshoot is hand-rolled,
+and the one-card `NudgeLoop` gate is backed only by a source scan. Stack
+clearances are tight (8.5 / 8.5 / 10 px at 1080x1920). Flick velocity is
+untested (needs an injectable clock). GhostCard is nearly invisible at the
+mandated peek pose and `SunkenPanel` has no border. `_init_carousel_state`'s
+`stagger_in` pops card roots the deck also owns (pre-existing).
+
 **Stray layer in the day-transition sky (2026-09-10).**
 `Assets/Images/SchoolDay/transition_background.png` has a bluish night street
 scene pasted into its bottom-left corner (texture space roughly x 0..375,

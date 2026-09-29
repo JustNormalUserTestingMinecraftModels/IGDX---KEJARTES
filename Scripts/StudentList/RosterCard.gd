@@ -43,7 +43,7 @@ extends TextureRect
 const WEEK_DAYS := 5
 
 ## The five weekdays in order, matching StickyNotesContainer's child names
-## (and StudentList.gd's own REQUIRED_DAYS) -- apply_week()'s day keys.
+## (StudentList reads it too) -- the single source of the week's day keys.
 const WEEKDAY_KEYS: PackedStringArray = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 
 ## The tally count label's text, "<scheduled>/<WEEK_DAYS> hari".

@@ -206,9 +206,12 @@ func accepts_tap() -> bool:
 ## (and touch from mouse), and a touch event's position is local to the
 ## card -- which is moving under the finger.
 func handle_pointer(event: InputEvent, card: Control) -> void:
-	if busy:
-		return
 	var button := event as InputEventMouseButton
+	if busy:
+		# A press swallowed mid-switch must not read as a tap when it lifts.
+		if button != null and button.button_index == MOUSE_BUTTON_LEFT and button.pressed:
+			_tap_blocked = true
+		return
 	if button != null and button.button_index == MOUSE_BUTTON_LEFT:
 		if button.pressed:
 			begin_drag(card, button.global_position)
@@ -291,11 +294,13 @@ func switch(outgoing: Control, incoming: Control, direction: int) -> void:
 	outgoing.pivot_offset = outgoing.size / 2.0
 	incoming.pivot_offset = incoming.size / 2.0
 	_stage_in_peek_slot(incoming)
+	var instant := _is_instant()
+	# Busy before the announcement, so no `switched` listener can re-enter.
+	busy = not instant
 	switched.emit(incoming)
-	if _is_instant():
+	if instant:
 		_finish_switch(outgoing, incoming)
 		return
-	busy = true
 	# The outgoing file lifts over the one rising beneath it. A tree move,
 	# not z_index: a raised z_index would paint over the HUD as well.
 	outgoing.get_parent().move_child(outgoing, -1)

@@ -19,6 +19,10 @@ extends Node
 ## established pattern, and every later (re)start re-checks all three
 ## conditions so a live reduce_motion toggle or a visibility flip takes
 ## effect immediately.
+##
+## The parent must not sit inside a Container: the loop captures the parent's
+## rest x once in _ready(), and a Container would re-lay it out from under
+## the nudge.
 
 ## Nudges the parent this many px each way on x.
 @export var amplitude: float = 4.0

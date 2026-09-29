@@ -219,6 +219,22 @@ func test_a_busy_deck_refuses_input_and_switches() -> void:
 	assert_false(_deck.accepts_tap(), "and no tap either")
 
 
+func test_a_press_swallowed_while_busy_never_becomes_a_tap() -> void:
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.global_position = _PRESS
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	release.global_position = _PRESS
+	_deck.busy = true
+	_deck.handle_pointer(press, _front)
+	_deck.busy = false
+	_deck.handle_pointer(release, _front)
+	assert_false(_deck.accepts_tap(), "a press that landed mid-switch must not route on lift")
+
+
 func test_the_ghost_trails_the_drag_and_returns_home() -> void:
 	var ghost := _card()
 	ghost.position = Vector2(34.0, 0.0)

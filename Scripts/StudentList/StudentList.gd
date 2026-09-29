@@ -14,10 +14,6 @@
 extends Control
 
 const PageDotScene: PackedScene = preload("res://Scenes/StudentList/PageDot.tscn")
-## Weekdays every student must have a category assigned for to count as
-## fully scheduled. Single source shared by _setup_students() and
-## _is_student_scheduled() so the strip, the badge and the dots agree.
-const REQUIRED_DAYS := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 
 @export_group("Paper Card Design")
 ## Custom paper card texture override.
@@ -328,7 +324,7 @@ func _setup_students():
 func _apply_card_week(card: RosterCard, student_data: Dictionary, day_schedules_for_student: Dictionary) -> void:
 	var sticky_container: Node = card.get_node_or_null("%StickyNotesContainer")
 	if sticky_container:
-		for day_name in REQUIRED_DAYS:
+		for day_name in RosterCard.WEEKDAY_KEYS:
 			var sticky_node := sticky_container.get_node_or_null(day_name) as StickyNote
 			if sticky_node:
 				if sticky_note_texture:
@@ -355,7 +351,7 @@ func _apply_card_week(card: RosterCard, student_data: Dictionary, day_schedules_
 					student_data, day_name)
 	card.apply_week(day_schedules_for_student)
 
-## True when every weekday in REQUIRED_DAYS has a category assigned for this
+## True when every weekday in RosterCard.WEEKDAY_KEYS has a category assigned for this
 ## student. Same source as the Belum/Sudah badge in _setup_students(), so
 ## the strip and the stamp can never disagree.
 func _is_student_scheduled(student: Dictionary) -> bool:
@@ -363,7 +359,7 @@ func _is_student_scheduled(student: Dictionary) -> bool:
 	if student_id == null or not GameState.day_schedules.has(student_id):
 		return false
 	var sched = GameState.day_schedules[student_id]
-	for day in REQUIRED_DAYS:
+	for day in RosterCard.WEEKDAY_KEYS:
 		if not sched.has(day):
 			return false
 	return true
@@ -443,8 +439,12 @@ func _update_page_indicators():
 	var tokens := DesignTokens.load_default()
 	if _dots_tween and _dots_tween.is_valid():
 		_dots_tween.kill()
+	_dots_tween = null
+	if not page_indicator:
+		push_error("StudentList: %PageIndicator is missing")
+		return
 	var dot_count: int = mini(page_indicator.get_child_count(), active_students.size())
-	if dot_count > 0:
+	if dot_count > 0 and not GameSettings.reduce_motion:
 		_dots_tween = create_tween().set_parallel(true)
 	for i: int in range(dot_count):
 		var tone: Color = tokens.state_danger
@@ -452,7 +452,10 @@ func _update_page_indicators():
 			tone = tokens.currency_gold
 		elif _is_student_scheduled(active_students[i]):
 			tone = tokens.state_success
-		_dots_tween.tween_property(page_indicator.get_child(i), "self_modulate", tone, DOT_TINT_SECONDS)
+		if _dots_tween:
+			_dots_tween.tween_property(page_indicator.get_child(i), "self_modulate", tone, DOT_TINT_SECONDS)
+		else:
+			page_indicator.get_child(i).self_modulate = tone
 
 	if left_arrow: left_arrow.visible = card_nodes.size() > 1
 	if right_arrow: right_arrow.visible = card_nodes.size() > 1

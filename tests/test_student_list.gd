@@ -1065,3 +1065,13 @@ func test_the_ghost_card_is_an_authored_inert_peek() -> void:
 	var deck := _list.get_node_or_null("RosterDeck") as RosterDeck
 	assert_true(deck != null and deck.ghost == ghost,
 		"the deck resolves %GhostCard as the card its drag trails")
+
+
+## Jumping via an avatar throws like the paging arrows: a later student
+## comes off the stack leftward (-1, as Next), an earlier one rightward.
+func test_avatar_jump_throws_like_next_and_prev() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("var direction := -1 if index > current_card_index else 1"),
+		"jumping to a later student throws left, as Next does")
+	assert_true(src.contains("_switch_card(index, direction)"),
+		"the jump reuses the carousel's own switch")

@@ -309,6 +309,8 @@ const DISPLAY_ROSTER := [
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill",
+	# 2026-09-29: achievement tile titles on the heading face.
+	"AchievementTileTitleLabel",
 	# 2026-09-24 Penjadwalan picker rebuild.
 	"PickerTitleLabel", "PickerTileName", "PickerTileValue", "PickerRibbonLabel",
 	# 2026-09-24 SchoolDay liveliness: the "selesai" stamp and the daily
@@ -316,13 +318,13 @@ const DISPLAY_ROSTER := [
 	"DayStampLabel", "VerdictHeadlineLabel",
 	"TallyValueGain", "TallyValueTarget", "TallyValueCoin",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
-	"RecapPillValueLabel", "ScoreHudValueLabel",
+	"RecapPillValueLabel", "RecapPillCaptionLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
 	# 2026-09-19 weekly results mockup: the Logs button (brown since 2026-09-29).
 	"ResultLogsButton",
-	# 2026-09-29 weekly colours: the HASIL MINGGUAN plate and the change chips.
-	"ResultTitleLabel", "DeltaChipLabel",
+	# 2026-09-29 weekly colours: the HASIL MINGGUAN plate.
+	"ResultTitleLabel",
 	# 2026-09-14 lobby-style-buttons: the two kept looks.
 	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
 	"RosterStatusBelum", "RosterStatusSudah",

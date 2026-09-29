@@ -46,6 +46,13 @@ const PILL_INFO := {
 	"event": {"title": "Event", "body": "Jumlah kejadian acak yang terjadi minggu ini."},
 }
 
+## The caption under each pill's number, in PILL_ORDER's keys.
+const PILL_CAPTION := {
+	"uang": "UANG DIDAPAT",
+	"menang": "MINIGAME MENANG",
+	"event": "EVENT TERJADI",
+}
+
 ## Gap between one idle-bounce pill and the next, and the pause after the
 ## last before the cycle repeats.
 const IDLE_STEP := 0.9
@@ -141,17 +148,17 @@ func stop_idle_bounce() -> void:
 			pill.scale = Vector2.ONE
 
 
-## Write all three tiles. Idempotent -- calling it twice simply rewrites
-## the same labels. One ink for all three: the mockup's white tiles leave
-## the old gold money tint unreadable.
+## Write all three tiles with their captions. Idempotent -- calling it
+## twice simply rewrites the same labels. Captions come from PILL_CAPTION.
 func set_recap(recap: Dictionary) -> void:
 	_recap = recap
-	var ink := Juice.tokens().text_primary
 	pill_uang.set_pill(icon_uang,
-		WeekRecap.format_money(recap.get("money_earned", 0)), ink)
+		WeekRecap.format_money(recap.get("money_earned", 0)), PILL_CAPTION["uang"])
 	pill_menang.set_pill(icon_menang, "%d/%d" % [
-		recap.get("minigames_won", 0), recap.get("minigames_total", 0)], ink)
-	pill_event.set_pill(icon_event, str(recap.get("events_count", 0)), ink)
+		recap.get("minigames_won", 0), recap.get("minigames_total", 0)],
+		PILL_CAPTION["menang"])
+	pill_event.set_pill(icon_event, str(recap.get("events_count", 0)),
+		PILL_CAPTION["event"])
 
 
 ## Entrance stages 1-3: the banner slides down, the three tiles count up

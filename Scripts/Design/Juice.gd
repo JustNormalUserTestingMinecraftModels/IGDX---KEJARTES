@@ -175,8 +175,8 @@ static func count_up(label: Label, from: float, to: float, fmt: String = "%d") -
 ## "+12/65"). `formatter` takes the interpolated value and returns the
 ## full label text; `delay` matches pop_in/fill_bar's, so this can be
 ## staggered alongside a bar it travels with. `duration` defaults to
-## tokens.dur_slow; the weekly reveal passes its own count_seconds. Returns
-## the tween so a caller can stop it.
+## tokens.dur_slow; a caller such as MinigameWinStat passes its own
+## duration. Returns the tween so a caller can stop it.
 static func count_up_formatted(label: Label, from: float, to: float,
 		formatter: Callable, delay: float = 0.0, duration: float = -1.0) -> Tween:
 	if not _alive(label):

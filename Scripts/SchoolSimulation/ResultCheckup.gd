@@ -2,8 +2,9 @@
 extends Control
 
 ## The end-of-week report: a pinned WeekRecapBanner over one scrolling
-## list of DaySummaryStudentRows, each read a week wide, with Logs and
-## Selanjutnya beneath it. Built to the 2026-09-03 spec; the SISWA /
+## list of DaySummaryStudentRows, each read a week wide and dressed and
+## replayed exactly like the daily card, with Logs and Selanjutnya
+## beneath it. Built to the 2026-09-03 spec; the SISWA /
 ## RIWAYAT tabs it shipped with were retired on 2026-09-16, and the
 ## week's history moved into the Logs sheet (WeekLogsPopup).
 ##
@@ -190,17 +191,17 @@ func _play_entrance_animations(cards: Array = []) -> void:
 	fader.tween_property(self, "modulate:a", 1.0, t.dur_normal)
 	await fader.finished
 
-	# Stages 1-3 belong to the banner: slide, four pill count-ups, and
+	# Stages 1-3 belong to the banner: slide, three pill count-ups, and
 	# the gated coin shower.
 	banner.play_entrance()
 	await get_tree().create_timer(t.dur_normal).timeout
 
 	# Stage 4. Cards land one at a time, each card's five gauges moving
 	# on the beat that card ARRIVES on -- the nightly popup's own
-	# cadence, one week long.
+	# cadence and call.
 	Juice.stagger_in(cards)
 	for i in cards.size():
-		cards[i].play_week_gain(float(i) * t.stagger_step)
+		cards[i].play_gain(float(i) * t.stagger_step)
 
 	# Stage 5. One celebration for the whole week, landing just behind
 	# the last card's own burst -- and only if the week went somewhere. A

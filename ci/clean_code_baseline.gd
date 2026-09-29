@@ -121,7 +121,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Audio/AudioDirector.gd": 10,
 	"res://Scripts/CutScene/CutScene.gd": 7,
 	"res://Scripts/CutScene/HintLabel.gd": 4,
-	"res://Scripts/Debug/DebugLookPanel.gd": 27,
+	"res://Scripts/Debug/DebugLookPanel.gd": 19,
 	"res://Scripts/Debug/DebugManager.gd": 309,
 	"res://Scripts/Debug/EndGameRehearsal.gd": 5,
 	"res://Scripts/Debug/WeekReportRehearsal.gd": 3,

@@ -11,7 +11,7 @@
 [ext_resource type="Script" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 
 [node name="StatCheck" type="Control" unique_id=1602759799]
 layout_mode = 3
@@ -60,11 +60,6 @@ intensity = 0.06
 shaft_color = Color(0.78, 0.86, 1, 1)
 intensity = 0.1
 
-[node name="Bloom" parent="World/Room" instance=ExtResource("look_bloom")]
-threshold = 0.4
-intensity = 1.2
-bloom_tint = Color(0.85, 0.92, 1, 1)
-
 [node name="Parallax" type="Control" parent="World/Room"]
 layout_mode = 1
 anchors_preset = 0
@@ -77,6 +72,8 @@ depth_by_child = {
 "Tint": 1.0
 }
 overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Tint", &"Shafts"])
+
+[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="Scrim" type="Panel" parent="." unique_id=1681707398]
 layout_mode = 0

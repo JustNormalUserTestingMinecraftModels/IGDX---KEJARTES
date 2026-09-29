@@ -51,6 +51,7 @@ origin = Vector2(0.1, -0.1)
 
 [node name="Bloom" parent="." instance=ExtResource("look_bloom")]
 threshold = 0.75
+intensity = 0.8
 
 [node name="FieldMarkings" type="Node2D" parent="." unique_id=146537765]
 

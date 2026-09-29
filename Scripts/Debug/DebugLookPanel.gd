@@ -6,8 +6,8 @@ extends RefCounted
 ## programmatic developer tool, out of scope for the design system.
 ##
 ## Two halves. "Efek layar ini" reaches whatever screen is up when a control
-## moves: the Efek Suasana and Efek Visual switches, and every ScreenGlow,
-## LightPool and SunShafts in the tree, so the bloom on the shops, the end game
+## moves: the Efek Suasana and Efek Visual switches, and every AmbientGlow (the
+## Lobby's bloom), ScreenGlow, LightPool and SunShafts in the tree, so the bloom on the shops, the end game
 ## and the minigames can be seen and tuned live. The rest tunes SHARED
 ## materials (AO, rim, the Lobby's shafts and its WorldEnvironment glow), so one
 ## drag moves every plate at once. Nothing here persists except the two
@@ -25,6 +25,18 @@ const ROW_GAP := 24
 const SLIDER_GAP := 6
 ## Inset of the whole panel from the tab's edges.
 const MARGIN := 30
+## The per-screen sliders: [kit class, property, caption, min, max, step,
+## the piece's own default]. Each ends at the piece's own clamp.
+const NODE_SLIDERS := [
+	[&"AmbientGlow", "glow_threshold", "Bloom Lobby: Ambang Terang", 0.0, 1.0, 0.01, 0.7],
+	[&"AmbientGlow", "glow_intensity", "Bloom Lobby: Intensitas", 0.0, 4.0, 0.05, 1.5],
+	[&"AmbientGlow", "glow_strength", "Bloom Lobby: Kekuatan", 0.0, 2.0, 0.05, 1.2],
+	[&"ScreenGlow", "threshold", "Bloom Layar: Ambang Terang", 0.0, 1.0, 0.01, 0.7],
+	[&"ScreenGlow", "intensity", "Bloom Layar: Intensitas", 0.0, 2.0, 0.01, 0.8],
+	[&"ScreenGlow", "spread", "Bloom Layar: Sebaran", 0.0, 5.0, 0.1, 2.0],
+	[&"LightPool", "intensity", "Cahaya (LightPool): Kekuatan", 0.0, 0.12, 0.005, 0.08],
+	[&"SunShafts", "intensity", "Berkas (SunShafts): Kekuatan", 0.0, 0.2, 0.005, 0.2],
+]
 
 
 ## Builds the tab under `parent` and returns its root, for DebugManager's
@@ -72,11 +84,8 @@ static func _build_screen_section(vbox: VBoxContainer) -> void:
 	vbox.add_child(refresh)
 	count.text = "Tekan tombol di bawah untuk menghitung bloom dan cahaya layar ini."
 
-	_add_node_slider(vbox, &"ScreenGlow", "threshold", "Bloom: Ambang Terang", 0.0, 1.0, 0.01, 0.7)
-	_add_node_slider(vbox, &"ScreenGlow", "intensity", "Bloom: Intensitas", 0.0, 2.0, 0.01, 0.6)
-	_add_node_slider(vbox, &"ScreenGlow", "spread", "Bloom: Sebaran", 0.0, 5.0, 0.1, 2.0)
-	_add_node_slider(vbox, &"LightPool", "intensity", "Cahaya (LightPool): Kekuatan", 0.0, 0.12, 0.005, 0.08)
-	_add_node_slider(vbox, &"SunShafts", "intensity", "Berkas (SunShafts): Kekuatan", 0.0, 0.2, 0.005, 0.2)
+	for spec in NODE_SLIDERS:
+		_add_node_slider(vbox, spec[0], spec[1], spec[2], spec[3], spec[4], spec[5], spec[6])
 
 
 ## A switch bound to one of the player's GameSettings booleans. Setting it
@@ -96,7 +105,7 @@ static func _nodes_of(kind: StringName) -> Array:
 	if tree == null:
 		return []
 	var found: Array = []
-	for node in tree.root.find_children("*", "Control", true, false):
+	for node in tree.root.find_children("*", "", true, false):
 		var script := node.get_script() as Script
 		if script != null and script.get_global_name() == kind:
 			found.append(node)
@@ -106,7 +115,8 @@ static func _nodes_of(kind: StringName) -> Array:
 static func _census_text() -> String:
 	var tree := Engine.get_main_loop() as SceneTree
 	var scene: String = tree.current_scene.scene_file_path.get_file() if tree and tree.current_scene else "?"
-	return "%s: %d bloom, %d cahaya, %d berkas" % [scene, _nodes_of(&"ScreenGlow").size(),
+	return "%s: %d bloom Lobby, %d bloom layar, %d cahaya, %d berkas" % [scene,
+		_nodes_of(&"AmbientGlow").size(), _nodes_of(&"ScreenGlow").size(),
 		_nodes_of(&"LightPool").size(), _nodes_of(&"SunShafts").size()]
 
 

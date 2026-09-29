@@ -8,6 +8,24 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — The Lobby's bloom on the shops and the end game
+
+The bloom still did not read in play, so the owner asked for the Lobby's own
+WorldEnvironment glow. `AmbientGlow` now defaults to `lobby_environment.tres`'s
+values (threshold 0.7, intensity 1.5, strength 1.2, screen blend, layer −1),
+and one `Glow` sits second in the root of ShopHub, CosmeticShop, TesNotice,
+StatCheck, ExamProgress, EndCutscene and RunResult, replacing their
+`ScreenGlow`. Measured in the running game (glow on vs off): the Lobby itself
++0.96% frame mean, peak +0.22; RunResult peak +0.38 over 12% of the screen;
+ShopHub +0.8% mean under its blur; TesNotice stays near zero under its
+scrim. The earlier "+0.0000" measurements were a harness artefact: an
+Environment glow never renders in an offscreen SubViewport.
+
+Koperasi and the minigames draw their UI on the same layer as their art, and
+the copied glow washed Koperasi's text and BELI button out (peak +0.998). By
+the owner's choice they keep the art-only `ScreenGlow`, raised to intensity
+0.8. The debug Look tab gained sliders for every `AmbientGlow` on screen.
+
 ## 2026-09-29 — Debug Look tab on every screen; softer win photo; brighter bloom
 
 The debug overlay's Look tab moved out of `DebugManager.gd` (at its size

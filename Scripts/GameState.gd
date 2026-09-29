@@ -76,6 +76,9 @@ var lobby_tutorial_completed: bool = false
 ## atur jadwal, student card, student list, school day, minigames), not just
 ## the lobby one. Session-scoped like everything else on GameState -- no save.
 var tutorials_bypassed: bool = false
+## MinigameHowTo resource paths whose CARA MAIN card has shown this session.
+## Session-scoped by design (CLAUDE.md: no new persistence).
+var seen_minigame_how_to: Dictionary = {}
 var current_grade: int = 7:
 	set(val):
 		current_grade = clampi(val, 7, 9)
@@ -488,6 +491,7 @@ func forget_session() -> void:
 	minggu_ke = 1
 	lobby_tutorial_completed = false
 	tutorials_bypassed = false
+	seen_minigame_how_to = {}
 	current_grade = 7
 	max_minggu = get_max_weeks()
 	grade7_student_ids = []

@@ -79,12 +79,12 @@ var typed_answer: String = ""
 ## The question card label's authored colour, restored after a reveal tint.
 var _card_text_color: Color = Color.BLACK
 
-@onready var score_hud: MinigameScoreHUD = $HeaderRow/ScoreHUD
-@onready var progress_label: Label       = $SoalCard/StatusBadge/BadgeLabel
-@onready var equation_label: Label       = $SoalCard/VBox/TextLabel
-@onready var kalkulator: Control         = $KalkulatorSlot/Kalkulator
-@onready var clear_button: Button        = $AksiRow/BtnHapus
-@onready var submit_button: Button       = $AksiRow/BtnKirim
+@onready var score_hud: MinigameHeader = %MinigameHeader
+@onready var progress_label: Label       = %SoalCard/StatusBadge/BadgeLabel
+@onready var equation_label: Label       = %SoalCard/VBox/TextLabel
+@onready var kalkulator: Control         = %Kalkulator
+@onready var clear_button: Button        = %BtnHapus
+@onready var submit_button: Button       = %BtnKirim
 
 func _ready() -> void:
 	super._ready()
@@ -315,16 +315,16 @@ func _show_current_question() -> void:
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	await tween_in.finished
 
-## Shows "Soal N/M" on the question card's badge. The score already lives in
-## the shared ScoreHUD, and the badge is a narrow pill.
+## Shows "Soal N/M" on the strip's progress bar. The score already lives in
+## the shared header, and the card's badge no longer reserves room, so it
+## stays hidden.
 func _update_progress() -> void:
-	if progress_label:
-		progress_label.text = "Soal %d/%d" % [current_question_index + 1, active_questions.size()]
+	show_question_progress(current_question_index, active_questions.size(), %SoalCard)
 
 ## Largest size, from equation_font_size down to min_equation_font_size, at
 ## which `text` fits the question card without clipping or touching its badge.
 func _fit_font_size(text: String) -> int:
-	return SoalFit.font_size(equation_label, get_node_or_null("SoalCard/StatusBadge") as Control,
+	return SoalFit.font_size(equation_label, null,
 		text, equation_font_size, min_equation_font_size)
 
 ## Stores and displays the player's entry.
@@ -349,6 +349,8 @@ func _on_submit_pressed() -> void:
 
 	if answered == expected_answer:
 		score += 1
+		if score == 1:
+			hint_settle()
 		if score_hud:
 			score_hud.set_score(score)
 		if kalkulator:

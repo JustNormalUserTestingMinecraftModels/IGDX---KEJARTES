@@ -345,7 +345,7 @@ func _batik_art_by_tool(tools: Node) -> Dictionary:
 func test_each_batik_tool_carries_its_own_picture_through_a_shuffle() -> void:
 	var root: Node = (load(_BATIK_SCENE) as PackedScene).instantiate()
 	track(root)
-	var tools := root.get_node("ToolsContainer")
+	var tools := root.get_node("Safe/Column/MinigameTray/ToolsContainer")
 	assert_eq(_batik_art_by_tool(tools), _BATIK_TOOL_ART,
 		"each tool slot must author its own picture in the scene")
 	# Reorder the slots the way _ready()'s shuffle does.
@@ -368,7 +368,7 @@ func test_batik_export_overrides_match_by_tool_name_not_slot() -> void:
 func test_batik_tools_carry_no_emoji() -> void:
 	var root: Node = (load(_BATIK_SCENE) as PackedScene).instantiate()
 	track(root)
-	for tool in root.get_node("ToolsContainer").get_children():
+	for tool in root.get_node("Safe/Column/MinigameTray/ToolsContainer").get_children():
 		assert_true(tool.get_node_or_null("IconLabel") == null,
 			"%s still carries an emoji IconLabel; its picture is authored now" % tool.name)
 	assert_false(FileAccess.get_file_as_string(_BATIK_SCRIPT).contains("func _get_tool_icon"),
@@ -381,7 +381,7 @@ func test_batik_tools_carry_no_emoji() -> void:
 func test_each_batik_picture_fills_its_slot() -> void:
 	var root: Node = (load(_BATIK_SCENE) as PackedScene).instantiate()
 	track(root)
-	for tool in root.get_node("ToolsContainer").get_children():
+	for tool in root.get_node("Safe/Column/MinigameTray/ToolsContainer").get_children():
 		var tex_rect := tool.get_node_or_null("ToolTextureRect") as TextureRect
 		assert_true(tex_rect != null, "%s has no ToolTextureRect" % tool.name)
 		if tex_rect == null:

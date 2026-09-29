@@ -158,8 +158,8 @@ func test_variabel_action_buttons_use_the_lobby_design() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Variabel.tscn")
 	# Kirim is the one mint action; Hapus only clears, so it is brown
 	# (UI depth pass Phase 3, decision P3).
-	assert_eq(src.count("theme_type_variation = &\"LobbyCtaButton\""), 1,
-		"only Kirim wears the Lobby CTA design")
+	assert_eq(src.count("theme_type_variation = &\"PrimaryButtonM\""), 1,
+		"only Kirim wears the mint main-action design")
 	assert_eq(src.count("theme_type_variation = &\"SecondaryButtonM\""), 1,
 		"Hapus wears the brown secondary design, one size step under Kirim")
 	assert_true(src.contains("text = \"Hapus\""), "clear reads Hapus, not CLear")
@@ -256,8 +256,8 @@ func test_password_action_buttons_use_the_lobby_design() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/Minigames/Akademis/Password.tscn")
 	# Kirim is the one mint action; Hapus only clears, so it is brown
 	# (UI depth pass Phase 3, decision P3).
-	assert_eq(src.count("theme_type_variation = &\"LobbyCtaButton\""), 1,
-		"only Kirim wears the Lobby CTA design")
+	assert_eq(src.count("theme_type_variation = &\"PrimaryButtonM\""), 1,
+		"only Kirim wears the mint main-action design")
 	assert_eq(src.count("theme_type_variation = &\"SecondaryButtonM\""), 1,
 		"Hapus wears the brown secondary design, one size step under Kirim")
 	assert_true(src.contains("text = \"Hapus\""), "clear reads Hapus")

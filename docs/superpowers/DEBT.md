@@ -162,6 +162,16 @@ premultiplied) alpha, no drop shadow. Optional white-on-transparent redraws
 Sway shader stays deferred until separated plant/paper/curtain art exists
 for it to move.
 
+**Minigame layout icons (2026-09-29).** Hand-written placeholder SVGs in
+`Assets/Images/UI/Icons/`, to be replaced by the owner's icon set at the same
+paths with no code change: `pause.svg` and `timer.svg` (`MinigameHeader`'s
+`pause_icon`/`timer_icon`), `swipe_up.svg` (MainBola's hint pill) and the six
+how-to step pictures `howto_tap`, `howto_swipe`, `howto_drag`, `howto_read`,
+`howto_timer`, `howto_target` (the CARA MAIN card, via
+`Resources/Minigames/HowTo/*.tres`). A replacement follows
+`Assets/Images/UI/Icons/README.md`'s rules; `tests/test_minigame_layout_kit.gd`
+checks only that each file exists.
+
 **MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Four
 hand-written SVGs in `Assets/Images/UI/StudentList/`, drop-replaceable at the
 same paths, wired into `RosterCard.tscn` as of Task 3 (`Paper/WeekHeader/Band`,
@@ -279,9 +289,13 @@ The project's hard rule is **never add a `theme_override_*`** — use a
 findings, and the second is the one that matters:
 
 **`.tscn` properties: clean where it counts.** 66 non-layout overrides
-(`font_sizes`, `styles`, `colors`) exist in scene files, and **every one is
-inside `Scenes/Minigames/**`**, which CLAUDE.md declares out of scope for the
-design system. Outside the minigames there are zero. Every remaining
+(`font_sizes`, `styles`, `colors`) existed in scene files, and **every one is
+inside `Scenes/Minigames/**`**, in the minigames' inner play art, which
+had no polish pass (CLAUDE.md). The 2026-09-29 minigame layout cleared
+Menjodohkan, MainBola and PauseMenu and halved BuatBatik: 38 remain (checked
+2026-09-30), in `AnswerRow` 7, `QuestionRow` 9, `QuestionCard` 3, `AnswerCard` 2,
+`KalkulatorKey` 1, `BuatBatik` 6 and the debug launcher `MinigameMenu` 10.
+Outside the minigames there are zero. Every remaining
 `theme_override_constants` outside the minigames is `separation`, `margin_*`,
 `v_separation` or `h_separation` — the documented layout-only exception — plus
 two `line_spacing`.
@@ -503,6 +517,64 @@ disconnects, and the editor needs a restart. Cause unconfirmed; verify that
 widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
+
+- **Minigame Polish Part 1 follow-ons (2026-09-28).**
+  - **Score HUD restyle deferred (decision 2).** `MinigameScoreHUD` still
+    wears `ScoreHudPanel`/`ScoreHudValueLabel`, and `MinigameHeader` wraps it
+    unchanged. Moving it onto `MinigameHudPill`/`MinigameHudValue` restyles
+    all seven scoring minigames at once. It also needs its `TargetLabel`
+    (`ResultBodyLabel`) and combo chip re-checked for contrast on the dark
+    pill (`tests/test_light_ground_text.gd`).
+
+- **Minigame mobile layout follow-ons (2026-09-29).** Spec:
+  `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`.
+  - **Three decisions await mentor sign-off (spec §9)**, so the PR is
+    labelled `hold`: the overlays use `NotebookFrame`, not Part 1's Bingkai
+    Kayu; the answer buttons stay cream, not brand-filled with a gold edge;
+    BuatBatik's wood title plank is dropped (the title lives on the CARA MAIN
+    card).
+  - **Part 2 coordination:** `ScorePill` → ×badge inside `MinigameScoreHUD`;
+    Phase 8 re-scoped to key feel + LCD styling. This layout owns the
+    Password, Variabel and Kalkulator layouts, and the strip has no slot for
+    a `ComboMeter`. Tell Part 2's author before Phase 8 starts.
+  - **Hint pill copy.** LombaMenari's pill keeps "UPS! Sisa N" after the
+    player recovers (restore "Geser searah panah" on the next good hit; the
+    two-line text also grows the pill). BuatBatik's hint settles after every
+    correct drop, not only the first (guard it to the first), and can go
+    stale after the final drop. BuatBatik's floating label says "Urutan
+    Salah!" while its hint says "Urutan salah!". Badminton shows the score twice (pill
+    "0 - 0" and bar "Poin 0/5"): a design glance.
+  - **Built differently from the spec (§4), to look at.** LombaMenari's
+    floating grade word still reads "UPS! Sisa N" (`_show_hit_feedback`) as
+    well as the pill, where the spec moved it. Menjodohkan's SOAL wheel keeps
+    its paging arrows in the top half, out of thumb reach, and has no pair
+    chips; the spec called it read-only with chips under it.
+  - **Header and kit loose ends.** `BaseMinigame.header()` is looked up
+    every `_process` frame and twice in each of win/lose/abandon (cache
+    it). `TimerRing` redraws on unchanged values; overlapping `fill_bar`
+    tweens are not killed; `segmented` has no setter; the header's `##`
+    still says the timer is driven only by `show_timer`/`timer_icon`. The
+    tray and the pill duplicate `set_hint`/`settle`; the pill's label has no
+    width cap, and an empty pill still shows. The result popup's game name
+    comes from a `String`/`StringName` ternary in `BaseMinigame`
+    (`how_to.title if how_to != null else name`).
+  - **Dead or stale code left by the move.** `progress_label` in
+    PilihanGanda (kept for `test_minigame_art`'s scan), Password and
+    Variabel; Menjodohkan's unread `submit_btn_active_style`,
+    `correct_color`, `wrong_color`, and its `button_lock_texture` (null by
+    default), which no longer tints red while a match is being cancelled;
+    PilihanGanda's stale `soal_card` comment about the Soal N/M badge;
+    the wrong-answer wiggle now shakes `soal_card` and may leave a panel
+    override behind.
+  - **Unverified live:** JEDA/KELUAR? spring-in at 1080x2400, BuatBatik's
+    drag ghost and tooltip over the tray, Menjodohkan's no-picture question
+    at 2400, and Variabel's run (Password was run).
+  - **Tests that only scan source:** PauseMenu's buttons, the countdown's
+    order in `activate_minigame` (the test pins its indent), the BuatBatik
+    hint order, and LombaMenari's `show_hint(miss_text(` call. Nothing pins
+    the pill's text or that Badminton and LombaMenari hide the timer, only
+    PilihanGanda's tray is checked against the thumb line, and nothing
+    stands a tray up bottom-anchored.
 
 **UI depth pass, leftovers (2026-09-28, Phase 3 2026-09-29).** All three
 phases have shipped (`docs/superpowers/CHANGELOG.md`); these are what they
@@ -872,9 +944,16 @@ ResultCheckup confetti and MainBola (ExamProgress left this list on
 2026-09-20: its backdrop is anchored to all four edges and its status strip
 to the real screen bottom). The Lobby's classroom stays a centred
 1080×1920 picture, so a tall phone shows black bands above and below it;
-filling them wants taller classroom art. Badminton's authored court keeps
-`STRETCH_SCALE` (the walls sit on the court's edges), so a 1080x2400 phone
-stretches it about 25% vertically; tall-phone rule 1 does not hold there yet.
+filling them wants taller classroom art. Badminton's court `Background` now
+covers (`Keep Aspect Covered`), so tall-phone rule 1 holds for the art. **Open
+check, unverified on a device:** on a 20:9 phone (1080×2400) cover scales the
+1080×1920 court art 1.25× and crops about 135 px per side, so the painted
+sidelines land near x≈77 and x≈1002. `Badminton.gd` `_ready()` places the walls,
+goals, puck and paddles from `get_viewport_rect()` (side walls at x=8 and
+width−8, goals and top/bottom walls at the screen edges), so the physics follow
+the viewport, not fixed design pixels, and the puck bounces at the screen edge,
+outside the painted lines. Whether that reads as misaligned has not been
+looked at: the editor's embedded run is locked to 9:16 and never shows 20:9.
 
 **Ghost-preview bars land only on the item apply screen (2026-09-16).** The
 `ApplyItemScreen` student cards (`ApplyStudentRow`) show, while a student is

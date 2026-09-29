@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://ctscnp5ombi0q"]
+
+[ext_resource type="Script" uid="uid://7tnnvufcf15o" path="res://Scripts/Minigames/UI/HowToStepRow.gd" id="1_row"]
+
+[node name="HowToStepRow" type="HBoxContainer" unique_id=1413926817]
+theme_override_constants/separation = 28
+script = ExtResource("1_row")
+
+[node name="Icon" type="TextureRect" parent="." unique_id=1422472340]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Text" type="Label" parent="." unique_id=541921212]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"MinigameHowToLabel"
+vertical_alignment = 1
+autowrap_mode = 3

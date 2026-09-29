@@ -42,7 +42,7 @@ var _last_score: int = 0
 ## Container parent would, so a parent VBoxContainer (Menjodohkan,
 ## PilihanGanda, Password, Variabel all mount the HUD as a VBox child) was
 ## allocating this node zero height, and an absolute-positioned mount
-## (MainBola's HUDLayer -- itself a Container -- worked once this reported a
+## (an old MainBola layer, itself a Container, worked once this reported a
 ## real minimum, but Badminton/LombaMenari mount it directly under the root
 ## scene with no Container parent at all, which never auto-clamps a
 ## Control's authored size up to its minimum) was left at literal zero size.

@@ -15,9 +15,9 @@ extends McpTestSuite
 const ROLES := {
 	"res://Scenes/ReportCard/ReportCard.tscn": {"Safe/UI/BackButton": &"SecondaryButton"},
 	"res://Scenes/Minigames/Akademis/Password.tscn": {
-		"AksiRow/BtnHapus": &"SecondaryButtonM", "AksiRow/BtnKirim": &"LobbyCtaButton"},
+		"Safe/Column/MinigameTray/AksiRow/BtnHapus": &"SecondaryButtonM", "Safe/Column/MinigameTray/AksiRow/BtnKirim": &"PrimaryButtonM"},
 	"res://Scenes/Minigames/Akademis/Variabel.tscn": {
-		"AksiRow/BtnHapus": &"SecondaryButtonM", "AksiRow/BtnKirim": &"LobbyCtaButton"},
+		"Safe/Column/MinigameTray/AksiRow/BtnHapus": &"SecondaryButtonM", "Safe/Column/MinigameTray/AksiRow/BtnKirim": &"PrimaryButtonM"},
 }
 
 

@@ -151,19 +151,26 @@ backdrop and its light move into a `World` CanvasLayer at −1 holding one
 exam notices) add a flat `ParallaxDiorama`. Koperasi's `World` holds its wall
 strip and a `Room` that mirrors `Stage`'s bottom-pinned 1080x1920 rect: the
 backdrop, light, Pak Herman and the counter bloom there, while the goods and
-every piece of shop UI stay on `Stage`; minigames keep their backdrop on
-layer 0.
+every piece of shop UI stay on `Stage`. Since 2026-09-30 every minigame and
+EventDialogue have a `World` room too: backdrop, `GradeCopy` + `Calm`
+(ScreenSaturation) + `Tint` (a PAGI MoodTint), the light and the shafts;
+gameplay sprites and UI stay on layer 0. SchoolDay, which hosts both on its
+own layer-0 sky, fades that sky out while they are up (`DAY_PICTURE`,
+`_cover_day`/`_uncover_day`, counted).
 **Bloom off the Lobby.** A screen with a `World` layer (ShopHub, CosmeticShop,
-Koperasi, the end-game screens) carries the Lobby's own bloom: an
-`AmbientGlow` named `Glow`, second in the root, whose defaults are
-`lobby_environment.tres`'s values. It blooms layer −1 only, so the UI stays
-crisp. A screen whose art shares layer 0 with its UI (every minigame) cannot
-take it: it blooms whole layers, and measured, it washed Koperasi's text out
-before Koperasi's room moved to `World`. Those carry a `ScreenGlow` named `Bloom` right after
-their light, which reads only the art drawn before it; thresholds and its 0.8
-intensity are pinned in `tests/test_lobby_look.gd`. Measure an Environment
-glow in the running game, never in an offscreen `SubViewport`, where it does
-not render at all.
+Koperasi, the end-game screens, the minigames, EventDialogue) carries the
+Lobby's own bloom: an `AmbientGlow` named `Glow`, second in the root, whose
+defaults are `lobby_environment.tres`'s values. It blooms layer −1 only, so
+the UI stays crisp; per-screen thresholds, measured against the Lobby's
++0.011, are pinned in `tests/test_lobby_look.gd` (`BLOOM`). Tune a screen by
+selecting its `Glow` (threshold, intensity, strength), `World/Room/Calm`
+(saturation) and `World/Room/Tint` (strength). Measure an Environment glow in
+the running game, never in an offscreen `SubViewport`, where it does not
+render at all, and never with a **hidden** CanvasLayer at −1 or below in the
+tree: that alone switches a Canvas-mode glow off (measured 2026-09-30; the
+debug minigame launcher parks the scene's `World` at 0 for this reason).
+`ScreenGlow` is no longer placed anywhere; the kit piece stays for a screen
+whose art must share layer 0 with its UI.
 
 ## Swapping fonts
 

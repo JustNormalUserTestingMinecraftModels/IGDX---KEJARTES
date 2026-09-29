@@ -62,26 +62,24 @@ const BLOOM := {
 	END_CUTSCENE: GLOW_DEFAULT,
 	RUN_RESULT: GLOW_DEFAULT,
 	"res://Scenes/Koperasi/Koperasi.tscn": GLOW_DEFAULT,
+	# 2026-09-30: the minigames and EventDialogue moved their art into a World
+	# room too, and the screen-read ScreenGlow gave way to this Glow. Each
+	# threshold was swept on a frozen 1080x1920 frame against the Lobby's own
+	# bloom (+0.011 mean): MainBola +0.0105 at 0.85, Badminton +0.0056 at 0.7
+	# (its court is mid-tone; only the lines bloom), LombaMenari +0.0098 at 0.8.
+	# The desk screens' pale wood hazed at 0.85 (36% of the frame lifted), so
+	# they take 0.9 (13%). EventDialogue keeps its old bloom's 0.85, which
+	# measures the same as before (+0.0004 against +0.0005).
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": 0.85,
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": 0.7,
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": 0.8,
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": 0.9,
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": 0.9,
+	"res://Scenes/Minigames/Akademis/Password.tscn": 0.9,
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": 0.9,
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": 0.9,
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": 0.85,
 }
-
-## Screens whose art is drawn on layer 0 -> [the path of their ScreenGlow,
-## its threshold]. The Lobby's Environment bloom cannot sit under their UI (it
-## blooms whole layers, and their UI shares layer 0 with the art: measured, it
-## washed Koperasi's text out before Koperasi's room moved to World), so they
-## keep the screen-read bloom, which reads only the art drawn before it, at 0.8
-## intensity (owner's call, 2026-09-29).
-const LAYER_0_BLOOM := {
-	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Bloom", 0.8],
-	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Bloom", 0.8],
-	"res://Scenes/Minigames/Akademis/Password.tscn": ["Bloom", 0.8],
-	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Bloom", 0.8],
-	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["Bloom", 0.75],
-	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["Bloom", 0.75],
-	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Bloom", 0.75],
-	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Bloom", 0.8],
-}
-## The art-only bloom's strength on the layer-0 screens.
-const LAYER_0_INTENSITY := 0.8
 
 
 func suite_name() -> String:
@@ -149,7 +147,7 @@ func _assert_flat_parallax(c: Array[Dictionary], scene_path: String, want: Array
 
 
 ## Each World screen keeps exactly one Glow, second in the root, blooming
-## the World layer only (max layer -1), at the Lobby's threshold.
+## the World layer only (max layer -1), at its measured threshold.
 func test_every_world_screen_carries_the_lobby_bloom() -> void:
 	for scene_path in BLOOM:
 		var c := Census.of(scene_path)
@@ -163,34 +161,7 @@ func test_every_world_screen_carries_the_lobby_bloom() -> void:
 			scene_path + ": Glow is the root's second child, right after World")
 		var glow := Census.entry(c, "Glow")
 		assert_eq(float(Census.prop(glow, "glow_threshold", GLOW_DEFAULT)),
-			float(BLOOM[scene_path]), scene_path + ": the Lobby's threshold")
-
-
-## The minigames keep one ScreenGlow, at its threshold and the
-## raised intensity, and no Environment bloom that would wash their UI; nothing
-## tappable is drawn before it.
-func test_every_layer_0_screen_blooms_its_art_only() -> void:
-	for scene_path in LAYER_0_BLOOM:
-		var c := Census.of(scene_path)
-		var want: String = LAYER_0_BLOOM[scene_path][0]
-		var found: Array[String] = []
-		for e in c:
-			if e["instance"] == SCREEN_GLOW:
-				found.append(e["path"])
-			assert_ne(e["instance"], AMBIENT_GLOW, scene_path + ": no Environment bloom over its UI")
-		assert_eq(found, [want] as Array[String], scene_path + ": one ScreenGlow, at " + want)
-		var at := -1
-		for i in c.size():
-			if c[i]["path"] == want:
-				at = i
-		for i in at:
-			assert_false(BUTTON_TYPES.has(c[i]["type"]),
-				"%s: %s is tappable and drawn under the bloom" % [scene_path, c[i]["path"]])
-		var bloom := Census.entry(c, want)
-		assert_eq(float(Census.prop(bloom, "threshold", 0.7)), float(LAYER_0_BLOOM[scene_path][1]),
-			scene_path + ": its threshold")
-		assert_eq(float(Census.prop(bloom, "intensity", 0.6)), LAYER_0_INTENSITY,
-			scene_path + ": at the raised intensity")
+			float(BLOOM[scene_path]), scene_path + ": its measured threshold")
 
 
 ## "Copy the Lobby's bloom": the piece's defaults are the Lobby's Environment.
@@ -324,9 +295,13 @@ func test_both_hosts_find_the_moved_stage_by_name() -> void:
 ## A CanvasLayer ignores its parent's modulate, so a World screen that fades
 ## its own root must fade its Room too, or the lit room stays up to the scene
 ## swap. RunResult does both; this keeps every other World screen honest if it
-## ever adds a root fade (Part 2 code review, 2026-09-28).
+## ever adds a root fade (Part 2 code review, 2026-09-28). The minigames and
+## EventDialogue joined on 2026-09-30; SchoolDay's fade of a hosted minigame's
+## root is crossed by its own day picture instead (see the SchoolDay test).
 func test_no_world_screen_fades_its_root_alone() -> void:
-	for scene_path in ROOMS:
+	var screens: Array = ROOMS.keys() + MINIGAMES.keys()
+	screens.append("res://Scenes/SchoolSimulation/EventDialogue.tscn")
+	for scene_path in screens:
 		var root_script: Variant = Census.prop(Census.entry(Census.of(scene_path), "."), "script")
 		if not root_script is Script:
 			continue
@@ -336,41 +311,124 @@ func test_no_world_screen_fades_its_root_alone() -> void:
 				scene_path + ": its root fade must also fade %Room")
 
 
-## Minigame -> [its backdrop node, whether it throws shafts]. They stay on
-## layer 0: SchoolDay hosts a minigame inside its own tree, over its own
-## layer-0 background, so a World at -1 would draw under that and never show,
-## and SchoolDay's fade-in on the minigame's root would not reach it. So the
-## light sits directly after the backdrop and nothing blooms (spec, pass 3).
+## Minigame -> [its backdrop node, whether it throws shafts, Calm's
+## saturation, Tint's strength]. Since 2026-09-30 every minigame lights its
+## art the Lobby way: the backdrop, a calm-and-warm grade (ScreenSaturation
+## after a fresh BackBufferCopy, then a PAGI MoodTint), the light and the
+## shafts, all in a World room at -1 under the Glow. SchoolDay fades its own
+## layer-0 picture out while a minigame is up so that room shows (see
+## test_school_day_uncovers_its_picture_only_when_the_last_host_closes).
 ## BuatBatik takes no shafts, so no ray crosses the drawing canvas.
 const MINIGAMES := {
-	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background", true],
-	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background", true],
-	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background", true],
-	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Background", true],
-	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG", true],
-	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["Background", true],
-	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background", true],
-	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background", false],
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background", true, 0.85, 0.2],
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background", true, 0.85, 0.2],
+	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background", true, 0.85, 0.2],
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Background", true, 0.85, 0.2],
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG", true, 0.8, 0.3],
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["Background", true, 0.55, 0.45],
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background", true, 0.85, 0.3],
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background", false, 0.85, 0.2],
 }
+## The grade's first half: the screen-read saturation pass.
+const SCREEN_SATURATION := "res://Scenes/Look/ScreenSaturation.tscn"
 
 
-func test_every_minigame_lights_its_backdrop_on_layer_0() -> void:
+func test_every_minigame_lights_its_art_in_a_world_room() -> void:
 	for scene_path in MINIGAMES:
-		var c := Census.of(scene_path)
-		var backdrop: String = MINIGAMES[scene_path][0]
-		var throws_shafts: bool = MINIGAMES[scene_path][1]
-		var kids := Census.children_of(c, ".")
-		assert_eq(kids.find(backdrop), 0, scene_path + ": the backdrop is still drawn first")
-		assert_eq(kids.find("Light"), 1, scene_path + ": the light sits right after it")
-		assert_eq(Census.entry(c, "Light").get("instance"), LIGHT_POOL, scene_path + ": a LightPool")
-		if throws_shafts:
-			assert_eq(kids.find("Shafts"), 2, scene_path + ": then the shafts")
-			assert_eq(Census.entry(c, "Shafts").get("instance"), SUN_SHAFTS, scene_path + ": SunShafts")
-		else:
-			assert_eq(kids.find("Shafts"), -1, scene_path + ": no shafts")
-		assert_eq(kids.find("Bloom"), 3 if throws_shafts else 2,
-			scene_path + ": the bloom right after the light, under everything the player reads")
-		for e in c:
-			if e["type"] == "CanvasLayer":
-				assert_true(int(Census.prop(e, "layer", 1)) >= 0,
-					"%s: %s must not draw under SchoolDay's background" % [scene_path, e["path"]])
+		var spec: Array = MINIGAMES[scene_path]
+		var backdrop: String = spec[0]
+		var bands: Array = [backdrop, "GradeCopy", "Calm", "Tint", "Light"]
+		if spec[1]:
+			bands.append("Shafts")
+		_assert_room(scene_path, bands)
+		_assert_minigame_grade(scene_path, backdrop, spec[2], spec[3])
+
+
+## The backdrop wears the plain grade, is found by unique name and never eats
+## a tap; the calm-and-warm pass reads a fresh copy of the frame; nothing of
+## the old screen-read bloom is left.
+func _assert_minigame_grade(scene_path: String, backdrop: String, calm_sat: float, warmth: float) -> void:
+	var c := Census.of(scene_path)
+	var plate := Census.entry(c, "World/Room/" + backdrop)
+	var mat: Variant = Census.prop(plate, "material")
+	assert_true(mat is Material and (mat as Material).resource_path == GRADE,
+		scene_path + ": the backdrop wears the plain grade")
+	assert_eq(Census.prop(plate, "unique_name_in_owner"), true, scene_path + ": %" + backdrop)
+	assert_eq(Census.prop(plate, "mouse_filter"), Control.MOUSE_FILTER_IGNORE,
+		scene_path + ": the backdrop never eats a tap")
+	var copy := Census.entry(c, "World/Room/GradeCopy")
+	assert_eq(copy.get("type"), "BackBufferCopy", scene_path + ": the grade reads a fresh copy")
+	assert_eq(int(Census.prop(copy, "copy_mode", 1)), BackBufferCopy.COPY_MODE_VIEWPORT,
+		scene_path + ": of the whole viewport")
+	var calm := Census.entry(c, "World/Room/Calm")
+	assert_eq(calm.get("instance"), SCREEN_SATURATION, scene_path + ": Calm is a ScreenSaturation")
+	assert_eq(float(Census.prop(calm, "saturation", 0.7)), calm_sat, scene_path + ": its calm")
+	var tint := Census.entry(c, "World/Room/Tint")
+	assert_eq(int(Census.prop(tint, "mood", 0)), MoodTint.Mood.PAGI, scene_path + ": a warm PAGI tint")
+	assert_eq(float(Census.prop(tint, "strength", 0.35)), warmth, scene_path + ": its warmth")
+	for e in c:
+		assert_ne(e["instance"], SCREEN_GLOW, scene_path + ": no screen-read bloom left")
+	var script := Census.prop(Census.entry(c, "."), "script") as Script
+	var src := FileAccess.get_file_as_string(script.resource_path)
+	assert_false(src.contains("(\"" + backdrop + "\")") or src.contains("$" + backdrop),
+		scene_path + ": the script finds the moved backdrop by unique name, not by path")
+
+
+## A lit screen hosted by SchoolDay (a minigame, EventDialogue) draws its
+## World at -1, under SchoolDay's own layer-0 picture: the sky, the clock and
+## the weather. SchoolDay fades that picture out around the minigame's own
+## fade and hides it under EventDialogue, and it counts the covers, so two
+## overlapping hosts cannot bring the picture back early.
+func test_school_day_uncovers_its_picture_only_when_the_last_host_closes() -> void:
+	var cover := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/DayPictureCover.gd")
+	for n in ["^\"Background\"", "^\"BookClockWidget\"", "^\"Rain\"", "^\"Motes\"", "^\"DayStamp\"",
+			"^\"WeekFireworks\""]:
+		assert_true(cover.contains(n), "DAY_PICTURE lists " + n)
+	assert_true(cover.contains("covers += 1") and cover.contains("covers -= 1"), "covers are counted")
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("tween_in.tween_property(current_minigame, \"modulate:a\", 1.0, 0.4)\n\t_day_cover.cover(tween_in)"),
+		"the day's picture fades out as the minigame fades in")
+	assert_true(src.contains("tween_close.tween_property(current_minigame, \"modulate:a\", 0.0, 0.4)\n\t_day_cover.uncover(tween_close)"),
+		"and back in as it fades out")
+	assert_true(src.contains("add_child(dialogue)\n\t_day_cover.cover(null)"), "EventDialogue covers the day")
+	assert_true(src.contains("dialogue.queue_free()\n\t_day_cover.uncover(null)"), "and uncovers it on close")
+
+
+## Behaviour, on a stand-in host: two overlapping covers need two uncovers,
+## each node gets its own alpha back (the motes' 0.45), and an extra uncover
+## is harmless.
+func test_the_day_cover_is_counted_and_restores_each_alpha() -> void:
+	var host := Control.new()
+	for n in ["Background", "Motes"]:
+		var item := ColorRect.new()
+		item.name = n
+		host.add_child(item)
+	(host.get_node("Motes") as CanvasItem).modulate.a = 0.45
+	var cover = (load("res://Scripts/SchoolSimulation/DayPictureCover.gd") as GDScript).new(host)
+	cover.cover(null)
+	cover.cover(null)
+	assert_eq((host.get_node("Background") as CanvasItem).modulate.a, 0.0, "covered")
+	cover.uncover(null)
+	assert_eq((host.get_node("Background") as CanvasItem).modulate.a, 0.0, "still covered by the second host")
+	cover.uncover(null)
+	assert_eq((host.get_node("Background") as CanvasItem).modulate.a, 1.0, "back once the last host closes")
+	assert_true(is_equal_approx((host.get_node("Motes") as CanvasItem).modulate.a, 0.45), "the motes keep their own alpha")
+	cover.uncover(null)
+	assert_eq(cover.covers, 0, "an extra uncover does nothing")
+	host.free()
+
+
+## The debug overlay's standalone launcher hosts a minigame over whatever
+## scene is open. That scene's layer-0 picture would cover the minigame's
+## World, its own WorldEnvironment would win, and a HIDDEN CanvasLayer at -1
+## or below switches a Canvas-mode glow off outright (measured 2026-09-30). So
+## the launcher hides the scene, parks its negative layers at 0 and lifts its
+## environments out, and puts all three back afterwards.
+func test_the_debug_launcher_clears_the_way_for_a_lit_minigame() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
+	assert_true(src.contains("_scene_stash.hide(get_tree().current_scene)\n\tactive_minigame = m_scene.instantiate()"),
+		"the scene underneath is cleared before the minigame arrives")
+	assert_true(src.contains("_scene_stash.restore()"), "and put back when it ends")
+	var stash := FileAccess.get_file_as_string("res://Scripts/Debug/SceneStash.gd")
+	assert_true(stash.contains("canvas.layer = maxi(canvas.layer, 0)"), "negative layers are parked at 0")
+	assert_true(stash.contains("parent.remove_child(env)"), "the scene's environments step aside")

@@ -82,11 +82,11 @@ stretch_mode = 6
 copy_mode = 2
 
 [node name="Calm" parent="World/Room" instance=ExtResource("look_sat")]
-saturation = 0.65
+saturation = 0.55
 
 [node name="Tint" parent="World/Room" instance=ExtResource("look_tint")]
 mood = 1
-strength = 0.35
+strength = 0.45
 
 [node name="Light" parent="World/Room" instance=ExtResource("look_pool")]
 center = Vector2(0.1, 0.02)
@@ -97,7 +97,7 @@ intensity = 0.1
 origin = Vector2(0.1, -0.1)
 
 [node name="Glow" parent="." instance=ExtResource("look_glow")]
-glow_threshold = 0.85
+glow_threshold = 0.7
 
 [node name="Puck" type="RigidBody2D" parent="." unique_id=1694826156]
 position = Vector2(540, 960)

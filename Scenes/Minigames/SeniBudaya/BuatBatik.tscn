@@ -144,7 +144,7 @@ pool_size = Vector2(1400, 1400)
 intensity = 0.08
 
 [node name="Glow" parent="." instance=ExtResource("look_glow")]
-glow_threshold = 0.85
+glow_threshold = 0.9
 
 [node name="TooltipPanel" type="PanelContainer" parent="." unique_id=983644849]
 visible = false

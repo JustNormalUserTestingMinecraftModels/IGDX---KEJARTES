@@ -132,11 +132,11 @@ func test_the_paddles_match_and_their_hit_circle_is_authored_in_the_scene() -> v
 func test_the_court_is_an_authored_backdrop() -> void:
 	var root: Node = load(SCENE_PATH).instantiate()
 	track(root)
-	var bg := root.get_node_or_null("Background") as TextureRect
-	assert_not_null(bg, "Badminton.tscn carries a Background")
+	var bg := root.get_node_or_null("World/Room/Background") as TextureRect
+	assert_not_null(bg, "Badminton.tscn carries a Background in its World room")
 	if bg == null:
 		return
-	assert_eq(bg.get_index(), 0, "drawn first, under the rackets and the shuttlecock")
+	assert_eq(bg.get_index(), 0, "drawn first in the room, which sits at -1 under the rackets")
 	assert_eq(bg.texture.resource_path, "res://Assets/Images/Textures/lapanganBadminton.jpg",
 		"the court art")
 	assert_eq(bg.mouse_filter, Control.MOUSE_FILTER_IGNORE, "input stays with _input")

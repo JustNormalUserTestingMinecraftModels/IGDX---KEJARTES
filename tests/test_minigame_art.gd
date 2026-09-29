@@ -312,7 +312,7 @@ func test_lomba_menari_wires_the_festival_backdrop_not_the_football_goal() -> vo
 func test_lomba_menari_backdrop_shows_in_the_editor_and_covers_tall_screens() -> void:
 	var scene: Node = (load(_MENARI_SCENE) as PackedScene).instantiate()
 	track(scene)
-	var bg := scene.get_node_or_null("Background") as TextureRect
+	var bg := scene.get_node_or_null("World/Room/Background") as TextureRect
 	assert_true(bg != null, "LombaMenari needs its Background TextureRect")
 	if bg == null:
 		return

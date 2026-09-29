@@ -73,7 +73,7 @@ intensity = 0.1
 intensity = 0.12
 
 [node name="Glow" parent="." instance=ExtResource("look_glow")]
-glow_threshold = 0.85
+glow_threshold = 0.9
 
 [node name="Safe" type="MarginContainer" parent="."]
 layout_mode = 1

@@ -40,7 +40,7 @@ const GRADED := {
 		"Stage/Backdrop", "Stage/Students/Student1", "Stage/Students/Student2",
 		"Stage/Students/Student3", "Stage/Students/Student4",
 	],
-	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],
 	"res://Scenes/Lobby/CitraFace.tscn": ["Canvas/Base"],
@@ -52,19 +52,19 @@ const GRADED := {
 	# backdrops, the painted characters and props, the calculator body. The
 	# card chrome, tool icons and key caps stay ungraded -- they are interface
 	# drawn from the tokens, the same line the rest of this dict holds.
-	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
-	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
-	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background"],
-	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/Akademis/Password.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["World/Room/Background"],
 	"res://Scenes/Minigames/Akademis/Kalkulator.tscn": ["Body/BodyTexture"],
-	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background"],
-	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background"],
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["World/Room/Background"],
 	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
 	"res://Scenes/Minigames/Olahraga/MainBola.tscn": [
-		"FieldBG", "Goalie/GFX", "Ball/GFX",
+		"World/Room/FieldBG", "Goalie/GFX", "Ball/GFX",
 	],
 	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
-		"Background", "Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
+		"World/Room/Background", "Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
 	],
 }
 

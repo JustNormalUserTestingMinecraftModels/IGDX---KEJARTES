@@ -110,8 +110,8 @@ tiles also get a thicker lip (`ThemeFactory.LOBBY_HUD_LIP`).
   it, so on a light ground the rim carries the text; untinted, it reads as
   white letters with a dark edge. Keep the base white: a dark base would
   crush the tint to near-black.
-- `ResultTitleLabel` — cream display letters on `ResultTitlePanel`. `DeltaChipLabel`
-  — the white number on a change chip.
+- `ResultTitleLabel` — cream display letters on `ResultTitlePanel`.
+  `DeltaChipLabel` — the white number on a change chip.
 
 **Progress**:
 - `StatBar` — the mood/energy/skill bars. Fill renders white so callers tint

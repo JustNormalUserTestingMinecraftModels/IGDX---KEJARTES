@@ -104,12 +104,16 @@ static func format_needs_delta(delta: float) -> String:
 ## Dress the card for the weekly report (`week` true) or for every other
 ## screen: the needs bars' colours and the stat rows' chip readout. Every
 ## entry point calls it first, so a reused card never carries one screen's
-## look into another.
+## look into another. The needs arrows go dark on the weekly card so they
+## read on the yellow energy bar, and stay the art's gold everywhere else.
 func _apply_look(week: bool) -> void:
 	energy_bar.theme_type_variation = NEEDS_VARIATION[week]["energy"]
 	mood_bar.theme_type_variation = NEEDS_VARIATION[week]["mood"]
 	for row in stat_rows:
 		row.set_chip_mode(week)
+	var arrow_tint := Juice.tokens().text_primary if week else Color.WHITE
+	energy_delta_chevron.self_modulate = arrow_tint
+	mood_delta_chevron.self_modulate = arrow_tint
 
 
 func setup_row(student_name: String, changes: Array, student: StudentData, day_name: String = "") -> void:

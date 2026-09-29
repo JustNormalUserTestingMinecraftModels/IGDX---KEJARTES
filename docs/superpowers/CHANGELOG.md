@@ -24,8 +24,10 @@ point. Picked by the owner in the visual companion (header A, chips A,
 weekly only). Logs brown, cream tiles and the brown scroll fade came earlier
 the same day in #131. Checked live: the weekly report shows the plate, cream
 panel, yellow/pink needs and green/red chips, and a card through the nightly
-path keeps purple/orange needs, the gold chevron and `+6/52`; a weekly gain
-rewards from its chip (pop, burst, gain cue).
+path keeps purple/orange needs, the gold chevron and `+6/52`. A weekly
+gain still plays its pop, burst and gain cue from the chip
+(test_a_weekly_gain_keeps_its_reward_marker), and a loss chip pops in
+without a burst.
 
 ## 2026-09-29 — The Lobby look and 30% less colour on the event dialogue
 

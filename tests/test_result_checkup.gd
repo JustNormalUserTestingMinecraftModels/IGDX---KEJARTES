@@ -230,6 +230,20 @@ func test_a_weekly_gain_keeps_its_reward_marker() -> void:
 	assert_true(inst.stat_rows[0].chevron.visible, "which is the chevron itself")
 
 
+## A row re-armed after a reveal starts from a visible chip: set_stat undoes
+## what the reveal's pop-in left on it, the way it already does for the chevron.
+func test_a_rearmed_row_resets_its_chip() -> void:
+	var inst := _card()
+	var s := _student_with_week({"akademis": 40.0}, {"akademis": 58.0})
+	inst.setup_week_row(s)
+	var row: DaySummaryStatRow = inst.stat_rows[0]
+	row.rewind()
+	row.delta_chip.scale = Vector2(0.5, 0.5)
+	inst.setup_week_row(s)
+	assert_eq(row.delta_chip.modulate.a, 1.0, "the chip is visible again")
+	assert_eq(row.delta_chip.scale, Vector2.ONE, "and at rest")
+
+
 ## The weekly card wears the game-wide energy yellow and mood pink.
 func test_the_week_card_wears_the_week_needs_bars() -> void:
 	var inst := _card()
@@ -238,6 +252,9 @@ func test_the_week_card_wears_the_week_needs_bars() -> void:
 		"energy is the game-wide yellow")
 	assert_eq(inst.mood_bar.theme_type_variation, &"WeekMoodBar",
 		"mood is the game-wide pink")
+	var ink := DesignTokens.load_default().text_primary
+	assert_eq(inst.energy_delta_chevron.self_modulate, ink, "the energy arrow is dark on the yellow bar")
+	assert_eq(inst.mood_delta_chevron.self_modulate, ink, "and the mood arrow matches")
 
 
 ## Scope is the weekly report only: a card re-armed for the nightly popup or
@@ -255,6 +272,7 @@ func test_a_reused_card_drops_the_week_look() -> void:
 	assert_false(inst.stat_rows[0].chip_row.visible, "no chip in the nightly popup")
 	assert_true(inst.stat_rows[0].value.visible, "the plain number is back")
 	assert_true(inst.stat_rows[0].chevron.visible, "with the gold chevron on a gain")
+	assert_eq(inst.energy_delta_chevron.self_modulate, Color.WHITE, "the nightly arrows keep their gold")
 
 	inst.setup_week_row(s)
 	inst.setup_current_row(s)

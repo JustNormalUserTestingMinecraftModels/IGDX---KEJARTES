@@ -243,6 +243,7 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 	# shows an invisible arrow.
 	chevron.visible = shows_chevron(delta)
 	_reset_chevron()
+	_reset_chip()
 	_fill_from = track_ratio_before(current, delta, target)
 	_fill_to = track_ratio(current, target)
 	track.value = _fill_to
@@ -267,6 +268,7 @@ func set_standing(stat_key: String, target: float, current: float) -> void:
 	value.text = format_standing(current, target)
 	chevron.visible = false
 	_reset_chevron()
+	_reset_chip()
 	track.value = track_ratio(current, target)
 	_sync_readout(0.0)
 
@@ -312,12 +314,20 @@ func _reset_chevron() -> void:
 	chevron.scale = Vector2.ONE
 
 
+## Undo what Juice.pop_in leaves on the weekly delta chip -- zeroed alpha and
+## a shrunk scale -- so a row re-armed for another student never shows an
+## invisible chip.
+func _reset_chip() -> void:
+	delta_chip.modulate.a = 1.0
+	delta_chip.scale = Vector2.ONE
+
+
 ## Replay today's movement: rewind the track to where it stood this
 ## morning and grow it back to where set_stat already left it, popping
 ## the gain marker in over the same beat (the chevron, or on the weekly
 ## report the gain chip) and -- on a day that actually gained -- throwing a
-## star burst from it. `delay` holds the
-## whole gesture so a card can stagger its three rows.
+## star burst from it (a loss chip pops in too, without a burst). `delay`
+## holds the whole gesture so a card can stagger its three rows.
 ##
 ## `plays_sparkle` lets the card suppress the sparkle cue on the second and
 ## later bursts of one gesture, so three gaining rows do not fire three
@@ -353,6 +363,9 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 			fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_loss", self, {"queued": true}))
 		else:
 			RewardFeedback.play(&"stat_loss", self, {"queued": true})
+	# A loss chip pops in with the count, with no burst and no gain cue.
+	if chip_row.visible and not shows_gain_marker():
+		Juice.pop_in(delta_chip, delay)
 	Juice.count_up_formatted(value, 0.0, _delta, _count_text, delay)
 
 
@@ -425,11 +438,19 @@ func play_count(seconds: float) -> void:
 ## chip mode the chip punches and throws the burst instead of the number.
 func land_pop(pitch: float) -> void:
 	var target: Control = delta_chip if chip_row.visible else value
-	var center: Vector2 = target.size * 0.5 if chip_row.visible 		else Juice.text_center(value)
+	var center: Vector2
+	if chip_row.visible:
+		center = target.size * 0.5
+	else:
+		center = Juice.text_center(value)
 	Juice.punch(target, center)
 	if Engine.is_editor_hint():
 		return
-	var origin: Vector2 = chip_row.position + delta_chip.position 		if chip_row.visible else value.position
+	var origin: Vector2
+	if chip_row.visible:
+		origin = chip_row.position + delta_chip.position
+	else:
+		origin = value.position
 	var fx := _get_or_make_burst(origin + center)
 	fx.plays_sfx = false
 	fx.fire()
@@ -456,8 +477,7 @@ func land() -> void:
 	value.scale = Vector2.ONE
 	_reset_chevron()
 	_sync_readout(_delta)
-	delta_chip.modulate.a = 1.0
-	delta_chip.scale = Vector2.ONE
+	_reset_chip()
 
 
 func _stop_reveal() -> void:

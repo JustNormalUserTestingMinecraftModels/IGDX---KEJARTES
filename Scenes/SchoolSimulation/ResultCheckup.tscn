@@ -6,7 +6,6 @@
 [ext_resource type="PackedScene" uid="uid://df8hmrsqlb12n" path="res://Scenes/SchoolSimulation/WeekRecapBanner.tscn" id="4_5y4mq"]
 [ext_resource type="PackedScene" uid="uid://cqfjyfn2r4ljw" path="res://Scenes/SchoolSimulation/WeekLogsPopup.tscn" id="4_qpkja"]
 [ext_resource type="PackedScene" path="res://Scenes/SchoolSimulation/PaperConfetti.tscn" id="6_qpkja"]
-[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/title_weekly_results.png" id="7_ribbon"]
 
 [sub_resource type="Gradient" id="Gradient_qpkja"]
 colors = PackedColorArray(0.3373, 0.1961, 0.1059, 0.55, 0.3373, 0.1961, 0.1059, 0)
@@ -56,13 +55,18 @@ theme_override_constants/margin_bottom = 36
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TitleRibbon" type="TextureRect" parent="Margin/VBox" unique_id=1733019024]
-custom_minimum_size = Vector2(0, 250)
+[node name="TitlePlate" type="PanelContainer" parent="Margin/VBox" unique_id=651565494]
 layout_mode = 2
+size_flags_horizontal = 4
 mouse_filter = 2
-texture = ExtResource("7_ribbon")
-expand_mode = 1
-stretch_mode = 5
+theme_type_variation = &"ResultTitlePanel"
+
+[node name="Title" type="Label" parent="Margin/VBox/TitlePlate" unique_id=1689942968]
+layout_mode = 2
+theme_type_variation = &"ResultTitleLabel"
+text = "HASIL MINGGUAN"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Banner" parent="Margin/VBox" unique_id=2085513516 instance=ExtResource("4_5y4mq")]
 layout_mode = 2

@@ -1154,18 +1154,26 @@ func test_logs_wears_the_brown_result_button() -> void:
 		theme.get_font_size("font_size", "ResultButton"),
 		"same text size as its neighbour, so the row reads as a pair")
 
-const _RIBBON := "res://Assets/Images/DaySummary/title_weekly_results.png"
-
-
-func test_the_screen_opens_with_the_weekly_results_ribbon() -> void:
+## 2026-09-29 weekly colours: the red English ribbon became a brown plate
+## reading HASIL MINGGUAN, still the column's first child.
+func test_the_screen_opens_with_the_hasil_mingguan_plate() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	var ribbon := screen.get_node_or_null("Margin/VBox/TitleRibbon") as TextureRect
-	assert_not_null(ribbon, "the mockup's ribbon is authored")
-	if ribbon != null:
-		assert_eq(ribbon.texture.resource_path, _RIBBON, "wearing the WEEKLY RESULTS art")
-		assert_eq(ribbon.get_index(), 0, "it tops the column, above the banner")
-	assert_true(screen.get_node_or_null("Margin/VBox/HeaderPanel") == null,
-		"the old title and subtitle are replaced by the ribbon")
+	var plate := screen.get_node_or_null("Margin/VBox/TitlePlate") as PanelContainer
+	assert_not_null(plate, "the title plate is authored")
+	if plate != null:
+		assert_eq(plate.get_index(), 0, "it tops the column, above the banner")
+		assert_eq(plate.theme_type_variation, &"ResultTitlePanel", "the brown plate")
+		assert_eq(plate.size_flags_horizontal, Control.SIZE_SHRINK_CENTER,
+			"centred, shrunk to its words")
+		var title := plate.get_node_or_null("Title") as Label
+		assert_not_null(title, "with its label")
+		if title != null:
+			assert_eq(title.text, "HASIL MINGGUAN", "in Indonesian")
+			assert_eq(title.theme_type_variation, &"ResultTitleLabel", "cream display letters")
+	assert_true(screen.get_node_or_null("Margin/VBox/TitleRibbon") == null,
+		"the red ribbon art is gone")
+	assert_false(FileAccess.file_exists("res://Assets/Images/DaySummary/title_weekly_results.png"),
+		"and so is its PNG")
 	screen.free()
 
 

@@ -28,8 +28,4 @@ const BARE_NUMBERS: PackedStringArray = [
 
 ## "source: literal" pairs the literal-path rule accepts although the path
 ## does not exist.
-const UNRESOLVED_PATHS: PackedStringArray = [
-	# Optional drop-in art: BaseMinigame checks ResourceLoader.exists() and
-	# draws a procedural pause button while the PNG is absent.
-	"res://Scripts/Minigames/UI/BaseMinigame.gd: res://Assets/Images/pause_button.png",
-]
+const UNRESOLVED_PATHS: PackedStringArray = []

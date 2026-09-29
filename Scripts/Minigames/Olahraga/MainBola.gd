@@ -903,9 +903,9 @@ func lose_game() -> void:
 	is_game_active = false
 	is_game_over   = true
 	process_mode   = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled     = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var strip := header()
+	if strip != null:
+		strip.set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)

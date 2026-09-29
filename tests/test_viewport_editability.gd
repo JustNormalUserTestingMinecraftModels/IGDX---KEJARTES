@@ -73,7 +73,7 @@ const BASELINE: Dictionary = {
 	"res://Scripts/Minigames/Olahraga/MainBola.gd": 2,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 7,
 	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 1,
-	"res://Scripts/Minigames/UI/BaseMinigame.gd": 4,
+	"res://Scripts/Minigames/UI/BaseMinigame.gd": 1,
 	"res://Scripts/Pengaturan.gd": 12,
 	"res://Scripts/SchoolSimulation/BookClockWidget.gd": 0,
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd": 6,

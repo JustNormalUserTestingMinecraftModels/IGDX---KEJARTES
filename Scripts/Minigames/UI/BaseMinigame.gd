@@ -18,8 +18,9 @@ class_name BaseMinigame
 ## result upward; it never writes stats itself. Difficulty scales with
 ## GameState.current_grade -- see the grade table in CLAUDE.md.
 ##
-## Not covered by the design system: minigames inherit the Theme but had no
-## polish pass, so a theme variation may not exist for a given surface here.
+## The in-play chrome is the scene's own: its MinigameHeader strip and its
+## MinigameTray or MinigameHintPill, found by unique name (%MinigameHeader,
+## %MinigameTray, %MinigameHintPill); this script builds none of it.
 
 signal minigame_won
 signal minigame_lost
@@ -121,11 +122,6 @@ var has_time_limit: bool = false
 ## The steps played in order before the game (or a resume) unlocks input.
 @export var countdown_steps_text: Array[String] = ["3", "2", "1", "Mulai!"]
 
-# ─── Visual - UI Controls ───────────────────────────────────────────────────
-@export_group("Visual - UI Controls")
-## Drag a PNG here to replace the in-game Pause (⏸) button icon.
-@export var pause_button_texture: Texture2D = null
-
 # ─── Achievements ────────────────────────────────────────────────────────────
 const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
 ## Stars the last result card showed (0 on a loss). SchoolDay reads it.
@@ -136,11 +132,9 @@ var last_time_left_ratio: float = -1.0
 # ─── Custom Time Management ──────────────────────────────────────────────────
 var max_game_time: float   = 30.0
 var game_time_left: float  = 30.0
-var visual_timer: Control  = null
 
 # ─── [NEW FEATURE] Pause System ──────────────────────────────────────────────
 var is_paused: bool = false
-var pause_button: TextureButton = null
 var pause_menu_instance: Node = null
 var quit_dialog_instance: Node = null
 
@@ -187,79 +181,6 @@ func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 		strip.set_pause_enabled(true)
 		if not strip.pause_pressed.is_connected(_on_pause_button_pressed):
 			strip.pause_pressed.connect(_on_pause_button_pressed)
-	else:
-		# Legacy chrome for a scene not yet migrated; Task 16 deletes it.
-		if has_time_limit:
-			_create_visual_timer()
-		_create_pause_button()
-
-func _create_pause_button() -> void:
-	if pause_button:
-		pause_button.queue_free()
-		
-	pause_button = TextureButton.new()
-	pause_button.name = "PauseButton"
-	
-	# Load texture png if available
-	var pause_path := "res://Assets/Images/pause_button.png"
-	if ResourceLoader.exists(pause_path):
-		var tex = load(pause_path)
-		if tex and tex.get_width() > 0:
-			pause_button.texture_normal = tex
-			pause_button.ignore_texture_size = true
-			pause_button.stretch_mode = TextureButton.STRETCH_SCALE
-	
-	pause_button.custom_minimum_size = Vector2(140, 140)
-	
-	# Top left anchor
-	pause_button.anchor_left = 0.0
-	pause_button.anchor_right = 0.0
-	pause_button.anchor_top = 0.0
-	pause_button.anchor_bottom = 0.0
-	pause_button.offset_left = 32.0
-	pause_button.offset_top = 28.0
-	pause_button.offset_right = 172.0
-	pause_button.offset_bottom = 168.0
-	
-	pause_button.z_index = 100
-	
-	if pause_button_texture:
-		var sb = StyleBoxTexture.new()
-		sb.texture = pause_button_texture
-		pause_button.add_theme_stylebox_override("normal", sb)
-		pause_button.add_theme_stylebox_override("hover", sb)
-		pause_button.add_theme_stylebox_override("pressed", sb)
-
-	# Fallback procedural vector drawing if texture fails to render or load
-	var draw_node = Control.new()
-	draw_node.name = "FallbackDraw"
-	draw_node.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	draw_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	draw_node.draw.connect(func():
-		if pause_button_texture == null and (pause_button.texture_normal == null or not pause_button.texture_normal.get_width() > 0):
-			var btn_size = draw_node.size
-			var center = btn_size / 2.0
-			var radius = min(btn_size.x, btn_size.y) / 2.0
-			
-			# Circular dark background
-			draw_node.draw_circle(center, radius, Color(0.12, 0.15, 0.22, 0.95))
-			draw_node.draw_arc(center, radius - 1, 0, TAU, 32, Color(0.8, 0.85, 0.9, 0.9), 6.0, true)
-			
-			# Pause bars (II)
-			var bar_w = 14.0
-			var bar_h = 56.0
-			var gap = 14.0
-			
-			var bar1_rect = Rect2(center.x - gap/2.0 - bar_w, center.y - bar_h/2.0, bar_w, bar_h)
-			var bar2_rect = Rect2(center.x + gap/2.0, center.y - bar_h/2.0, bar_w, bar_h)
-			
-			draw_node.draw_rect(bar1_rect, Color(0.95, 0.95, 0.95, 1.0))
-			draw_node.draw_rect(bar2_rect, Color(0.95, 0.95, 0.95, 1.0))
-	)
-	pause_button.add_child(draw_node)
-	
-	pause_button.pressed.connect(_on_pause_button_pressed)
-	_get_or_create_ui_layer().add_child(pause_button)
 
 ## Android delivers the hardware/gesture back press as a notification, not as
 ## ui_cancel. A minigame answers it by opening the pause menu -- never by
@@ -277,36 +198,7 @@ func _notification(what: int) -> void:
 func _on_pause_button_pressed() -> void:
 	if not is_game_active or is_paused:
 		return
-	if header() != null:
-		pause_minigame()
-		return
-	_play_pause_button_boing_animation()
-
-func _play_pause_button_boing_animation() -> void:
-	if pause_button and is_instance_valid(pause_button):
-		pause_button.pivot_offset = pause_button.size / 2.0
-		
-		var tween = create_tween()
-		tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		tween.set_process_mode(Tween.TWEEN_PROCESS_IDLE)
-		# Phase 1: Cute squash down (flat wide)
-		tween.tween_property(pause_button, "scale", Vector2(1.25, 0.72), 0.07)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		# Phase 2: Stretch up boing (tall thin)
-		tween.tween_property(pause_button, "scale", Vector2(0.78, 1.32), 0.12)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		# Phase 3: Bounce landing
-		tween.tween_property(pause_button, "scale", Vector2(1.1, 0.88), 0.09)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-		# Phase 4: Elastic return to original size
-		tween.tween_property(pause_button, "scale", Vector2(1.0, 1.0), 0.1)\
-			.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
-			
-		tween.tween_callback(func():
-			pause_minigame()
-		)
-	else:
-		pause_minigame()
+	pause_minigame()
 
 # ─── [NEW FEATURE] Pause & Resume Logic ──────────────────────────────────────
 func pause_minigame() -> void:
@@ -409,37 +301,12 @@ func _show_quit_confirmation() -> void:
 			pause_menu_instance.show()
 	)
 
-func _create_visual_timer() -> void:
-	if visual_timer:
-		visual_timer.queue_free()
-		
-	visual_timer = Control.new()
-	visual_timer.name = "VisualTimer"
-	visual_timer.custom_minimum_size = Vector2(140, 140)
-	visual_timer.z_index = 100
-	_get_or_create_ui_layer().add_child(visual_timer)
-	
-	# Position in top-right corner
-	visual_timer.anchor_left = 1.0
-	visual_timer.anchor_right = 1.0
-	visual_timer.anchor_top = 0.0
-	visual_timer.anchor_bottom = 0.0
-	visual_timer.offset_left = -172.0
-	visual_timer.offset_top = 28.0
-	visual_timer.offset_right = -32.0
-	visual_timer.offset_bottom = 168.0
-	visual_timer.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	
-	visual_timer.draw.connect(_on_visual_timer_draw)
-
 func _process(delta: float) -> void:
 	if is_game_active and has_time_limit and not is_paused:
 		game_time_left -= delta
 		if game_time_left <= 0.0:
 			game_time_left = 0.0
 			lose_game()
-		if visual_timer:
-			visual_timer.queue_redraw()
 		var strip := header()
 		if strip != null:
 			strip.set_time(game_time_left, max_game_time)
@@ -475,7 +342,7 @@ static func should_show_how_to(enabled: bool, seen: Dictionary, key: String) -> 
 
 # --- mobile layout (spec 2026-09-29 minigame mobile layout, 6) ---------
 
-## The scene's shared top strip, or null in a game not yet migrated.
+## The scene's shared top strip, or null in a scene that has none.
 func header() -> MinigameHeader:
 	return get_node_or_null("%MinigameHeader") as MinigameHeader
 
@@ -523,9 +390,6 @@ var result_subtitle: String = ""
 func win_game() -> void:
 	is_game_active = false
 	process_mode = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if header() != null:
 		header().set_pause_enabled(false)
 	if timer:
@@ -538,9 +402,6 @@ func abandon_game() -> void:
 		return
 	is_game_active = false
 	process_mode = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if header() != null:
 		header().set_pause_enabled(false)
 	if timer:
@@ -553,9 +414,6 @@ func lose_game() -> void:
 		return
 	is_game_active = false
 	process_mode = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if header() != null:
 		header().set_pause_enabled(false)
 	if timer:
@@ -780,34 +638,6 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 
 func _on_timer_timeout() -> void:
 	lose_game()
-
-func _on_visual_timer_draw() -> void:
-	if not is_game_active or not visual_timer:
-		return
-		
-	var center = visual_timer.size / 2
-	var radius = min(visual_timer.size.x, visual_timer.size.y) / 2 - 2
-	
-	# 1. Draw base clock face
-	visual_timer.draw_circle(center, radius, Color(0.95, 0.95, 0.95))
-	visual_timer.draw_arc(center, radius, 0, TAU, 32, Color(0.12, 0.12, 0.12), 6.0, true)
-	
-	# 2. Draw elapsed blackout slice clockwise
-	var elapsed = max_game_time - game_time_left
-	if elapsed > 0.001 and max_game_time > 0:
-		var angle_to = (elapsed / max_game_time) * 360.0
-		_draw_circle_slice(center, radius - 1, 0, angle_to, Color(0.12, 0.12, 0.12))
-
-func _draw_circle_slice(center: Vector2, radius: float, angle_from: float, angle_to: float, color: Color) -> void:
-	var nb_points = 32
-	var points = PackedVector2Array()
-	points.append(center)
-	
-	for i in range(nb_points + 1):
-		var angle_point = deg_to_rad(angle_from + i * (angle_to - angle_from) / nb_points - 90.0)
-		points.append(center + Vector2(cos(angle_point), sin(angle_point)) * radius)
-		
-	visual_timer.draw_polygon(points, PackedColorArray([color]))
 
 func _flash_box_color(node: Control, flash_color: Color, duration: float = 0.45) -> void:
 	if not node or not is_instance_valid(node):

@@ -200,3 +200,46 @@ func test_menari_shows_lives_on_the_bar_and_warnings_in_the_pill() -> void:
 	var src := FileAccess.get_file_as_string(MENARI_GD)
 	assert_contains(src, "\"Nyawa %d/%d\"")
 	assert_contains(src, "show_hint(miss_text(")
+
+
+const ALL_GAMES: Array[String] = [
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn",
+	"res://Scenes/Minigames/Akademis/Password.tscn",
+	"res://Scenes/Minigames/Akademis/Variabel.tscn",
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn",
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn",
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn",
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn",
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn",
+]
+## Which bottom piece each game uses (spec 4).
+const TRAY_GAMES: Array[int] = [0, 1, 2, 3, 4]
+
+
+func test_every_game_has_the_strip_a_bottom_piece_and_a_card() -> void:
+	for i in ALL_GAMES.size():
+		var path := ALL_GAMES[i]
+		var root := _scene(path)
+		assert_true(_under_safe(root.get_node_or_null("%MinigameHeader")), path + ": strip")
+		var bottom := "%MinigameTray" if i in TRAY_GAMES else "%MinigameHintPill"
+		assert_true(_under_safe(root.get_node_or_null(bottom)), path + ": " + bottom)
+		assert_true(root.how_to != null, path + ": has a CARA MAIN card")
+
+
+func test_base_minigame_builds_no_chrome() -> void:
+	var src := FileAccess.get_file_as_string(BASE)
+	for gone: String in ["_create_pause_button", "_create_visual_timer",
+			"_on_visual_timer_draw", "TextureButton.new()"]:
+		assert_false(src.contains(gone), gone + " is retired: the strip is in every scene")
+
+
+func test_every_game_fills_a_tall_phone() -> void:
+	for i in ALL_GAMES.size():
+		var frame := track(LayoutFrame.stand_up(ALL_GAMES[i], Vector2(1080, 2400))) as Control
+		var root := frame.get_child(0)
+		var strip := root.get_node("%MinigameHeader") as Control
+		assert_true(strip.get_global_rect().position.y <= 60.0,
+			ALL_GAMES[i] + ": the strip rides the top edge")
+		var bottom := root.get_node("%MinigameTray" if i in TRAY_GAMES else "%MinigameHintPill") as Control
+		assert_true(bottom.get_global_rect().end.y >= 2400.0 - 80.0,
+			ALL_GAMES[i] + ": the bottom piece rides the bottom edge")

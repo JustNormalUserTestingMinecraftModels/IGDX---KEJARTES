@@ -12,7 +12,7 @@ const LOBBY := "res://Scenes/Lobby/Lobby.tscn"
 ## Tile node path -> the icon it must wear.
 const TILES := {
 	"Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Student": "res://Assets/Images/UI/Icons/nav_students.svg",
-	"Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Jadwal": "res://Assets/Images/UI/Icons/nav_jadwal.svg",
+	"Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Jadwal": "res://Assets/Images/UI/Icons/nav_jadwal.png",
 	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/Koperasi": "res://Assets/Images/UI/Icons/nav_koperasi.png",
 	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/Inventory": "res://Assets/Images/UI/Icons/nav_inventory.png",
 	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/ReportStudent": "res://Assets/Images/UI/Icons/nav_rapor.png",

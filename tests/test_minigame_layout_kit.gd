@@ -227,3 +227,16 @@ func test_mulai_is_the_mint_main_action() -> void:
 	var src := FileAccess.get_file_as_string(TUTORIAL)
 	assert_contains(src, "theme_type_variation = &\"PrimaryButtonM\"")
 	assert_contains(src, "text = \"Mulai\"")
+
+
+func test_jeda_and_keluar_wear_their_roles() -> void:
+	var pause := FileAccess.get_file_as_string("res://Scenes/Minigames/UI/PauseMenu.tscn")
+	assert_contains(pause, "title_text = \"JEDA\"")
+	for pair in [["Lanjutkan", "PrimaryButtonM"], ["Pengaturan", "SecondaryButtonM"],
+			["Keluar", "DangerButtonM"]]:
+		assert_contains(pause, "text = \"%s\"" % pair[0])
+	var quit := FileAccess.get_file_as_string("res://Scenes/Minigames/UI/QuitConfirmDialog.tscn")
+	assert_contains(quit, "title_text = \"KELUAR?\"")
+	assert_contains(quit, "text = \"Tidak, lanjut main\"")
+	assert_contains(quit, "text = \"Ya, keluar\"")
+	assert_false(pause.contains("Game diberhentikan"), "no error-sounding title")

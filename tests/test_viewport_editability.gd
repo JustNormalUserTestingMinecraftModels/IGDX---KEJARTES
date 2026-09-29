@@ -88,8 +88,8 @@ const BASELINE: Dictionary = {
 ## Per-file count of runtime visual construction judged permanent, not
 ## debt -- each site builds content that is genuinely per-call dynamic
 ## (varies with game state, or is a conditional texture-vs-procedural
-## swap already accepted elsewhere in the project, e.g. QuitConfirmDialog's
-## card in Task 10), not authored layout a .tscn could hold instead.
+## swap already accepted elsewhere in the project), not authored layout a
+## .tscn could hold instead.
 ## Reviewed 2026-08-31 Task 21. Same ratchet rules as BASELINE: never
 ## raise one, and lower it (or move the entry back to BASELINE) if a
 ## future edit makes the site static after all.
@@ -100,9 +100,6 @@ const ALLOWED: Dictionary = {
 	# Answer buttons: text and shuffled order regenerate per question: not
 	# fixed layout.
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,
-	# _apply_visual_exports()'s overlay TextureRect: only created when an
-	# @export texture is supplied -- a conditional texture-or-procedural swap.
-	"res://Scripts/Minigames/UI/PauseMenu.gd": 1,
 	# _sync_label()'s optional value-label overlay: created only when the
 	# show_value_label export is toggled on for that particular bar
 	# instance, not every StatBar has one.

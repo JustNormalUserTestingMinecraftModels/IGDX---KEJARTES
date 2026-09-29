@@ -125,36 +125,6 @@ var has_time_limit: bool = false
 ## The steps played in order before the game (or a resume) unlocks input.
 @export var countdown_steps_text: Array[String] = ["3", "2", "1", "Mulai!"]
 
-# ─── Visual - Quit Dialog Overlay ───────────────────────────────────────────
-@export_group("Visual - Quit Dialog Overlay")
-## Body text on the pause menu's quit confirmation, shown when the
-## player taps Quit -- abandoning here always counts as a loss.
-@export var quit_dialog_message_text: String = "Apakah anda yakin?\nSeluruh progress minigame anda akan dianggap gagal!"
-## Label on the confirm (abandon) button.
-@export var quit_dialog_yes_button_text: String = "Iya"
-## Label on the cancel (keep playing) button.
-@export var quit_dialog_no_button_text: String = "Tidak"
-## Optional PNG for the dialog's backdrop. Null uses quit_dialog_bg_color.
-@export var quit_dialog_bg_texture: Texture2D = null
-## Backdrop fill used when quit_dialog_bg_texture is null.
-@export var quit_dialog_bg_color: Color = Color(0, 0, 0, 0.75)
-## Optional PNG for the dialog card. Null uses quit_dialog_card_color.
-@export var quit_dialog_card_texture: Texture2D = null
-## Card fill used when quit_dialog_card_texture is null.
-@export var quit_dialog_card_color: Color = Color(0.12, 0.14, 0.2, 0.95)
-## Card rim colour, procedural mode only.
-@export var quit_dialog_card_border_color: Color = Color(0.8, 0.3, 0.3, 0.8)
-## Optional PNG for the Yes button. Null keeps the theme's DangerButton styling.
-@export var quit_dialog_yes_button_texture: Texture2D = null
-## Optional PNG for the No button. Null keeps the theme's SecondaryButton styling.
-@export var quit_dialog_no_button_texture: Texture2D = null
-## Font for the dialog's message/buttons. Null keeps the theme default.
-@export var quit_dialog_font: Font = null
-## Font size for the dialog's message text.
-@export var quit_dialog_font_size: int = 46
-## Text colour for the dialog's message.
-@export var quit_dialog_font_color: Color = Color.WHITE
-
 # ─── Visual - UI Controls ───────────────────────────────────────────────────
 @export_group("Visual - UI Controls")
 ## Drag a PNG here to replace the in-game Pause (⏸) button icon.
@@ -415,12 +385,6 @@ func _show_quit_confirmation() -> void:
 	var dialog: QuitConfirmDialog = quit_dialog_scene.instantiate()
 	quit_dialog_instance = dialog
 	add_child(dialog)
-	dialog.configure(quit_dialog_message_text, quit_dialog_yes_button_text,
-		quit_dialog_no_button_text, quit_dialog_bg_texture, quit_dialog_bg_color,
-		quit_dialog_card_texture, quit_dialog_card_color, quit_dialog_card_border_color,
-		quit_dialog_yes_button_texture, quit_dialog_no_button_texture,
-		quit_dialog_font, quit_dialog_font_size, quit_dialog_font_color)
-
 	dialog.confirmed.connect(func():
 		quit_dialog_instance.queue_free()
 		quit_dialog_instance = null

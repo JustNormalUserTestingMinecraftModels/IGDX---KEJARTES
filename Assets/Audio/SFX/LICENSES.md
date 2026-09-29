@@ -155,3 +155,10 @@ HeyKey1800
 School bell synth by HeyKey1800 -- https://freesound.org/s/437526/ -- License: Creative Commons 0
 ```
 
+
+## Amazing Reward, 2026-09-29
+
+amazingReward.ogg — the achievement-unlocked banner cue. Dropped in from
+the owner's Downloads folder as "Amazing Reward - Sound Effect". **Author
+and licence not recorded.** Confirm the source and its terms before release
+and fill them in here.

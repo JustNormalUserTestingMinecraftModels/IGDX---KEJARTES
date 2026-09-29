@@ -61,10 +61,7 @@ the 2026-09-11 Koperasi rework set: `Assets/Images/Shop/UI/icon_keranjang.svg`,
 stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
 those exact dimensions; in Godot 4 the repeat comes from the node's
 `texture_repeat`, not a texture import flag), and the 2026-09-10 StudentList
-Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
-(completed the six-category placeholder set; now UNREFERENCED -- its last
-caller, Dapatkan Uang's tip, moved onto `UI/Icons/cat_wirausaha.svg` in UI
-depth pass Phase 3), `UI/Placeholders/stamp_sudah.svg` /
+Part 3 set: `UI/Placeholders/stamp_sudah.svg` /
 `stamp_belum.svg` (status-badge rubber-stamp rings), and
 `UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
 (portrait tape, the avatar state ring, the teacher's-note rule — the last two
@@ -504,8 +501,7 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     `icon_nav_koperasi.png`, `icon_nav_inventory.png`, `icon_nav_rapor.png`
     (named only in `test_lobby_tile_icons`'s `RETIRED` list, which asserts
     the Lobby no longer points at them); `UI/icon_exit.svg`;
-    `UI/Nav/icon_chevron_left.png` / `icon_chevron_right.png`; and
-    `UI/Placeholders/icon_wirausaha.svg`.
+    and `UI/Nav/icon_chevron_left.png` / `icon_chevron_right.png`.
   - Phase 3, game-unreferenced only: `AturJadwal/icon_istirahat_placeholder.png`
     and `icon_wirausaha_placeholder.png`. No scene or game script uses them,
     but their generator `Scripts/Design/GenerateStickyNoteIcons.gd` writes
@@ -778,13 +774,6 @@ marked SUPERSEDED and must not be executed.
 backdrop, a "Segera Hadir" line and a back button. The shop hub's second tile
 has to lead somewhere; nothing behind it is designed.
 
-**Dead scene.** `Scenes/EndGame/WinScreen.tscn` is orphaned scaffolding — root
-unscripted, nothing references it. The real win screen is `WinStage.tscn`,
-which EndCutscene shows and RunResult keeps blurred behind its report. Safe to
-delete. (Checked 2026-09-14: one commit deleted it and a later one brought it
-back; the unmerged cleanup on `feat/asset-refresh-ui-pass`, `32b6f9a`, deletes
-it again along with 177 other unused files.)
-
 **The picker's "+N" ignores quirks (2026-09-24).** `ActivityPreview.skill_gain`
 and the cost arrows follow Balance and the specialty only. The simulation also
 applies Kutu Buku, Penasaran (+1 gain, +10% cost) and Seni Dalam Kesunyian, so
@@ -812,11 +801,11 @@ editor restart (Resource `@export`s); remove them, the assets and those checks
 together, or give them a consumer.
 
 **The green day card art is retired (2026-09-19).**
-`Assets/Images/DaySummary/card_bg.png` and `card_bg_uncropped.png` are drawn
-by nothing since every `DaySummaryStudentRow` took PR #53's cream
-`IdCardPanel` frame; only `test_day_summary`'s asset list still loads
-`card_bg.png`. Kept so the green card is a drop-in if it ever returns.
-Delete both (and that asset-list line) once that is off the table.
+`Assets/Images/DaySummary/card_bg.png` is drawn by nothing since every
+`DaySummaryStudentRow` took PR #53's cream `IdCardPanel` frame; only
+`test_day_summary`'s asset list still loads it. Kept so the green card is a
+drop-in if it ever returns (its uncropped source is gone). Delete it (and
+that asset-list line) once that is off the table.
 
 **Deferred: the AturJadwal shelf.** Ships as two `ColorRect`s rather than a
 `ShelfEdge` variation. Needs an editor restart plus a manual rebake (a new

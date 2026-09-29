@@ -8,6 +8,15 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Skin Select's splashes lose the colour grade
+
+The warm illustration grade copied into `skin_card_focus.gdshader` on
+2026-09-29 made the carousel's splashes read too dark, so it is gone from Skin
+Select only: the cards show the art's own colours, touched only by the focus
+blur and the neighbour dimming. Every other plate keeps the grade, and the
+25%-lighter room behind the cards stays. `test_skin_card` now pins "no grade"
+instead of parity with `illustration_grade_material.tres`.
+
 ## 2026-09-30 — A lighter book under the Lobby
 
 The owner found the Lobby heavy at the bottom. Moving the icon rail up to the

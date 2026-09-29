@@ -34,19 +34,22 @@ const NAV_TILES := ["Koperasi", "Inventory", "ReportStudent"]
 ## stepped book (RaisedPage over Student/Jadwal, ShelfPage over the three
 ## tiles) plus ChevronGrip and a right-edge IconRail; these rects are
 ## measured from Scenes/Lobby/Lobby.tscn's authored offsets.
+## The owner's nudge of the whole Hud (60d6d7d7, 2026-09-29): every control
+## inside %Hud sits this far from where the scrapbook pass drew it.
+const HUD_NUDGE := Vector2(-41, 112)
 const DESIGN_RECTS := {
-	"Student": Rect2(88, 1444, 532, 144),
-	"Jadwal": Rect2(88, 1444, 532, 144),
-	"Koperasi": Rect2(88, 1656, 285, 160),
-	"Inventory": Rect2(397, 1656, 285, 160),
-	"ReportStudent": Rect2(706, 1656, 285, 160),
-	"ChevronGrip": Rect2(214, 1352, 280, 96),
+	"Student": Rect2(Vector2(88, 1444) + HUD_NUDGE, Vector2(532, 144)),
+	"Jadwal": Rect2(Vector2(88, 1444) + HUD_NUDGE, Vector2(532, 144)),
+	"Koperasi": Rect2(Vector2(88, 1656) + HUD_NUDGE, Vector2(285, 160)),
+	"Inventory": Rect2(Vector2(397, 1656) + HUD_NUDGE, Vector2(285, 160)),
+	"ReportStudent": Rect2(Vector2(706, 1656) + HUD_NUDGE, Vector2(285, 160)),
+	"ChevronGrip": Rect2(Vector2(214, 1352) + HUD_NUDGE, Vector2(280, 96)),
 	"DisplayUang": Rect2(672, 48, 360, 112),
-	"IconRail": Rect2(936, 1040, 96, 456),
-	"DailyLogin": Rect2(936, 1040, 96, 96),
-	"SettingsButton": Rect2(936, 1160, 96, 96),
-	"AchievementButton": Rect2(936, 1280, 96, 96),
-	"SkinSwitchButton": Rect2(936, 1400, 96, 96),
+	"IconRail": Rect2(Vector2(936, 1040) + HUD_NUDGE, Vector2(96, 456)),
+	"DailyLogin": Rect2(Vector2(936, 1040) + HUD_NUDGE, Vector2(96, 96)),
+	"SettingsButton": Rect2(Vector2(936, 1160) + HUD_NUDGE, Vector2(96, 96)),
+	"AchievementButton": Rect2(Vector2(936, 1280) + HUD_NUDGE, Vector2(96, 96)),
+	"SkinSwitchButton": Rect2(Vector2(936, 1400) + HUD_NUDGE, Vector2(96, 96)),
 	"ProgressHeader": Rect2(48, 48, 516, 168),
 }
 

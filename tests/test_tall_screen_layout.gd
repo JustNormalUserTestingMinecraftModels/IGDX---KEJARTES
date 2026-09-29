@@ -187,7 +187,8 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 
 ## On a 1080x2400 phone the classroom sits 240 px down, centred; the book HUD
 ## and the icon rail ride the bottom edge, 480 px below their design rects
-## (Task 4's DESIGN_RECTS in test_lobby_layout.gd); the title stays on top;
+## (Task 4's DESIGN_RECTS in test_lobby_layout.gd, after the owner's
+## HUD_NUDGE of -41, +112); the title stays on top;
 ## the popup stays centred.
 func test_lobby_on_a_tall_phone() -> void:
 	var lobby := _stood_up(LOBBY, TALL)
@@ -196,11 +197,11 @@ func test_lobby_on_a_tall_phone() -> void:
 	_assert_placed((lobby.get_node("World/Classroom") as Control),
 		Rect2(0, 240, 1080, 1920), "Classroom")
 	_assert_placed((lobby.get_node("%Jadwal") as Control),
-		Rect2(88, 1924, 532, 144), "Jadwal")
+		Rect2(47, 2036, 532, 144), "Jadwal")
 	_assert_placed((lobby.get_node("%ReportStudent") as Control),
-		Rect2(706, 2136, 285, 160), "ReportStudent")
+		Rect2(665, 2248, 285, 160), "ReportStudent")
 	_assert_placed((lobby.get_node("%DailyLogin") as Control),
-		Rect2(936, 1520, 96, 96), "DailyLogin")
+		Rect2(895, 1632, 96, 96), "DailyLogin")
 	_assert_placed((lobby.get_node("%ProgressHeader") as Control),
 		Rect2(48, 48, 516, 168), "ProgressHeader")
 	_assert_placed((lobby.get_node("DailyReward") as Control),

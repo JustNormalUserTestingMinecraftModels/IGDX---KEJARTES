@@ -8,6 +8,20 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Lobby desk items fit their desks
+
+The owner saw the students' desk items (the `Hand_<Name>` nodes) hanging off
+the desks, so they looked like they were floating. Each item draws its art at
+native size and then a hand-tuned scale, up to 1.26x; 15 of the 24 were wider
+than their desk (Citra 575 px on a 455 px desk, 630 px on the front row). Every
+item now fits inside its desk's opaque width, inset 4 px and clipped to the
+screen for the front desks, which run off its sides. An item that was too wide
+was scaled down uniformly, keeping its vertical centre and its authored aspect.
+One that overhung was slid sideways just enough. Items that already fit kept
+their size. Citra lands at 0.86x (it was 1.10x), close to the 0.88x the owner
+earlier found too small, but no larger size fits the desk.
+`test_lobby_desk_items_fit` measures all 24 from the packed scene.
+
 ## 2026-09-29 — Lobby rail labels
 
 Each icon on the Lobby's rail now carries its word on the cream chip (Hadiah,

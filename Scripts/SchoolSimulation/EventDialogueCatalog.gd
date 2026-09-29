@@ -224,8 +224,9 @@ static func win_pool_for(speaker_path: String, category: String, featured: Stude
 ## The win screen's line: drawn from win_pool_for without repeating the last
 ## one for the same speaker and category.
 static func win_line_for(speaker_path: String, category: String, featured: StudentData) -> String:
-	var memo := "win|%s|%s" % [category, speaker_path]
-	if featured != null and speaker_path != WIN_TEACHER.get(category, ""):
+	var is_teacher: bool = speaker_path != "" and speaker_path == WIN_TEACHER.get(category, "")
+	var memo: String = "win|%s|%s" % [category, speaker_path]
+	if not is_teacher and featured != null:
 		memo = "win|%s|%s" % [category, featured.student_name]
 	var line: String = draw(win_pool_for(speaker_path, category, featured), str(_last_line.get(memo, "")))
 	_last_line[memo] = line

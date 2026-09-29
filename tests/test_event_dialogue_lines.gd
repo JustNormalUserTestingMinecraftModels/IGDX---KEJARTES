@@ -107,6 +107,25 @@ func test_no_line_uses_a_banned_form() -> void:
 		assert_true(hit == null, "%s: '%s' in %s" % [row[0], hit.get_string() if hit else "", row[1]])
 
 
+## Adults (Mom, the teachers, the guru's win thanks) speak standard forms: the
+## spec appendix's user ruling. Whole words, case-insensitive; students may
+## still use them.
+func test_adults_speak_standard_forms() -> void:
+	var casual := ["tapi", "dulu", "duluan", "enggak", "capek", "banget", "bikin",
+		"kayak", "gampang", "bareng", "pengin", "cuma", "seru", "poin", "meleset",
+		"sih", "kok", "deh", "nih", "yuk", "dong"]
+	var rx := RegEx.create_from_string("(?i)\\b(" + "|".join(casual) + ")\\b")
+	var adult: Array = []
+	for key in EventDialogueLines.NPC_LINES:
+		adult.append_array(EventDialogueLines.NPC_LINES[key])
+	for cat in EventDialogueLines.WIN_TEACHER_LINES:
+		adult.append_array(EventDialogueLines.WIN_TEACHER_LINES[cat])
+	assert_true(adult.size() > 0, "adult lines exist")
+	for line in adult:
+		var hit := rx.search(str(line))
+		assert_true(hit == null, "'%s' in %s" % [hit.get_string() if hit else "", line])
+
+
 func test_students_never_name_themselves_and_mom_always_names_the_child() -> void:
 	for row in _every_line():
 		if row[2]:

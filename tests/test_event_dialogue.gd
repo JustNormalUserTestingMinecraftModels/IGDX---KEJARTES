@@ -228,6 +228,24 @@ func test_nama_reaches_the_screen() -> void:
 	assert_eq(d.splash.texture.resource_path, EventDialogueCatalog.SPLASH_MOM)
 
 
+## The screen shows the line pick_line drew for the student (2026-09-29
+## dialogue-variations spec): one of nasi_kotak's variations, {nama} filled.
+func test_the_screen_shows_a_picked_line() -> void:
+	var thea := _student("Thea", "SeniBudaya")
+	var e: Dictionary = EventDialogueCatalog.entry("nasi_kotak").duplicate()
+	e["line"] = EventDialogueCatalog.pick_line("nasi_kotak", thea)
+	var d = (load(_SCENE) as PackedScene).instantiate()
+	d.theme = load(_THEME_PATH)
+	Engine.get_main_loop().root.add_child(d)
+	track(d)
+	d.open(e, thea, 2, 6, "Senin")
+	var filled: Array = []
+	for raw in EventDialogueLines.NPC_LINES["nasi_kotak"]:
+		filled.append(EventDialogueCatalog.fill_line(str(raw), thea))
+	assert_true(filled.has(d.line_label.text), d.line_label.text)
+	assert_true(d.line_label.text.contains("Thea"), d.line_label.text)
+
+
 func test_hujan_hides_the_splash_and_the_blur() -> void:
 	var d = _dialogue("hujan", _student("Thea", "SeniBudaya", _THEA_SPLASH))
 	assert_false(d.splash.visible, "rain has no speaker")

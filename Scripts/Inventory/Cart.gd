@@ -95,10 +95,16 @@ static func total_of(entries: Dictionary) -> int:
 		total += price_of(entries[key]["data"]) * entries[key]["quantity"]
 	return total
 
-## What `item` costs right now: its price after Pembimbing Legendaris's
-## claimed shop discount. The shelf shows and checks this same number.
-static func price_of(item: ItemData) -> int:
+## What `item` lists at: its price after Pembimbing Legendaris's claimed shop
+## discount, before this week's promo. The promo tag strikes this number.
+static func list_price_of(item: ItemData) -> int:
 	return roundi(item.price * AchievementsScript.multiplier("shop_price"))
+
+## What `item` costs right now: its list price, less this week's promo when it
+## is the promo item. The shelf shows and checks this same number.
+static func price_of(item: ItemData) -> int:
+	var promo: float = GameState.shop_promo_multiplier(item.item_name)
+	return roundi(list_price_of(item) * promo)
 
 func get_item_count() -> int:
 	var count: int = 0

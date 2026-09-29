@@ -56,9 +56,21 @@ var shop_stock: Array[String] = []
 ## copy on the shelf.
 var shop_sold: Array[String] = []
 
-# Week tracking  
+## The discount steps a weekly promo can roll, in percent. Ours to tune
+## (Balance.gd is a collaborator's); one is picked per (grade, week).
+const PROMO_DISCOUNTS: Array[int] = [15, 20, 25, 30]
+## Percent to fraction.
+const PERCENT_SCALE: float = 100.0
+
+## This week's promo item -- one name from shop_stock -- and its discount in
+## percent. Both derived from the (grade, week) key in shop_stock_for_week();
+## "" and 0 before a shelf is rolled or when the shelf is empty.
+var shop_promo_item: String = ""
+var shop_promo_percent: int = 0
+
+# Week tracking
 var minggu_ke: int = 1
-var max_minggu: int = 6
+var max_minggu: int = WEEKS_BY_GRADE[7]
 var lobby_tutorial_completed: bool = false
 ## Debug-menu master switch: true skips every tutorial in the game (lobby,
 ## atur jadwal, student card, student list, school day, minigames), not just
@@ -147,11 +159,35 @@ func all_skins_locked() -> bool:
 			return true
 	return false
 
+## How many school weeks each grade runs (2026-09-29: Kelas 7/8/9 = 4/6/8).
+## Ours, not Balance.gd's: that file is collaborator-owned. Its
+## JUMLAH_MINGGU_KELAS_* (6/12/16) and TARGET_KENAIKAN_KELAS_* (15/34/40) are
+## no longer read by anything -- the weeks and the targets they were paired
+## with move together, so both live here.
+const WEEKS_BY_GRADE := {7: 4, 8: 6, 9: 8}
+
+## Points every skill must gain over its base to clear each grade, sized for
+## WEEKS_BY_GRADE. Kelas 8 and 9 were 34 and 40 for 12 and 16 weeks; on 6 and
+## 8 weeks those were unwinnable (a well-played roster never cleared), and
+## 22 / 26 put the clear at week 5 of 6 and week 7 of 8, as tight as before.
+## Kelas 7 keeps 15 and clears at week 2 of 4. tests/test_balance_pacing.gd
+## simulates it.
+const TARGET_UPLIFT_BY_GRADE := {7: 15.0, 8: 22.0, 9: 26.0}
+
+
+## The weeks `grade` runs; a grade outside 7-9 counts as Kelas 7.
+static func weeks_for_grade(grade: int) -> int:
+	return WEEKS_BY_GRADE.get(grade, WEEKS_BY_GRADE[7])
+
+
+## The points every skill must gain to clear `grade`; a grade outside 7-9
+## counts as Kelas 7.
+static func target_uplift_for_grade(grade: int) -> float:
+	return TARGET_UPLIFT_BY_GRADE.get(grade, TARGET_UPLIFT_BY_GRADE[7])
+
+
 func get_max_weeks() -> int:
-	match current_grade:
-		8: return Balance.JUMLAH_MINGGU_KELAS_8
-		9: return Balance.JUMLAH_MINGGU_KELAS_9
-		_: return Balance.JUMLAH_MINGGU_KELAS_7
+	return weeks_for_grade(current_grade)
 
 func get_grade_from_week() -> int:
 	return current_grade
@@ -214,10 +250,7 @@ func initialize_grade_targets() -> void:
 		var base_seni_budaya = student["base_seni_budaya"]
 		var base_olahraga = student["base_olahraga"]
 		
-		var uplift := Balance.TARGET_KENAIKAN_KELAS_7
-		match current_grade:
-			8: uplift = Balance.TARGET_KENAIKAN_KELAS_8
-			9: uplift = Balance.TARGET_KENAIKAN_KELAS_9
+		var uplift := target_uplift_for_grade(current_grade)
 		student["target_akademis"] = clampf(base_akademis + uplift, 0.0, 100.0)
 		student["target_seni_budaya"] = clampf(base_seni_budaya + uplift, 0.0, 100.0)
 		student["target_olahraga"] = clampf(base_olahraga + uplift, 0.0, 100.0)
@@ -324,13 +357,15 @@ func clear_inventory_save() -> void:
 		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
 
 ## Forget the stocked week, so the next shop_stock_for_week() rolls a fresh
-## shelf with nothing sold. Every run restart calls this: it resets
-## minggu_ke to 1, and without it a retried grade -- or Kelas 7 after a loss
-## or after beating the game -- would land on the last run's key.
+## shelf with nothing sold and no promo. Every run restart calls this: it
+## resets minggu_ke to 1, and without it a retried grade -- or Kelas 7 after
+## a loss or after beating the game -- would land on the last run's key.
 func reset_shop_week() -> void:
 	shop_week_key = ""
 	shop_stock = []
 	shop_sold = []
+	shop_promo_item = ""
+	shop_promo_percent = 0
 
 
 ## The key a week's Koperasi shelf is stored under. The grade is part of it
@@ -354,6 +389,45 @@ static func roll_shop_stock(names: Array[String], size: int, max_copies: int) ->
 	return stock
 
 
+## This week's promo item: one of the DISTINCT names on `stock`, picked by a
+## hash of the (grade, week) key -- not the global RNG, which roll_shop_stock's
+## shuffle() advances. Distinct, so a pair on the shelf still advertises one
+## item. Sorted before indexing so the pick depends only on which names are on
+## the shelf, never on roll_shop_stock's unseeded shuffle() order -- the same
+## stock shuffled two different ways must name the same promo item. "" for an
+## empty shelf. Pure.
+static func promo_item_for(stock: Array[String], grade: int, week: int) -> String:
+	var names: Array[String] = []
+	for item_name: String in stock:
+		if not names.has(item_name):
+			names.append(item_name)
+	if names.is_empty():
+		return ""
+	names.sort()
+	return names[posmod(hash("promo:" + shop_week_key_for(grade, week)), names.size())]
+
+
+## This week's discount, one of PROMO_DISCOUNTS, from a differently salted
+## hash so the item and the percentage roll independently. Pure.
+static func promo_percent_for(grade: int, week: int) -> int:
+	var at: int = posmod(hash("pct:" + shop_week_key_for(grade, week)), PROMO_DISCOUNTS.size())
+	return PROMO_DISCOUNTS[at]
+
+
+## Price multiplier for `item_name` under a promo on `promo_item` at `percent`:
+## below 1.0 only for the promo item. Pure.
+static func promo_multiplier(item_name: String, promo_item: String, percent: int) -> float:
+	if item_name == "" or item_name != promo_item:
+		return 1.0
+	return 1.0 - percent / PERCENT_SCALE
+
+
+## This week's promo multiplier for `item_name`. Cart.price_of reads it, so the
+## shelf tag, the running total and the Beli check all agree.
+func shop_promo_multiplier(item_name: String) -> float:
+	return promo_multiplier(item_name, shop_promo_item, shop_promo_percent)
+
+
 ## This week's Koperasi shelf. The first call in a (grade, week) rolls
 ## SHOP_SHELF_SIZE items from ItemDatabase (roll_shop_stock, so a pair can
 ## turn up) and clears shop_sold; every later call that week returns the
@@ -367,6 +441,11 @@ func shop_stock_for_week() -> Array[String]:
 		for item in ItemDatabase.get_all_items():
 			names.append(item.item_name)
 		shop_stock = roll_shop_stock(names, SHOP_SHELF_SIZE, SHOP_MAX_COPIES)
+		shop_promo_item = promo_item_for(shop_stock, current_grade, minggu_ke)
+		# No item, no percent -- shop_promo_item's own doc promises "" and 0
+		# together on an empty shelf; only roll a discount when there is a
+		# promo item to hang it on.
+		shop_promo_percent = promo_percent_for(current_grade, minggu_ke) if shop_promo_item != "" else 0
 	return shop_stock.duplicate()
 
 
@@ -405,9 +484,7 @@ func forget_session() -> void:
 	selected_day = ""
 	day_schedules = {}
 	minigame_gain_this_week = {}
-	shop_week_key = ""
-	shop_stock = []
-	shop_sold = []
+	reset_shop_week()
 	minggu_ke = 1
 	lobby_tutorial_completed = false
 	tutorials_bypassed = false

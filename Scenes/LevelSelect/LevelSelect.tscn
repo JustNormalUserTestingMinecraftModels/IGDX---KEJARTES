@@ -4,12 +4,14 @@
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="2_meja"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="3_safe"]
 [ext_resource type="PackedScene" uid="uid://bykt6v8q1l6uk" path="res://Scenes/LevelSelect/AmplopCard.tscn" id="4_card"]
-[ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="5_arrow"]
 [ext_resource type="Texture2D" uid="uid://6gfh48qlm2i6" path="res://Assets/Images/LevelSelect/pupil_head.svg" id="6_head"]
 [ext_resource type="Texture2D" uid="uid://bhm0dl8akdkge" path="res://Assets/Images/LevelSelect/week_cell.svg" id="7_cell"]
 [ext_resource type="Texture2D" uid="uid://62a76bldik1a" path="res://Assets/Images/LevelSelect/gauge_pill.svg" id="8_pill"]
 [ext_resource type="PackedScene" uid="uid://dqxim1g5tg32a" path="res://Scenes/LevelSelect/OpenAmplopConfirm.tscn" id="9_confirm"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
+[ext_resource type="Texture2D" uid="uid://b7uie5ch7i7os" path="res://Assets/Images/UI/Icons/chevron_left.svg" id="10_chevl"]
+[ext_resource type="Texture2D" uid="uid://bge3qhtji6lh4" path="res://Assets/Images/UI/Icons/chevron_right.svg" id="11_chevr"]
+[ext_resource type="Script" path="res://Scripts/UI/ButtonGlyph.gd" id="glyph_follow"]
 
 [node name="LevelSelect" type="Control" unique_id=434616453]
 layout_mode = 3
@@ -141,17 +143,16 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = 28.0
+offset_top = 24.0
 offset_right = -24.0
-offset_bottom = -28.0
+offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
-rotation = 1.5708
-pivot_offset = Vector2(36, 36)
 mouse_filter = 2
-texture = ExtResource("5_arrow")
+texture = ExtResource("10_chevl")
 expand_mode = 1
 stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="NextArrow" type="Button" parent="Safe/UI/Stack" unique_id=121717348]
 custom_minimum_size = Vector2(120, 128)
@@ -176,17 +177,16 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 24.0
-offset_top = 28.0
+offset_top = 24.0
 offset_right = -24.0
-offset_bottom = -28.0
+offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 2
-rotation = -1.5708
-pivot_offset = Vector2(36, 36)
 mouse_filter = 2
-texture = ExtResource("5_arrow")
+texture = ExtResource("11_chevr")
 expand_mode = 1
 stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="Brief" type="Panel" parent="Safe/UI" unique_id=1362666520]
 layout_mode = 1
@@ -486,7 +486,7 @@ expand_mode = 1
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"H2Label"
-text = "6 minggu"
+text = "4 minggu"
 horizontal_alignment = 1
 
 [node name="DiffTile" type="Panel" parent="Safe/UI/Brief/Margin/VBox/Stats" unique_id=1752382883]

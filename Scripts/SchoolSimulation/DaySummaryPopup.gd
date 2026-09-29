@@ -1,10 +1,14 @@
 extends Control
 class_name DaySummaryPopup
 
-## The end-of-day recap. A Scrim (&"Scrim" Panel) behind a Content
-## VBoxContainer holding a TitleBanner (art, not text) and a RowsScroll ->
-## RowsContainer of DaySummaryStudentRow instances -- one per student who
-## moved -- built directly by this popup, plus a tap-anywhere dismiss.
+## The end-of-day recap. A Scrim (&"Scrim" Panel) behind a SafeAreaMargin ->
+## Content VBoxContainer holding a TitleBanner (art, not text) above a
+## NotebookFrame sheet (2026-09-28 UI depth pass; title_text is empty, so the
+## banner art stays the title and the sticker hides). Inside the frame, a
+## Body VBoxContainer holds the reward layer and a RowsScroll -> RowsContainer
+## of DaySummaryStudentRow instances -- one per student who moved -- built
+## directly by this popup, plus a tap-anywhere dismiss and the frame's round
+## close, both gated through _dismiss().
 ##
 ## Styling comes entirely from the theme now: this script builds no
 ## StyleBoxFlat and owns no color of its own.
@@ -25,22 +29,26 @@ signal summary_dismissed
 @export var teacher_faces: Array[Texture2D] = []
 ## A lit rating star.
 @export var star_on_texture: Texture2D
-## An unlit rating star.
+## An unlit rating star. Since 2026-09-29 this is the same star.png as the lit
+## one, dimmed by `star_off_tint`.
 @export var star_off_texture: Texture2D
+## Multiplied onto an unlit rating star, turning star.png into a dark
+## silhouette. The scene sets it; white leaves the star lit.
+@export var star_off_tint: Color = Color.WHITE
 
 @onready var dim_overlay: Panel = $DimOverlay
-@onready var content: VBoxContainer = $DimOverlay/Content
-@onready var rows_container: VBoxContainer = $DimOverlay/Content/RowsScroll/RowsContainer
-@onready var reward: Control = $DimOverlay/Content/Reward
-@onready var _face: TextureRect = $DimOverlay/Content/Reward/Rows/Header/Face
-@onready var _headline: Label = $DimOverlay/Content/Reward/Rows/Header/Words/Headline
-@onready var _subline: Label = $DimOverlay/Content/Reward/Rows/Header/Words/Subline
-@onready var _stars: Control = $DimOverlay/Content/Reward/Rows/Header/Words/Stars
-@onready var _gain_value: Label = $DimOverlay/Content/Reward/Rows/Tally/GainCell/Col/Value
-@onready var _target_value: Label = $DimOverlay/Content/Reward/Rows/Tally/TargetCell/Col/Value
-@onready var _money_value: Label = $DimOverlay/Content/Reward/Rows/Tally/MoneyCell/Col/Value
-@onready var _star_of_day: Control = $DimOverlay/Content/Reward/Rows/StarOfDay
-@onready var _star_line: Label = $DimOverlay/Content/Reward/Rows/StarOfDay/Row/Words/Line
+@onready var content: VBoxContainer = $DimOverlay/Safe/Content
+@onready var rows_container: VBoxContainer = $DimOverlay/Safe/Content/Frame/Body/RowsScroll/RowsContainer
+@onready var reward: Control = $DimOverlay/Safe/Content/Frame/Body/Reward
+@onready var _face: TextureRect = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Face
+@onready var _headline: Label = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Headline
+@onready var _subline: Label = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Subline
+@onready var _stars: Control = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Stars
+@onready var _gain_value: Label = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/GainCell/Col/Value
+@onready var _target_value: Label = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/TargetCell/Col/Value
+@onready var _money_value: Label = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Tally/MoneyCell/Col/Value
+@onready var _star_of_day: Control = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay
+@onready var _star_line: Label = $DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay/Row/Words/Line
 
 ## The verdict setup_summary() computed, for tests and callers.
 var verdict: Dictionary = {}
@@ -53,6 +61,10 @@ const _TARGET_FOR := {
 	"seni_budaya": "target_seni_budaya",
 	"olahraga": "target_olahraga",
 }
+
+
+func _ready() -> void:
+	(%Frame as NotebookFrame).close_pressed.connect(_dismiss)
 
 
 func setup_summary(
@@ -180,6 +192,7 @@ func _show_verdict(v: Dictionary) -> void:
 			var star := _stars.get_child(i) as TextureRect
 			if star:
 				star.texture = star_on_texture if i < stars else star_off_texture
+				star.self_modulate = Color.WHITE if i < stars else star_off_tint
 	var money: int = v.get("money", 0)
 	if _money_value:
 		# "-" rather than "0": no Wirausaha today, not a loss.
@@ -216,15 +229,23 @@ func _reveal_verdict(v: Dictionary) -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not is_dismissable:
-		return
 	var is_click = (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT)
 	var is_touch = (event is InputEventScreenTouch and event.pressed)
 	var is_key = (event is InputEventKey and event.pressed and event.keycode != KEY_O)
 
 	if is_click or is_touch or is_key:
-		is_dismissable = false
-		dismiss()
+		_dismiss()
+
+
+## Shared gate for every way this popup can be dismissed -- a tap anywhere
+## (_input above) and the frame's round close. Safe to call before the
+## entrance settles: is_dismissable stays false until setup_summary() is
+## done, so an early call is simply ignored.
+func _dismiss() -> void:
+	if not is_dismissable:
+		return
+	is_dismissable = false
+	dismiss()
 
 
 func dismiss() -> void:

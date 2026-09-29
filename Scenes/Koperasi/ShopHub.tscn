@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 [ext_resource type="Script" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 
 [node name="ShopHub" type="Control" unique_id=1253771003]
 layout_mode = 3
@@ -65,6 +66,8 @@ depth_by_child = {
 "Shafts": 1.0
 }
 overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Shafts"])
+
+[node name="Glow" parent="." instance=ExtResource("look_glow")]
 
 [node name="BlurLayer" type="ColorRect" parent="." unique_id=1266182172]
 material = ExtResource("3_h812q")

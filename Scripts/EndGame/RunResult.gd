@@ -1,7 +1,7 @@
 extends Control
 
 ## The last screen of a run: what the player actually did this grade,
-## reported as six counted-up figures and one letter grade.
+## reported as four counted-up figures and one letter grade.
 ##
 ## Deliberately NOT @tool -- like StatCheck and StudentCard, _ready()
 ## reads GameState, starts BGM and kicks off a tween chain, none of which
@@ -45,9 +45,15 @@ extends Control
 ## Shown for a D rank, which is also every failed run.
 @export var rank_badge_d: Texture2D
 
+## Seconds the report and its Room take to fade out on Selesai.
+const EXIT_FADE_SECONDS := 0.4
+
 ## The painting, the letterbox bars and the posed roster: the same scene
 ## EndCutscene shows, dressed the same way (_dress_backdrop()).
-@onready var win_stage: WinStage = $WinStage
+@onready var win_stage: WinStage = %WinStage
+## The World layer's one Control. A CanvasLayer ignores this screen's own
+## modulate, so the exit fade fades the Room too (lobby-look amendment 1).
+@onready var room: Control = %Room
 ## Between WinStage and the report UI: the shader samples what is already
 ## drawn, so the image blurs and the report stays sharp.
 @onready var blur_layer: ColorRect = $BlurLayer
@@ -61,15 +67,12 @@ extends Control
 
 const ROW_SCENE := preload("res://Scenes/EndGame/RunResultRow.tscn")
 
-## The report's six icons, preloaded so a row swap costs nothing at
-## reveal time. Transparent SVGs authored alongside the project's other
-## placeholder icons -- see Task 11's note on why SVG and not PNG.
-const ICON_MINIGAME_MENANG := preload("res://Assets/Images/UI/Placeholders/icon_minigame_menang.svg")
-const ICON_MINIGAME_KALAH := preload("res://Assets/Images/UI/Placeholders/icon_minigame_kalah.svg")
-const ICON_POIN := preload("res://Assets/Images/UI/Placeholders/icon_poin.svg")
-const ICON_BARANG := preload("res://Assets/Images/UI/Placeholders/icon_barang.svg")
-const ICON_UANG := preload("res://Assets/Images/UI/Placeholders/icon_uang.svg")
-const ICON_EVENT := preload("res://Assets/Images/UI/Placeholders/icon_event.svg")
+## The report's four icons, preloaded so a row swap costs nothing at
+## reveal time. Authored art (gamewin, gamelose, coin, event), transparent PNGs.
+const ICON_MINIGAME_MENANG := preload("res://Assets/Images/EndGame/Icons/gamewin_icon.png")
+const ICON_MINIGAME_KALAH := preload("res://Assets/Images/EndGame/Icons/gamelose_icon.png")
+const ICON_UANG := preload("res://Assets/Images/EndGame/Icons/coin_icon.png")
+const ICON_EVENT := preload("res://Assets/Images/EndGame/Icons/event_icon.png")
 
 ## One caption per rank, so the grade says something rather than just
 ## scoring something.
@@ -84,7 +87,12 @@ const GRADE_CAPTIONS := {
 ## The first-run tutorial flags a beaten game resets, by the script that owns
 ## them as static vars. StudentList's walkthrough flag once pointed at Lobby.gd,
 ## which has none, and the old silent guard hid it.
-const TUTORIAL_FLAGS: Dictionary[String, PackedStringArray] = {
+##
+## Deliberately an untyped Dictionary of plain Arrays. It was once typed
+## `Dictionary[String, PackedStringArray]` over Array literals, and iterating it
+## in _apply_progression() handed back empty flag names and then hard-crashed
+## Godot 4.6.2 (signal 11) the moment a beaten game pressed Selesai.
+const TUTORIAL_FLAGS := {
 	"res://Scripts/AturJadwal/AturJadwal.gd": ["tutorial_phase1_done", "tutorial_phase3_done"],
 	"res://Scripts/StudentList/StudentList.gd": ["tutorial_shown"],
 }
@@ -98,6 +106,7 @@ var _passed: bool = false
 
 func _ready() -> void:
 	btn_selesai.pressed.connect(_on_selesai_pressed)
+	btn_selesai.text = exit_label(GameState.run_failed, GameState.current_grade)
 	AudioDirector.play_bgm(&"run_result")
 
 	_dress_backdrop()
@@ -129,10 +138,10 @@ func _dress_backdrop() -> void:
 	blur_layer.show()
 
 
-## The six rows are instanced from RunResultRow.tscn rather than authored
+## The four rows are instanced from RunResultRow.tscn rather than authored
 ## in this scene. Reviewed exception to the no-runtime-construction rule
 ## (per-call-dynamic content): the row count is fixed, but every value is
-## run-dependent, and authoring six frozen rows would mean six near-empty
+## run-dependent, and authoring four frozen rows would mean four near-empty
 ## nodes plus a parallel wiring table. Registered in
 ## tests/test_viewport_editability.gd's ALLOWED dict, not BASELINE.
 func _build_rows() -> void:
@@ -140,10 +149,8 @@ func _build_rows() -> void:
 	var spec := [
 		[ICON_MINIGAME_MENANG, "Minigame selesai", float(stats.minigames_won), ""],
 		[ICON_MINIGAME_KALAH, "Minigame kalah", float(stats.minigames_lost), ""],
-		[ICON_POIN, "Total poin minigame", stats.minigame_points, " poin"],
-		[ICON_BARANG, "Barang dipakai", float(stats.items_used), ""],
 		[ICON_UANG, "Uang dari wirausaha", float(stats.wirausaha_money), "G"],
-		[ICON_EVENT, "Murid ikut event", float(stats.event_student_count()), " murid"],
+		[ICON_EVENT, "Event yang diikuti", float(stats.events_attended), ""],
 	]
 	for entry in spec:
 		# Corrected from the brief: `var row := ROW_SCENE.instantiate()`
@@ -261,12 +268,45 @@ func _on_selesai_pressed() -> void:
 	var destination := _apply_progression()
 
 	var tween := create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 0.4)
+	tween.tween_property(self, "modulate:a", 0.0, EXIT_FADE_SECONDS)
+	tween.parallel().tween_property(room, "modulate:a", 0.0, EXIT_FADE_SECONDS)
 	await tween.finished
 	Transition.change_scene(destination)
 
 
+## The first grade: losing it restarts the whole run from the menu.
+const FIRST_GRADE: int = 7
+## The last grade: passing it beats the game.
+const FINAL_GRADE: int = 9
+## Where a full restart, or a beaten game, ends up.
+const MENU_SCENE := "res://Scenes/MainMenu/MainMenu.tscn"
+## Where the next grade, or a retry of this one, picks its roster.
+const ROSTER_SCENE := "res://Scenes/StudentCard/StudentCard.tscn"
+
+
+## Where a run that `run_failed` at `grade` goes next: the menu for a Kelas 7
+## loss or a beaten Kelas 9, otherwise the roster (a retry of this grade, or
+## the next one). The one place that decides; _apply_progression() and
+## exit_label() both read it.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func destination_for(run_failed: bool, grade: int) -> String:
+	if run_failed:
+		return MENU_SCENE if grade == FIRST_GRADE else ROSTER_SCENE
+	return ROSTER_SCENE if grade < FINAL_GRADE else MENU_SCENE
+
+
+## The exit button's label, naming where destination_for() sends the player.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func exit_label(run_failed: bool, grade: int) -> String:
+	if destination_for(run_failed, grade) == MENU_SCENE:
+		return "Kembali ke Menu"
+	return "Ulangi Kelas %d" % grade if run_failed else "Lanjut ke Kelas %d" % (grade + 1)
+
+
 func _apply_progression() -> String:
+	var destination := destination_for(GameState.run_failed, GameState.current_grade)
 	if GameState.run_failed:
 		GameState.day_schedules.clear()
 		GameState.minggu_ke = 1
@@ -275,23 +315,23 @@ func _apply_progression() -> String:
 		GameState.reset_shop_week()
 		GameState.run_stats.reset()
 		GameState.run_failed = false
-		if GameState.current_grade == 7:
+		if destination == MENU_SCENE:
 			# Grade-7 loss: full restart. Clear everything and go to MainMenu;
 			# the MainMenu -> CutScene bootstrap picks up from there.
 			GameState.approved_students.clear()
 			GameState.grade7_student_ids.clear()
 			GameState.grade8_student_ids.clear()
 			GameState.returned_from_student_card = false
-			return "res://Scenes/MainMenu/MainMenu.tscn"
+			return destination
 		else:
 			# Grade 8/9 loss: retry the same grade at StudentCard. Keep the
 			# roster and grade7_student_ids so locked students stay locked and
 			# the player only needs to re-pick the new-grade slot(s).
 			GameState.returned_from_student_card = false
-			return "res://Scenes/StudentCard/StudentCard.tscn"
+			return destination
 
 	Achievements.record_grade_passed(GameState.current_grade)
-	if GameState.current_grade < 9:
+	if destination == ROSTER_SCENE:
 		GameState.current_grade += 1
 		GameState.reset_roster_for_new_grade()
 		GameState.day_schedules.clear()
@@ -299,7 +339,7 @@ func _apply_progression() -> String:
 		GameState.returned_from_student_card = false
 		GameState.lobby_tutorial_completed = true
 		GameState.run_stats.reset()
-		return "res://Scenes/StudentCard/StudentCard.tscn"
+		return destination
 	else:
 		# The game is beaten: unlock level select and reset to Kelas 7.
 		# set_grade() resets current_grade/minggu_ke/run_stats/
@@ -311,7 +351,7 @@ func _apply_progression() -> String:
 		# cleared two lines below anyway.
 		GameState.is_game_beaten = true
 		GameSettings.save_settings()
-		GameState.set_grade(7)
+		GameState.set_grade(FIRST_GRADE)
 		GameState.day_schedules.clear()
 		GameState.approved_students.clear()
 		GameState.grade7_student_ids.clear()
@@ -319,10 +359,10 @@ func _apply_progression() -> String:
 		GameState.lobby_tutorial_completed = false
 
 		# A beaten game replays the first-run tutorials.
-		for path: String in TUTORIAL_FLAGS:
-			for flag: String in TUTORIAL_FLAGS[path]:
-				_reset_static_flag(path, flag)
-		return "res://Scenes/MainMenu/MainMenu.tscn"
+		for path in TUTORIAL_FLAGS:
+			for flag in TUTORIAL_FLAGS[path]:
+				_reset_static_flag(String(path), String(flag))
+		return destination
 
 
 ## Sets the static bool `flag` on the script at `path` back to false. The

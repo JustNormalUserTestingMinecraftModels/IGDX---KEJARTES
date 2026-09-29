@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bnfvsylsdp68k"
-path="res://.godot/imported/title_weekly_results.png-c9af4aaabd9eea10209f7d79936fda58.ctex"
+uid="uid://n1k1jf58bxet"
+path="res://.godot/imported/info.svg-2677cd9d1b907ab9bc92f5f0345010b2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/DaySummary/title_weekly_results.png"
-dest_files=["res://.godot/imported/title_weekly_results.png-c9af4aaabd9eea10209f7d79936fda58.ctex"]
+source_file="res://Assets/Images/UI/Icons/info.svg"
+dest_files=["res://.godot/imported/info.svg-2677cd9d1b907ab9bc92f5f0345010b2.ctex"]
 
 [params]
 
@@ -38,3 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

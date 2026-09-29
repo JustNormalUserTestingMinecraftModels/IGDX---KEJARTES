@@ -5,6 +5,9 @@
 [ext_resource type="PackedScene" uid="uid://cvcji5ahomyaj" path="res://Scenes/Minigames/SeniBudaya/DancerRig.tscn" id="3_cwgfm"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="9_g7u23"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [node name="LombaMenari" type="Control" unique_id=125767780]
 layout_mode = 3
@@ -31,6 +34,21 @@ grow_vertical = 2
 texture = ExtResource("2_cwgfm")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Light" parent="." instance=ExtResource("look_pool")]
+center = Vector2(0.5, 0.05)
+pool_size = Vector2(1400, 1800)
+aspect = 0.8
+intensity = 0.1
+
+[node name="Shafts" parent="." instance=ExtResource("look_shafts")]
+origin = Vector2(0.5, -0.1)
+shaft_count = 5.0
+intensity = 0.15
+
+[node name="Bloom" parent="." instance=ExtResource("look_bloom")]
+threshold = 0.75
+intensity = 0.8
 
 [node name="CharacterDisplay" parent="." unique_id=878431887 instance=ExtResource("3_cwgfm")]
 layout_mode = 1

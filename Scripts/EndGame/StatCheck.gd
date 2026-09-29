@@ -48,8 +48,8 @@ const RUSH_SPEED := 1000.0
 ## Seconds the white overlay takes to reach full.
 @export var white_fade_seconds: float = 0.8
 
-@onready var card_slot: Control = $MarginContainer/Column/CardSlot
-@onready var star_meter: StarMeter = $MarginContainer/Column/StarMeter
+@onready var card_slot: Control = $Safe/Center/Frame/Column/CardSlot
+@onready var star_meter: StarMeter = $Safe/Center/Frame/Column/StarMeter
 @onready var white_fade: ColorRect = $WhiteFade
 
 var _stars: float = 0.0

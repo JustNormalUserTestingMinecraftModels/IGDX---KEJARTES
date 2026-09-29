@@ -93,9 +93,11 @@ func test_sheet_card_is_content_sized_and_centred() -> void:
 	var src := FileAccess.get_file_as_string(SHEET)
 	assert_false(src.contains("anchor_top = 0.3"), "the fractional height anchors must be gone")
 	assert_false(src.contains("anchor_bottom = 0.78"))
-	assert_true(src.contains("offset_left = -432.0") and src.contains("offset_right = 432.0"),
-		"width stays 864, expressed as offsets about the centre")
-	assert_true(src.contains("grow_horizontal = 2") and src.contains("grow_vertical = 2"))
+	assert_true(src.contains("custom_minimum_size = Vector2(900, 0)"),
+		"the frame's width is fixed at 900; its height follows its content")
+	var sheet := _new_sheet()
+	var frame := sheet.get_node("%Sheet") as NotebookFrame
+	assert_true(frame.get_parent() is CenterContainer, "the frame is centred by a CenterContainer")
 
 
 func test_sheet_uses_the_space_lg_rhythm() -> void:
@@ -103,7 +105,6 @@ func test_sheet_uses_the_space_lg_rhythm() -> void:
 	assert_true(src.contains("theme_override_constants/separation = 44"),
 		"the stack is on space_lg (44), not the old 12")
 	assert_true(src.contains("custom_minimum_size = Vector2(0, 300)"), "the icon slot is 300 tall")
-	assert_true(src.contains("custom_minimum_size = Vector2(96, 96)"), "the back arrow meets the touch floor")
 	assert_true(src.contains('[node name="StateRow" type="HBoxContainer"'))
 	assert_false(src.contains('[node name="ActionArea"'))
 
@@ -232,3 +233,15 @@ func test_root_and_scrim_stop_mouse_input() -> void:
 func test_sheet_starts_hidden() -> void:
 	var sheet := _new_sheet()
 	assert_false(sheet.visible)
+
+
+func test_the_sheet_is_a_notebook_frame() -> void:
+	var popup := (load(SHEET) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Safe/Center/Sheet") as NotebookFrame
+	assert_true(frame != null, "the sheet is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "PENCAPAIAN")
+		assert_true(frame.tabs.is_empty(), "no tabs")
+	assert_contains(FileAccess.get_file_as_string(SHEET_SRC), "close_pressed.connect",
+		"the frame's close is wired")

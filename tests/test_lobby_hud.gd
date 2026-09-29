@@ -2,8 +2,9 @@
 extends McpTestSuite
 
 ## LobbyProgressHeader and the coin plate (2026-09-27 scrapbook HUD, Task 3):
-## the grade/week/star header at Safe/UI's top left and the restyled money
-## chip at top right, still wired to DailyLoginPanel's flying reward coin.
+## the grade/week/star tag, since the 2026-09-29 layout grid pass in the gap
+## between the back-row heads, and the money chip, now in the book's step
+## beside JADWAL!, still wired to DailyLoginPanel's flying reward coin.
 ##
 ## Suite is @tool and no test here is a coroutine, per the runner
 ## constraints. One Lobby is instanced for the whole suite in suite_setup
@@ -116,6 +117,8 @@ func test_header_draws_grade_week_and_stars() -> void:
 	assert_eq((header.get_node("%GradeNumber") as Label).text, "8")
 	assert_eq((header.get_node("%WeekLabel") as Label).text,
 		LobbyProgressHeader.WEEK_FORMAT % [3, GameState.max_minggu])
+	assert_eq((header.get_node("%WeekCaption") as Label).text, "Minggu",
+		"the word Minggu sits on its own caption above the week")
 	assert_eq((header.get_node("%StarBar") as ProgressBar).value, 0.0,
 		"an empty roster has no stars")
 
@@ -155,6 +158,25 @@ func test_the_reward_coin_still_flies_to_the_wallet() -> void:
 	var panel := _lobby.get_node("DailyReward") as DailyLoginPanel
 	assert_eq(panel.wallet_anchor, _lobby.get_node("%DisplayUang"),
 		"wallet_anchor must follow DisplayUang out of BottomBar")
+
+
+## The 2026-09-29 layout grid pass: the coin box sits in the book's step
+## beside JADWAL!, so it rides the swipe with the book.
+func test_the_coin_box_rides_in_the_book() -> void:
+	var book := _lobby.get_node("%BookHud") as Node
+	var coins := _lobby.get_node("%DisplayUang") as Node
+	assert_true(book.is_ancestor_of(coins), "DisplayUang rides in BookHud")
+
+
+## Only the tag idles to a fade: the coin box leaves with the book instead.
+func test_only_the_progress_tag_idles_to_a_fade() -> void:
+	var fade := _idle_fade()
+	if fade == null:
+		return
+	assert_eq(fade.targets.size(), 1, "one idle-fade target")
+	if fade.targets.size() == 1:
+		assert_eq(fade.targets[0], _lobby.get_node("%ProgressHeader"),
+			"the tag fades; the coins leave with the book")
 
 
 ## Task 4: the stepped book housing (RaisedBlock/RaisedPage over JADWAL! and
@@ -220,6 +242,9 @@ func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
 	var open_rail := Vector2(rail.offset_left, rail.offset_right)
 	hud.set_open(false)
 	assert_false(hud.is_open)
+	var coins := hud.get_node("%DisplayUang") as Control
+	assert_eq(coins.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_DISABLED,
+		"the hidden book's + cannot be pressed")
 	_assert_only_the_grip_peeks(hud, "the design screen")
 	assert_eq(rail.offset_left, open_rail.x + hud.rail_slide_pixels,
 		"the rail leaves by the right edge with the book (Q5)")
@@ -229,6 +254,8 @@ func test_the_hud_hides_to_its_peek_and_comes_back() -> void:
 		"a hide says how to come back")
 	hud.set_open(true)
 	assert_true(hud.is_open)
+	assert_eq(coins.mouse_behavior_recursive, Control.MOUSE_BEHAVIOR_INHERITED,
+		"the reopened book's + works again")
 	assert_eq(Vector2(book.offset_top, book.offset_bottom), open_book,
 		"open returns to the authored rest")
 	assert_eq(Vector2(rail.offset_left, rail.offset_right), open_rail,
@@ -284,6 +311,9 @@ func _assert_only_the_grip_peeks(hud: LobbyHud, where: String) -> void:
 		% [where, grip.position.y, grip.end.y, screen_bottom])
 	assert_true(glyph.end.y <= screen_bottom,
 		"%s: the chevron glyph (bottom %.1f) shows whole" % [where, glyph.end.y])
+	var coins: Rect2 = _drawn_rect(hud.get_node("%DisplayUang") as Control)
+	assert_true(coins.position.y >= screen_bottom,
+		"%s: the coin box (top %.1f) leaves with the book" % [where, coins.position.y])
 	var chip := hud.get_node("%RosterChip") as Control
 	assert_true(is_zero_approx(chip.modulate.a)
 		or _drawn_rect(chip).position.y >= screen_bottom,
@@ -329,6 +359,50 @@ func test_the_hud_hands_the_chatter_its_blockers() -> void:
 	var blockers: Array[Control] = hud.tap_blockers()
 	for part: String in ["RaisedBlock", "Shelf", "ChevronGrip", "IconRail"]:
 		assert_true(blockers.has(hud.get_node("%" + part)), part + " blocks face taps")
+
+
+## The coin plate rides in the book, so a tap on it is not a tap on a face.
+func test_the_coin_plate_blocks_face_taps() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	assert_true(hud.tap_blockers().has(hud.get_node("%DisplayUang")),
+		"DisplayUang blocks face taps")
+
+
+## A vertical drag that starts on the coin plate swipes the book like a drag
+## on JADWAL or the shelf: the plate passes the mouse on to its gui_input
+## and the HUD's handler reads it.
+func test_a_drag_on_the_coin_plate_hides_the_book() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	GameSettings.reduce_motion = true
+	hud.activate(false)
+	LayoutFrame.settle(_lobby)
+	var coins := hud.get_node("%DisplayUang") as Control
+	assert_eq(coins.mouse_filter, Control.MOUSE_FILTER_PASS,
+		"the plate receives gui_input")
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(10.0, 10.0)
+	var drag := InputEventMouseMotion.new()
+	drag.position = Vector2(10.0, 10.0 + hud.swipe_threshold_pixels + 20.0)
+	hud._on_book_gui_input(press)
+	hud._on_book_gui_input(drag)
+	assert_false(hud.is_open, "a downward drag on the coin plate hides the book")
+	hud.set_open(true)
+	GameSettings.reduce_motion = _saved_reduce_motion
+
+
+## The plate is wired to the same swipe handler and enters with the book.
+func test_the_coin_plate_is_wired_to_the_swipe_and_the_entrance() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/LobbyHud.gd")
+	assert_true(src.contains("coin_box.gui_input.connect(_on_book_gui_input)"),
+		"_ready connects the coin plate's gui_input to the swipe")
+	assert_true(src.contains("Juice.stagger_in([koperasi, inventory, report_student, coin_box])"),
+		"the coin plate drops in with the tiles")
 
 
 ## Task 6: NotifBadge, the icon rail and nav tiles' red count pill. Fails
@@ -583,7 +657,7 @@ func test_the_breathe_stops_while_hidden() -> void:
 	hud.set_open(true)
 
 
-## Task 7: IdleFade on the header and coin plate. Fails loudly until the
+## Task 7: IdleFade on the progress tag. Fails loudly until the
 ## [editor] scene step adds an IdleFade node (with an IdleTimer child) at
 ## the Lobby root and wires its targets, matching this suite's Task 3-6
 ## fixture pattern.
@@ -593,21 +667,8 @@ func _idle_fade() -> IdleFade:
 	return fade
 
 
-func test_idle_fade_targets_the_header_and_coin_plate() -> void:
-	var fade := _idle_fade()
-	if fade == null:
-		return
-	var header := _lobby.get_node("%ProgressHeader") as CanvasItem
-	var coin := _lobby.get_node("%DisplayUang") as CanvasItem
-	assert_eq(fade.targets.size(), 2, "only the header and coin plate fade")
-	assert_true(fade.targets.has(header), "the header is a target")
-	assert_true(fade.targets.has(coin), "the coin plate is a target")
-	var hud := _lobby.get_node("%Hud") as CanvasItem
-	assert_false(fade.targets.has(hud), "the HUD itself does not fade, only the plates")
-
-
 ## Review M3: an editor event reaching the edited Lobby must not start a
-## fade, or the next scene_save bakes the faded alpha into both plates.
+## fade, or the next scene_save bakes the faded alpha into the progress tag.
 ## A source scan: the editor's own input routing cannot be driven here.
 func test_idle_fade_is_inert_in_the_edited_scene() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/UI/IdleFade.gd")

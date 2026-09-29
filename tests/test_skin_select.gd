@@ -11,6 +11,11 @@ extends McpTestSuite
 ## equipped_skins / skin_unlock_overrides in teardown.
 
 const SCREEN := "res://Scenes/Skins/SkinSelect.tscn"
+## SkinSelect.gd's own source, for the SFX call-site scans below -- play_sfx
+## is gated behind Engine.is_editor_hint(), which is always true in this
+## suite, so a behavioural "did it play" check could only prove the guard
+## works, never which cue was chosen or where it is called from.
+const SCRIPT := "res://Scripts/Skins/SkinSelect.gd"
 
 var _saved_equipped: Dictionary
 var _saved_overrides: Dictionary
@@ -49,17 +54,87 @@ func _pin_carousel_width(s: SkinSelect, width: float) -> void:
 	carousel.size = Vector2(width, carousel.size.y)
 
 
-## All six characters, not the roster: equipped_skins is keyed by NAME, so a
-## skin follows a character across the grade change that clears the roster.
-func test_rail_holds_all_six_characters_in_catalogue_order() -> void:
+## open() with no names -- the fallback, which is what _new_screen() drives
+## every other test in this suite through -- shows all six characters, not
+## just the roster: equipped_skins is keyed by NAME, so a skin follows a
+## character across the grade change that clears the roster. This is the
+## empty-roster safety net, not the everyday path (Task 1, spec §1).
+func test_rail_falls_back_to_all_six_characters_when_open_is_given_no_names() -> void:
 	var s := _new_screen()
+	assert_eq(s.visible_names(), StudentSkins.NAMES)
 	var rail := s.get_node("%Rail")
 	assert_eq(rail.get_child_count(), StudentSkins.NAMES.size())
 	for i in StudentSkins.NAMES.size():
-		assert_eq((rail.get_child(i) as StudentTile).student_name, StudentSkins.NAMES[i])
+		var tile := rail.get_child(i) as StudentTile
+		assert_eq(tile.student_name, StudentSkins.NAMES[i])
+		assert_true(tile.visible)
 
 
-func test_open_takes_no_argument_and_first_student_is_open() -> void:
+## The everyday path: the rail shows only the names Lobby hands down, in
+## roster order, and hides the rest of the six authored tiles rather than
+## freeing them.
+func test_open_with_names_shows_only_those_tiles_in_order() -> void:
+	var s := _new_screen()
+	var two: Array[String] = [StudentSkins.NAMES[0], StudentSkins.NAMES[1]]
+	s.open(two)
+	assert_eq(s.visible_names(), two)
+	assert_eq(_visible_tile_names(s), two)
+	assert_eq(s.current_student(), two[0])
+
+
+func test_open_with_three_or_four_names_shows_that_many_tiles() -> void:
+	var s := _new_screen()
+	var three: Array[String] = StudentSkins.NAMES.slice(0, 3)
+	s.open(three)
+	assert_eq(_visible_tile_names(s).size(), 3)
+	var four: Array[String] = StudentSkins.NAMES.slice(0, 4)
+	s.open(four)
+	assert_eq(_visible_tile_names(s).size(), 4)
+
+
+func test_select_student_is_scoped_to_the_open_names() -> void:
+	var s := _new_screen()
+	var two: Array[String] = [StudentSkins.NAMES[0], StudentSkins.NAMES[1]]
+	s.open(two)
+	s.select_student(1)
+	assert_eq(s.current_student(), two[1])
+	s.select_student(2)
+	assert_eq(s.current_student(), two[1], "index 2 is out of range for a 2-name rail")
+
+
+func test_roster_names_reads_name_skips_non_dicts_and_blanks() -> void:
+	var students: Array = [{"name": "A"}, {"name": ""}, 5, {"name": "B"}]
+	var names: Array[String] = SkinSelect.roster_names(students)
+	assert_eq(names, ["A", "B"] as Array[String])
+
+
+## Slices one top-level function's body out of SCRIPT's source, from
+## `func <name>(` to the next top-level `func `. Mirrors
+## tests/test_audio_coverage.gd's own function slicing for the double-fire
+## guard, kept local and simple since this suite only ever needs one
+## function's body at a time.
+func _function_body(func_name: String) -> String:
+	var src := FileAccess.get_file_as_string(SCRIPT)
+	var start := src.find("func " + func_name + "(")
+	assert_true(start != -1, "function must exist: " + func_name)
+	if start == -1:
+		return ""
+	var next := src.find("\nfunc ", start)
+	return src.substr(start, (next - start) if next != -1 else src.length() - start)
+
+
+## The visible rail tiles' student names, in rail order.
+func _visible_tile_names(s: SkinSelect) -> Array[String]:
+	var rail := s.get_node("%Rail")
+	var names: Array[String] = []
+	for i in rail.get_child_count():
+		var tile := rail.get_child(i) as StudentTile
+		if tile != null and tile.visible:
+			names.append(tile.student_name)
+	return names
+
+
+func test_default_open_shows_the_first_students_tile_as_open() -> void:
 	var s := _new_screen()
 	assert_eq(s.current_student(), StudentSkins.NAMES[0])
 	var rail := s.get_node("%Rail")
@@ -183,13 +258,30 @@ func test_commit_button_is_indonesian_and_not_danger_red() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
 	assert_true(src.contains('text = "TERAPKAN"'), "UI text is Indonesian; APPLY is not")
 	assert_false(src.contains('text = "APPLY"'))
-	assert_true(src.contains('theme_type_variation = &"SkinApplyButton"'), "the mockup's red button")
+	assert_true(src.contains('theme_type_variation = &"SkinApplyButton"'), "the lipped mint TERAPKAN")
 
 
 func test_backdrop_still_blurs_the_live_lobby() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
-	assert_true(src.contains("shop_hub_blur_material.tres"),
+	assert_true(src.contains("skin_select_backdrop_material.tres"),
 		"the live-screen blur is why this stays an overlay instead of a scene change")
+
+
+## The room behind the carousel is lit 25% brighter than the shop hub's
+## backdrop: 1 - darkness goes 0.45 -> 0.5625 (2026-09-29). Its own copy, so
+## ShopHub, CosmeticShop and the achievement popup keep their 0.55.
+func test_the_backdrop_is_a_quarter_lighter_than_the_shop_hub() -> void:
+	var own := load("res://Scenes/Skins/skin_select_backdrop_material.tres") as ShaderMaterial
+	var hub := load("res://Scenes/Koperasi/shop_hub_blur_material.tres") as ShaderMaterial
+	assert_true(own != null and hub != null, "both blur materials load")
+	if own == null or hub == null:
+		return
+	var own_light := 1.0 - float(own.get_shader_parameter("darkness"))
+	var hub_light := 1.0 - float(hub.get_shader_parameter("darkness"))
+	assert_true(absf(own_light - hub_light * 1.25) < 0.0001,
+		"%s is 25%% lighter than the hub's %s" % [own_light, hub_light])
+	assert_eq(float(own.get_shader_parameter("lod")),
+		float(hub.get_shader_parameter("lod")), "same blur strength as the hub")
 
 
 func test_the_popup_era_nodes_are_gone() -> void:
@@ -384,25 +476,287 @@ func test_worn_chip_sits_under_the_title() -> void:
 	assert_true(src.contains('[node name="WornChip" type="PanelContainer" parent="."'))
 
 
-func test_mockup_styles_exist_with_measured_values() -> void:
+## SkinTray and SkinApplyButton moved to the depth pass's lipped look
+## (2026-09-29 skin-select-polish Task 2): a paper tray with no rim, and a
+## lipped mint TERAPKAN in place of the 2026-09-23 mockup's flat red/black
+## rim. The title keeps its own measured mockup values, untouched by Task 2.
+func test_skin_theme_styles_use_the_depth_pass_look() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 	var tray := theme.get_stylebox("panel", "SkinTray") as StyleBoxFlat
 	assert_true(tray != null, "SkinTray must be a StyleBoxFlat panel")
 	if tray != null:
-		assert_eq(tray.bg_color, tokens.surface_card)
-		assert_eq(tray.border_width_top, 8)
-		assert_eq(tray.border_width_bottom, 0)
-		assert_eq(tray.border_color, Color.BLACK)
+		assert_eq(tray.bg_color, tokens.surface_card, "the lighter of the two paper tokens")
+		assert_eq(tray.border_width_top, 0, "the depth pass drops the mockup's black top rim")
 	var btn := theme.get_stylebox("normal", "SkinApplyButton") as StyleBoxFlat
 	assert_true(btn != null, "SkinApplyButton must be a StyleBoxFlat button")
 	if btn != null:
-		assert_eq(btn.bg_color, Color("D21919"))
-		assert_eq(btn.border_width_left, 8)
+		assert_true(LippedBox.is_lipped(btn), "TERAPKAN is a lipped face, not the flat mockup rim")
+		assert_eq(btn.bg_color, tokens.accent_mint, "the main-action colour, never gold")
 		assert_eq(btn.corner_radius_top_left, tokens.radius_button)
-	assert_eq(theme.get_color("font_color", "SkinApplyButton"), Color("F2F2F2"))
+	assert_eq(theme.get_color("font_color", "SkinApplyButton"), tokens.text_on_brand)
 	assert_eq(theme.get_font_size("font_size", "SkinApplyButton"), 73)
 	assert_eq(theme.get_color("font_color", "SkinTitleLabel"), Color("F2F2F2"))
 	assert_eq(theme.get_color("font_outline_color", "SkinTitleLabel"), Color("201934"))
 	assert_eq(theme.get_font_size("font_size", "SkinTitleLabel"), 79)
 	assert_eq(theme.get_constant("outline_size", "SkinTitleLabel"), 48)
+
+
+## The rail centres 2-4 tiles instead of packing them to the left, so a
+## grade-7 class of two does not leave a dead gap on the right (Task 3, spec
+## §3 "Centered rail").
+func test_rail_is_center_aligned() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	assert_true(_node_block(src, "Rail").contains("alignment = 1"))
+
+
+## The "Kelasmu - N murid" header and its "ketuk untuk pilih" hint sit above
+## the rail, inside the tray (Task 3, spec §2).
+func test_tray_has_roster_header_and_hint_labels() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var header := _node_block(src, "RosterHeader")
+	assert_true(header.contains('type="Label"'))
+	assert_true(header.contains("unique_name_in_owner = true"))
+	assert_true(header.contains('theme_type_variation = &"SkinRosterHeaderLabel"'))
+	var hint := _node_block(src, "RosterHint")
+	assert_true(hint.contains('type="Label"'))
+	assert_true(hint.contains('theme_type_variation = &"SkinRosterHintLabel"'))
+	assert_true(hint.contains('text = "ketuk untuk pilih"'))
+
+
+## open() sets the header from the roster it was given -- per-call dynamic
+## TEXT, not a runtime-built visual (Global Constraints).
+func test_open_sets_the_roster_header_text() -> void:
+	var s := _new_screen()
+	var two: Array[String] = [StudentSkins.NAMES[0], StudentSkins.NAMES[1]]
+	s.open(two)
+	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu - 2 murid")
+	var four: Array[String] = StudentSkins.NAMES.slice(0, 4)
+	s.open(four)
+	assert_eq((s.get_node("%RosterHeader") as Label).text, "Kelasmu - 4 murid")
+
+
+## The tray reads as ruled paper: a tiling Rules TextureRect over
+## paper_rule.png (Task 3, spec §2), the same idiom NotebookFrame.tscn uses.
+## Behavioral, not a source scan: the editor's own save (2026-09-29 fix
+## round 1) drops mouse_filter=2 from a Label/TextureRect that already
+## defaults to it, and a node block never contains the real resource path
+## anyway -- that lives on the file's [ext_resource] line, not inside the
+## node's own text -- so a live instance is the only thing that actually
+## proves the wiring.
+func test_tray_has_tiling_ruled_paper() -> void:
+	var s := _new_screen()
+	var rules := s.get_node("%Tray").get_node_or_null("Rules") as TextureRect
+	assert_true(rules != null, "Tray must have a Rules TextureRect")
+	if rules == null:
+		return
+	assert_true(rules.texture != null)
+	if rules.texture != null:
+		assert_eq(rules.texture.resource_path, "res://Assets/Images/UI/Notebook/paper_rule.png")
+	assert_eq(rules.stretch_mode, TextureRect.STRETCH_TILE)
+	assert_eq(rules.texture_repeat, CanvasItem.TEXTURE_REPEAT_ENABLED)
+	assert_eq(rules.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+
+
+## Two washi-tape strips at the tray's top corners, reusing the existing
+## washi_tape.svg (Task 3, spec §2) -- no new art. Behavioral, same reason
+## as test_tray_has_tiling_ruled_paper.
+func test_tray_has_corner_tape() -> void:
+	var s := _new_screen()
+	var tray := s.get_node("%Tray")
+	var left := tray.get_node_or_null("TapeLeft") as TextureRect
+	var right := tray.get_node_or_null("TapeRight") as TextureRect
+	assert_true(left != null and right != null, "Tray must have TapeLeft and TapeRight")
+	if left == null or right == null:
+		return
+	assert_true(left.texture != null and right.texture != null)
+	if left.texture != null:
+		assert_eq(left.texture.resource_path, "res://Assets/Images/AturJadwal/washi_tape.svg")
+	if right.texture != null:
+		assert_eq(right.texture.resource_path, "res://Assets/Images/AturJadwal/washi_tape.svg")
+	assert_eq(left.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_eq(right.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	# Left and right must actually be different corners, not two copies of
+	# the same offsets.
+	assert_ne(left.position, right.position)
+
+
+## Paper-divider dots flank the skin name, matching the mockup's description
+## in spec §2 ("paper-divider dots either side").
+func test_skin_name_has_dividers_either_side() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var left := _node_block(src, "NameDividerLeft")
+	assert_true(left.contains('type="Panel"'))
+	assert_true(left.contains('theme_type_variation = &"SkinDotOn"'))
+	var right := _node_block(src, "NameDividerRight")
+	assert_true(right.contains('type="Panel"'))
+	assert_true(right.contains('theme_type_variation = &"SkinDotOn"'))
+
+
+## TERAPKAN gets a small "PAKAI!" sticker on its corner (Task 3, spec §4).
+func test_terapkan_has_a_pakai_sticker() -> void:
+	var src := FileAccess.get_file_as_string(SCREEN)
+	var at := src.find('[node name="PakaiTag"')
+	assert_true(at != -1, "PakaiTag must exist")
+	if at == -1:
+		return
+	var next := src.find("[node", at + 1)
+	var block := src.substr(at, (next - at) if next != -1 else src.length() - at)
+	assert_true(block.contains('parent="Tray/Terapkan"'), "PakaiTag must be a child of Terapkan")
+	assert_true(block.contains('theme_type_variation = &"SkinApplyTag"'))
+	assert_true(block.contains('text = "PAKAI!"'))
+
+
+## SkinStudentTile / SkinStudentTileActive are lipped photo cards: cream at
+## rest, sunflower when open (the palette's highlight colour, never an
+## action -- ui-depth-pass-design.md, "Palette").
+func test_skin_tiles_are_lipped_cream_and_sunflower() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var idle := theme.get_stylebox("normal", "SkinStudentTile") as StyleBoxFlat
+	var open := theme.get_stylebox("normal", "SkinStudentTileActive") as StyleBoxFlat
+	assert_true(idle != null and open != null, "both variations must carry a normal stylebox")
+	if idle == null or open == null:
+		return
+	assert_true(LippedBox.is_lipped(idle), "idle tile is a lipped button_cream face")
+	assert_eq(idle.bg_color, tokens.button_cream)
+	assert_true(LippedBox.is_lipped(open), "open tile is a lipped accent_sunflower face")
+	assert_eq(open.bg_color, tokens.accent_sunflower)
+
+
+## The caption reads poorly straight over a light portrait (fix round 1,
+## 2026-09-29 live screenshot), so it gets a small button_cream backing --
+## a written caption tag on the photo, not a bare label. Flat, not lipped:
+## this is not a tap target.
+func test_tile_caption_has_a_cream_backing() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var box := theme.get_stylebox("normal", "SkinTileCaptionLabel") as StyleBoxFlat
+	assert_true(box != null, "SkinTileCaptionLabel must carry a normal stylebox")
+	if box == null:
+		return
+	assert_eq(box.bg_color, tokens.button_cream)
+	assert_eq(box.corner_radius_top_left, tokens.radius_pill)
+	assert_eq(theme.get_color("font_color", "SkinTileCaptionLabel"), tokens.text_primary)
+
+
+# ============================================================
+# SFX (2026-09-29 skin-select-polish Task 4; spec §5 "Sound").
+# open() already plays "tap" on arrival; these cover the rest of the
+# picker's cues. Every id used here must resolve in AudioDirector's
+# registry -- test_audio_coverage.gd's test_every_play_sfx_id_in_the_
+# project_is_known re-checks that project-wide.
+# ============================================================
+
+func test_the_skin_select_cues_resolve_to_real_streams() -> void:
+	for id in [&"select", &"swipe", &"apply"]:
+		assert_true(AudioDirector.has_sfx(id), "%s must resolve to a stream" % id)
+
+
+## Card select: a rail tile choice plays AudioDirector's "select" cue (the
+## same id atur_jadwal/student_list/inventory use for a list/grid pick).
+func test_select_student_plays_the_rail_select_cue() -> void:
+	var body := _function_body("select_student")
+	assert_true(body.contains('play_sfx(&"select")'),
+		"select_student must play the select cue")
+
+
+## Gated on a genuine change so re-tapping the already-open tile, and
+## open()'s own initial select_student(0) call, stay silent -- open() has
+## its own "tap" for the screen's entrance.
+func test_select_student_gates_its_cue_on_an_index_change() -> void:
+	var body := _function_body("select_student")
+	var cue_at := body.find('play_sfx(&"select")')
+	assert_true(cue_at != -1)
+	assert_true(body.substr(0, cue_at).contains("changed"),
+		"select_student must compare old vs new _student_index before its cue")
+
+
+## Skin snap: the carousel settling on a new skin plays "swipe" -- paging
+## through report_card/student_card is the closest documented meaning to a
+## carousel settling on a new card, closer than "pop" ("a small UI element
+## appears"), since nothing appears here; the carousel already exists and
+## just comes to rest at a new position.
+func test_select_skin_plays_the_settle_cue() -> void:
+	var body := _function_body("select_skin")
+	assert_true(body.contains('play_sfx(&"swipe")'),
+		"select_skin must play the carousel-settle cue")
+
+
+## Gated the same way as select_student's: only a real _skin_index change
+## snaps, so a drag release that lands back on the already-centred card
+## (a short flick that overshoots and settles home) is silent.
+func test_select_skin_gates_its_cue_on_an_index_change() -> void:
+	var body := _function_body("select_skin")
+	var cue_at := body.find('play_sfx(&"swipe")')
+	assert_true(cue_at != -1)
+	assert_true(body.substr(0, cue_at).contains("changed"),
+		"select_skin must compare old vs new _skin_index before its cue")
+
+
+## The regression this guards against: a cue wired into the per-frame drag
+## callback instead of the once-per-settle select_skin would buzz on every
+## pixel of finger travel rather than snapping once on release.
+func test_no_sfx_call_lives_in_the_per_frame_drag_path() -> void:
+	var body := _function_body("_update_drag")
+	assert_false(body.contains("play_sfx"),
+		"_update_drag runs every drag frame and must never play a cue directly")
+
+
+## Apply: committing the picker's choices on TERAPKAN plays "apply" -- the
+## registry's own doc for the id ("a choice is committed on the apply
+## screen") was already unused anywhere in Scripts/ before this pass.
+func test_apply_without_closing_plays_the_apply_cue() -> void:
+	var body := _function_body("apply_without_closing")
+	assert_true(body.contains('play_sfx(&"apply")'),
+		"apply_without_closing must play the apply cue")
+
+
+# ============================================================
+# Whole-branch review, fix round 2 (2026-09-29).
+# ============================================================
+
+## The roster header used a "·" middle dot Boohong, the display face it
+## renders in, does not carry (verified with fontTools) -- exactly the
+## defect ObjectiveHint.title hit first and fixed with a plain hyphen
+## (tests/test_objective_hint.gd). Every character the header, the rail
+## hint, a tile caption or the PAKAI! sticker can produce must be one
+## Boohong actually has, or a device falls back to another font or a box.
+func test_the_tray_text_only_uses_glyphs_the_display_face_has() -> void:
+	var face: Font = DesignTokens.load_default().font_display
+	assert_true(face != null, "no display face")
+	if face == null:
+		return
+	var texts: Array[String] = []
+	for count in [2, 3, 4]:
+		texts.append(SkinSelect.ROSTER_HEADER_FORMAT % count)
+	texts.append("ketuk untuk pilih")
+	texts.append("PAKAI!")
+	for who in StudentSkins.NAMES:
+		texts.append(who)
+	for text in texts:
+		for i in text.length():
+			var code := text.unicode_at(i)
+			assert_true(face.has_char(code),
+				"'%s' in '%s' is not in the display face" % [String.chr(code), text])
+
+
+## TERAPKAN commits every pending skin choice at once -- the same weight as
+## ResultButton or SuccessButton -- so it ticks the phone's motor on press
+## like the game's other main actions (PressFeel.MAIN_ACTION_ROLES).
+func test_terapkan_gets_the_main_action_haptic_tick() -> void:
+	assert_true(PressFeel.ticks(&"SkinApplyButton"),
+		"TERAPKAN must be a main-action role")
+
+
+## The rail's six tiles are authored, never built at runtime (Task 1), so a
+## 7th name would index past %Rail's last child. open() trims _names to the
+## rail's own tile count instead. Behavioral: the point is that a 7-name
+## roster settles on exactly 6 visible tiles rather than crashing.
+func test_open_clamps_names_past_the_rails_tile_count() -> void:
+	var s := _new_screen()
+	var seven: Array[String] = StudentSkins.NAMES.duplicate()
+	seven.append("Extra")
+	s.open(seven)
+	assert_eq(s.visible_names().size(), 6, "the rail has only 6 authored tiles")
+	assert_eq(_visible_tile_names(s).size(), 6)

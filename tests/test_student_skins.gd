@@ -183,18 +183,31 @@ func test_the_other_days_and_strangers_have_no_outfit() -> void:
 	assert_eq(StudentSkins.day_splash_for("Bejo", "Kamis"), "", "only the six have outfits")
 
 
-## The one resolver every screen asks: the outfit on its day, else the
-## student's own (possibly skinned) splash.
+## The one resolver every screen asks: the outfit on its day for a student in
+## the default look, else the student's own (possibly skinned) splash.
 func test_splash_for_day_falls_back_to_the_student_s_own() -> void:
-	var own := "res://Assets/Images/Skins/Thea/splash_thea_skin1.png"
+	var own := "res://Assets/Images/SplashArtMurid/splash_thea.png"
 	assert_eq(StudentSkins.splash_for_day("Thea", own, "Kamis"),
-		"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png", "the outfit beats a skin")
+		"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png", "the default look wears the outfit")
 	assert_eq(StudentSkins.splash_for_day("Thea", own, "Senin"), own)
 	assert_eq(StudentSkins.splash_for_day("Thea", own, ""), own)
 
 
+## 2026-09-29: an applied skin is worn for the whole run -- no batik on Kamis,
+## no pramuka on Jumat -- and only for the student wearing it.
+func test_an_applied_skin_is_worn_on_outfit_days_too() -> void:
+	var skinned := "res://Assets/Images/Skins/Thea/splash_thea_skin1.png"
+	GameState.equip_skin("Thea", "skin1")
+	for day in ["Kamis", "Jumat"]:
+		assert_eq(StudentSkins.day_splash_for("Thea", day), "", "no outfit over a skin on " + day)
+		assert_eq(StudentSkins.splash_for_day("Thea", skinned, day), skinned, "the skin stays on " + day)
+	assert_ne(StudentSkins.day_splash_for("Andi", "Jumat"), "", "another student's outfit is unaffected")
+	GameState.equip_skin("Thea", StudentSkins.DEFAULT_ID)
+	assert_ne(StudentSkins.day_splash_for("Thea", "Jumat"), "", "back to default, back to the outfit")
+
+
 ## Same canvas and import as the default splashes, or the outfit would jump
-## on screen or ship uncompressed.
+## on screen or render with different compression.
 func test_every_outfit_is_a_splash_canvas_imported_like_the_default() -> void:
 	for n in StudentSkins.NAMES:
 		for outfit in StudentSkins.DAY_OUTFITS.values():
@@ -205,5 +218,43 @@ func test_every_outfit_is_a_splash_canvas_imported_like_the_default() -> void:
 				assert_eq(tex.get_size(), Vector2(1080, 1920), path + " is a 1080x1920 splash canvas")
 			var cfg := ConfigFile.new()
 			assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
-			assert_eq(cfg.get_value("params", "compress/mode"), 2, path + " is VRAM-compressed like splash_thea")
+			assert_eq(cfg.get_value("params", "compress/mode"), 0, path + " is lossless like splash_thea")
 			assert_eq(cfg.get_value("params", "mipmaps/generate"), true, path + " carries mipmaps like splash_thea")
+
+
+## The student art imports lossless. VRAM compression, even at high quality
+## (BPTC / ASTC), leaves faint block artifacts on its smooth shading and line
+## work; lossless costs about 4x the texture memory (see DEBT.md).
+func test_student_art_is_lossless() -> void:
+	for n in StudentSkins.NAMES:
+		var paths: Array[String] = [
+			StudentSkins.layer_path(n, StudentSkins.DEFAULT_ID, "splash"),
+			StudentSkins.layer_path(n, StudentSkins.DEFAULT_ID, "portrait"),
+		]
+		for path in paths:
+			var cfg := ConfigFile.new()
+			assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
+			assert_eq(cfg.get_value("params", "compress/mode"), 0, path + " is lossless")
+
+
+## Any texture that is VRAM-compressed imports at high quality. Low quality
+## (S3TC on desktop, ETC2 on mobile) leaves 4x4 block artifacts; high quality
+## (BPTC / ASTC) costs no extra memory. Walks every image import, so art that
+## moves to VRAM later is held to it.
+func test_vram_compressed_art_is_high_quality() -> void:
+	var low: Array[String] = []
+	var stack: Array[String] = ["res://Assets/Images"]
+	while not stack.is_empty():
+		var dir_path: String = stack.pop_back()
+		var d := DirAccess.open(dir_path)
+		if d == null:
+			continue
+		for f in d.get_files():
+			if not f.ends_with(".import"):
+				continue
+			var text := FileAccess.get_file_as_string(dir_path.path_join(f))
+			if text.contains("compress/mode=2") and not text.contains("compress/high_quality=true"):
+				low.append(f.get_basename())
+		for sub in d.get_directories():
+			stack.append(dir_path.path_join(sub))
+	assert_true(low.is_empty(), "import these at compress/high_quality=true: %s" % ", ".join(low))

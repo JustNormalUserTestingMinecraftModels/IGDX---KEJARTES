@@ -13,8 +13,8 @@ extends HBoxContainer
 ## below. Everything else (separation, alignment, Bar's tint-via-category)
 ## is baked into the scene because the shipped values already matched.
 
-## Width of the Glyph label. SchoolDay's short glyph ("⚡") needs only
-## 36px; DailyDecayOverview's full-sentence label ("Energy ⚡") needs 220.
+## Width of the Glyph label. A short one-word label needs only 36px;
+## DailyDecayOverview's full-word label ("Energy") is given 220.
 @export var glyph_min_width: float = 36.0:
 	set(value):
 		glyph_min_width = value

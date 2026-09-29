@@ -413,3 +413,35 @@ func test_lobby_no_longer_owns_the_claim() -> void:
 		"the panel announces a payout rather than reaching into the Lobby")
 	assert_false(panel_src.contains("money_label"),
 		"the panel never touches the Lobby's wallet label")
+
+
+## Task 8 (UI depth pass phase 2): the calendar art wears a NotebookFrame,
+## drawn behind it as the panel's first child, in place of the old
+## standalone "Daily Login" title label.
+func test_the_calendar_sits_on_a_notebook_page() -> void:
+	var lobby := (load(_LOBBY_SCENE) as PackedScene).instantiate()
+	track(lobby)
+	var panel := lobby.get_node("DailyReward") as Control
+	var frame := panel.get_node_or_null("DailyLoginFrame") as NotebookFrame
+	assert_true(frame != null, "the daily-login panel wears the notebook frame")
+	if frame == null:
+		return
+	assert_eq(frame.get_index(), 0, "the frame is the first child")
+	assert_true(frame.show_behind_parent, "and drawn behind the calendar art")
+	assert_eq(frame.title_text, "DAILY LOGIN", "the old title label became the sticker")
+	assert_true(panel.get_node_or_null("Label") == null, "the old title label is gone")
+
+
+## The frame's offsets keep the sticker and its round close on screen at
+## the design width, against the panel's own off-centre offsets.
+func test_the_frame_is_on_screen_at_the_design_size() -> void:
+	var lobby := (load(_LOBBY_SCENE) as PackedScene).instantiate()
+	track(lobby)
+	var panel := lobby.get_node("DailyReward") as Control
+	var frame := panel.get_node("DailyLoginFrame") as Control
+	# Out of the tree, anchors resolve against the offsets alone, so read the
+	# rect as the panel's authored centre-anchored offsets plus the frame's.
+	var left := 540.0 + panel.offset_left + frame.offset_left
+	var right := 540.0 + panel.offset_right + frame.offset_right
+	assert_true(left - 12 >= 0.0, "the cover's left edge is on screen (%d)" % left)
+	assert_true(right + 36 <= 1080.0, "the close is on screen (%d)" % right)

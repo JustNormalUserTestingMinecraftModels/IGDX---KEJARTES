@@ -147,7 +147,7 @@ func _ready() -> void:
 	if chatter:
 		chatter.can_speak = _chatter_allowed
 		# The HUD sits over the front-row faces; its taps are not theirs.
-		chatter.tap_blockers = [progress_header, get_node("%DisplayUang")] + hud.tap_blockers()
+		chatter.tap_blockers = [progress_header] + hud.tap_blockers()
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
 	_start_idle_bob(portraits_front, idle_bob_period * FRONT_ROW_BOB_PHASE)
@@ -656,6 +656,9 @@ func _setup_daily_login() -> void:
 	if not daily_login_btn.pressed.is_connected(_on_daily_login_pressed):
 		daily_login_btn.pressed.connect(_on_daily_login_pressed)
 	hud.refresh(daily_reward.is_claimable())
+	var frame := %DailyLoginFrame as NotebookFrame
+	if not frame.close_pressed.is_connected(_hide_daily_reward):
+		frame.close_pressed.connect(_hide_daily_reward)
 
 ## A payout landed (the daily claim or Dapatkan Uang): roll the wallet up
 ## from the old balance, and the gift badge follows the claim.
@@ -799,9 +802,10 @@ func _on_skin_switch_pressed() -> void:
 	add_child(screen)
 	screen.closed.connect(func(): _skin_select_open = false)
 	screen.closed.connect(_setup_students)
-	# No argument: SkinSelect reads StudentSkins.NAMES, not the roster --
-	# equipped_skins is keyed by name, so all six characters are dressable.
-	screen.open()
+	# Calls down with the roster's names -- SkinSelect never reads GameState
+	# itself, so the rail shows this class, not every character.
+	var names: Array[String] = SkinSelect.roster_names(GameState.approved_students)
+	screen.open(names)
 
 
 ## LobbyChatter's gate: nobody talks over the tutorial, the daily reward,

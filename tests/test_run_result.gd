@@ -198,7 +198,7 @@ func test_the_script_actually_compiles() -> void:
 
 func test_the_screen_has_a_backdrop_grade_card_and_rows_box() -> void:
 	var screen = load(_SCENE_PATH).instantiate()
-	var has_all := screen.get_node_or_null("WinStage") != null \
+	var has_all := screen.get_node_or_null("World/Room/WinStage") != null \
 		and screen.get_node_or_null("BlurLayer") != null \
 		and screen.get_node_or_null(
 			"MarginContainer/Column/GradeCard/GradeStack/GradeBadge") != null \
@@ -214,11 +214,15 @@ func test_the_rows_box_starts_empty_in_the_scene() -> void:
 	assert_eq(count, 0, "rows are instanced from the template at runtime")
 
 
-func test_it_reports_all_six_figures() -> void:
+func test_it_reports_exactly_four_figures() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	for label in ["Minigame selesai", "Minigame kalah", "Total poin minigame",
-			"Barang dipakai", "Uang dari wirausaha", "Murid ikut event"]:
+	for label in ["Minigame selesai", "Minigame kalah",
+			"Uang dari wirausaha", "Event yang diikuti"]:
 		assert_true(src.contains(label), "the report includes '%s'" % label)
+	for gone in ["Total poin minigame", "Barang dipakai", "Murid ikut event"]:
+		assert_false(src.contains(gone), "the report no longer shows '%s'" % gone)
+	assert_true(src.contains("stats.events_attended"),
+		"the event row counts events, not students")
 
 
 func test_it_grades_through_run_grade() -> void:
@@ -243,13 +247,22 @@ func test_grade7_loss_clears_roster_grade8_9_loss_preserves_it() -> void:
 
 
 func test_grade7_loss_goes_to_main_menu_grade8_9_restarts_same_grade() -> void:
-	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	# Grade-7 loss is a full restart (MainMenu); grade 8/9 loss retries the
 	# same grade at StudentCard so the punishment is not losing all progress.
-	assert_true(src.contains("GameState.current_grade == 7"),
-		"loss branch checks grade to pick destination")
-	assert_true(src.contains("res://Scenes/StudentCard/StudentCard.tscn"),
-		"grade 8/9 loss routes back to StudentCard")
+	var rr := load(_SCRIPT_PATH) as GDScript
+	assert_eq(rr.call("destination_for", true, 7), "res://Scenes/MainMenu/MainMenu.tscn",
+		"a grade-7 loss restarts from the menu")
+	assert_eq(rr.call("destination_for", true, 8), "res://Scenes/StudentCard/StudentCard.tscn",
+		"a grade-8 loss routes back to StudentCard")
+	assert_eq(rr.call("destination_for", true, 9), "res://Scenes/StudentCard/StudentCard.tscn",
+		"and so does a grade-9 loss")
+	assert_eq(rr.call("destination_for", false, 8), "res://Scenes/StudentCard/StudentCard.tscn",
+		"a pass below Kelas 9 picks the next grade's roster")
+	assert_eq(rr.call("destination_for", false, 9), "res://Scenes/MainMenu/MainMenu.tscn",
+		"beating Kelas 9 ends at the menu")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("var destination := destination_for(GameState.run_failed, GameState.current_grade)"),
+		"_apply_progression() routes by destination_for(), read before it clears run_failed")
 
 
 func test_it_applies_grade_progression_and_exits_to_the_menu() -> void:
@@ -271,8 +284,11 @@ func test_it_plays_the_report_bgm_and_the_grade_stings() -> void:
 
 func test_the_report_uses_texture_icons_not_emoji() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Assets/Images/UI/Placeholders/icon_uang.svg"),
-		"the rows reference real icon assets")
+	for icon_name in ["gamewin_icon", "gamelose_icon", "coin_icon", "event_icon"]:
+		var path := "res://Assets/Images/EndGame/Icons/%s.png" % icon_name
+		assert_true(src.contains(path), "the rows reference %s" % icon_name)
+		assert_true(ResourceLoader.exists(path) and load(path) is Texture2D,
+			"%s exists and loads as a Texture2D" % icon_name)
 	for glyph in ["🎮", "💰", "⭐", "🎒", "🎪"]:
 		assert_false(src.contains(glyph),
 			"no emoji glyph is used as an icon")
@@ -346,8 +362,8 @@ func test_the_backdrop_is_the_same_blurred_cg_the_cutscene_ended_on() -> void:
 	assert_true(is_rect, "BlurLayer is an authored ColorRect")
 	assert_eq(shader_path, _BLUR_SHADER,
 		"it reuses the same blur shader EndCutscene exits through")
-	assert_true(order.find("WinStage") < order.find("BlurLayer"),
-		"the win stage draws first, so the shader samples it")
+	assert_true(order.find("World") < order.find("BlurLayer"),
+		"the stage's World draws first, so the shader samples it")
 	assert_true(order.find("BlurLayer") < order.find("MarginContainer"),
 		"and the report UI draws after it, so the UI stays sharp")
 
@@ -437,7 +453,7 @@ func test_the_old_backdrop_node_is_gone() -> void:
 	var first_name := String(screen.get_child(0).name)
 	screen.free()
 	assert_false(has_backdrop, "the cropped painting is replaced by the win stage")
-	assert_eq(first_name, "WinStage", "which draws first")
+	assert_eq(first_name, "World", "the stage's World draws first")
 
 
 ## Letterboxed, the win stage puts the navy bar behind the title, where
@@ -467,9 +483,27 @@ func test_every_tutorial_flag_to_reset_exists_on_its_script() -> void:
 			assert_true(owner != null and flag in owner, "%s has a static %s" % [path, flag])
 	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
 	var beaten := src.find("GameState.is_game_beaten = true")
-	var reset := src.find("_reset_static_flag(path, flag)")
+	var reset := src.find("_reset_static_flag(String(path), String(flag))")
 	assert_true(beaten != -1 and reset > beaten,
 		"the beaten-game branch runs the reset over TUTORIAL_FLAGS")
+
+
+## Iterating a `Dictionary[String, PackedStringArray]` const built from Array
+## literals gave empty flag names and then hard-crashed Godot 4.6.2 (signal 11)
+## when a beaten game pressed Selesai. This walks the very constant and loop
+## the game uses, so a return of the typed form fails here instead of in play.
+func test_the_tutorial_flag_table_is_untyped_and_iterates_to_real_names() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	assert_true(src.contains("const TUTORIAL_FLAGS := {"),
+		"the flag table stays an untyped Dictionary")
+	var consts: Dictionary = (load("res://Scripts/EndGame/RunResult.gd") as GDScript).get_script_constant_map()
+	var flags: Dictionary = consts.get("TUTORIAL_FLAGS", {})
+	var seen := 0
+	for path in flags:
+		for flag in flags[path]:
+			assert_true(String(flag) != "", "%s lists a non-empty flag name" % path)
+			seen += 1
+	assert_true(seen >= 3, "all three tutorial flags are listed")
 
 
 ## The reset really clears the flag, through the same helper the game uses.
@@ -485,3 +519,24 @@ func test_the_flag_reset_clears_the_student_list_walkthrough() -> void:
 	var after: Variant = list.get("tutorial_shown")
 	list.set("tutorial_shown", was)
 	assert_eq(after, false, "tutorial_shown is back to false")
+
+
+## The exit button read "Kembali ke Menu" on every outcome, but only a
+## Kelas 7 loss and a beaten Kelas 9 actually go to the menu (2026-09-28).
+## Its label now names where _apply_progression() really sends the player.
+func test_the_exit_label_names_where_it_leads() -> void:
+	var rr := load(_SCRIPT_PATH) as GDScript
+	assert_eq(rr.call("exit_label", false, 7), "Lanjut ke Kelas 8", "passing Kelas 7 moves on to Kelas 8")
+	assert_eq(rr.call("exit_label", false, 8), "Lanjut ke Kelas 9", "passing Kelas 8 moves on to Kelas 9")
+	assert_eq(rr.call("exit_label", false, 9), "Kembali ke Menu", "beating the game goes to the menu")
+	assert_eq(rr.call("exit_label", true, 7), "Kembali ke Menu", "failing Kelas 7 restarts from the menu")
+	assert_eq(rr.call("exit_label", true, 8), "Ulangi Kelas 8", "failing Kelas 8 retries it")
+	assert_eq(rr.call("exit_label", true, 9), "Ulangi Kelas 9", "failing Kelas 9 retries it")
+
+
+func test_the_exit_button_wears_the_label_before_progression_runs() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var ready := src.substr(src.find("func _ready("))
+	ready = ready.substr(0, ready.find("\nfunc ", 1))
+	assert_true(ready.contains("btn_selesai.text = exit_label(GameState.run_failed, GameState.current_grade)"),
+		"_ready() labels the button from the outcome, while run_failed and the grade are still this run's")

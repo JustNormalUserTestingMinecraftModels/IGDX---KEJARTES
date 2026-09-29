@@ -276,3 +276,57 @@ func test_a_second_press_while_open_does_not_stack_another() -> void:
 	var build_at := body.find("CanvasLayer.new()")
 	assert_true(guard_at != -1 and build_at > guard_at,
 		"an open preview makes a second press a no-op")
+
+
+const _LOOK_PATH := "res://Scripts/Debug/DebugLookPanel.gd"
+
+
+## The Look tab reaches every screen, not only the Lobby: the two effect
+## switches and the kit pieces on whatever screen is up (2026-09-29).
+func test_the_look_tab_reaches_the_screen_that_is_up() -> void:
+	assert_true(_source().contains("panels[\"Look\"] = DebugLookPanel.build(content_area)"),
+		"DebugManager builds the Look tab through DebugLookPanel")
+	var look := FileAccess.get_file_as_string(_LOOK_PATH)
+	for kind in ["&\"AmbientGlow\"", "&\"ScreenGlow\"", "&\"ScreenSaturation\"", "&\"LightPool\"", "&\"SunShafts\""]:
+		assert_true(look.contains("[" + kind + ", "),
+			"the Look tab tunes every %s on screen" % kind)
+	for setting in ["\"ambient_effects_enabled\"", "\"look_layer_enabled\""]:
+		assert_true(look.contains(setting), "the Look tab switches " + setting)
+	assert_true(look.contains("tree.root.find_children("),
+		"the sliders search the live tree at drag time, so they follow a teleport")
+
+
+## Every screen the player can reach by Transition is one tap away.
+func test_the_scenes_tab_lists_every_screen() -> void:
+	var src := _source()
+	var body := src.substr(src.find("const TELEPORT_SCENES"), src.find("func _build_scenes_panel") - src.find("const TELEPORT_SCENES"))
+	assert_true(_function_body(src, "_build_scenes_panel").contains("for sc in TELEPORT_SCENES"), "the tab lists TELEPORT_SCENES")
+	for path in ["MainMenu/MainMenu", "LevelSelect/LevelSelect", "CutScene/CutScene",
+			"StudentCard/StudentCard", "Lobby/Lobby", "AturJadwal/AturJadwal",
+			"StudentList/StudentList", "SchoolSimulation/SchoolDay", "ReportCard/ReportCard",
+			"Inventory/Inventory", "Achievements/AchievementsScreen", "Koperasi/ShopHub",
+			"Koperasi/Koperasi", "Koperasi/CosmeticShop", "EndGame/TesNotice",
+			"EndGame/ExamProgress", "EndGame/StatCheck", "EndGame/RunResult"]:
+		var full := "res://Scenes/%s.tscn" % path
+		assert_true(body.contains("\"" + full + "\""), "the Scenes tab teleports to " + path)
+		assert_true(ResourceLoader.exists(full), path + " still exists")
+
+
+## The launcher runs whole games only: every entry's root script is a
+## BaseMinigame. It once listed AnswerCard, a component of Menjodohkan.
+func test_the_minigame_launcher_lists_only_games() -> void:
+	var body := _function_body(_source(), "_build_minigames_panel")
+	var re := RegEx.create_from_string("\"(res://Scenes/Minigames/[^\"]+\\.tscn)\"")
+	var found := 0
+	for m in re.search_all(body):
+		var state := (load(m.get_string(1)) as PackedScene).get_state()
+		var script: Variant = null
+		for i in state.get_node_property_count(0):
+			if state.get_node_property_name(0, i) == &"script":
+				script = state.get_node_property_value(0, i)
+		var base := script as Script
+		while base != null and base.get_global_name() != &"BaseMinigame":
+			base = base.get_base_script()
+		assert_true(base != null, m.get_string(1) + " is a whole game (a BaseMinigame)")
+		found += 1
+	assert_eq(found, 8, "the eight games, each once")

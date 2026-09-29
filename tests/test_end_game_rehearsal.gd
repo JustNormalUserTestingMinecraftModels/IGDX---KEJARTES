@@ -32,13 +32,13 @@ func _fake_source() -> Array:
 
 func test_target_tracks_the_grade_uplift() -> void:
 	assert_eq(EndGameRehearsal.target_for_grade(7),
-		EndGameRehearsal.BASE_SKILL + Balance.TARGET_KENAIKAN_KELAS_7,
+		EndGameRehearsal.BASE_SKILL + GameState.TARGET_UPLIFT_BY_GRADE[7],
 		"grade 7 target is base + the grade 7 uplift")
 	assert_eq(EndGameRehearsal.target_for_grade(8),
-		EndGameRehearsal.BASE_SKILL + Balance.TARGET_KENAIKAN_KELAS_8,
+		EndGameRehearsal.BASE_SKILL + GameState.TARGET_UPLIFT_BY_GRADE[8],
 		"grade 8 target is base + the grade 8 uplift")
 	assert_eq(EndGameRehearsal.target_for_grade(9),
-		EndGameRehearsal.BASE_SKILL + Balance.TARGET_KENAIKAN_KELAS_9,
+		EndGameRehearsal.BASE_SKILL + GameState.TARGET_UPLIFT_BY_GRADE[9],
 		"grade 9 target is base + the grade 9 uplift")
 
 

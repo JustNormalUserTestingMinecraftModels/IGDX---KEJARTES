@@ -55,6 +55,7 @@ const VISUAL_TYPES: Array[String] = [
 ## per CLAUDE.md.
 const EXEMPT: Array[String] = [
 	"res://Scripts/Debug/DebugManager.gd",
+	"res://Scripts/Debug/DebugLookPanel.gd",
 ]
 
 ## Per-file count of runtime visual construction still owed a conversion,
@@ -68,10 +69,10 @@ const BASELINE: Dictionary = {
 	"res://Scripts/Lobby/Lobby.gd": 8,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 2,
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 1,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd": 8,
+	"res://Scripts/Minigames/Olahraga/Badminton.gd": 7,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd": 2,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 7,
-	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 4,
+	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 1,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd": 4,
 	"res://Scripts/Minigames/UI/MinigameTutorial.gd": 12,
 	"res://Scripts/Pengaturan.gd": 12,

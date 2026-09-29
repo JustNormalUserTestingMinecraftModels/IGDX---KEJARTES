@@ -51,14 +51,15 @@ func _center(index: int) -> void:
 
 # ── Data ─────────────────────────────────────────────────────────────────────
 
-## Weeks and target must be read from Balance.gd, never hardcoded literals.
-func test_weeks_and_target_come_from_balance() -> void:
-	assert_eq(LS.weeks_for(7), Balance.JUMLAH_MINGGU_KELAS_7, "wk7")
-	assert_eq(LS.weeks_for(8), Balance.JUMLAH_MINGGU_KELAS_8, "wk8")
-	assert_eq(LS.weeks_for(9), Balance.JUMLAH_MINGGU_KELAS_9, "wk9")
-	assert_eq(LS.target_for(7), int(Balance.TARGET_KENAIKAN_KELAS_7), "t7")
-	assert_eq(LS.target_for(8), int(Balance.TARGET_KENAIKAN_KELAS_8), "t8")
-	assert_eq(LS.target_for(9), int(Balance.TARGET_KENAIKAN_KELAS_9), "t9")
+## Weeks and target come from GameState (WEEKS_BY_GRADE 4/6/8,
+## TARGET_UPLIFT_BY_GRADE 15/22/26), never hardcoded literals.
+func test_weeks_and_target_come_from_their_owners() -> void:
+	assert_eq(LS.weeks_for(7), GameState.WEEKS_BY_GRADE[7], "wk7")
+	assert_eq(LS.weeks_for(8), GameState.WEEKS_BY_GRADE[8], "wk8")
+	assert_eq(LS.weeks_for(9), GameState.WEEKS_BY_GRADE[9], "wk9")
+	assert_eq(LS.target_for(7), int(GameState.TARGET_UPLIFT_BY_GRADE[7]), "t7")
+	assert_eq(LS.target_for(8), int(GameState.TARGET_UPLIFT_BY_GRADE[8]), "t8")
+	assert_eq(LS.target_for(9), int(GameState.TARGET_UPLIFT_BY_GRADE[9]), "t9")
 
 
 ## Every grade has a difficulty word, a gauge fill, a tag and a brief line.
@@ -76,8 +77,8 @@ func test_difficulty_map_covers_all_grades() -> void:
 ## The screen must not re-type balance numbers as literals.
 func test_source_reads_balance_constants() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Balance.JUMLAH_MINGGU_KELAS_"), "reads weeks from Balance")
-	assert_true(src.contains("Balance.TARGET_KENAIKAN_KELAS_"), "reads target from Balance")
+	assert_true(src.contains("GameState.weeks_for_grade"), "reads weeks from GameState")
+	assert_true(src.contains("GameState.target_uplift_for_grade"), "reads target from GameState")
 
 
 ## The pupil count is the roster StudentCard really approves, not a copy.
@@ -325,6 +326,34 @@ func test_confirm_exposes_present_and_signals() -> void:
 	assert_true(src.contains("signal cancelled"), "has cancelled signal")
 
 
+## The letter became the notebook dialog frame (2026-09-28, UI depth pass
+## Phase 2, Task 6): the kicker label is gone, its title now the frame's
+## stitched sticker, and its round close is wired as Batal.
+func test_the_letter_is_the_notebook_dialog() -> void:
+	var confirm := (load("res://Scenes/LevelSelect/OpenAmplopConfirm.tscn") as PackedScene).instantiate()
+	track(confirm)
+	var letter := confirm.get_node_or_null("Letter") as NotebookFrame
+	assert_true(letter != null, "the letter is a NotebookFrame")
+	if letter != null:
+		assert_eq(letter.title_text, "SURAT TUGAS", "the kicker became the sticker")
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/LevelSelect/OpenAmplopConfirm.gd"),
+		"_letter.close_pressed.connect(_on_close_pressed)")
+
+
+## The confirm starts hidden, and a hidden Container never lays out its
+## children, so the wrapping Body sat 1px wide and asked for ~3500px of
+## height. NotebookFrame grows to its content's minimum and never shrinks
+## back, so the first amplop opened onto a blank, screen-tall page with the
+## letter off the top. A minimum width keeps Body's wrap sane before its
+## first layout.
+func test_the_letter_body_has_a_wrap_width_before_its_first_layout() -> void:
+	var confirm := (load("res://Scenes/LevelSelect/OpenAmplopConfirm.tscn") as PackedScene).instantiate()
+	track(confirm)
+	var body := confirm.get_node("Letter/VBox/Body") as Label
+	assert_true(body.custom_minimum_size.x >= 600.0,
+		"Body needs a minimum width, or the hidden letter grows off screen")
+
+
 ## present() shows the grade, its pupils and the letter over a scrim that
 ## takes every tap; dismiss() reseals and hides.
 func test_confirm_presents_and_dismisses() -> void:
@@ -383,10 +412,14 @@ func test_accept_sets_grade_and_transitions() -> void:
 
 ## Every amplop card casts a soft drop shadow behind its Body art via the
 ## shared PaperShadow template (mirrors test_paper_shadow.gd's
-## test_the_flat_elements_now_cast_a_shadow). The confirm's Letter keeps the
-## Card variation's own StyleBoxFlat shadow instead -- it has no texture to
-## cast, and that lift was judged enough.
-func test_amplop_card_casts_a_shadow_and_the_confirm_letter_keeps_its_card_shadow() -> void:
+## test_the_flat_elements_now_cast_a_shadow). The confirm's Letter became the
+## notebook dialog frame (2026-09-28, UI depth pass Phase 2, Task 6): its own
+## Chrome art gives it the lift the old Card variation's StyleBoxFlat shadow
+## used to -- specifically Chrome/Cover, the lipped hardcover panel that sits
+## proud of the page on every side. test_the_letter_is_the_notebook_dialog
+## already covers the frame's identity (title_text, the close wiring); this
+## half instead proves the lift claim this comment makes.
+func test_amplop_card_casts_a_shadow_and_the_confirm_letter_is_the_notebook_dialog() -> void:
 	var card := _card()
 	var body := card.get_node("Bob/Body") as TextureRect
 	var shadow := body.get_node_or_null("Shadow") as Control
@@ -402,12 +435,14 @@ func test_amplop_card_casts_a_shadow_and_the_confirm_letter_keeps_its_card_shado
 	var confirm := (load("res://Scenes/LevelSelect/OpenAmplopConfirm.tscn") as PackedScene) \
 		.instantiate()
 	track(confirm)
-	var letter := confirm.get_node_or_null("Letter") as Control
-	assert_true(letter != null, "OpenAmplopConfirm has no Letter")
+	var letter := confirm.get_node_or_null("Letter") as NotebookFrame
+	assert_true(letter != null, "OpenAmplopConfirm's Letter is now a NotebookFrame")
 	if letter == null:
 		return
-	assert_eq(letter.theme_type_variation, &"Card",
-		"Letter keeps the Card variation's own drop shadow")
+	assert_eq(letter.ring_count, 4, "a dialog's four rings, same as any other")
+	var cover := letter.get_node_or_null("Chrome/Cover")
+	assert_true(cover != null,
+		"Chrome/Cover is the lipped hardcover that gives the letter its lift")
 
 
 ## Re-texturing the card (envelope_texture) must re-texture its shadow too,

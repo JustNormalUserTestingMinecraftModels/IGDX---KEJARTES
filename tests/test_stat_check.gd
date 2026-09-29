@@ -363,7 +363,7 @@ func test_star_meter_maps_a_float_onto_three_star_bars() -> void:
 	var screen = load(_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(screen)
 	track(screen)
-	var meter = screen.get_node("MarginContainer/Column/StarMeter")
+	var meter = screen.get_node("Safe/Center/Frame/Column/StarMeter")
 	assert_true(meter is StarMeter, "StarMeter script")
 	meter.set_stars(1.75)
 	assert_true(is_equal_approx(meter.get_node("Star1").value, 100.0), "star 1 full")
@@ -381,7 +381,7 @@ func test_star_meter_bars_use_the_new_star() -> void:
 	var screen = load(_SCENE).instantiate()
 	track(screen)
 	for n in ["Star1", "Star2", "Star3"]:
-		var bar = screen.get_node("MarginContainer/Column/StarMeter/" + n)
+		var bar = screen.get_node("Safe/Center/Frame/Column/StarMeter/" + n)
 		assert_true(bar is TextureProgressBar, "%s is a TextureProgressBar" % n)
 		assert_true(String(bar.texture_progress.resource_path).ends_with("UI/star.png"),
 			"%s fills with star.png" % n)
@@ -405,7 +405,7 @@ func test_rushing_an_idle_meter_leaves_the_stars_where_they_are() -> void:
 	var screen = load(_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(screen)
 	track(screen)
-	var meter = screen.get_node("MarginContainer/Column/StarMeter")
+	var meter = screen.get_node("Safe/Center/Frame/Column/StarMeter")
 	meter.set_stars(1.5)
 	meter.rush()
 	assert_true(is_equal_approx(meter.get_node("Star1").value, 100.0),
@@ -420,16 +420,33 @@ func test_rushing_an_idle_meter_leaves_the_stars_where_they_are() -> void:
 func test_scene_loads_with_its_chrome() -> void:
 	var screen = load(_SCENE).instantiate()
 	track(screen)
-	assert_true(screen.get_node_or_null("Backdrop") is TextureRect, "Backdrop")
+	assert_true(screen.get_node_or_null("World/Room/Backdrop") is TextureRect, "Backdrop")
 	assert_true(screen.get_node_or_null("Scrim") is Panel, "Scrim")
-	assert_true(screen.get_node_or_null("MarginContainer/Column/CardSlot") is Control,
+	assert_true(screen.get_node_or_null("Safe/Center/Frame/Column/CardSlot") is Control,
 		"CardSlot, where each student's card is instanced")
-	assert_true(screen.get_node_or_null("MarginContainer/Column/StarMeter") is StarMeter,
+	assert_true(screen.get_node_or_null("Safe/Center/Frame/Column/StarMeter") is StarMeter,
 		"StarMeter")
 	var white = screen.get_node_or_null("WhiteFade")
 	assert_true(white is ColorRect, "the white fade overlay")
 	assert_true(is_equal_approx(white.color.a, 1.0) and white.modulate.a == 0.0,
 		"WhiteFade is opaque white, fully transparent via modulate until the end")
+
+
+func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
+	var root := (load(_SCENE) as PackedScene).instantiate()
+	track(root)
+	var frame := root.get_node_or_null("Safe/Center/Frame") as NotebookFrame
+	assert_true(frame != null, "the card is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "CEK NILAI")
+		assert_false(frame.show_close, "a forced step shows no close")
+
+
+func test_the_card_slot_clips_the_slide() -> void:
+	var root := (load(_SCENE) as PackedScene).instantiate()
+	track(root)
+	var slot := root.get_node("Safe/Center/Frame/Column/CardSlot") as Control
+	assert_true(slot.clip_contents, "a card sliding in or out never draws over the frame")
 
 
 func test_star_share_is_one_over_total_stats_scaled_to_three() -> void:

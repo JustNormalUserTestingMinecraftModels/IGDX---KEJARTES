@@ -207,11 +207,11 @@ func test_set_day_writes_the_banner_not_just_the_variable() -> void:
 
 
 ## The grade ladder, which needs no code of its own: get_max_weeks() returns
-## 6/12/16 for Kelas 7/8/9. A hard-coded 6 would pass every Kelas 7 test and
+## 4/6/8 for Kelas 7/8/9. A hard-coded 4 would pass every Kelas 7 test and
 ## be wrong for two thirds of the game.
 func test_the_week_count_follows_the_grade() -> void:
 	var w = load(SCENE_PATH).instantiate()
-	for pair in [[3, 6], [9, 12], [14, 16]]:
+	for pair in [[3, 4], [5, 6], [7, 8]]:
 		w.set_week(pair[0], pair[1])
 		assert_eq(w.week_text(), "%d/%d" % [pair[0], pair[1]],
 			"Kelas with %d weeks must read %d/%d" % [pair[1], pair[0], pair[1]])

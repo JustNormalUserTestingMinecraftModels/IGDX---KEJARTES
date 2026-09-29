@@ -225,7 +225,7 @@ func test_the_lobby_cutout_differs_only_in_its_light() -> void:
 ## A cutout has an alpha edge to find; a backdrop is full-bleed and would pay
 ## five taps per pixel for nothing. Percentages are transparent pixels.
 const CUTOUTS := {
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Herman", "Stage/Foreground"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman", "World/Room/Foreground"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 	# 2026-09-25: the minigame win screen's speaker, the same splash art.
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
@@ -238,12 +238,17 @@ const CUTOUTS := {
 	# counts. The one judgement call in this table: if it ends up reading as
 	# furniture rather than UI, give it the plain material back.
 	"res://Scenes/Minigames/Akademis/Kalkulator.tscn": ["Body/BodyTexture"],
+	# 2026-09-28: the graduation lineup, splash art on transparency.
+	"res://Scenes/EndGame/WinStage.tscn": [
+		"Stage/Students/Student1", "Stage/Students/Student2",
+		"Stage/Students/Student3", "Stage/Students/Student4",
+	],
 }
 
 ## Full-bleed. These keep the material they have always worn.
 const BACKDROPS := {
 	"res://Scenes/Lobby/Lobby.tscn": ["World/Classroom/BGLayer"],
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Background"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Background"],
 	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
 	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
 	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background"],
@@ -251,8 +256,13 @@ const BACKDROPS := {
 	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background"],
 	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background"],
 	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG"],
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["Background"],
 	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/Koperasi/CosmeticShop.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/TesNotice.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/StatCheck.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/ExamProgress.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/WinStage.tscn": ["Stage/Backdrop"],
 }
 
 
@@ -460,11 +470,11 @@ func test_every_backdrop_keeps_the_plain_material() -> void:
 				"%s/%s is full-bleed and must not pay for AO" % [scene_path, node_path])
 
 
-## The two dicts here and look_layer's GRADED describe the same thirty-three plates
+## The two dicts here and look_layer's GRADED describe the same forty-two plates
 ## from two angles. This checks that agreement: a plate added to one dict and
 ## forgotten in the other fails here. It does NOT notice a plate that was
 ## given a grade material in a .tscn but added to neither list -- that plate
-## is invisible to this test too. The assert_eq(counted.size(), 33, ...) below
+## is invisible to this test too. The assert_eq(counted.size(), 42, ...) below
 ## is a deliberate ratchet, not a discovered fact: bump it by hand when a
 ## plate is legitimately added to both dicts.
 func test_the_census_covers_every_graded_plate_exactly_once() -> void:
@@ -494,7 +504,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		assert_true(counted.has(key), "%s wears the grade but is in neither census bucket" % key)
 	for key in counted:
 		assert_true(expected.has(key), "%s is in the census but does not wear the grade" % key)
-	assert_eq(counted.size(), 33, "the census must cover all thirty-three graded plates")
+	assert_eq(counted.size(), 42, "the census must cover all forty-two graded plates")
 
 
 ## The Lobby's light shafts (2026-09-23). The volumetric piece of the pass, and
@@ -572,9 +582,11 @@ func test_the_shafts_parallax_with_the_room() -> void:
 ## programmatically in _ready and is an autoload, so standing one up in a test
 ## would build the whole overlay.
 func test_the_debug_overlay_has_a_look_page() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
-	assert_true(src.contains("_build_look_panel"), "the overlay needs a Look panel builder")
-	assert_true(src.contains('"Look"'), "Look must be registered as a tab")
+	var manager := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
+	assert_true(manager.contains("panels[\"Look\"] = DebugLookPanel.build("),
+		"the overlay builds its Look tab through DebugLookPanel")
+	assert_true(manager.contains('"Look"'), "Look must be registered as a tab")
+	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugLookPanel.gd")
 	for uniform in ["ao_strength", "ao_radius_px", "rim_strength", "rim_radius_px"]:
 		assert_true(src.contains(uniform), "the Look page must drive %s" % uniform)
 	assert_true(src.contains("illustration_grade_cutout.tres"),

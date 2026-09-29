@@ -70,9 +70,9 @@ signal _summary_closed
 @export_group("End Simulation Tutorial (Week 1)")
 ## Title on the one-time tutorial shown after week 1's simulation ends
 ## (_show_end_simulation_tutorial) -- see TutorialPanel.show_step().
-@export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama! 🎓"
+@export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama!"
 ## Body text for the same end-of-week-1 tutorial.
-@export_multiline var end_tutorial_text: String = "Kerja bagus, Guru! Kamu telah berhasil membimbing murid-muridmu melewati simulasi minggu pertama.\n\nMulai sekarang, alur permainan akan terus berlanjut dalam siklus:\nAtur Jadwal ➔ Simulasi Hari Sekolah ➔ Evaluasi Mingguan\n\n🎯 Misi Utamamu:\nTingkatkan seluruh kemampuan murid (Akademis, Olahraga, dan Seni Budaya) hingga melampaui Target Ambang Batas masing-masing sebelum Minggu ke-8 selesai!\n\nPada akhir Minggu ke-8, akan diadakan Ujian Kenaikan Kelas untuk menentukan kelulusan murid-muridmu ke jenjang berikutnya. Rencanakan jadwal belajar dan istirahat dengan taktis!"
+@export_multiline var end_tutorial_text: String = "Kerja bagus, Guru! Kamu telah berhasil membimbing murid-muridmu melewati simulasi minggu pertama.\n\nMulai sekarang, alur permainan akan terus berlanjut dalam siklus:\nAtur Jadwal, Simulasi Hari Sekolah, lalu Evaluasi Mingguan\n\nMisi Utamamu:\nTingkatkan seluruh kemampuan murid (Akademis, Olahraga, dan Seni Budaya) hingga melampaui Target Ambang Batas masing-masing sebelum minggu terakhir kelas ini selesai!\n\nPada akhir minggu terakhir, akan diadakan Ujian Kenaikan Kelas untuk menentukan kelulusan murid-muridmu ke jenjang berikutnya. Rencanakan jadwal belajar dan istirahat dengan taktis!"
 ## Prompt text for the same tutorial.
 @export var end_tutorial_prompt: String = "KLIK DIMANA SAJA UNTUK MELANJUTKAN"
 
@@ -874,11 +874,17 @@ func _pick_minigame_category(w_akademis: int, w_olahraga: int, w_seni: int) -> S
 
 func _trigger_random_event(day_name: String) -> void:
 	events_triggered_this_week += 1
-	# Every student on the roster is present for an event, so
-	# an event marks the whole roster as having participated.
+	_record_event_participation()
+	await _run_event(randi() % 5, day_name)
+
+
+## Books one event onto the run tally: the count the report shows, and every
+## roster student as having taken part (every student is present for an
+## event, and RunGrade scores that share).
+func _record_event_participation() -> void:
+	GameState.run_stats.record_event_attended()
 	for s in GameState.approved_students:
 		GameState.run_stats.record_event_student(int(s.get("id", -1)))
-	await _run_event(randi() % 5, day_name)
 
 
 ## Plays random event `event_id` (0-4) on `day_name`: its warning, its
@@ -1249,10 +1255,7 @@ func skip_to_results() -> void:
 			else:
 				category = "Event"
 				events_triggered_this_week += 1
-				# Every student on the roster is present for an event, so
-				# an event marks the whole roster as having participated.
-				for s in GameState.approved_students:
-					GameState.run_stats.record_event_student(int(s.get("id", -1)))
+				_record_event_participation()
 
 			var skip_lose_chance := Balance.SKIP_PELUANG_KALAH_KELAS_7
 			match GameState.current_grade:
@@ -1566,12 +1569,11 @@ func _show_event_dialogue(key: String) -> bool:
 		dialogue_scene = load("res://Scenes/SchoolSimulation/EventDialogue.tscn")
 	if dialogue_scene == null:
 		return true
-	var e: Dictionary = EventDialogueCatalog.entry(key)
-	var roster: Array = []
-	if student_manager:
-		roster = student_manager.students
+	var e: Dictionary = EventDialogueCatalog.entry(key).duplicate()
+	var roster: Array = Array(student_manager.students) if student_manager else []
 	var featured: StudentData = EventDialogueCatalog.pick_featured(roster, e.get("category", ""))
 	_last_featured = featured
+	e["line"] = EventDialogueCatalog.pick_line(key, featured)
 	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
 	var dialogue = dialogue_scene.instantiate()
 	add_child(dialogue)
@@ -1615,7 +1617,7 @@ func _win_context(category: String, day_name: String) -> Dictionary:
 	if featured == null and student_manager:
 		featured = EventDialogueCatalog.pick_featured(student_manager.students, category)
 	var speaker: String = EventDialogueCatalog.win_speaker_path(category, featured, day_name, randf())
-	return {"category": category, "speaker": speaker, "line": EventDialogueCatalog.win_line_for(speaker)}
+	return {"category": category, "speaker": speaker, "line": EventDialogueCatalog.win_line_for(speaker, category, featured)}
 
 
 ## The win screen's LOBBY: leave the week now. Today's decay and roll have
@@ -1631,8 +1633,5 @@ func force_event(event_id: int) -> void:
 	# Trigger a specific event immediately during simulation
 	var day_name = DAYS[current_day] if current_day < DAYS.size() else "Senin"
 	events_triggered_this_week += 1
-	# Every student on the roster is present for an event, so
-	# an event marks the whole roster as having participated.
-	for s in GameState.approved_students:
-		GameState.run_stats.record_event_student(int(s.get("id", -1)))
+	_record_event_participation()
 	await _run_event(event_id, day_name)

@@ -26,11 +26,20 @@ const GRADED := {
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
 	"res://Scenes/Koperasi/Koperasi.tscn": [
-		"Stage/Background", "Stage/Herman", "Stage/Foreground",
+		"World/Room/Background", "World/Room/Herman", "World/Room/Foreground",
 	],
 	# The Lobby look on the shops (2026-09-28): their blurred backdrops.
 	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/Koperasi/CosmeticShop.tscn": ["World/Room/Backdrop"],
+	# The Lobby look on the exam screens (2026-09-28): their backdrops.
+	"res://Scenes/EndGame/TesNotice.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/StatCheck.tscn": ["World/Room/Backdrop"],
+	"res://Scenes/EndGame/ExamProgress.tscn": ["World/Room/Backdrop"],
+	# The Lobby look on the win stage (2026-09-28): the painting and its lineup.
+	"res://Scenes/EndGame/WinStage.tscn": [
+		"Stage/Backdrop", "Stage/Students/Student1", "Stage/Students/Student2",
+		"Stage/Students/Student3", "Stage/Students/Student4",
+	],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Lobby/AndiFace.tscn": ["Canvas/Base"],
@@ -55,7 +64,7 @@ const GRADED := {
 		"FieldBG", "Goalie/GFX", "Ball/GFX",
 	],
 	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
-		"Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
+		"Background", "Puck/Sprite2D", "PlayerPaddle/Sprite2D", "EnemyPaddle/Sprite2D",
 	],
 }
 
@@ -418,6 +427,24 @@ func test_the_grade_leaves_alpha_alone() -> void:
 ## pulls them out of their own scene. Judge any raise on a full-size capture.
 const GRADE_SATURATION_CEILING := 1.02
 const GRADE_CONTRAST_CEILING := 1.0125
+## The grade's saturation since 2026-09-29: the previous 1.0175 less 15%.
+const GRADE_SATURATION := 0.865
+
+
+## 2026-09-29: the overall colour grade is 15% less saturated (1.0175 x 0.85),
+## on all four materials and on the shader's own default.
+func test_the_grade_is_fifteen_percent_less_saturated() -> void:
+	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_LOBBY_CUTOUT_MATERIAL,
+			GRADE_FACE_MATERIAL]:
+		var mat: ShaderMaterial = load(path)
+		assert_true(mat != null, "%s must exist" % path)
+		if mat == null:
+			continue
+		assert_eq(mat.get_shader_parameter("saturation"), GRADE_SATURATION,
+			"%s carries the calmer saturation" % path)
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/illustration_grade.gdshader")
+	assert_contains(src, "saturation : hint_range(0.0, 2.0) = 0.865;",
+		"and so does the shader's own default")
 
 
 func test_the_grade_stays_subtle() -> void:

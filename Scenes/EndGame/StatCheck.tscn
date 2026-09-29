@@ -5,6 +5,13 @@
 [ext_resource type="Script" uid="uid://btn73mrqwvf1o" path="res://Scripts/EndGame/StarMeter.gd" id="3_mu1f4"]
 [ext_resource type="Texture2D" path="res://Assets/Images/UI/star.png" id="4_qgn2j"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="amb_tint"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="Script" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 
 [node name="StatCheck" type="Control" unique_id=1602759799]
 layout_mode = 3
@@ -13,44 +20,107 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 script = ExtResource("1_lbrdu")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=1085290687]
-layout_mode = 0
-offset_right = 1080.0
-offset_bottom = 1920.0
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Room" type="Control" parent="World"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Backdrop" type="TextureRect" parent="World/Room" unique_id=1085290687]
+material = ExtResource("illus_grade")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("2_2mn6t")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Tint" parent="." instance=ExtResource("amb_tint")]
+[node name="Tint" parent="World/Room" instance=ExtResource("amb_tint")]
 mood = 4
 strength = 0.3
 
-[node name="Scrim" type="Panel" parent="." unique_id=1681707398]
-layout_mode = 0
-offset_right = 1080.0
-offset_bottom = 1920.0
-theme_type_variation = &"Scrim"
+[node name="Light" parent="World/Room" instance=ExtResource("look_pool")]
+center = Vector2(0.15, 0.08)
+pool_size = Vector2(1600, 1600)
+light_color = Color(0.78, 0.86, 1, 1)
+intensity = 0.06
 
-[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1701133153]
+[node name="Shafts" parent="World/Room" instance=ExtResource("look_shafts")]
+shaft_color = Color(0.78, 0.86, 1, 1)
+intensity = 0.1
+
+[node name="Parallax" type="Control" parent="World/Room"]
+layout_mode = 1
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+depth_by_child = {
+"Backdrop": 1.0,
+"Light": 1.0,
+"Shafts": 1.0,
+"Tint": 1.0
+}
+overscan_children = Array[StringName]([&"Backdrop", &"Light", &"Tint", &"Shafts"])
+
+[node name="Glow" parent="." instance=ExtResource("look_glow")]
+
+[node name="Scrim" type="Panel" parent="." unique_id=1681707398]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"Scrim"
 
-[node name="Column" type="VBoxContainer" parent="MarginContainer" unique_id=1761066375]
+[node name="Safe" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("nb_safe")
+
+[node name="Center" type="CenterContainer" parent="Safe"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Frame" parent="Safe/Center" instance=ExtResource("nb_frame")]
+unique_name_in_owner = true
+layout_mode = 2
+title_text = "CEK NILAI"
+ring_count = 4
+show_well = false
+show_close = false
+
+[node name="Column" type="VBoxContainer" parent="Safe/Center/Frame" unique_id=1761066375]
 layout_mode = 2
 alignment = 1
 
-[node name="CardSlot" type="Control" parent="MarginContainer/Column" unique_id=1042307462]
+[node name="CardSlot" type="Control" parent="Safe/Center/Frame/Column" unique_id=1042307462]
 custom_minimum_size = Vector2(760, 1000)
 layout_mode = 2
 size_flags_horizontal = 4
+clip_contents = true
 
-[node name="StarMeter" type="HBoxContainer" parent="MarginContainer/Column" unique_id=2089250649]
+[node name="StarMeter" type="HBoxContainer" parent="Safe/Center/Frame/Column" unique_id=2089250649]
 layout_mode = 2
 alignment = 1
 script = ExtResource("3_mu1f4")
 
-[node name="Star1" type="TextureProgressBar" parent="MarginContainer/Column/StarMeter" unique_id=2067867014]
+[node name="Star1" type="TextureProgressBar" parent="Safe/Center/Frame/Column/StarMeter" unique_id=2067867014]
 custom_minimum_size = Vector2(180, 180)
 layout_mode = 2
 nine_patch_stretch = true
@@ -58,7 +128,7 @@ texture_under = ExtResource("4_qgn2j")
 texture_progress = ExtResource("4_qgn2j")
 tint_under = Color(0.3, 0.3, 0.35, 1)
 
-[node name="Star2" type="TextureProgressBar" parent="MarginContainer/Column/StarMeter" unique_id=542371159]
+[node name="Star2" type="TextureProgressBar" parent="Safe/Center/Frame/Column/StarMeter" unique_id=542371159]
 custom_minimum_size = Vector2(180, 180)
 layout_mode = 2
 nine_patch_stretch = true
@@ -66,7 +136,7 @@ texture_under = ExtResource("4_qgn2j")
 texture_progress = ExtResource("4_qgn2j")
 tint_under = Color(0.3, 0.3, 0.35, 1)
 
-[node name="Star3" type="TextureProgressBar" parent="MarginContainer/Column/StarMeter" unique_id=1855887258]
+[node name="Star3" type="TextureProgressBar" parent="Safe/Center/Frame/Column/StarMeter" unique_id=1855887258]
 custom_minimum_size = Vector2(180, 180)
 layout_mode = 2
 nine_patch_stretch = true

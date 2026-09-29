@@ -56,15 +56,15 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 
 ## Category key -> the icon that peeks from behind the note, shared by all
 ## five instances via this preloaded default. Akademis / SeniBudaya /
-## Olahraga use the real stat_*.png; Wirausaha / Istirahat use generated
-## placeholders. Still an @export so the visual team can override per
-## instance in the Inspector once real art lands.
+## Olahraga use the real stat_*.png; Wirausaha / Istirahat use their own
+## cat_*.svg category icons. Still an @export so the visual team can
+## override per instance in the Inspector.
 @export var category_icons: Dictionary = {
 	"Akademis": preload("res://Assets/Images/StudentCard/stat_akademis.png"),
 	"SeniBudaya": preload("res://Assets/Images/StudentCard/stat_senibudaya.png"),
 	"Olahraga": preload("res://Assets/Images/StudentCard/stat_olahraga.png"),
-	"Wirausaha": preload("res://Assets/Images/AturJadwal/icon_wirausaha_placeholder.png"),
-	"Istirahat": preload("res://Assets/Images/AturJadwal/icon_istirahat_placeholder.png"),
+	"Wirausaha": preload("res://Assets/Images/UI/Icons/cat_wirausaha.svg"),
+	"Istirahat": preload("res://Assets/Images/UI/Icons/cat_istirahat.svg"),
 }
 
 ## The peeking icon for a national-holiday note (a flag/calendar placeholder).
@@ -89,7 +89,7 @@ const _HOLIDAY_FLAVOR := "Libur Nasional"
 ## printing over it.
 @onready var _subject_label: Label = $Paper/Lines/SubjectLabel
 @onready var _flavor_label: Label = $Paper/Lines/FlavorLabel
-@onready var _lock: Label = $Paper/Lock
+@onready var _lock: TextureRect = $Paper/Lock
 @onready var _back_icon: TextureRect = $BackIcon
 @onready var _match_glow: TextureRect = $Paper/MatchGlow
 @onready var _specialty_star: TextureRect = $Paper/SpecialtyStar
@@ -169,7 +169,7 @@ func show_holiday(title: String) -> void:
 
 
 ## Sets the tape colour (or hides the tape, for `tape_color == null`) and the
-## visibility of the subject line, flavour line, back icon, lock glyph and
+## visibility of the subject line, flavour line, back icon, lock icon and
 ## "+ Atur" hint in one place. The paper itself is never tinted: it stays
 ## untinted cream under paper_gradient.gdshader in every state.
 func _apply(tape_color: Variant, show_extras: bool, show_lock: bool) -> void:

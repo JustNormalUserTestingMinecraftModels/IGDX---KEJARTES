@@ -37,6 +37,9 @@ func test_every_declared_variation_exists() -> void:
 		"CoinPlate", "ProgressPlate", "GradeBadge", "GradeBadgeLabel",
 		"GradeBadgeNumber", "WeekLabel", "StarProgressBar", "StarNumLabel",
 		"NotifBadge", "NotifBadgeLabel", "RosterChip",
+		# 2026-09-29 MURIDMU RosterCard Task 1 groundwork: week header band
+		# (reuses CardSectionLabel) and the five-dot "n/5 hari" tally.
+		"StickyNoteEmptyLabel", "WeekTallyLabel", "TallyDotFilled", "TallyDotEmpty",
 	]
 	var actual := _theme.get_type_list()
 	for variation in expected:
@@ -61,17 +64,19 @@ func test_button_variations_have_all_four_states() -> void:
 				"%s must define stylebox: %s" % [variation, state])
 
 
-func test_primary_button_uses_brand_color() -> void:
+func test_primary_button_is_the_mint_main_action() -> void:
 	var sb := _theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
-	assert_true(sb != null, "PrimaryButton/normal must be a StyleBoxFlat")
-	assert_eq(sb.bg_color, _tokens.brand_primary_light,
-		"gradient top of the primary button is brand_primary_light")
+	assert_true(sb != null, "PrimaryButton/normal must be a lipped box")
+	if sb == null:
+		return
+	assert_eq(sb.bg_color, _tokens.accent_mint, "the main action is mint")
+	assert_eq(sb.shadow_color, _tokens.accent_mint_lip, "on its darker lip")
 
 
 func test_buttons_meet_minimum_touch_target() -> void:
 	# Anything smaller is a tap the user will miss on a phone.
 	for variation in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
-		var sb := _theme.get_stylebox("normal", variation) as StyleBoxFlat
+		var sb := _theme.get_stylebox("normal", variation) as StyleBox
 		var height := sb.content_margin_top + sb.content_margin_bottom
 		assert_true(height >= float(_tokens.touch_target_min) * 0.5,
 			variation + " content margins must contribute to a tappable height")
@@ -94,7 +99,7 @@ func test_label_variations_carry_font_sizes_from_tokens() -> void:
 func test_changing_a_token_changes_the_built_theme() -> void:
 	# This is the whole point of the pipeline: edit the token, get a new look.
 	var custom := DesignTokens.new()
-	custom.brand_primary_light = Color("ff0000")
+	custom.accent_mint = Color("ff0000")
 	var custom_theme := ThemeFactory.build(custom)
 	var sb := custom_theme.get_stylebox("normal", "PrimaryButton") as StyleBoxFlat
 	assert_eq(sb.bg_color, Color("ff0000"),
@@ -181,24 +186,20 @@ func test_stat_bar_variation_is_unchanged() -> void:
 	assert_true(bg is StyleBoxFlat, "StatBar keeps its flat track")
 
 
-func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> void:
-	var tokens := DesignTokens.load_default()
-	var theme := ThemeFactory.build(tokens)
+## 2026-09-29: the gear and exit on the title screen lost their box; the
+## variation draws nothing in any state, and the old brown one is gone.
+func test_main_menu_icon_button_draws_no_box() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
 
-	assert_true(theme.get_type_list().has("MainMenuButton"),
-		"MainMenuButton variation must exist")
-	assert_eq(theme.get_type_variation_base("MainMenuButton"), &"Button",
-		"MainMenuButton must vary the Button type")
-
-	# Since the 2026-09-14 lobby-style-buttons pass it is the Lobby's flat box.
-	var normal := theme.get_stylebox("normal", "MainMenuButton") as StyleBoxFlat
-	assert_true(normal != null and normal.bg_color == tokens.brand_primary_light,
-		"MainMenuButton wears the Lobby's fill")
-
-	# Font size 80, not the mockup-implied 100: see the spec's typography
-	# section -- PENGATURAN at 100 overflows the 624 px inner box by 131 px.
-	assert_eq(theme.get_font_size("font_size", "MainMenuButton"), 80,
-		"MainMenuButton font size")
+	assert_true(theme.get_type_list().has("MainMenuIconButton"),
+		"MainMenuIconButton variation must exist")
+	assert_eq(theme.get_type_variation_base("MainMenuIconButton"), &"Button",
+		"MainMenuIconButton must vary the Button type")
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
+		assert_true(theme.get_stylebox(state, "MainMenuIconButton") is StyleBoxEmpty,
+			"MainMenuIconButton's %s state must draw nothing" % state)
+	assert_false(theme.get_type_list().has("MainMenuButton"),
+		"the boxed MainMenuButton is retired")
 
 
 ## The bars used to be a flat sunken capsule with the fill running flush
@@ -307,10 +308,12 @@ func test_body_labels_do_not_take_the_display_font() -> void:
 const DISPLAY_ROSTER := [
 	"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 	"CardSectionLabel", "ResultHeroLabel",
-	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
+	"PrimaryButton", "SecondaryButton", "DangerButton",
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill",
+	# 2026-09-29: achievement tile titles on the heading face.
+	"AchievementTileTitleLabel",
 	# 2026-09-24 Penjadwalan picker rebuild.
 	"PickerTitleLabel", "PickerTileName", "PickerTileValue", "PickerRibbonLabel",
 	# 2026-09-24 SchoolDay liveliness: the "selesai" stamp and the daily
@@ -318,11 +321,13 @@ const DISPLAY_ROSTER := [
 	"DayStampLabel", "VerdictHeadlineLabel",
 	"TallyValueGain", "TallyValueTarget", "TallyValueCoin",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
-	"RecapPillValueLabel", "ScoreHudValueLabel",
+	"RecapPillValueLabel", "RecapPillCaptionLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
-	# 2026-09-19 weekly results mockup: the light-red Logs button.
+	# 2026-09-19 weekly results mockup: the Logs button (brown since 2026-09-29).
 	"ResultLogsButton",
+	# 2026-09-29 weekly colours: the HASIL MINGGUAN plate.
+	"ResultTitleLabel",
 	# 2026-09-14 lobby-style-buttons: the two kept looks.
 	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
 	"RosterStatusBelum", "RosterStatusSudah",
@@ -365,6 +370,11 @@ const DISPLAY_ROSTER := [
 	# 2026-09-23 skin-select-slide Task 3: the TERAPKAN button and the
 	# character title over the carousel.
 	"SkinNameLabel", "SkinWornChipLabel", "SkinApplyButton", "SkinTitleLabel",
+	# 2026-09-29 skin-select-polish Task 2: the taped photo tiles (now
+	# lipped Buttons, via _add_button_variation), the roster header, each
+	# tile's caption and the TERAPKAN "PAKAI!" sticker.
+	"SkinStudentTile", "SkinStudentTileActive", "SkinRosterHeaderLabel",
+	"SkinTileCaptionLabel", "SkinApplyTag",
 	# 2026-09-18 achievements-polish Task 4: the header status pill's two
 	# state labels.
 	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",
@@ -396,7 +406,71 @@ const DISPLAY_ROSTER := [
 	"BookHeroButton", "NavTileKoperasi", "NavTileInventory", "NavTileRapor",
 	"PlusButton", "GradeBadgeLabel", "GradeBadgeNumber", "WeekLabel",
 	"StarNumLabel", "NotifBadgeLabel",
+	# 2026-09-28 UI depth pass Task 6: the notebook frame's tabs, close and
+	# sticker title.
+	"NotebookTab", "NotebookTabActive", "NotebookClose", "NotebookSticker",
+	# 2026-09-28 koperasi-top-band-promo Task 3: the signboard, the promo
+	# board's header/item text and its "-N%" sticker, and the footer
+	# Total pill's balance number in all three of its states.
+	"KoperasiSignLabel", "KoperasiSignCaptionLabel",
+	"KoperasiPromoHeaderLabel", "KoperasiPromoItemLabel", "PromoBadge",
+	"TotalNumberAwake", "TotalNumberAsleep", "TotalNumberOver",
+	# 2026-09-28 koperasi-top-band-promo Task 4 fix round 1: the price tag's
+	# struck list price, same face and outline approach as PriceTagLabel.
+	"PromoOldPriceLabel",
 ]
+
+
+## Koperasi's top-band signboard and promo board, and the footer's Kas /
+## Total pills (2026-09-28 koperasi-top-band-promo Task 3), all built on
+## LippedBox and the depth pass's palette.
+func test_koperasi_chrome_is_lipped_and_on_palette() -> void:
+	var tokens: DesignTokens = DesignTokens.load_default()
+	var theme: Theme = ThemeFactory.build(tokens)
+	for panel: String in ["KoperasiSignPanel", "KoperasiPromoPanel"]:
+		assert_true(LippedBox.is_lipped(theme.get_stylebox("panel", panel) as StyleBoxFlat),
+			panel + " is lipped")
+	for pill: String in ["KasPill", "TotalPillAwake", "TotalPillAsleep", "TotalPillOver"]:
+		assert_true(LippedBox.is_lipped(theme.get_stylebox("panel", pill) as StyleBoxFlat),
+			pill + " is lipped")
+	var asleep: StyleBoxFlat = theme.get_stylebox("panel", "TotalPillAsleep") as StyleBoxFlat
+	var awake: StyleBoxFlat = theme.get_stylebox("panel", "TotalPillAwake") as StyleBoxFlat
+	assert_true(LippedBox.lip_height_of(asleep) < LippedBox.lip_height_of(awake),
+		"an empty total sleeps on a thinner lip")
+	var over: StyleBoxFlat = theme.get_stylebox("panel", "TotalPillOver") as StyleBoxFlat
+	assert_eq(over.shadow_color, tokens.accent_tomato, "over budget stands on a tomato lip")
+	assert_eq(theme.get_color("font_color", "TotalNumberOver"), tokens.accent_tomato_lip,
+		"and its number reads in the dark tomato")
+	var badge: StyleBoxFlat = theme.get_stylebox("normal", "PromoBadge") as StyleBoxFlat
+	assert_eq(badge.bg_color, tokens.accent_tangerine, "the promo badge is tangerine")
+
+
+## Fix round 1 (2026-09-28): PromoOldPriceLabel must read on all three
+## PriceTag pill states the way PriceTagLabel does -- an outline, not bare
+## CaptionLabel ink tuned for paper. Same outline colour as PriceTagLabel so
+## the two numbers agree, and the strike bar reads through the glyphs it
+## crosses because it shares the label's own ink.
+func test_promo_old_price_label_reads_like_price_tag_label() -> void:
+	var tokens: DesignTokens = DesignTokens.load_default()
+	var theme: Theme = ThemeFactory.build(tokens)
+	assert_true(theme.get_constant("outline_size", "PromoOldPriceLabel") > 0,
+		"the struck list price must carry an outline to read on the pill")
+	assert_eq(theme.get_color("font_outline_color", "PromoOldPriceLabel"),
+		theme.get_color("font_outline_color", "PriceTagLabel"),
+		"the struck price's outline must match the live price's outline")
+	assert_eq(theme.get_color("font_color", "PromoOldPriceLabel"),
+		theme.get_color("font_color", "PriceTagLabel"),
+		"the struck price's ink must match the live price's ink")
+	var strike: StyleBoxFlat = theme.get_stylebox("panel", "PromoStrikeLine") as StyleBoxFlat
+	assert_eq(strike.bg_color, theme.get_color("font_color", "PromoOldPriceLabel"),
+		"the strike bar must share PromoOldPriceLabel's ink so it reads through the text")
+
+
+## The Koperasi ledge's old gold counter (2026-09-28 koperasi-top-band-promo
+## Task 3): the KAS KELAS pill in the new footer replaces it.
+func test_the_ledge_coin_label_is_gone() -> void:
+	var theme: Theme = ThemeFactory.build(DesignTokens.load_default())
+	assert_false(theme.get_type_list().has("ShopCoinLabel"), "the Kas pill replaced it")
 
 
 ## StatCheck's page shows the student's name alone on StudentCard's
@@ -537,7 +611,7 @@ func test_specialty_badge_is_a_pill_button_variation() -> void:
 	assert_true(theme.has_stylebox("normal", "SpecialtyBadge"),
 		"SpecialtyBadge must define a normal stylebox")
 	var sb := theme.get_stylebox("normal", "SpecialtyBadge")
-	assert_true(sb is StyleBoxFlat, "SpecialtyBadge normal must be a StyleBoxFlat")
+	assert_true(sb is StyleBoxFlat, "SpecialtyBadge normal must be a lipped box")
 	var tokens := DesignTokens.load_default()
 	assert_eq((sb as StyleBoxFlat).corner_radius_top_left, tokens.radius_pill,
 		"SpecialtyBadge must be a pill, like QuirkBadge and PersonaBadge")
@@ -625,11 +699,50 @@ func test_settings_divider_is_a_thin_sunken_rule() -> void:
 ## JADWAL is the greenest element (spec §4).
 func test_scrapbook_plus_and_hero_are_green() -> void:
 	var plus := _theme.get_stylebox("normal", "PlusButton") as StyleBoxFlat
-	assert_true(plus != null, "PlusButton/normal is a flat box")
+	assert_true(plus != null, "PlusButton/normal is a lipped box")
 	if plus == null:
 		return
-	assert_eq(plus.bg_color, _tokens.state_success, "the + wears the success green")
+	assert_eq(plus.bg_color, _tokens.accent_mint, "the + wears the main-action green")
 	assert_ne(plus.bg_color, _tokens.currency_gold, "a gold + would read as an IAP button")
 	var hero := _theme.get_stylebox("normal", "BookHeroButton") as StyleBoxFlat
-	assert_true(hero != null and hero.bg_color == _tokens.state_success,
-		"JADWAL wears the hero green")
+	assert_true(hero != null and hero.bg_color == _tokens.accent_mint,
+		"JADWAL wears the main-action green")
+	assert_eq(LippedBox.lip_height_of(hero), ThemeFactory.LOBBY_HUD_LIP, "the scrapbook's thicker lip")
+
+
+## 2026-09-29 MURIDMU RosterCard Task 1 groundwork: the week planner's
+## muted labels and the five-dot tally's two Panel looks. Nothing in the
+## scene wires to these yet -- later tasks build the header band and
+## StickyNote empty skin on top of them.
+func test_student_list_week_empty_note_label_is_muted() -> void:
+	assert_true(_theme.has_color("font_color", "StickyNoteEmptyLabel"),
+		"StickyNoteEmptyLabel must set a font color")
+	assert_eq(_theme.get_color("font_color", "StickyNoteEmptyLabel"), _tokens.text_secondary,
+		"an empty day's Atur label reads muted, not urgent")
+
+
+func test_student_list_week_tally_label_matches_caption_recipe() -> void:
+	assert_eq(_theme.get_font_size("font_size", "WeekTallyLabel"), _tokens.font_caption,
+		"the n/5 hari count is caption-sized")
+	assert_eq(_theme.get_color("font_color", "WeekTallyLabel"), _tokens.text_secondary,
+		"the n/5 hari count is muted, like every other tally caption")
+
+
+func test_student_list_week_tally_dots_are_mint_filled_and_ringed_empty() -> void:
+	var filled := _theme.get_stylebox("panel", "TallyDotFilled") as StyleBoxFlat
+	assert_true(filled != null, "TallyDotFilled must be a flat panel")
+	if filled != null:
+		assert_eq(filled.bg_color, _tokens.accent_mint,
+			"a scheduled day's dot is the depth pass's affirm mint, not state_success/category")
+		assert_eq(filled.corner_radius_top_left, _tokens.radius_pill, "the dot is fully round")
+
+	var empty := _theme.get_stylebox("panel", "TallyDotEmpty") as StyleBoxFlat
+	assert_true(empty != null, "TallyDotEmpty must be a flat panel")
+	if empty != null:
+		assert_eq(empty.bg_color, _tokens.surface_sunken, "an unscheduled dot's fill is kraft")
+		# Brown ink, not outline_card: the dot sits on the kraft WeekHeader
+		# band, where a near-white ring on a kraft dot all but vanished.
+		assert_eq(empty.border_color, _tokens.text_secondary,
+			"an unscheduled dot is ringed in ink that reads on the kraft band")
+		assert_gt(empty.border_width_top, 0, "the ring must actually be visible")
+		assert_eq(empty.corner_radius_top_left, _tokens.radius_pill, "the dot is fully round")

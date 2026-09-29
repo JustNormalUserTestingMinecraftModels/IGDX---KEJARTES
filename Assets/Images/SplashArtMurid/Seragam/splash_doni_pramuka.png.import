@@ -3,21 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dw48ax8g3jlux"
-path.s3tc="res://.godot/imported/splash_doni_pramuka.png-e3d7ba95310c8a192edcaee94bbb7cba.s3tc.ctex"
-path.etc2="res://.godot/imported/splash_doni_pramuka.png-e3d7ba95310c8a192edcaee94bbb7cba.etc2.ctex"
+path="res://.godot/imported/splash_doni_pramuka.png-e3d7ba95310c8a192edcaee94bbb7cba.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/Seragam/splash_doni_pramuka.png"
-dest_files=["res://.godot/imported/splash_doni_pramuka.png-e3d7ba95310c8a192edcaee94bbb7cba.s3tc.ctex", "res://.godot/imported/splash_doni_pramuka.png-e3d7ba95310c8a192edcaee94bbb7cba.etc2.ctex"]
+dest_files=["res://.godot/imported/splash_doni_pramuka.png-e3d7ba95310c8a192edcaee94bbb7cba.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

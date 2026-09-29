@@ -31,7 +31,7 @@ extends Control
 ## before touching state, so even a callback that slips through a kill()
 ## race can never flip state on behalf of a superseded animation.
 ##
-## set_herman_ap() hands in Stage/Herman/HermanAP so state_changed can swap
+## set_herman_ap() hands in World/Room/Herman/HermanAP so state_changed can swap
 ## Herman between his "talk" (SHOWING/LINGERING, including a sticky line)
 ## and "idle" animations. Reaching IDLE (and not sticky) also arms a
 ## randomised idle-chatter Timer (IDLE_MIN_S..IDLE_MAX_S) that speaks an
@@ -84,7 +84,7 @@ var _linger_timer: Timer
 ## Armed on reaching IDLE (when not sticky) and by reset_idle_timer(),
 ## which Koperasi.gd calls on every Cart change.
 var _idle_timer: Timer
-## Stage/Herman/HermanAP, handed in by Koperasi.gd via set_herman_ap(). Left
+## World/Room/Herman/HermanAP, handed in by Koperasi.gd via set_herman_ap(). Left
 ## null in tests that don't care about the animation side of the FSM --
 ## every use is guarded.
 var _herman_ap: AnimationPlayer
@@ -129,7 +129,7 @@ func get_state() -> int:
 	return _state
 
 
-## Hand in Stage/Herman/HermanAP so state_changed can drive its idle/talk
+## Hand in World/Room/Herman/HermanAP so state_changed can drive its idle/talk
 ## animations. Syncs Herman to the bubble's current state immediately, so
 ## call order relative to the first say() doesn't matter.
 func set_herman_ap(ap: AnimationPlayer) -> void:

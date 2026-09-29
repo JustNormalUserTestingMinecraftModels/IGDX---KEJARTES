@@ -319,7 +319,7 @@ func _build_ui() -> void:
 	_build_achievements_panel(content_area)
 	_build_feedback_panel(content_area)
 	_build_logs_panel(content_area)
-	_build_look_panel(content_area)
+	panels["Look"] = DebugLookPanel.build(content_area)
 
 	# Default tab selection
 	_switch_tab("General")
@@ -1105,7 +1105,6 @@ func _build_minigames_panel(parent: Control) -> void:
 	grp_launcher.add_child(lbl_launcher_title)
 	
 	var minigames_list = [
-		{"name": "Menjodohkan", "path": "res://Scenes/Minigames/Akademis/AnswerCard.tscn"}, # Use main scene tscn if AnswerCard is just component, let's use the ones verified before
 		{"name": "Menjodohkan (Akademis)", "path": "res://Scenes/Minigames/Akademis/Menjodohkan.tscn"},
 		{"name": "Variabel Matematika", "path": "res://Scenes/Minigames/Akademis/Variabel.tscn"},
 		{"name": "Pilihan Ganda (Akademis)", "path": "res://Scenes/Minigames/Akademis/PilihanGanda.tscn"},
@@ -1259,6 +1258,30 @@ func _trigger_simulation_event(event_id: int) -> void:
 		log_message("⚠️ Error: Trigger event hanya bisa dipanggil saat berada di scene SchoolDay (Simulasi Hari Sekolah).")
 
 # --- Scene Teleporter Tab Panel ---
+## Every screen the Scenes tab teleports to, in the order the game reaches them.
+const TELEPORT_SCENES := [
+	{"name": "Menu Utama (MainMenu)", "path": "res://Scenes/MainMenu/MainMenu.tscn"},
+	{"name": "Pilih Kelas (LevelSelect)", "path": "res://Scenes/LevelSelect/LevelSelect.tscn"},
+	{"name": "Cerita Pembuka (CutScene)", "path": "res://Scenes/CutScene/CutScene.tscn"},
+	{"name": "Pilih Murid (StudentCard)", "path": "res://Scenes/StudentCard/StudentCard.tscn"},
+	{"name": "Lobi Kelas (Lobby)", "path": "res://Scenes/Lobby/Lobby.tscn"},
+	{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/AturJadwal.tscn"},
+	{"name": "Simulasi Hari (SchoolDay)", "path": "res://Scenes/SchoolSimulation/SchoolDay.tscn"},
+	{"name": "Daftar Murid (StudentList)", "path": "res://Scenes/StudentList/StudentList.tscn"},
+	{"name": "Rapor (ReportCard)", "path": "res://Scenes/ReportCard/ReportCard.tscn"},
+	{"name": "Tas (Inventory)", "path": "res://Scenes/Inventory/Inventory.tscn"},
+	{"name": "Prestasi (AchievementsScreen)", "path": "res://Scenes/Achievements/AchievementsScreen.tscn"},
+	{"name": "Pilih Toko (ShopHub)", "path": "res://Scenes/Koperasi/ShopHub.tscn"},
+	{"name": "Koperasi (Koperasi)", "path": "res://Scenes/Koperasi/Koperasi.tscn"},
+	{"name": "Toko Kosmetik (CosmeticShop)", "path": "res://Scenes/Koperasi/CosmeticShop.tscn"},
+	{"name": "Notice Tes Besar (TesNotice)", "path": "res://Scenes/EndGame/TesNotice.tscn"},
+	{"name": "Progres Tes (ExamProgress)", "path": "res://Scenes/EndGame/ExamProgress.tscn"},
+	{"name": "Cek Nilai (StatCheck)", "path": "res://Scenes/EndGame/StatCheck.tscn"},
+	{"name": "Hasil Run (RunResult)", "path": "res://Scenes/EndGame/RunResult.tscn"},
+	{"name": "Splash Screen", "path": "res://Scenes/Splashscreen/Splashscreen.tscn"}
+]
+
+
 func _build_scenes_panel(parent: Control) -> void:
 	var scroll = ScrollContainer.new()
 	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1284,20 +1307,8 @@ func _build_scenes_panel(parent: Control) -> void:
 	lbl_title.add_theme_font_size_override("font_size", 26)
 	vbox.add_child(lbl_title)
 	
-	var scenes_list = [
-		{"name": "Menu Utama (MainMenu)", "path": "res://Scenes/MainMenu/MainMenu.tscn"},
-		{"name": "Lobi Kelas (Lobby)", "path": "res://Scenes/Lobby/Lobby.tscn"},
-		{"name": "Pilih Murid (StudentCard)", "path": "res://Scenes/StudentCard/StudentCard.tscn"},
-		{"name": "Atur Jadwal (AturJadwal)", "path": "res://Scenes/AturJadwal/AturJadwal.tscn"},
-		{"name": "Simulasi Hari (SchoolDay)", "path": "res://Scenes/SchoolSimulation/SchoolDay.tscn"},
-		{"name": "Pilih Toko (ShopHub)", "path": "res://Scenes/Koperasi/ShopHub.tscn"},
-		{"name": "Notice Tes Besar (TesNotice)", "path": "res://Scenes/EndGame/TesNotice.tscn"},
-		{"name": "Progres Tes (ExamProgress)", "path": "res://Scenes/EndGame/ExamProgress.tscn"},
-		{"name": "Hasil Run (RunResult)", "path": "res://Scenes/EndGame/RunResult.tscn"},
-		{"name": "Splash Screen", "path": "res://Scenes/Splashscreen/Splashscreen.tscn"}
-	]
 	
-	for sc in scenes_list:
+	for sc in TELEPORT_SCENES:
 		var btn = Button.new()
 		btn.text = " 🚀 Teleport ke: " + sc["name"]
 		btn.custom_minimum_size = Vector2(0, 95)
@@ -1734,147 +1745,3 @@ func _build_logs_panel(parent: Control) -> void:
 	log_text_label.add_theme_constant_override("line_spacing", 6)
 	log_text_label.text = ""
 	log_panel.add_child(log_text_label)
-
-# --- Illustration Look Tuner Tab Panel ---
-## Live control over the illustration look: inner AO, the rim light and the
-## Lobby's shafts. Every slider writes to a SHARED material, so one drag moves
-## every plate on screen at once -- which is the point. Nothing here persists;
-## when a value looks right, write it into the .tres.
-func _build_look_panel(parent: Control) -> void:
-	var scroll = ScrollContainer.new()
-	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	parent.add_child(scroll)
-	panels["Look"] = scroll
-
-	var margin_container = MarginContainer.new()
-	margin_container.add_theme_constant_override("margin_left", 30)
-	margin_container.add_theme_constant_override("margin_top", 30)
-	margin_container.add_theme_constant_override("margin_right", 30)
-	margin_container.add_theme_constant_override("margin_bottom", 30)
-	margin_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(margin_container)
-
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 24)
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margin_container.add_child(vbox)
-
-	var lbl_title = Label.new()
-	lbl_title.text = "Tampilan Ilustrasi (live, tidak tersimpan):"
-	lbl_title.add_theme_font_size_override("font_size", 26)
-	vbox.add_child(lbl_title)
-
-	# The cutout, the Lobby's desks and the Lobby's faces share their AO and rim
-	# values (test_illustration_ao pins it), so one slider drives all three.
-	var cutouts: Array = [
-		load("res://Scripts/Shaders/illustration_grade_cutout.tres"),
-		load("res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"),
-		load("res://Scripts/Shaders/illustration_grade_face.tres"),
-	]
-	_add_look_slider(vbox, cutouts, "ao_strength", "Kekuatan AO", 0.0, 1.0, 0.01)
-	_add_look_slider(vbox, cutouts, "ao_radius_px", "Lebar AO (piksel layar)", 0.0, 16.0, 0.5)
-	_add_look_slider(vbox, cutouts, "rim_strength", "Kekuatan Rim", 0.0, 0.8, 0.01)
-	_add_look_slider(vbox, cutouts, "rim_radius_px", "Lebar Rim (piksel layar)", 0.0, 16.0, 0.5)
-
-	var lbl_shafts = Label.new()
-	lbl_shafts.text = "Cahaya Jendela (khusus Lobby):"
-	lbl_shafts.add_theme_font_size_override("font_size", 26)
-	vbox.add_child(lbl_shafts)
-
-	var shafts: ShaderMaterial = load("res://Scripts/Shaders/window_shafts_material.tres")
-	_add_look_slider(vbox, [shafts], "intensity", "Kekuatan Cahaya", 0.0, 0.4, 0.005)
-	_add_look_slider(vbox, [shafts], "shaft_count", "Jumlah Berkas", 3.0, 16.0, 1.0)
-
-	# The Lobby's WorldEnvironment glow. The resource is the cached instance the
-	# Lobby's WorldEnvironment wears, so a change shows on the next frame.
-	var lbl_glow = Label.new()
-	lbl_glow.text = "Bloom WorldEnvironment (khusus Lobby):"
-	lbl_glow.add_theme_font_size_override("font_size", 26)
-	vbox.add_child(lbl_glow)
-
-	var env: Environment = load("res://Scenes/Lobby/lobby_environment.tres")
-	if env != null:
-		var glow_on = CheckButton.new()
-		glow_on.text = " Bloom Aktif "
-		glow_on.button_pressed = env.glow_enabled
-		glow_on.add_theme_font_size_override("font_size", 22)
-		glow_on.toggled.connect(func(on: bool): env.glow_enabled = on)
-		vbox.add_child(glow_on)
-
-		var blend = OptionButton.new()
-		for mode_name in ["Additive", "Screen", "Softlight", "Replace", "Mix"]:
-			blend.add_item(mode_name)
-		blend.selected = env.glow_blend_mode
-		blend.custom_minimum_size = Vector2(0, 60)
-		blend.add_theme_font_size_override("font_size", 22)
-		blend.item_selected.connect(func(i: int): env.glow_blend_mode = i)
-		vbox.add_child(blend)
-
-		_add_env_slider(vbox, env, "glow_intensity", "Intensitas", 0.0, 4.0, 0.05)
-		_add_env_slider(vbox, env, "glow_strength", "Kekuatan", 0.0, 2.0, 0.05)
-		_add_env_slider(vbox, env, "glow_bloom", "Bloom Menyeluruh", 0.0, 1.0, 0.01)
-		_add_env_slider(vbox, env, "glow_hdr_threshold", "Ambang Terang", 0.0, 1.0, 0.01)
-
-	var lbl_note = Label.new()
-	lbl_note.text = "Catatan: nilai di sini hilang saat keluar. Salin ke .tres kalau sudah pas."
-	lbl_note.add_theme_font_size_override("font_size", 20)
-	lbl_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(lbl_note)
-
-
-## One labelled slider bound to one shader uniform, written to every material
-## in `mats` at once. The label reads the first.
-func _add_look_slider(parent: Control, mats: Array, uniform: String,
-		caption: String, min_value: float, max_value: float, step: float) -> void:
-	var live: Array = mats.filter(func(m): return m is ShaderMaterial)
-	if live.is_empty():
-		return
-	var row = VBoxContainer.new()
-	row.add_theme_constant_override("separation", 6)
-	parent.add_child(row)
-
-	var lbl = Label.new()
-	var current: float = float(live[0].get_shader_parameter(uniform))
-	lbl.text = "%s: %.3f" % [caption, current]
-	lbl.add_theme_font_size_override("font_size", 22)
-	row.add_child(lbl)
-
-	var slider = HSlider.new()
-	slider.min_value = min_value
-	slider.max_value = max_value
-	slider.step = step
-	slider.value = current
-	slider.custom_minimum_size = Vector2(0, 60)
-	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.value_changed.connect(func(v: float):
-		for mat in live:
-			mat.set_shader_parameter(uniform, v)
-		lbl.text = "%s: %.3f" % [caption, v])
-	row.add_child(slider)
-
-
-## One labelled slider bound to one float property of an Environment.
-func _add_env_slider(parent: Control, env: Environment, property: String,
-		caption: String, min_value: float, max_value: float, step: float) -> void:
-	var row = VBoxContainer.new()
-	row.add_theme_constant_override("separation", 6)
-	parent.add_child(row)
-
-	var lbl = Label.new()
-	var current: float = float(env.get(property))
-	lbl.text = "%s: %.3f" % [caption, current]
-	lbl.add_theme_font_size_override("font_size", 22)
-	row.add_child(lbl)
-
-	var slider = HSlider.new()
-	slider.min_value = min_value
-	slider.max_value = max_value
-	slider.step = step
-	slider.value = current
-	slider.custom_minimum_size = Vector2(0, 60)
-	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	slider.value_changed.connect(func(v: float):
-		env.set(property, v)
-		lbl.text = "%s: %.3f" % [caption, v])
-	row.add_child(slider)

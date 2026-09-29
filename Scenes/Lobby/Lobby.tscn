@@ -11,14 +11,9 @@
 [ext_resource type="Texture2D" uid="uid://w2eebv4y4ue0" path="res://Assets/Images/MuridPortrait/TanganItems/Citra_Table.png" id="7_ek62u"]
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/TheaFace.tscn" id="8_gbno3"]
 [ext_resource type="Texture2D" uid="uid://ckls11l3yiniv" path="res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png" id="9_bfy74"]
-[ext_resource type="Texture2D" uid="uid://c5uf1bkw1f3ui" path="res://Assets/Images/UI/Nav/icon_cta_student.png" id="9_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://vwe02tlwbjjg" path="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Table.png" id="9_q4xuc"]
 [ext_resource type="Texture2D" uid="uid://cowgvm1mr8ibi" path="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Table.png" id="10_3lohg"]
-[ext_resource type="Texture2D" uid="uid://b0caiiviquf" path="res://Assets/Images/UI/Nav/icon_nav_koperasi.png" id="10_bfy74"]
 [ext_resource type="Texture2D" uid="uid://ce1kfh8jybbhh" path="res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png" id="11_4d6wl"]
-[ext_resource type="Texture2D" uid="uid://ddjx1gmpupjvv" path="res://Assets/Images/UI/Nav/icon_nav_rapor.png" id="11_4w5lf"]
-[ext_resource type="Texture2D" uid="uid://b83solgop708f" path="res://Assets/Images/UI/Nav/icon_nav_inventory.png" id="12_fb4vu"]
-[ext_resource type="Texture2D" uid="uid://ccu4bm5rdto8r" path="res://Assets/Images/UI/Nav/icon_cta_jadwal.png" id="13_85cl3"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
@@ -30,13 +25,15 @@
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://p40qndw5jabq" path="res://Scripts/Lobby/LobbyHud.gd" id="32_nese6"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Texture2D" uid="uid://bwl14abulhve8" path="res://Assets/Images/UI/Icons/nav_koperasi.png" id="35_p3ppw"]
+[ext_resource type="Texture2D" uid="uid://bgg56erre5vo8" path="res://Assets/Images/UI/Icons/nav_inventory.png" id="36_kens3"]
 [ext_resource type="PackedScene" uid="uid://jdjll060xj8e" path="res://Scenes/Lobby/NotifBadge.tscn" id="37_2xndu"]
-[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="37_ayldy"]
 [ext_resource type="Texture2D" uid="uid://4t4pb40qap88" path="res://Assets/Images/UI/LobbyHud/icon_plus.svg" id="37_ty8k5"]
+[ext_resource type="Texture2D" uid="uid://ddragqf6lf0ns" path="res://Assets/Images/UI/Icons/nav_rapor.png" id="38_5imbd"]
 [ext_resource type="Script" uid="uid://c7na1rk10q6kb" path="res://Scripts/Lobby/LobbyProgressHeader.gd" id="38_ayldy"]
 [ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
 [ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="39_nese6"]
-[ext_resource type="Texture2D" uid="uid://cv0nm0atmx7dv" path="res://Assets/Images/DaySummary/Verdict/star_on.svg" id="40_2xndu"]
+[ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="40_2xndu"]
 [ext_resource type="Texture2D" uid="uid://bedjpscelrj33" path="res://Assets/Images/UI/DailyLogin/streak_flame.svg" id="40_hp3mh"]
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
@@ -44,15 +41,19 @@
 [ext_resource type="Script" uid="uid://b7vwvw12t4yux" path="res://Scripts/UI/IdleFade.gd" id="52_rsfel"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
+[ext_resource type="Texture2D" uid="uid://cvwlo21egl6k" path="res://Assets/Images/UI/Icons/nav_jadwal.png" id="ic_nav_jadwal"]
+[ext_resource type="Texture2D" uid="uid://bjccxqjbt3wyo" path="res://Assets/Images/UI/Icons/nav_students.svg" id="ic_nav_students"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout_lobby.tres" id="illus_grade_cut"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPortrait/Meja/kiri_atas.png" id="meja_ka_tex"]
 [ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPortrait/Meja/kiri_bawah.png" id="meja_kb_tex"]
 [ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPortrait/Meja/kanan_atas.png" id="meja_kna_tex"]
 [ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPortrait/Meja/kanan_bawah.png" id="meja_knb_tex"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
+[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="37_ayldy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -181,9 +182,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 57.0
+offset_left = 39.0
 offset_top = 26.0
-offset_right = 22.0
+offset_right = 4.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -211,9 +212,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 14.0
+offset_left = 1.0
 offset_top = 22.0
-offset_right = -20.0
+offset_right = -33.0
 offset_bottom = -13.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -273,13 +274,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -127.0
-offset_top = -27.00003
-offset_right = 153.0
-offset_bottom = 173.0
+offset_left = -114.03
+offset_top = -3.86
+offset_right = 165.97
+offset_bottom = 196.14
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(0.795, 0.905)
+scale = Vector2(1.1007, 1.1007)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
@@ -329,13 +330,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -141.0
-offset_top = -25.0
-offset_right = 139.0
-offset_bottom = 175.0
+offset_left = -126.92
+offset_top = -25.5
+offset_right = 153.08
+offset_bottom = 174.5
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(0.81, 1)
+scale = Vector2(1.1498, 1.1498)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
@@ -348,13 +349,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -178.0
-offset_top = -23.00003
-offset_right = 102.0
-offset_bottom = 177.0
+offset_left = -177.27
+offset_top = 1.4
+offset_right = 102.73
+offset_bottom = 201.4
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(0.815, 0.87)
+scale = Vector2(1.0494, 1.0494)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
@@ -393,13 +394,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -139.0
-offset_top = -24.0
-offset_right = 141.0
-offset_bottom = 176.0
+offset_left = -127.47
+offset_top = -4.73
+offset_right = 152.53
+offset_bottom = 195.27
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(0.86, 1)
+scale = Vector2(1.1037, 1.1037)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
@@ -450,13 +451,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -162.0
-offset_top = -24.0
-offset_right = 118.0
-offset_bottom = 176.0
+offset_left = -140.4
+offset_top = -26.43
+offset_right = 139.6
+offset_bottom = 173.57
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(-0.76, 1)
+scale = Vector2(1.1529, 1.1529)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
@@ -469,13 +470,13 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -119.0
-offset_top = -9.0
-offset_right = 161.0
-offset_bottom = 191.0
+offset_left = -190.89
+offset_top = 0.55
+offset_right = 89.11
+offset_bottom = 200.55
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(-0.96, 0.96)
+scale = Vector2(1.0523, 1.0523)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
@@ -489,6 +490,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.06508, 1)
+pivot_offset = Vector2(461, 0)
 mouse_filter = 2
 texture = ExtResource("meja_kb_tex")
 expand_mode = 1
@@ -510,6 +513,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(1.06565, 1)
+pivot_offset = Vector2(622, 0)
 mouse_filter = 2
 texture = ExtResource("meja_knb_tex")
 expand_mode = 1
@@ -636,13 +641,13 @@ anchor_left = 0.43
 anchor_top = 0.89000005
 anchor_right = 0.43
 anchor_bottom = 0.89000005
-offset_left = -117.0
-offset_top = -100.50003
-offset_right = 137.0
-offset_bottom = 145.49997
+offset_left = -93.68
+offset_top = -80.52
+offset_right = 160.32
+offset_bottom = 165.48
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(0.92, 1)
+scale = Vector2(1.2062, 1.2062)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
@@ -693,13 +698,13 @@ anchor_left = 0.43
 anchor_top = 0.89000005
 anchor_right = 0.43
 anchor_bottom = 0.89000005
-offset_left = -129.0
-offset_top = -100.50003
-offset_right = 125.0
-offset_bottom = 145.49997
+offset_left = -107.11
+offset_top = -105.47
+offset_right = 146.89
+offset_bottom = 140.53
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(1, 1.345)
+scale = Vector2(1.26, 1.26)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
@@ -712,13 +717,13 @@ anchor_left = 0.43
 anchor_top = 0.89000005
 anchor_right = 0.43
 anchor_bottom = 0.89000005
-offset_left = -168.0
-offset_top = -82.50003
-offset_right = 86.0
-offset_bottom = 163.49997
+offset_left = -163.72
+offset_top = -73.46
+offset_right = 90.28
+offset_bottom = 172.54
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(1.26, 1.12)
+scale = Vector2(1.15, 1.15)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
@@ -757,13 +762,13 @@ anchor_left = 0.56200004
 anchor_top = 0.89000005
 anchor_right = 0.56200004
 anchor_bottom = 0.89000005
-offset_left = -157.80002
-offset_top = -67.50003
-offset_right = 122.19998
-offset_bottom = 132.49997
+offset_left = -117.57
+offset_top = -52.77
+offset_right = 162.43
+offset_bottom = 147.23
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(-0.81, 1.105)
+scale = Vector2(1.2063, 1.2063)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
@@ -814,13 +819,13 @@ anchor_left = 0.56200004
 anchor_top = 0.89000005
 anchor_right = 0.56200004
 anchor_bottom = 0.89000005
-offset_left = -146.80002
-offset_top = -67.50003
-offset_right = 133.19998
-offset_bottom = 132.49997
+offset_left = -131.7
+offset_top = -76.49
+offset_right = 148.3
+offset_bottom = 123.51
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(-0.88, 1.34)
+scale = Vector2(1.26, 1.26)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
@@ -833,13 +838,13 @@ anchor_left = 0.56200004
 anchor_top = 0.89000005
 anchor_right = 0.56200004
 anchor_bottom = 0.89000005
-offset_left = -80.80002
-offset_top = -52.50003
-offset_right = 199.19998
-offset_bottom = 147.49997
+offset_left = -186.88
+offset_top = -47.01
+offset_right = 93.12
+offset_bottom = 152.99
 grow_horizontal = 2
 grow_vertical = 0
-scale = Vector2(-1.26, 1.055)
+scale = Vector2(1.15, 1.15)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
@@ -904,78 +909,26 @@ script = ExtResource("20_yhuud")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="DisplayUang" type="Panel" parent="Safe/UI" unique_id=259983175]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -360.0
-offset_bottom = 112.0
-grow_horizontal = 0
-mouse_filter = 2
-theme_type_variation = &"CoinPlate"
-
-[node name="CoinIcon" type="TextureRect" parent="Safe/UI/DisplayUang" unique_id=1731951124]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 24.0
-offset_right = 76.0
-offset_bottom = 84.0
-mouse_filter = 2
-texture = ExtResource("14_dyk4g")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Label" type="Label" parent="Safe/UI/DisplayUang" unique_id=664496077]
-layout_mode = 0
-offset_left = 80.0
-offset_top = 24.0
-offset_right = 248.0
-offset_bottom = 84.0
-theme_type_variation = &"CoinLabel"
-text = "50"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="PlusUang" type="Button" parent="Safe/UI/DisplayUang" unique_id=1462804132]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 0
-offset_left = 252.0
-offset_top = 8.0
-offset_right = 348.0
-offset_bottom = 104.0
-theme_type_variation = &"PlusButton"
-icon_alignment = 1
-expand_icon = true
-
-[node name="PlusIcon" type="TextureRect" parent="Safe/UI/DisplayUang/PlusUang" unique_id=2008619712]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = 72.0
-offset_bottom = 68.0
-mouse_filter = 2
-texture = ExtResource("37_ty8k5")
-expand_mode = 1
-stretch_mode = 5
-
 [node name="ProgressHeader" type="Panel" parent="Safe/UI" unique_id=923979542]
 unique_name_in_owner = true
 layout_mode = 1
-offset_right = 516.0
-offset_bottom = 168.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_right = 112.0
+offset_bottom = 192.0
+grow_horizontal = 2
 mouse_filter = 2
 theme_type_variation = &"ProgressPlate"
 script = ExtResource("38_ayldy")
 
 [node name="GradeBadge" type="PanelContainer" parent="Safe/UI/ProgressHeader" unique_id=1892516588]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = 112.0
-offset_bottom = 104.0
+offset_left = 6.0
+offset_top = 8.0
+offset_right = 111.0
+offset_bottom = 127.0
 mouse_filter = 2
 theme_type_variation = &"GradeBadge"
 
@@ -998,24 +951,37 @@ theme_type_variation = &"GradeBadgeNumber"
 text = "7"
 horizontal_alignment = 1
 
+[node name="WeekCaption" type="Label" parent="Safe/UI/ProgressHeader" unique_id=1447350126]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 118.0
+offset_top = 24.0
+offset_right = 226.0
+offset_bottom = 63.0
+theme_type_variation = &"CaptionLabel"
+text = "Minggu"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="WeekLabel" type="Label" parent="Safe/UI/ProgressHeader" unique_id=1839783328]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 128.0
-offset_top = 24.0
-offset_right = 496.0
-offset_bottom = 100.0
+offset_left = 118.0
+offset_top = 67.0
+offset_right = 226.0
+offset_bottom = 111.0
 theme_type_variation = &"WeekLabel"
-text = "Minggu 1 / 6"
+text = "1 / 6"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="StarBar" type="ProgressBar" parent="Safe/UI/ProgressHeader" unique_id=555781510]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 140.0
-offset_top = 118.0
-offset_right = 330.0
-offset_bottom = 142.0
+offset_left = 6.0
+offset_top = 139.0
+offset_right = 71.0
+offset_bottom = 163.0
 mouse_filter = 2
 theme_type_variation = &"StarProgressBar"
 max_value = 3.0
@@ -1039,10 +1005,10 @@ scale_amount_max = 0.6
 
 [node name="StarIcon" type="TextureRect" parent="Safe/UI/ProgressHeader" unique_id=1236434420]
 layout_mode = 0
-offset_left = 334.0
-offset_top = 110.0
-offset_right = 374.0
-offset_bottom = 150.0
+offset_left = 77.0
+offset_top = 136.0
+offset_right = 107.0
+offset_bottom = 166.0
 mouse_filter = 2
 texture = ExtResource("40_2xndu")
 expand_mode = 1
@@ -1051,10 +1017,10 @@ stretch_mode = 5
 [node name="StarNum" type="Label" parent="Safe/UI/ProgressHeader" unique_id=865703870]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 380.0
-offset_top = 106.0
-offset_right = 500.0
-offset_bottom = 154.0
+offset_left = 113.0
+offset_top = 135.0
+offset_right = 226.0
+offset_bottom = 166.0
 theme_type_variation = &"StarNumLabel"
 text = "0.0 / 3.0"
 vertical_alignment = 1
@@ -1110,7 +1076,7 @@ offset_right = 548.0
 offset_bottom = 156.0
 theme_type_variation = &"BookHeroButton"
 text = "STUDENT"
-icon = ExtResource("9_dyk4g")
+icon = ExtResource("ic_nav_students")
 expand_icon = true
 
 [node name="Jadwal" type="Button" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage" unique_id=2126015085]
@@ -1122,7 +1088,7 @@ offset_right = 548.0
 offset_bottom = 156.0
 theme_type_variation = &"BookHeroButton"
 text = "JADWAL!"
-icon = ExtResource("13_85cl3")
+icon = ExtResource("ic_nav_jadwal")
 expand_icon = true
 
 [node name="Subtitle" type="Label" parent="Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Jadwal" unique_id=2064006818]
@@ -1180,7 +1146,7 @@ rotation = -0.02618
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileKoperasi"
 text = "Koperasi"
-icon = ExtResource("10_bfy74")
+icon = ExtResource("35_p3ppw")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1196,7 +1162,7 @@ rotation = 0.017453
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileInventory"
 text = "INVENTORY"
-icon = ExtResource("12_fb4vu")
+icon = ExtResource("36_kens3")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1217,7 +1183,7 @@ rotation = -0.017453
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileRapor"
 text = "RAPOR"
-icon = ExtResource("11_4w5lf")
+icon = ExtResource("38_5imbd")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1245,6 +1211,61 @@ texture = ExtResource("37_ayldy")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="DisplayUang" type="Panel" parent="Safe/UI/Hud/BookHud" unique_id=259983175]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 636.0
+offset_top = 52.0
+offset_right = 984.0
+offset_bottom = 164.0
+mouse_filter = 1
+theme_type_variation = &"CoinPlate"
+
+[node name="CoinIcon" type="TextureRect" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=1731951124]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 24.0
+offset_right = 64.0
+offset_bottom = 84.0
+mouse_filter = 2
+texture = ExtResource("14_dyk4g")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=664496077]
+layout_mode = 0
+offset_left = 68.0
+offset_top = 24.0
+offset_right = 236.0
+offset_bottom = 84.0
+theme_type_variation = &"CoinLabel"
+text = "50"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlusUang" type="Button" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=1462804132]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 240.0
+offset_top = 8.0
+offset_right = 336.0
+offset_bottom = 104.0
+theme_type_variation = &"PlusButton"
+icon_alignment = 1
+expand_icon = true
+
+[node name="PlusIcon" type="TextureRect" parent="Safe/UI/Hud/BookHud/DisplayUang/PlusUang" unique_id=2008619712]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 72.0
+offset_bottom = 68.0
+mouse_filter = 2
+texture = ExtResource("37_ty8k5")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="IconRail" type="VBoxContainer" parent="Safe/UI/Hud" unique_id=1064107887]
 unique_name_in_owner = true
 layout_mode = 1
@@ -1254,8 +1275,8 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -96.0
-offset_top = -832.0
-offset_bottom = -376.0
+offset_top = -908.0
+offset_bottom = -452.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
@@ -1339,17 +1360,24 @@ grow_vertical = 0
 texture = ExtResource("16_dyk4g")
 expand_mode = 1
 script = ExtResource("39_2isbc")
-wallet_anchor = NodePath("../Safe/UI/DisplayUang")
+wallet_anchor = NodePath("../Safe/UI/Hud/BookHud/DisplayUang")
 
-[node name="Label" type="Label" parent="DailyReward" unique_id=1823371215]
-layout_mode = 0
-offset_left = 300.0
-offset_top = 10.0
-offset_right = 700.0
-offset_bottom = 78.0
-theme_type_variation = &"H1Label"
-text = "Daily Login"
-horizontal_alignment = 1
+[node name="DailyLoginFrame" parent="DailyReward" unique_id=1525468241 instance=ExtResource("nb_frame")]
+unique_name_in_owner = true
+show_behind_parent = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -40.0
+offset_top = -290.0
+offset_right = 0.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+title_text = "DAILY LOGIN"
+ring_count = 0
+show_well = false
 
 [node name="ButtonClaim" type="Button" parent="DailyReward" unique_id=1114280413]
 unique_name_in_owner = true
@@ -1483,7 +1511,7 @@ environment = ExtResource("41_7qlaa")
 
 [node name="IdleFade" type="Node" parent="." unique_id=880756292 node_paths=PackedStringArray("targets")]
 script = ExtResource("52_rsfel")
-targets = [NodePath("../Safe/UI/ProgressHeader"), NodePath("../Safe/UI/DisplayUang")]
+targets = [NodePath("../Safe/UI/ProgressHeader")]
 
 [node name="IdleTimer" type="Timer" parent="IdleFade" unique_id=664759917]
 one_shot = true

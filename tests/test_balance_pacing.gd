@@ -3,9 +3,12 @@ extends McpTestSuite
 
 ## Headless greedy simulation: run each grade week-by-week against the REAL
 ## sim functions under two scripted player policies, assert the clear-week
-## lands in the intended window. This is the tuning loop for Balance.gd's
-## grade 8/9 targets and the weekly minigame cap -- if an assertion fails,
-## retune Balance and re-run (~2s), then update the spec's Status block.
+## lands in the intended window. This is the tuning loop for the grade weeks
+## and targets (GameState.WEEKS_BY_GRADE / TARGET_UPLIFT_BY_GRADE) and the
+## weekly minigame cap -- if an assertion fails, retune and re-run (~2s), then
+## update the spec's Status block. _weeks_to_clear returns weeks + 1 for a
+## roster that never clears, so every bound below sits INSIDE the grade's own
+## length: a bound at or past it would let "never cleared" pass.
 ##
 ## No coroutines. Deterministic: every scenario seeds the global RNG stream
 ## first (via the global seed()/randi_range/randf_range calls, not a local
@@ -56,10 +59,7 @@ const SUBJECTS := ["Akademis", "SeniBudaya", "Olahraga"]
 const DAY_NAMES := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 
 func _grade_uplift(grade: int) -> float:
-	match grade:
-		8: return Balance.TARGET_KENAIKAN_KELAS_8
-		9: return Balance.TARGET_KENAIKAN_KELAS_9
-		_: return Balance.TARGET_KENAIKAN_KELAS_7
+	return GameState.target_uplift_for_grade(grade)
 
 # Build a fresh approved_students with roster_base_* and per-grade targets.
 func _seed_gamestate(grade: int) -> void:
@@ -141,22 +141,30 @@ func _weeks_to_clear(grade: int, policy: Callable, seed_val: int) -> int:
 			return w
 	return weeks + 1
 
-func test_grade7_well_played_clears_by_week_4_not_before_2() -> void:
+func test_grade7_well_played_clears_by_week_3_not_before_2() -> void:
 	var w := _weeks_to_clear(7, Callable(self, "_policy_well_played"), 12345)
 	assert_true(w >= 2, "grade 7 must not be clearable in week 1, cleared week %d" % w)
-	assert_true(w <= 4, "grade 7 (well played) should clear by week 4, took %d" % w)
+	assert_true(w <= 3, "grade 7 (well played) should clear by week 3 of 4, took %d" % w)
 
-func test_grade7_careless_still_clears_within_six_weeks() -> void:
+func test_grade7_careless_still_clears_within_four_weeks() -> void:
 	var w := _weeks_to_clear(7, Callable(self, "_policy_careless"), 777)
-	assert_true(w <= 6, "grade 7 must never be unwinnable; careless took %d" % w)
+	assert_true(w <= 4, "grade 7 must never be unwinnable; careless took %d" % w)
 
-func test_grade8_well_played_clears_by_week_9() -> void:
+func test_grade8_well_played_clears_by_week_5() -> void:
 	var w := _weeks_to_clear(8, Callable(self, "_policy_well_played"), 22)
-	assert_true(w <= 9, "grade 8 (well played) should clear by week 9, took %d" % w)
+	assert_true(w <= 5, "grade 8 (well played) should clear by week 5 of 6, took %d" % w)
 
-func test_grade9_well_played_clears_by_week_14() -> void:
+func test_grade9_well_played_clears_by_week_7() -> void:
 	var w := _weeks_to_clear(9, Callable(self, "_policy_well_played"), 99)
-	assert_true(w <= 14, "grade 9 (well played) should clear by week 14, took %d" % w)
+	assert_true(w <= 7, "grade 9 (well played) should clear by week 7 of 8, took %d" % w)
+
+## Even a careless roster can win the two long grades: the targets were
+## halved-and-then-some for 6 and 8 weeks because 34 / 40 could not be cleared.
+func test_grade8_and_9_careless_still_clear_within_the_grade() -> void:
+	var w8 := _weeks_to_clear(8, Callable(self, "_policy_careless"), 22)
+	assert_true(w8 <= 6, "grade 8 must never be unwinnable; careless took %d" % w8)
+	var w9 := _weeks_to_clear(9, Callable(self, "_policy_careless"), 99)
+	assert_true(w9 <= 8, "grade 9 must never be unwinnable; careless took %d" % w9)
 
 func test_well_played_is_not_seed_luck() -> void:
 	var total := 0
@@ -167,9 +175,9 @@ func test_well_played_is_not_seed_luck() -> void:
 		total += w
 		worst = maxi(worst, w)
 	var mean := float(total) / float(seeds.size())
-	assert_true(mean >= 2.0 and mean <= 4.5,
-		"grade 7 well-played mean clear-week should sit in [2, 4.5], got %.2f" % mean)
-	assert_true(worst <= 5, "no seed should push grade 7 well-played past week 5, worst %d" % worst)
+	assert_true(mean >= 2.0 and mean <= 3.5,
+		"grade 7 well-played mean clear-week should sit in [2, 3.5], got %.2f" % mean)
+	assert_true(worst <= 3, "no seed should push grade 7 well-played past week 3, worst %d" % worst)
 
 func test_stack_exploit_edge_is_bounded() -> void:
 	var seeds := [3, 14, 15, 92, 65]

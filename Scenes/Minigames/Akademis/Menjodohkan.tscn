@@ -4,6 +4,9 @@
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="5_a28ad"]
 [ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="6_i1och"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nav_btn"]
 bg_color = Color(0.12, 0.15, 0.22, 0.9)
@@ -33,6 +36,18 @@ grow_vertical = 2
 texture = ExtResource("5_a28ad")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Light" parent="." instance=ExtResource("look_pool")]
+center = Vector2(0.15, 0.1)
+pool_size = Vector2(1400, 1400)
+intensity = 0.1
+
+[node name="Shafts" parent="." instance=ExtResource("look_shafts")]
+intensity = 0.12
+
+[node name="Bloom" parent="." instance=ExtResource("look_bloom")]
+threshold = 0.8
+intensity = 0.8
 
 [node name="HeaderVBox" type="VBoxContainer" parent="." unique_id=1252094437]
 layout_mode = 1

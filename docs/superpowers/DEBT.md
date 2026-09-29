@@ -24,23 +24,29 @@ the day.
 **Generated placeholder art.** Produced with PowerShell + `System.Drawing`, not
 hand-authored. All are transparent PNG/SVG, drop-replaceable at the same path
 with no code change: the five generated `Assets/Images/UI/Nav/` icons
-(**not** `UI/Nav/return_button.png`, which is authored art delivered
+(now unreferenced -- see the UI depth pass entry below; **not**
+`UI/Nav/return_button.png`, which is authored art delivered
 2026-09-22 — do not regenerate that one over the top of it),
 three `Particles/particle_*.png`, the minigame
 result + report icons and `icon_benefit`/`icon_cost`/`icon_tired`/`icon_check`
 (`UI/Placeholders/`), `icon_shop_items`/`icon_shop_cosmetics` (`Shop/UI/`), the
 event-popup set (`icon_event.svg`, `bg_event_dialog.png`),
-`shadow_ellipse.png`, `bg_inventory_blur.png`, four `icon_filter_*.svg`
+`shadow_ellipse.png`, `bg_inventory_blur.png`,
+`Minigames/SeniBudaya/note_arrow.png` (Lomba Menari's note, recoloured white
+and turned to point right from `UI/Placeholders/arrow.png` with Pillow; a
+replacement must point **right**, keep a white fill for the lane tint and a
+dark outline, and `tests/test_lomba_menari_arrow.gd` checks all three),
+four `icon_filter_*.svg`
 (white on purpose: `FilterChipButton` inks its icons `brand_primary`, so a
 replacement must stay a white glyph, or that tint comes out of `ThemeFactory`
 with it; `test_light_ground_text.gd` holds them at 3:1 on both chip states),
 `EndCutscene`'s two badges, the
 eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
-(`penjadwalan_card_bg.png`,
-`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`),
+(`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`;
+`penjadwalan_card_bg.png` was part of this pass too, but Phase 2 left it
+unreferenced -- see the UI depth pass entry below),
 the 2026-09-24 SchoolDay liveliness set (the daily verdict's four teacher
-faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`,
-`star_on.svg`, `star_off.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
+faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
 sun, moon, three clouds, star field and rain streak; the avatar rings in
 `SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
 band's `caution_tape.svg`; and `night_windows.png`, generated from
@@ -56,23 +62,19 @@ stay 26x26 -- it is a tiling texture and `tests/test_koperasi_tray.gd` asserts
 those exact dimensions; in Godot 4 the repeat comes from the node's
 `texture_repeat`, not a texture import flag), and the 2026-09-10 StudentList
 Part 3 set: `UI/Placeholders/icon_wirausaha.svg`
-(completed the six-category placeholder set; now UNREFERENCED -- StudentList's
-category and specialty glyphs use the team's authored `StudentCard/stat_*`
-art instead, so this is kept only as the one wirausaha glyph in the
-placeholder family), `UI/Placeholders/stamp_sudah.svg` /
+(completed the six-category placeholder set; now UNREFERENCED -- its last
+caller, Dapatkan Uang's tip, moved onto `UI/Icons/cat_wirausaha.svg` in UI
+depth pass Phase 3), `UI/Placeholders/stamp_sudah.svg` /
 `stamp_belum.svg` (status-badge rubber-stamp rings), and
 `UI/StudentList/photo_corner.png` / `roster_avatar_frame.png` / `catatan_rule.png`
 (portrait tape, the avatar state ring, the teacher's-note rule — the last two
 drawn white so `self_modulate` tints them from tokens), and
 `UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
 it reads as invisible on a phone), and the 2026-09-14 EventDialogue set in
-`Assets/Images/EventDialogue/`: `splash_gurusenibudaya.png` (a flat
-silhouette for the Seni Budaya teacher, on the same 1080x1920 frame as every
-splash), `hujan_background.png` (the school tinted dusk-blue with seeded rain
-streaks) and `calendar_badge.png`, and the 2026-09-14 Weekly Results ribbon,
-`Assets/Images/DaySummary/title_weekly_results.png` (cut out of the mockup
-and given `title_daily_results.png`'s alpha -- drop-replaceable at the same
-path), and the 2026-09-18 Koperasi stock-pip set:
+`Assets/Images/EventDialogue/`: `hujan_background.png` (the school tinted
+dusk-blue with seeded rain streaks) and `calendar_badge.png`, and the weekly
+report's title, now a themed brown plate reading HASIL MINGGUAN (`ResultCheckup.tscn` `TitlePlate`, 2026-09-29); an artist's brown
+ribbon with those words can replace the plate node, and the 2026-09-18 Koperasi stock-pip set:
 `Assets/Images/Shop/UI/pip_filled.svg` / `pip_hollow.svg` (a plain filled
 dot and a matching ring, coloured from `koperasi_tag_fill`/`koperasi_tray_rule`
 to stay warm and shop-consistent -- drop-replaceable at the same path), and the
@@ -95,19 +97,33 @@ Drawing them means setting the three exports on the reveal's root in
 (`book_cover.png`, `book_page.png`, `coin_plate.png`, `progress_plate.png`,
 `chevron_grip.png`, `icon_plus.svg`) standing in for the book/page/plate/grip
 art in `docs/superpowers/specs/2026-09-27-lobby-scrapbook-hud-design.md` § 6,
-drop-replaceable at the same paths with no code change. Every PNG's 9-slice
+drop-replaceable at the same paths, within the plate insets below. Every PNG's 9-slice
 margins are whole pixels: `book_cover.png` 96x96, margins L24 R24 T24 B40
 (the bottom margin carries its lip band); `book_page.png` 96x96, margins L18
 R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
 `progress_plate.png` 160x64, margins L20 R20 T18 B26; `chevron_grip.png`
 96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
-a small buffer, not the cap radius). Still pending, waiting on real art: the
+a small buffer, not the cap radius). Since the 2026-09-29 layout grid pass
+the progress tag's contents sit 6 px from `progress_plate`'s left and right
+edges and 8 px from its top, and the coin box's icon and `+` sit 12 px from
+`coin_plate`'s sides, so a replacement plate's visible rim must stay inside
+those insets, or the tag and coin box need re-laying out. Still pending, waiting on real art: the
 dashed washi rim and tape, and JADWAL!'s washi flutter (deferred by the plan's
-Q4 -- `StyleBoxFlat` cannot draw dashes).
+Q4 -- `StyleBoxFlat` cannot draw dashes), the 16 UI icons in
+`Assets/Images/UI/Icons/` (placeholders for the owner's chunky set; rules in
+that folder's README, pinned by `test_ui_icons`), and the notebook frame's
+`spiral_ring.png`, `paper_rule.png` and `sticker_stitch.png`
+(`Assets/Images/UI/Notebook/README.md`).
 (Checked 2026-09-14: `Particles/` also holds four more placeholder
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
 `bg_event_dialog.png` by `EventStudentSelectDialog`.)
+
+**Lobby book drag (2026-09-29).** A vertical drag that starts on the coin plate
+(now in the book's step) does not drag the book: `DisplayUang` ignores the
+mouse and `LobbyHud` only listens on the `raised_block` and `shelf`
+`gui_input`. The `+` still taps. Fix by letting the plate pass its drag to the
+HUD, if the owner notices.
 
 **Achievements polish (2026-09-18).** `AchievementTile`'s lock overlay is a
 placeholder `Assets/Images/UI/Placeholders/icon_lock.svg` (plain padlock
@@ -118,11 +134,6 @@ the existing `icon_check.svg` from the same folder, no new asset needed.
 Kelas 7-8 title) was keyed out of a black-background JPG -- brightness to
 alpha, colour un-premultiplied, cropped -- not exported transparent; swap in a
 real transparent export at the same path when one exists.
-`DayStickyNote`'s holiday padlock (`Paper/Lock`) is still the emoji glyph
-"🔒" in a `Label`, against the no-emoji-iconography rule; swap it for a
-`TextureRect` wearing the existing `UI/Placeholders/icon_lock.svg` (a type
-change, so delete and recreate, and move `test_day_sticky_note`'s `Lock`
-assertions off `Label`).
 `EndCutscene`'s lose backdrop is `cg_lose.jpg` standing in for final art
 (`WinStage`'s `lose_backdrop` `@export`, so an Inspector swap). `InventorySlot`'s high-count
 `Shine` overlay is a plain white `ColorRect` with no texture.
@@ -134,9 +145,8 @@ back are painted in by that script, and the seal is lifted off with a 2 px
 paint-out. Separate layers from the artist would replace all four at the same
 paths (and the script's traced polygons would retire). Still placeholder: the
 white `pupil_head.svg`, `week_cell.svg` and `gauge_pill.svg` in
-`Assets/Images/LevelSelect/`, tinted from tokens, and the fan's arrows reuse
-`UI/Placeholders/arrow.png`. The envelopes wear no illustration grade; adding
-one means the census in `tests/test_illustration_ao.gd` and a rim along the
+`Assets/Images/LevelSelect/`, tinted from tokens. The envelopes wear no
+illustration grade; adding one means the census in `tests/test_illustration_ao.gd` and a rim along the
 flap's crease to judge.
 
 **Ambient kit art (2026-09-26).** `AmbientParticles`' `DAUN` preset and
@@ -154,6 +164,27 @@ for it to move.
 `timer_icon` stay unassigned until transparent SVGs exist (spec §6) — see
 "Deferred and pending"'s Minigame Polish Part 1 entry.
 
+**MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Four
+hand-written SVGs in `Assets/Images/UI/StudentList/`, drop-replaceable at the
+same paths, wired into `RosterCard.tscn` as of Task 3 (`Paper/WeekHeader/Band`,
+`Paper/WeekHeader/Icon`, `Paper/PortraitFrame/Clip`, `Paper/CatatanGuru/Pencil`; the band is
+squashed to 900x64 there, so a replacement should keep its torn edges
+legible at about half height): `torn_band.svg` (900x120, the WeekHeader band, drawn
+white for `self_modulate` `surface_sunken` tinting, same recipe as
+`washi_tape.svg`), `paperclip.svg` and `pencil.svg` (decorative props at the
+photo and catatan gutter, light-fill/dark-outline like the `UI/Icons/` set
+but not scanned by `tests/test_ui_icons.gd`, whose `NAMES` list is fixed to
+that folder), and `icon_calendar.svg` (256x256, the week header's calendar
+glyph, drawn to `UI/Icons/README.md`'s rules). All four are still pinned by
+`tests/test_student_list.gd::test_part_three_art_exists_and_loads`.
+`icon_add.svg` and `sticky_empty_frame.svg` (from the same groundwork) are
+wired as of Task 2: `StickyNote.gd`'s `scheduled` export shows them on
+`Icon`/`EmptyFrame` for an unplanned day. `sticky_empty_frame.svg` is
+**not** 9-sliced -- its dashed border is fixed path geometry sized to
+StickyNote's actual 172x200 instance rect (`RosterCard.tscn`'s offsets), so
+`EmptyFrame` is a plain `TextureRect` (`STRETCH_KEEP_ASPECT_CENTERED`) that
+renders it near enough 1:1; a 9-slice would stretch or tile the dashes.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
@@ -169,6 +200,14 @@ RosterCard therefore carries a `Sheet` Panel on the `Card` variation instead
 shadow. Prefer that for any new card; reach for `paper.png` only where the
 cut corner is the point. Measure the alpha before laying out on any
 soft-edged texture.
+
+**MURIDMU RosterCard leftovers (2026-09-29).** `paperclip.svg` and
+`pencil.svg` have no README rules. `RosterAvatar`'s overshoot is hand-rolled,
+and the one-card `NudgeLoop` gate is backed only by a source scan. Stack
+clearances are tight (8.5 / 8.5 / 10 px at 1080x1920). Flick velocity is
+untested (needs an injectable clock). GhostCard is nearly invisible at the
+mandated peek pose and `SunkenPanel` has no border. `_init_carousel_state`'s
+`stagger_in` pops card roots the deck also owns (pre-existing).
 
 **Stray layer in the day-transition sky (2026-09-10).**
 `Assets/Images/SchoolDay/transition_background.png` has a bluish night street
@@ -293,22 +332,26 @@ by-the-way fix inside an unrelated branch.
 the lights without also blooming the near-white paper and sky; it is a
 project-wide rendering change `test_look_layer` pins off today. Measured
 2026-09-28: MainMenu's sky sits at ~0.89 luminance and its sun core at
-~0.88, the desk screens' wood at ~0.84 everywhere; sweeping threshold
-0.6-0.9, intensity 1-4 and strength 1-1.5 either bloomed nothing visible
-or bloomed the background as much as the light (+0.04 to +0.11 at the
-strong end, fog). So MainMenu, LevelSelect, StudentCard, StudentList,
-ReportCard, ShopHub and CosmeticShop (under their blur the core reaches
-only +0.0045/+0.0043 even at threshold 0.5) all ship without bloom --
-`Scenes/Look/AmbientGlow.tscn` is built and ready to place once `hdr_2d`
-lands. Measured at the same time, the desk lamp `LightPool` is capped at
-0.12 (its measured knee) and still only adds +0.011 mean brightness;
-`hdr_2d` would also let it go brighter. Also outstanding: light wrap on the
-shared cutout illustration materials; the kit not yet extended to
-Inventory or Achievements; and the Debug overlay's Look page stays
-Lobby-only because `DebugManager.gd` is at its clean-code size ceiling
-(1,880 lines, `LARGE_SCRIPTS`). Koperasi cannot bloom at all: its backdrop
-shares Stage with the tappable goods on layer 0 (lobby-look spec,
-section 2).
+~0.88, the desk screens' wood at ~0.84 everywhere; sweeping the
+Environment glow's threshold 0.6-0.9, intensity 1-4 and strength 1-1.5
+either bloomed nothing visible or bloomed the background as much as the
+light (+0.04 to +0.11 at the strong end, fog). So MainMenu, LevelSelect,
+StudentCard, StudentList and ReportCard ship without bloom. The shops' hub,
+the cosmetic shop, Koperasi and the end-game screens carry the Lobby's own bloom since
+2026-09-29 (an `AmbientGlow` at `lobby_environment.tres`'s values); the
+earlier "+0.0000 at every threshold" readings on them were an artefact: an
+Environment glow does not render in an offscreen `SubViewport` at all, so
+measure it in the running game. The minigames keep the
+art-only `ScreenGlow` (style guide, "Bloom off the Lobby"). Measured at the same time, the desk lamp
+`LightPool` is capped at 0.12 (its measured knee) and still only adds
++0.011 mean brightness; `hdr_2d` would also let it go brighter. Also
+outstanding: light wrap on the shared cutout illustration materials; the
+kit not yet extended to Inventory or Achievements. Kalkulator has no backdrop of
+its own (it draws over SchoolDay's), so it takes no light and no bloom.
+Each `ScreenGlow` costs a full-screen copy and its mip chain every frame,
+on by default with Efek Suasana (the Efek Visual layer keeps the same
+shader opt-in for an unknown performance floor); nobody has measured frame
+time on a low-end phone yet, the timed minigames first.
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories
@@ -348,6 +391,20 @@ SEKOLAH" sign went, but
 `tests/test_lobby_style_buttons.gd:test_the_shelf_button_keeps_its_body_font_label`
 still pins it. Delete the variation and that test together, then rebake.
 
+**Koperasi top-band promo gaps (2026-09-28 koperasi-top-band-promo, found on
+review).** The bottom-right shelf slot's price tag sits partly behind Pak
+Herman -- pre-existing, but a promo landing on that slot now also hides its
+struck list price and badge behind him; wants a layout fix (move the slot,
+or Pak Herman, or the tag's anchor). Once the week's promo item sells out,
+PromoBoard keeps advertising it -- there is no "HABIS" (sold out) state for
+the board to fall back to. On a 20:9 phone the top band (Signboard,
+PromoBoard) rides the Stage down with it, per `test_koperasi_on_a_tall_phone`,
+leaving plain wall above the band rather than the band reaching for the top
+edge. The KAS KELAS balance now lives only in BasketTray's footer pill,
+which slides off-screen with the rest of the tray when the player collapses
+it -- the old ledge coin it replaced was always visible, collapsed or not.
+The handoff spec accepted this; revisit if playtesting disagrees.
+
 **Saving RosterCard.tscn in the editor moves its sticky notes (2026-09-14).**
 `Scripts/StudentList/StickyNote.gd` is `@tool`, and its `_ready()` calls
 `_apply_pin()`, which writes `offset_top = pin_slot * PIN_STEP`. In the editor
@@ -361,6 +418,9 @@ StudentList still pins each note at runtime.
 falls back to `info["glyph"]` from `StatInfo`, and those glyphs are emoji, which
 the ban in `## Conventions` forbids. The trait popup was fixed the same way on
 2026-09-09 — real textures plus a display-font heading; this wants the same.
+Every current caller passes artwork, so the fallback never shows today; it is
+one of the two reviewed exceptions in `tests/test_ui_text_glyphs.gd`'s
+`ALLOWED`, and fixing it means removing that entry too.
 
 **Boohong draws some punctuation as quote marks, and lacks more (found
 2026-09-15).** `Assets/Fonts/Boohong.otf`'s cmap sends `‹`, `›` and `‚` to its
@@ -371,31 +431,6 @@ desktop and Android alike, until the chevron became a texture — now the shared
 `•`, `…`, `—`, `←` or `→` at all; those fall back to whatever system font the
 device picks. Buttons, titles and headings wear Boohong, so keep such
 characters out of their text, and draw an arrow or chevron as a real texture.
-`LombaMenari`'s ←/→/↖/↗ are body text, but Open Sans has no `←` either, so
-they ride system fallback too (minigames sit outside the design system).
-
-**SchoolDay still puts emoji in display text (swept 2026-09-22).** CLAUDE.md's
-`## Conventions` bans emoji as UI iconography and says to use real transparent
-textures instead, so these want an art pass, not a deletion. The back-button
-pass fixed two of them -- `SchoolDay.tscn:105`'s back arrow became the shared
-`UI/Nav/return_button.png`, and `SchoolDay.gd`'s "Minggu selesai!" lost its
-party popper -- and left the rest, because six strings is a real pass:
-
-| Where | Glyph |
-|---|---|
-| `SchoolDay.gd:78` `end_tutorial_title` (an `@export` default) | graduation cap |
-| `SchoolDay.gd:80` `end_tutorial_text` (an `@export` default) | dart, and an arrow twice |
-| `SchoolDay.gd:437` -> `status_label` | check mark |
-| `SchoolDay.gd:959` -> `status_label` | herb |
-| `SchoolDay.tscn:95` `ClickToContinueLabel` | sparkles, arrow |
-| `SchoolDay.tscn:113` `SkipButton` | next-track |
-
-Two traps for whoever takes this. The first two are **`@export` defaults**, so
-per CLAUDE.md a changed default needs a **full editor restart** before it takes
-effect -- `load_default()` keeps serving the cached instance. And the
-emoji at `SchoolDay.gd:537-538` and `:628-655` are **not** display text: they
-are icon keys that `_add_pill()` strips at `:660-682` and swaps for a texture.
-Leave those alone.
 
 **Stock art still to replace (2026-09-22).** `pngwing.com (1).png` went
 with the back-button pass, which was a licensing tidy-up as well as a
@@ -405,20 +440,6 @@ non-commercial. The clean-code renames deleted the unused copies and
 renamed the last live one to `Assets/Images/UI/stamp_original.png` (the
 approval stamp at `StudentCard.tscn:14`); it is still that unlicensed
 stock image. Replace it with authored art before any release.
-
-**TesNotice's card collapses (2026-09-11).** `NoticeCard` is a
-`NinePatchRect`, not a Container, so the anchored `Content` never sizes it. It
-shrinks to its 96px patch minimum and every line floats on the dark scrim; it
-has shipped like this since the screen was built (2026-09-02). Measured live,
-glyphs hidden: `BodyLabel`'s cream `ResultBodyLabel` reads there (6.9:1 at
-worst; dark ink would fall to 1.1:1), but `Kicker` "PENGUMUMAN" is 1.8:1 and
-`GradeLabel` "Kelas 7" 1.4:1. (Since 2026-09-12 the title is per-grade logo
-art -- `ujian_sekolah.png` for Kelas 7-8, `ujian_nasional.png` for Kelas 9 --
-so the old text title's margin overrun is gone.)
-`notice.png` is a megaphone icon, not a card surface.
-Either rebuild the card as a `Card` panel (text goes dark on cream, the
-megaphone becomes an icon) or commit to text over the scrim (the two dark
-labels go cream).
 
 **Minigame question art is background-sized (2026-09-21).** `monas.png` is
 1080x1920 and `borobudur.png` 1920x1920 -- portrait and square assets standing
@@ -451,9 +472,7 @@ retires the `TextureRect.new()` among the file's six `viewport_editability`
 BASELINE counts.
 
 **Loose ends from the event-cards pass (2026-09-12).**
-SchoolDay's `_add_pill()` schedule-pill builder uses 📚/⚽/🎨 as internal
-markers in label text before stripping them -- emoji in source, and
-brittle. `EventStudentCard.set_preview()` never passes `preview_stat()`'s
+`EventStudentCard.set_preview()` never passes `preview_stat()`'s
 `capped` argument, so the event picker's gain preview has no MAKS cap where
 `ApplyStudentRow.set_preview()`'s does. And `test_bar_contrast.gd`,
 `test_light_ground_text.gd` and `test_event_warning.gd` each carry their own
@@ -502,6 +521,54 @@ widget via `project_run` instead, which exercises it fine.
 
   The later Part 1 plans resolve all four.
 
+**UI depth pass, leftovers (2026-09-28, Phase 3 2026-09-29).** All three
+phases have shipped (`docs/superpowers/CHANGELOG.md`); these are what they
+left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
+
+- **Art no scene or script uses any more**, not yet deleted. Grepped by
+  path and by uid against `Scenes/`, `Scripts/` and `tests/` on 2026-09-29:
+  - Phase 2 (callers moved onto `NotebookFrame`):
+    `Assets/Images/UI/notice.png`, `Assets/Images/UI/penjadwalan_card_bg.png`.
+  - Phase 3 (callers moved onto `UI/Icons/`): the five Lobby tile icons
+    `UI/Nav/icon_cta_student.png`, `icon_cta_jadwal.png`,
+    `icon_nav_koperasi.png`, `icon_nav_inventory.png`, `icon_nav_rapor.png`
+    (named only in `test_lobby_tile_icons`'s `RETIRED` list, which asserts
+    the Lobby no longer points at them); `UI/icon_exit.svg`;
+    `UI/Nav/icon_chevron_left.png` / `icon_chevron_right.png`; and
+    `UI/Placeholders/icon_wirausaha.svg`.
+  - Phase 3, game-unreferenced only: `AturJadwal/icon_istirahat_placeholder.png`
+    and `icon_wirausaha_placeholder.png`. No scene or game script uses them,
+    but their generator `Scripts/Design/GenerateStickyNoteIcons.gd` writes
+    them and `tests/test_sticky_note_assets.gd` checks they exist, so
+    deleting them means trimming both (the generator's third output,
+    `icon_libur_nasional_placeholder.png`, is still the holiday icon).
+  - Keep `UI/Nav/return_button.png` (every Back) and
+    `UI/Placeholders/arrow.png` (`TutorialArrow.gd`, `test_texture_mipmaps`).
+- **`setting.png` has no `Icons/` counterpart yet.** MainMenu's
+  `SettingButton` and the Lobby rail's gear still wear
+  `Assets/Images/UI/setting.png`; the rail's four icons were left as finished
+  art on purpose, so a gear in the chunky set is the owner's call.
+- **Three screens still build their tutorial panel at runtime**, not from
+  `Scenes/UI/TutorialPanel.tscn`, so Phase 2 did not move them into the
+  frame: `Scripts/AturJadwal/AturJadwal.gd`, `Scripts/Lobby/Lobby.gd` and
+  `Scripts/StudentList/StudentList.gd` each build their own
+  `_tutorial_panel: PanelContainer` in code (a follow-up; Phase 3 did not
+  take it).
+- **Review minors, deferred:**
+  - Nothing pins `NotebookFrame`'s Chrome/Close control to a 96px touch
+    target (a geometry test would catch a future regression). (Phase 2)
+  - The Peringatan label/buttons test is now a sibling-order check only,
+    weaker than the old overlap check it replaced. (Phase 2)
+  - The "becomes" arrow `→` (DailyDecayOverview's `80 → 75`,
+    ApplyItemScreen's `×3 → ×2`) is not in any bundled Open Sans file, so
+    it draws from the system fallback font. A body font that carries it, or
+    a small arrow texture, would keep it in one typeface. (Phase 3)
+  - `RosterCard.SPECIALTY_ICONS` and `StudentList.CATEGORY_ICONS` are one
+    table written twice; `test_student_list` keeps them equal. Sharing one
+    const would retire that test's job. (Phase 3)
+  - `test_ui_text_glyphs`' comment stripper ignores escaped and single
+    quotes, so a glyph after a `#` inside such a string would be missed.
+    (Phase 3)
 - **Dapatkan Uang is a dev-mode stub** (2026-09-28, Loby Final Polish
   Phase 2). Every option pays at once and the toast wears DEV MODE; no ad
   SDK is wired. Debug builds only: a release build keeps the Lobby's `+`
@@ -547,10 +614,6 @@ widget via `project_run` instead, which exercises it fine.
   `.superpowers/gamecode/premium-look/` shipped items 1-10 and 12; item 11
   (the Lobby's black bands at 20:9) was cut by the brief. What was
   deliberately left:
-  - **TesNotice's NoticeCard gets no contact shadow.** It is a 512px
-    NinePatchRect, and PaperShadow's Silhouette is a plain TextureRect, which
-    would scale that texture instead of 9-slicing it. Needs a NinePatch
-    silhouette variant.
   - **SchoolDay has no parallax.** Its two bands (SkyBackground,
     SchoolForeground) live inside BookClockWidget, whose root already runs
     BookClockWidget.gd, so the driver cannot be added beside them the way it
@@ -581,6 +644,14 @@ widget via `project_run` instead, which exercises it fine.
     should stay lossless regardless: block artifacts show on small crisp UI
     and the saving is minor. Land it only together with a way to run the
     suite -- coverage is the quality floor.
+  - **The student art is lossless for now (2026-09-29).** The 24 portraits,
+    default splashes and day outfits were the only VRAM-compressed art; they
+    showed block artifacts, so they went to high-quality VRAM (#142) and then
+    lossless. That is about 4x their texture memory (a 1080x1920 splash with
+    mipmaps is ~11 MB instead of ~2.7 MB). If phone memory becomes a
+    problem, move them back to `compress/mode=2` with
+    `compress/high_quality=true`, and flip `test_student_art_is_lossless` and
+    the outfit import test in `tests/test_student_skins.gd` with them.
   - **ETC2 is on but nothing is built for Android yet.** There is no
     `export_presets.cfg`. `import_etc2_astc` is enabled so the committed
     `.import` files stay deterministic across machines; it costs import time
@@ -675,11 +746,49 @@ widget via `project_run` instead, which exercises it fine.
   against its blurred splash. Reads as a label rather than part of the
   illustration, which is acceptable for now.
 
+- **SkinSelect's stretch features are deferred (2026-09-29,
+  skin-select-polish).** The collaborator's handoff spec's "Baru!" badge,
+  peek-on-select, turntable idle and locked-skin treatment all stayed out
+  of the pass pending the owner's sign-off (plan
+  `docs/superpowers/plans/2026-09-29-skin-select-polish.md`, Revision:
+  "Stretch features stay out").
+
+- **SkinSelect's back button departs from the handoff (2026-09-29,
+  skin-select-polish).** The screen keeps the shared red `TextureButton`
+  back arrow every screen uses instead of the handoff's one-off round cream
+  button -- a back control that looks different on one screen reads as a
+  different action. Recorded as a departure in the pass's plan and PR, not
+  a bug to fix.
+
+- **SkinSelect's name dividers and tape sit at a fixed x (2026-09-29,
+  skin-select-polish).** `NameDividerLeft`/`NameDividerRight` and the
+  tray's washi tape are placed to fit "Seragam Sekolah"-length names. Real
+  skin names (`SkinSelect's skin names are derived`, above) do not exist
+  yet, but a name much longer than that would overlap the dividers once
+  they land. Put `SkinName` and its two dividers in a centred
+  `HBoxContainer` when `StudentSkins.SKINS` grows real names.
+
+- **`test_audio_coverage`'s double-fire scanner is a substring match, not a
+  word boundary (2026-09-29).** It reads `tile.set_open(i == index)` inside
+  `SkinSelect.select_student` as a call to that same file's own `open()`,
+  because its check is `body.contains(other_func_name + "(")` and
+  `"open("` is a substring of `"set_open("`. `select_student` was added to
+  `_DOUBLE_FIRE_ALLOWLIST` rather than fixing the scanner. The real fix is
+  a word-boundary check (e.g. the match must not be preceded by an
+  identifier character) in `tests/test_audio_coverage.gd`; it is its own
+  PR, not part of skin-select-polish.
+
 - **skin_card_focus.gdshader's blur cost is unmeasured on low-end Android
   (2026-09-23).** 48 taps per pixel on a full-size card, and mid-slide both
   the centred and the neighbour card are on the blurred path at once. If it
   drops frames while dragging, precompute the per-tap offsets/weights (they
   depend only on `i`, not on `sigma_texels`) or blur a downsampled copy.
+
+- **The Lobby look's full-screen additive passes are unmeasured on low-end
+  Android (2026-09-28).** The Lobby look adds full-screen additive passes
+  (SunShafts' atan/pow shader, the grade) to the shops, the exam notices and
+  seven minigames, including timed ones (Badminton, LombaMenari); unmeasured
+  on a low-end phone.
 
 - **Achievement prizes not built.** Pembimbing Profesional's "Skin Thea"
   shows as *segera hadir* because there is no skin system (CosmeticShop is a
@@ -780,7 +889,9 @@ ResultCheckup confetti and MainBola (ExamProgress left this list on
 2026-09-20: its backdrop is anchored to all four edges and its status strip
 to the real screen bottom). The Lobby's classroom stays a centred
 1080×1920 picture, so a tall phone shows black bands above and below it;
-filling them wants taller classroom art.
+filling them wants taller classroom art. Badminton's authored court keeps
+`STRETCH_SCALE` (the walls sit on the court's edges), so a 1080x2400 phone
+stretches it about 25% vertically; tall-phone rule 1 does not hold there yet.
 
 **Ghost-preview bars land only on the item apply screen (2026-09-16).** The
 `ApplyItemScreen` student cards (`ApplyStudentRow`) show, while a student is

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bj1qvwdbco7yk"
-path="res://.godot/imported/star_off.svg-473e4cf26ba2ab0341039387d277aec6.ctex"
+uid="uid://b4oybrq5wfj06"
+path="res://.godot/imported/event_icon.png-a60e3808521a734197b2c00206aa58c5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/DaySummary/Verdict/star_off.svg"
-dest_files=["res://.godot/imported/star_off.svg-473e4cf26ba2ab0341039387d277aec6.ctex"]
+source_file="res://Assets/Images/EndGame/Icons/event_icon.png"
+dest_files=["res://.godot/imported/event_icon.png-a60e3808521a734197b2c00206aa58c5.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

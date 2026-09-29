@@ -18,26 +18,6 @@ enum NoteType {
 ## Backdrop behind the dance stage.
 @export var background_texture: Texture2D
 
-@export_group("Note Textures (Incoming PNGs)")
-## Sprite for an unswiped LEFT note approaching the hit zone.
-@export var left_note_texture: Texture2D
-## Same as left_note_texture, for RIGHT.
-@export var right_note_texture: Texture2D
-## Same as left_note_texture, for TOP_LEFT.
-@export var top_left_note_texture: Texture2D
-## Same as left_note_texture, for TOP_RIGHT.
-@export var top_right_note_texture: Texture2D
-
-@export_group("Swiped Textures (Feedback PNGs)")
-## Sprite briefly shown on a LEFT note after a successful swipe.
-@export var left_swiped_texture: Texture2D
-## Same as left_swiped_texture, for RIGHT.
-@export var right_swiped_texture: Texture2D
-## Same as left_swiped_texture, for TOP_LEFT.
-@export var top_left_swiped_texture: Texture2D
-## Same as left_swiped_texture, for TOP_RIGHT.
-@export var top_right_swiped_texture: Texture2D
-
 # ─── Timing ──────────────────────────────────────────────────────────────────
 @export_group("Timing")
 ## How close to the hit zone's centre, in pixels, a matching swipe must land
@@ -58,7 +38,8 @@ enum NoteType {
 
 # ─── Visual - Note Colors ────────────────────────────────────────────────────
 @export_group("Visual - Note Colors")
-## Procedural-mode tint for LEFT notes, used when left_note_texture is null.
+## Tint for LEFT notes' arrow (MenariNote.tscn's white Arrow, via
+## self_modulate), and the colour a swiped LEFT note lightens from.
 @export var left_note_color: Color     = Color(1.0, 0.2, 0.2)
 ## Same as left_note_color, for RIGHT.
 @export var right_note_color: Color    = Color(0.2, 0.5, 1.0)
@@ -66,6 +47,9 @@ enum NoteType {
 @export var top_left_note_color: Color = Color(1.0, 0.8, 0.1)
 ## Same as left_note_color, for TOP_RIGHT.
 @export var top_right_note_color: Color = Color(0.2, 0.8, 0.3)
+## How far a swiped note's arrow lightens toward white as it flies off, the
+## hit's flash. 0 keeps the lane colour; 1 is pure white.
+@export_range(0.0, 1.0, 0.05) var swiped_arrow_lighten: float = 0.35
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
@@ -150,6 +134,13 @@ const ARROW_DIRECTIONS: Dictionary = {
 ## class_name, so a fresh checkout needs no global-class rescan to run.
 const DanceCamera := preload("res://Scripts/Minigames/SeniBudaya/DanceCamera.gd")
 
+## Side, in pixels, of the arrow that flashes over the hit zone on a hit,
+## the size the glyph Label it replaced was centred at.
+const SWIPE_EFFECT_SIZE := 100.0
+
+## One note: a Control holding the Arrow TextureRect. The art points right;
+## _spawn_single_note() turns Arrow with arrow_rotation() and tints it per lane.
+const NOTE_SCENE := preload("res://Scenes/Minigames/SeniBudaya/MenariNote.tscn")
 
 # The dancer's art moved to DancerRig.tscn on 2026-09-07: three body
 # poses plus a head layer, mirrored for the left-hand arrows. The six
@@ -171,6 +162,17 @@ const GRADE_TEXT: Dictionary = {
 	Grade.BAGUS: "BAGUS!",
 	Grade.SEMPURNA: "SEMPURNA!",
 }
+## Notes that may slip past the hit zone before the run is lost, by
+## difficulty (1-3, i.e. Kelas 7-9). Only a note that flies past counts; a
+## wrong swipe does not. Named tunables of ours (CLAUDE.md rule).
+const MISS_LIMIT_BY_DIFFICULTY: Dictionary = { 1: 10, 2: 8, 3: 6 }
+## The difficulty range MISS_LIMIT_BY_DIFFICULTY covers.
+const EASIEST_DIFFICULTY: int = 1
+## See EASIEST_DIFFICULTY.
+const HARDEST_DIFFICULTY: int = 3
+## From this many misses left, the miss text adds how many remain.
+const MISS_WARN_REMAINING: int = 3
+
 ## The colour of that word: red, green, gold.
 const GRADE_COLOR: Dictionary = {
 	Grade.UPS: Color(1.0, 0.25, 0.25),
@@ -187,6 +189,8 @@ var perfect_hits: int = 0
 var good_hits: int = 0
 ## Notes that reached the hit zone unanswered this run.
 var missed_notes: int = 0
+## This run's miss limit, set by start_minigame() from the difficulty.
+var miss_limit: int = MISS_LIMIT_BY_DIFFICULTY[EASIEST_DIFFICULTY]
 ## Consecutive hits without a miss, for the HUD's combo chip. Reset by a miss.
 var current_combo: int = 0
 ## Longest combo this run. Not yet read by the star rubric -- reserved for a
@@ -297,6 +301,7 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	perfect_hits = 0
 	good_hits = 0
 	missed_notes = 0
+	miss_limit = miss_limit_for(difficulty)
 	if difficulty == 2:
 		target_score = 2000
 		note_speed = 270.0
@@ -408,11 +413,18 @@ func _process(delta: float) -> void:
 				score_hud.set_combo(current_combo)
 			notes_to_remove.append(note)
 			
+	# Count down per note, so two notes slipping past on one frame read
+	# "Sisa 3" then "Sisa 2" rather than both showing the frame's final count.
+	var misses_left: int = miss_limit - missed_notes + notes_to_remove.size()
 	for note in notes_to_remove:
 		active_notes.erase(note)
 		note.queue_free()
-		_show_hit_feedback(GRADE_TEXT[Grade.UPS], GRADE_COLOR[Grade.UPS])
+		misses_left -= 1
+		_show_hit_feedback(miss_text(misses_left), GRADE_COLOR[Grade.UPS])
 		_play_dancer_fail_motion()
+
+	if missed_notes >= miss_limit:
+		lose_game()
 
 func _spawn_rhythm_beat() -> void:
 	if rhythm_patterns.is_empty():
@@ -437,8 +449,7 @@ func _spawn_rhythm_beat() -> void:
 		active_pattern_index = (active_pattern_index + randi_range(1, rhythm_patterns.size() - 1)) % rhythm_patterns.size()
 
 func _spawn_single_note(type: int) -> void:
-	var note = TextureRect.new()
-	note.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	var note: Control = NOTE_SCENE.instantiate()
 	
 	var hz_rect = hit_zone.get_global_rect()
 	var hz_center = hz_rect.get_center()
@@ -454,60 +465,30 @@ func _spawn_single_note(type: int) -> void:
 	# TOP_LEFT: comes from Top-Left off-screen, moves DOWN-RIGHT
 	# TOP_RIGHT: comes from Top-Right off-screen, moves DOWN-LEFT
 	var move_dir = Vector2.ZERO
-	var fallback_color = Color.WHITE
-	var arrow = ""
-	var tex = null
-	
+	var tint = Color.WHITE
+
 	match type:
 		NoteType.LEFT:
-			tex = left_note_texture
-			fallback_color = left_note_color
-			arrow = "←"
+			tint = left_note_color
 			move_dir = Vector2(1, 0)
 		NoteType.RIGHT:
-			tex = right_note_texture
-			fallback_color = right_note_color
-			arrow = "→"
+			tint = right_note_color
 			move_dir = Vector2(-1, 0)
 		NoteType.TOP_LEFT:
-			tex = top_left_note_texture
-			fallback_color = top_left_note_color
-			arrow = "↖"
+			tint = top_left_note_color
 			move_dir = Vector2(0.7071, 0.7071)
 		NoteType.TOP_RIGHT:
-			tex = top_right_note_texture
-			fallback_color = top_right_note_color
-			arrow = "↗"
+			tint = top_right_note_color
 			move_dir = Vector2(-0.7071, 0.7071)
 			
 	note.set_meta("move_dir", move_dir)
-	
-	if tex:
-		note.texture = tex
-		note.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	else:
-		note.texture = _create_rounded_box_texture(fallback_color, Color.WHITE, 4)
-	
-	# Visual text indicator inside note
-	var label = Label.new()
-	label.name = "ArrowLabel"
-	label.text = arrow
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_font_size_override("font_size", 48)
-	label.add_theme_color_override("font_color", Color.WHITE)
-	label.add_theme_constant_override("outline_size", 10)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	
-	label.anchor_left = 0.0
-	label.anchor_top = 0.0
-	label.anchor_right = 1.0
-	label.anchor_bottom = 1.0
-	label.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	label.grow_vertical = Control.GROW_DIRECTION_BOTH
-	label.visible = (tex == null)
-	
-	note.add_child(label)
+
+	# The root keeps the breathing sway's rotation; the Arrow child carries
+	# the lane's direction, so the two never overwrite each other.
+	var arrow: TextureRect = note.get_node("Arrow")
+	arrow.pivot_offset = note_size / 2.0
+	arrow.rotation = arrow_rotation(type)
+	arrow.self_modulate = tint
 	
 	# Compute spawn position far enough away along the reverse movement direction
 	var spawn_distance = max(get_viewport_rect().size.x, get_viewport_rect().size.y) * 0.55
@@ -619,6 +600,14 @@ func _evaluate_swipe(swipe_type: int) -> void:
 	if score >= target_score:
 		win_game()
 
+## The angle that turns MenariNote's right-pointing arrow toward `type`'s
+## direction, from the same ARROW_DIRECTIONS table the swipe reader uses.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func arrow_rotation(type: int) -> float:
+	return (ARROW_DIRECTIONS[type] as Vector2).angle()
+
+
 ## The grade a matching swipe earns `distance` pixels from the hit zone's
 ## centre: SEMPURNA inside `sempurna_px`, BAGUS inside `bagus_px`, UPS beyond.
 ##
@@ -629,6 +618,44 @@ static func grade_for_distance(distance: float, sempurna_px: float, bagus_px: fl
 	if distance < bagus_px:
 		return Grade.BAGUS
 	return Grade.UPS
+
+
+## How many notes may slip past before a run at `game_difficulty` is lost.
+## A difficulty outside 1-3 reads as the nearest grade.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func miss_limit_for(game_difficulty: int) -> int:
+	return MISS_LIMIT_BY_DIFFICULTY[clampi(game_difficulty, EASIEST_DIFFICULTY, HARDEST_DIFFICULTY)]
+
+
+## The word shown for a note that slipped past, with `misses_left` still to
+## spare: plain UPS!, or UPS! and the count once MISS_WARN_REMAINING or fewer
+## remain. The losing miss (none left) stays plain; the result card follows.
+##
+## Affects: nothing. Pure. Static so a test can call it with no instance.
+static func miss_text(misses_left: int) -> String:
+	var word: String = GRADE_TEXT[Grade.UPS]
+	if misses_left <= 0 or misses_left > MISS_WARN_REMAINING:
+		return word
+	return "%s\nSisa %d" % [word, misses_left]
+
+
+## Ends the run as a loss. Replaces BaseMinigame.lose_game(), whose
+## score-versus-get_target_win_score() shortcut (a target of 1 to 3) suits a
+## quiz scored in answers but would promote every Menari loss, scored in
+## hundreds, to a win. Mirrors MainBola's override.
+func lose_game() -> void:
+	if not is_game_active:
+		return
+	is_game_active = false
+	process_mode = Node.PROCESS_MODE_INHERIT
+	if pause_button:
+		pause_button.disabled = true
+		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if timer:
+		timer.stop()
+	set_process_input(false)
+	_show_result_overlay(false, "Skor akhir: %d / %d" % [score, target_score])
 
 
 ## Note accuracy: points earned as a fraction of the points that were actually
@@ -663,54 +690,32 @@ func _animate_swiped_note(note: Control, swipe_type: int) -> void:
 	if notes_parent and note.get_parent() == notes_parent:
 		notes_parent.move_child(note, notes_parent.get_child_count() - 1)
 		
-	var arrow_char = ""
 	var target_color = Color.WHITE
 	var slide_dir = Vector2.ZERO
 	var rot_target = 0.0
-	var swiped_tex: Texture2D = null
-	
+
 	match swipe_type:
 		NoteType.LEFT:
-			arrow_char = "←"
 			target_color = left_note_color
 			slide_dir = Vector2(-160, 0)
 			rot_target = -0.3
-			swiped_tex = left_swiped_texture
 		NoteType.RIGHT:
-			arrow_char = "→"
 			target_color = right_note_color
 			slide_dir = Vector2(160, 0)
 			rot_target = 0.3
-			swiped_tex = right_swiped_texture
 		NoteType.TOP_LEFT:
-			arrow_char = "↖"
 			target_color = top_left_note_color
 			slide_dir = Vector2(-120, -120)
 			rot_target = -0.4
-			swiped_tex = top_left_swiped_texture
 		NoteType.TOP_RIGHT:
-			arrow_char = "↗"
 			target_color = top_right_note_color
 			slide_dir = Vector2(120, -120)
 			rot_target = 0.4
-			swiped_tex = top_right_swiped_texture
-			
-	if swiped_tex:
-		note.texture = swiped_tex
-		note.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		var label = note.get_node_or_null("ArrowLabel")
-		if label:
-			label.visible = false
-	else:
-		# Glow color calculation (slightly brighter note color)
-		var glow_color = Color(target_color.r * 1.25, target_color.g * 1.25, target_color.b * 1.25, 0.9)
-		note.texture = _create_rounded_box_texture(glow_color, Color.WHITE, 5)
-		var label = note.get_node_or_null("ArrowLabel")
-		if label:
-			label.text = arrow_char
-			label.visible = true
-			label.add_theme_color_override("font_color", Color.WHITE)
-			label.add_theme_color_override("font_outline_color", Color.BLACK)
+
+	# The hit's flash: the arrow lightens toward white as it flies off.
+	var arrow := note.get_node_or_null("Arrow") as TextureRect
+	if arrow:
+		arrow.self_modulate = target_color.lightened(swiped_arrow_lighten)
 			
 	var tween = create_tween()
 	tween.set_parallel(true)
@@ -749,34 +754,28 @@ func _show_hit_feedback(feedback_text: String, color: Color) -> void:
 	tween.tween_callback(feedback.queue_free)
 
 func _show_swipe_effect(swipe_type: int) -> void:
-	var effect = Label.new()
-	var arrow_char = ""
+	var effect: Control = NOTE_SCENE.instantiate()
 	var color = Color.WHITE
-	
+
 	match swipe_type:
 		NoteType.LEFT:
-			arrow_char = "←"
-			color = Color(1.0, 0.2, 0.2)
+			color = left_note_color
 		NoteType.RIGHT:
-			arrow_char = "→"
-			color = Color(0.2, 0.5, 1.0)
+			color = right_note_color
 		NoteType.TOP_LEFT:
-			arrow_char = "↖"
-			color = Color(1.0, 0.8, 0.1)
+			color = top_left_note_color
 		NoteType.TOP_RIGHT:
-			arrow_char = "↗"
-			color = Color(0.2, 0.8, 0.3)
-			
-	effect.text = arrow_char
-	effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	effect.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	effect.add_theme_font_size_override("font_size", 96)
-	effect.add_theme_color_override("font_color", color)
-	effect.add_theme_constant_override("outline_size", 16)
-	effect.add_theme_color_override("font_outline_color", Color.BLACK)
-	
+			color = top_right_note_color
+
+	var effect_size := Vector2(SWIPE_EFFECT_SIZE, SWIPE_EFFECT_SIZE)
+	effect.size = effect_size
+	var arrow: TextureRect = effect.get_node("Arrow")
+	arrow.pivot_offset = effect_size / 2.0
+	arrow.rotation = arrow_rotation(swipe_type)
+	arrow.self_modulate = color
+
 	# Position at center of hit zone
-	effect.global_position = hit_zone.global_position + hit_zone.size / 2 - Vector2(50, 50)
+	effect.global_position = hit_zone.global_position + hit_zone.size / 2 - effect_size / 2.0
 	add_child(effect)
 	
 	# Visual offset vectors for drift drift

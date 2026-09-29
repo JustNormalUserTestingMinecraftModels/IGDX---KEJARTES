@@ -1,6 +1,8 @@
 [gd_scene format=3 uid="uid://danbj1stwk10x"]
 
 [ext_resource type="Script" uid="uid://cq5ctqqgmpwnj" path="res://Scripts/UI/TraitDetailPopup.gd" id="1_t4phs"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
 
 [node name="TraitDetailPopup" type="CanvasLayer" unique_id=1424003055]
 layer = 100
@@ -15,63 +17,73 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.18039216, 0.12941177, 0.09411765, 0)
 
-[node name="Card" type="PanelContainer" parent="Scrim" unique_id=1320277590]
-custom_minimum_size = Vector2(1015, 0)
-layout_mode = 0
-theme_type_variation = &"Card"
+[node name="Safe" type="MarginContainer" parent="Scrim"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("nb_safe")
 
-[node name="Layout" type="VBoxContainer" parent="Scrim/Card" unique_id=1514686172]
+[node name="Center" type="CenterContainer" parent="Scrim/Safe"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Frame" parent="Scrim/Safe/Center" instance=ExtResource("nb_frame")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+title_text = "SIFAT"
+ring_count = 4
+show_well = false
+
+[node name="Layout" type="VBoxContainer" parent="Scrim/Safe/Center/Frame" unique_id=1514686172]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="Header" type="PanelContainer" parent="Scrim/Card/Layout" unique_id=1440106930]
+[node name="Header" type="PanelContainer" parent="Scrim/Safe/Center/Frame/Layout" unique_id=1440106930]
 layout_mode = 2
 theme_type_variation = &"TraitPopupHeader"
 
-[node name="Row" type="HBoxContainer" parent="Scrim/Card/Layout/Header" unique_id=2092313704]
+[node name="Row" type="HBoxContainer" parent="Scrim/Safe/Center/Frame/Layout/Header" unique_id=2092313704]
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="GlyphIcon" type="TextureRect" parent="Scrim/Card/Layout/Header/Row" unique_id=786087065]
+[node name="GlyphIcon" type="TextureRect" parent="Scrim/Safe/Center/Frame/Layout/Header/Row" unique_id=786087065]
 custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
 size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Titles" type="VBoxContainer" parent="Scrim/Card/Layout/Header/Row" unique_id=1264387691]
+[node name="Titles" type="VBoxContainer" parent="Scrim/Safe/Center/Frame/Layout/Header/Row" unique_id=1264387691]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="KindLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=1710107734]
+[node name="KindLabel" type="Label" parent="Scrim/Safe/Center/Frame/Layout/Header/Row/Titles" unique_id=1710107734]
 layout_mode = 2
 theme_type_variation = &"TraitPopupKindLabel"
 
-[node name="NameLabel" type="Label" parent="Scrim/Card/Layout/Header/Row/Titles" unique_id=72944973]
+[node name="NameLabel" type="Label" parent="Scrim/Safe/Center/Frame/Layout/Header/Row/Titles" unique_id=72944973]
 layout_mode = 2
 theme_type_variation = &"TraitPopupNameLabel"
 autowrap_mode = 3
 
-[node name="CloseButton" type="Button" parent="Scrim/Card/Layout/Header/Row" unique_id=836038364]
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 2
-size_flags_vertical = 0
-theme_type_variation = &"SecondaryButton"
-text = "✕"
-
-[node name="Body" type="PanelContainer" parent="Scrim/Card/Layout" unique_id=414830483]
+[node name="Body" type="PanelContainer" parent="Scrim/Safe/Center/Frame/Layout" unique_id=414830483]
 layout_mode = 2
 theme_type_variation = &"SunkenPanel"
 
-[node name="BodyLayout" type="VBoxContainer" parent="Scrim/Card/Layout/Body" unique_id=567294847]
+[node name="BodyLayout" type="VBoxContainer" parent="Scrim/Safe/Center/Frame/Layout/Body" unique_id=567294847]
 layout_mode = 2
 
-[node name="EffectLabel" type="Label" parent="Scrim/Card/Layout/Body/BodyLayout" unique_id=1078732113]
+[node name="EffectLabel" type="Label" parent="Scrim/Safe/Center/Frame/Layout/Body/BodyLayout" unique_id=1078732113]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 text = "EFEK GAMEPLAY:"
 
-[node name="DescriptionLabel" type="Label" parent="Scrim/Card/Layout/Body/BodyLayout" unique_id=530613811]
+[node name="DescriptionLabel" type="Label" parent="Scrim/Safe/Center/Frame/Layout/Body/BodyLayout" unique_id=530613811]
 layout_mode = 2
 theme_type_variation = &"EventBodyLabel"
 autowrap_mode = 3

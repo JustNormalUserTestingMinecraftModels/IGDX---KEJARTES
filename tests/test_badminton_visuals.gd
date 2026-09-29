@@ -124,3 +124,21 @@ func test_the_paddles_match_and_their_hit_circle_is_authored_in_the_scene() -> v
 	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
 	assert_false(src.contains("col.shape.radius = screen_size.x * 0.06"),
 		"the script must not override the paddle circle authored in the scene")
+
+
+## The court is authored in the scene (lobby-look spec, 2026-09-28), so the 2D
+## viewport shows it and the Lobby look can light it; the script no longer
+## builds it at runtime.
+func test_the_court_is_an_authored_backdrop() -> void:
+	var root: Node = load(SCENE_PATH).instantiate()
+	track(root)
+	var bg := root.get_node_or_null("Background") as TextureRect
+	assert_not_null(bg, "Badminton.tscn carries a Background")
+	if bg == null:
+		return
+	assert_eq(bg.get_index(), 0, "drawn first, under the rackets and the shuttlecock")
+	assert_eq(bg.texture.resource_path, "res://Assets/Images/Textures/lapanganBadminton.jpg",
+		"the court art")
+	assert_eq(bg.mouse_filter, Control.MOUSE_FILTER_IGNORE, "input stays with _input")
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_false(src.contains("_add_background"), "the script no longer builds the court")

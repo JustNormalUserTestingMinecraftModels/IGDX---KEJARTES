@@ -73,16 +73,12 @@ const SKILL_KEYS := [
 ]
 
 
-## The target every skill is measured against for `grade`. Duplicates
-## GameState.initialize_grade_targets()'s uplift table rather than calling
-## it, because that function works in place on GameState.approved_students
-## and this one must stay pure.
+## The target every skill is measured against for `grade`. Reads the same
+## uplift table as GameState.initialize_grade_targets() but does not call it,
+## because that function works in place on GameState.approved_students and
+## this one must stay pure.
 static func target_for_grade(grade: int) -> float:
-	var uplift := Balance.TARGET_KENAIKAN_KELAS_7
-	match grade:
-		8: uplift = Balance.TARGET_KENAIKAN_KELAS_8
-		9: uplift = Balance.TARGET_KENAIKAN_KELAS_9
-	return clampf(BASE_SKILL + uplift, 0.0, 100.0)
+	return clampf(BASE_SKILL + GameState.target_uplift_for_grade(grade), 0.0, 100.0)
 
 
 ## Builds a rehearsal roster in approved_students' dictionary format.
@@ -138,7 +134,7 @@ const SNAPSHOT_KEYS := [
 	# end-of-grade sequence writes them, but a visit to the shop between
 	# arming and restoring does, and restoring hands the run back exactly
 	# as it was -- an item bought during a rehearsal must not stay sold.
-	"shop_week_key", "shop_stock", "shop_sold",
+	"shop_week_key", "shop_stock", "shop_sold", "shop_promo_item", "shop_promo_percent",
 	# Worn skins and the debug lock overrides. Nothing in the sequence
 	# writes them, but a skin picked between arming and restoring must not
 	# outlive the rehearsal, same as a shop purchase.
@@ -300,4 +296,6 @@ static func _seed_run_stats(preset: String, roster: Array) -> void:
 	var wanted: int = mini(int(spec["events"]), roster.size())
 	for i in range(wanted):
 		stats.record_event_student(int(roster[i].get("id", i + 1)))
+	# The report counts events, not students; the spec's tally is both.
+	stats.events_attended = int(spec["events"])
 	GameState.run_stats = stats

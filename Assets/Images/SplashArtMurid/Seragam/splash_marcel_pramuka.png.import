@@ -3,21 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c7yp72dx5gjk2"
-path.s3tc="res://.godot/imported/splash_marcel_pramuka.png-ade885cc6e46841af19566cfb1cc57aa.s3tc.ctex"
-path.etc2="res://.godot/imported/splash_marcel_pramuka.png-ade885cc6e46841af19566cfb1cc57aa.etc2.ctex"
+path="res://.godot/imported/splash_marcel_pramuka.png-ade885cc6e46841af19566cfb1cc57aa.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/Seragam/splash_marcel_pramuka.png"
-dest_files=["res://.godot/imported/splash_marcel_pramuka.png-ade885cc6e46841af19566cfb1cc57aa.s3tc.ctex", "res://.godot/imported/splash_marcel_pramuka.png-ade885cc6e46841af19566cfb1cc57aa.etc2.ctex"]
+dest_files=["res://.godot/imported/splash_marcel_pramuka.png-ade885cc6e46841af19566cfb1cc57aa.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -1,31 +1,16 @@
 @tool
 extends McpTestSuite
 
-## Lobby-style buttons (2026-09-14 spec): every framed action button wears
-## the Lobby's STUDENT/JADWAL look -- brand_primary_light fill,
-## brand_primary_dark bevel, outline_card rim, text_on_brand -- except
-## StudentCard's cream secondary buttons and StudentList's red/green status
-## badges, which keep theirs, and Weekly Results' light-red Logs button
-## (ResultLogsButton, 2026-09-19).
-##
-## 2026-09-27 scrapbook HUD (Q7): the Lobby itself stops wearing this look.
-## Its new BookHeroButton, NavTileKoperasi/Inventory/Rapor and PlusButton
-## variations (Scripts/Design/ThemeFactory.gd's _build_lobby_hud) are a
-## deliberate, Lobby-only exception -- documented here rather than added to
-## LOBBY_LOOK, since every OTHER screen still copies the brown Lobby look.
-## LobbyCtaButton and LobbyNavTile stay built and pinned below: they are
-## still worn outside the Lobby, by Password.tscn, Variabel.tscn and
-## tests/test_kalkulator.gd.
-
-## The restyled roles, with every generated size step.
-const LOBBY_LOOK := [
-	"PrimaryButton", "PrimaryButtonM", "PrimaryButtonL",
-	"SecondaryButton", "SecondaryButtonM", "SecondaryButtonL",
-	"DangerButton", "DangerButtonM", "DangerButtonL",
-	"SuccessButton", "SuccessButtonL",
-	"MainMenuButton", "ShopShelfButton", "ResultButton",
-	"LobbyCtaButton", "LobbyNavTile",
-]
+## Button roles (2026-09-28 UI depth pass, replacing the 2026-09-14
+## lobby-style-buttons rule that every action button wore the brown Lobby
+## look). Every framed button is now a lipped box (LippedBox): a face on a
+## darker lip, sinking onto the lip when held. Its colours say its role --
+## mint is the main action and affirm on every screen, tomato is danger,
+## brown is neutral (StudentCard's secondary buttons and the filter chips went
+## back to it on 2026-09-29, after their cream faces vanished on cream cards;
+## the minigame answers stay cream, because their scene authors the box),
+## sky and sunflower are the Lobby tiles' and the notebook tabs' own. Information badges keep their meaning colours.
+## Spec: docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md.
 
 const _STUDENT_CARD := "res://Scenes/StudentCard/StudentCard.tscn"
 const _ROSTER_CARD := "res://Scenes/StudentList/RosterCard.tscn"
@@ -43,41 +28,98 @@ func setup() -> void:
 	_theme = ThemeFactory.build(_tokens)
 
 
-func _flat(state: String, name: String) -> StyleBoxFlat:
+## role -> [face token, lip token], every generated size step included.
+func _roles() -> Dictionary:
+	var t := _tokens
+	var mint := [t.accent_mint, t.accent_mint_lip]
+	var brown := [t.brand_primary_light, t.brand_primary_dark]
+	var tomato := [t.accent_tomato, t.accent_tomato_lip]
+	return {
+		"PrimaryButton": mint, "PrimaryButtonM": mint, "PrimaryButtonL": mint,
+		"SuccessButton": mint, "SuccessButtonL": mint,
+		"LobbyCtaButton": mint, "BookHeroButton": mint, "ResultButton": mint,
+		"PlusButton": mint, "NavTileKoperasi": mint,
+		"NavTileInventory": [t.accent_sky, t.accent_sky_lip],
+		"NavTileRapor": [t.accent_sunflower, t.accent_sunflower_lip],
+		"DangerButton": tomato, "DangerButtonM": tomato, "DangerButtonL": tomato,
+		"SecondaryButton": brown, "SecondaryButtonM": brown, "SecondaryButtonL": brown,
+		"LobbyNavTile": brown, "ShopShelfButton": brown,
+		"QuirkBadge": brown, "CardArrowButton": [t.brand_primary, t.brand_primary_dark],
+		"StudentCardSecondaryButton": brown, "StudentCardSecondaryButtonL": brown,
+		"FilterChipButton": brown,
+		"MinigameChoiceButton": [t.button_cream, t.button_cream_lip],
+	}
+
+
+func _box(state: String, name: String) -> StyleBoxFlat:
 	return _theme.get_stylebox(state, name) as StyleBoxFlat
 
 
-## A variation's resting fill, or transparent when it has no flat box.
+## A variation's resting face, or transparent when it is not lipped.
 func _fill(name: String) -> Color:
-	var sb := _flat("normal", name)
+	var sb := _box("normal", name)
 	return sb.bg_color if sb != null else Color(0, 0, 0, 0)
 
 
-func test_every_action_button_wears_the_lobby_fill_rim_and_text() -> void:
-	for name in LOBBY_LOOK:
-		var sb := _flat("normal", name)
-		assert_true(sb != null, name + "/normal is a flat box like the Lobby's")
+func test_every_role_wears_its_palette_colour() -> void:
+	var roles := _roles()
+	for name in roles:
+		var sb := _box("normal", name)
+		assert_true(sb != null, name + "/normal is a lipped box")
 		if sb == null:
 			continue
-		assert_eq(sb.bg_color, _tokens.brand_primary_light, name + " fill")
-		assert_eq(sb.border_color, _tokens.outline_card, name + " rim")
-		assert_eq(sb.corner_radius_top_left, _tokens.radius_button, name + " corner")
-		assert_eq(_theme.get_color("font_color", name), _tokens.text_on_brand, name + " text")
+		assert_eq(sb.bg_color, roles[name][0], name + " face")
+		assert_eq(sb.shadow_color, roles[name][1], name + " lip")
+		assert_true(LippedBox.is_lipped(sb), name + " is lipped")
 
 
-func test_every_action_button_sinks_the_way_the_lobby_does() -> void:
-	for name in LOBBY_LOOK:
-		var pressed := _flat("pressed", name)
-		assert_true(pressed != null and pressed.bg_color == _tokens.brand_primary_dark,
-			name + " pressed flips to the darker bevel, as the Lobby's does")
+func test_every_role_sinks_onto_its_lip_when_held() -> void:
+	for name in _roles():
+		var rest := _box("normal", name)
+		var held := _box("pressed", name)
+		assert_true(rest != null and not LippedBox.is_pressed(rest) and LippedBox.lip_height_of(rest) > 0,
+			name + " rests on a lip")
+		assert_true(held != null and LippedBox.is_pressed(held), name + " sinks when held")
 
 
-func test_student_card_keeps_its_cream_secondary() -> void:
-	assert_eq(_fill("StudentCardSecondaryButtonL"), _tokens.surface_card, "cream fill, as before")
-	var sb := _flat("normal", "StudentCardSecondaryButtonL")
-	assert_true(sb != null and sb.border_color == _tokens.brand_primary, "brown rim, as before")
-	assert_eq(_theme.get_color("font_color", "StudentCardSecondaryButtonL"),
-		_tokens.brand_primary, "brown text, as before")
+func test_disabled_rests_on_half_a_lip() -> void:
+	for name in ["PrimaryButton", "SecondaryButton", "DangerButton"]:
+		var disabled := _box("disabled", name)
+		assert_eq(LippedBox.lip_height_of(disabled), floori(_tokens.lip_height / 2.0),
+			name + " disabled halves the lip")
+
+
+func test_gold_is_never_a_main_action() -> void:
+	for name in ["PrimaryButton", "LobbyCtaButton", "BookHeroButton", "SuccessButton",
+			"ResultButton", "PlusButton"]:
+		assert_ne(_fill(name), _tokens.accent_sunflower, name + " is not gold")
+		assert_ne(_fill(name), _tokens.currency_gold, name + " does not look like a purchase")
+
+
+## Outlined light text on a dark face; dark ink with no outline on a light one.
+func test_label_ink_follows_the_face() -> void:
+	assert_eq(_theme.get_color("font_color", "PrimaryButton"), _tokens.text_on_brand,
+		"white on mint")
+	assert_eq(_theme.get_constant("outline_size", "PrimaryButton"), _tokens.lipped_label_outline,
+		"outlined")
+	assert_eq(_theme.get_color("font_outline_color", "PrimaryButton"), _tokens.accent_mint_lip,
+		"in the lip colour")
+	for light in ["NavTileRapor"]:
+		assert_eq(_theme.get_color("font_color", light), _tokens.text_primary, light + " dark ink")
+		assert_eq(_theme.get_constant("outline_size", light), 0, light + " no outline")
+	for dark in ["StudentCardSecondaryButtonL", "FilterChipButton"]:
+		assert_eq(_theme.get_color("font_color", dark), _tokens.text_on_brand, dark + " light ink")
+		assert_eq(_theme.get_constant("outline_size", dark), _tokens.lipped_label_outline,
+			dark + " outlined")
+
+
+func test_student_card_secondary_is_brown() -> void:
+	assert_eq(_fill("StudentCardSecondaryButtonL"), _tokens.brand_primary_light, "brown face")
+	assert_eq(_fill("StudentCardSecondaryButton"), _tokens.brand_primary_light, "brown at every step")
+	assert_eq(_fill("MinigameChoiceButton"), _tokens.button_cream,
+		"the minigame answers stay cream: their scene authors a near-white box over the variation")
+	assert_eq(_theme.get_color("font_color", "MinigameChoiceButton"), _tokens.text_primary,
+		"so they keep dark ink")
 	assert_eq(_theme.get_font_size("font_size", "StudentCardSecondaryButtonL"),
 		_tokens.font_h1, "the L step")
 
@@ -87,14 +129,17 @@ func test_status_badges_keep_their_red_and_green() -> void:
 	assert_eq(_fill("RosterStatusSudah"), _tokens.state_success.lightened(0.18), "SUDAH stays green")
 
 
-## The icon-only main menu buttons and Weekly Results' half-row buttons
-## keep the fit they were laid out for; only the surface changed.
-func test_main_menu_and_weekly_results_keep_their_fit() -> void:
-	var mm := _flat("normal", "MainMenuButton")
-	assert_true(mm != null and mm.content_margin_left == 20.0 and mm.content_margin_top == 0.0,
-		"MainMenuButton keeps its tight icon margins")
-	assert_eq(_theme.get_font_size("font_size", "MainMenuButton"), 80, "MainMenuButton text size")
-	var rb := _flat("normal", "ResultButton")
+## The event dialog's student card stays flat: its pressed state means
+## SELECTED, which a sink would not say.
+func test_the_event_select_card_stays_flat() -> void:
+	assert_false(LippedBox.is_lipped(_theme.get_stylebox("normal", "EventSelectCard")),
+		"EventSelectCard keeps its flat selectable card")
+
+
+## Weekly Results' half-row buttons keep the fit they were laid out for; only
+## the surface changed. (The title screen's icons lost their box on 2026-09-29.)
+func test_weekly_results_keeps_its_fit() -> void:
+	var rb := _theme.get_stylebox("normal", "ResultButton")
 	assert_true(rb != null and rb.content_margin_left == 24.0,
 		"ResultButton keeps its 24 px sides so SELANJUTNYA fits")
 	assert_eq(_theme.get_font_size("font_size", "ResultButton"), _tokens.day_stat_size,
@@ -113,8 +158,8 @@ func test_the_shelf_button_keeps_its_body_font_label() -> void:
 	assert_false(_theme.get_font_list("ShopShelfButton").has("font"),
 		"ShopShelfButton sets no font of its own, so it inherits the body font")
 	var font := _theme.get_font("font", "ShopShelfButton")
-	var sb := _flat("normal", "ShopShelfButton")
-	assert_true(font != null and sb != null, "the shelf button has a font and a flat box")
+	var sb := _theme.get_stylebox("normal", "ShopShelfButton")
+	assert_true(font != null and sb != null, "the shelf button has a font and a box")
 	if font == null or sb == null:
 		return
 	var text_w := font.get_string_size("KEBUTUHAN SEKOLAH", HORIZONTAL_ALIGNMENT_LEFT, -1, 40).x

@@ -185,10 +185,10 @@ func test_lobby_hud_is_pinned_inside_the_safe_area() -> void:
 			assert_true(rail.is_ancestor_of(c), n + " rides in IconRail")
 
 
-## On a 1080x2400 phone the classroom sits 240 px down, centred; the book HUD
-## and the icon rail ride the bottom edge, 480 px below their design rects
-## (Task 4's DESIGN_RECTS in test_lobby_layout.gd); the title stays on top;
-## the popup stays centred.
+## On a 1080x2400 phone the classroom sits 240 px down, centred; the book HUD,
+## the coin box and the icon rail ride the bottom edge, 480 px below their
+## design rects (test_lobby_layout.gd's DESIGN_RECTS, 2026-09-29 layout grid
+## pass); the progress tag stays on top; the popup stays centred.
 func test_lobby_on_a_tall_phone() -> void:
 	var lobby := _stood_up(LOBBY, TALL)
 	_assert_placed((lobby.get_node("World/Backdrop") as Control),
@@ -200,9 +200,11 @@ func test_lobby_on_a_tall_phone() -> void:
 	_assert_placed((lobby.get_node("%ReportStudent") as Control),
 		Rect2(706, 2136, 285, 160), "ReportStudent")
 	_assert_placed((lobby.get_node("%DailyLogin") as Control),
-		Rect2(936, 1520, 96, 96), "DailyLogin")
+		Rect2(936, 1444, 96, 96), "DailyLogin")
+	_assert_placed((lobby.get_node("%DisplayUang") as Control),
+		Rect2(684, 1924, 348, 112), "DisplayUang")
 	_assert_placed((lobby.get_node("%ProgressHeader") as Control),
-		Rect2(48, 48, 516, 168), "ProgressHeader")
+		Rect2(420, 48, 232, 192), "ProgressHeader")
 	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 798, 942, 418), "DailyReward")
 
@@ -225,7 +227,7 @@ const KOPERASI := "res://Scenes/Koperasi/Koperasi.tscn"
 ## A flat wall strip fills the screen and covers; it only shows above the
 ## counter on a phone taller than 9:16.
 func test_koperasi_wall_fills() -> void:
-	_assert_background_fills(_scene(KOPERASI).get_node_or_null("WallFill") as TextureRect,
+	_assert_background_fills(_scene(KOPERASI).get_node_or_null("World/WallFill") as TextureRect,
 		"Koperasi wall strip (WallFill)")
 
 
@@ -239,36 +241,66 @@ func test_koperasi_stage_is_one_piece_pinned_bottom() -> void:
 		return
 	assert_eq(_anchors(stage), Vector4(0, 1, 0, 1), "Stage pins to the bottom edge")
 	assert_eq(_offsets(stage), Vector4(0, -1920, 1080, 0), "and keeps its 1080x1920 rect")
-	for n in ["Background", "Barang1", "Barang6", "Herman", "Foreground", "ChatBubble",
-			"BackButton", "TrayDock/BasketTray"]:
+	for n in ["Barang1", "Barang6", "ChatBubble", "BackButton", "TrayDock/BasketTray"]:
 		assert_true(stage.get_node_or_null(n) != null, n + " moves with the stage")
+	# The picture moved under the bloom (World/Room, 2026-09-29); its Room
+	# keeps Stage's pin and rect, so the picture and the goods still line up.
+	var room := _scene(KOPERASI).get_node_or_null("World/Room") as Control
+	assert_true(room != null, "missing World/Room")
+	if room == null:
+		return
+	assert_eq(_anchors(room), _anchors(stage), "Room pins where Stage does")
+	assert_eq(_offsets(room), _offsets(stage), "and keeps the same rect")
+	for n in ["Background", "Herman", "Foreground"]:
+		assert_true(room.get_node_or_null(n) != null, n + " lives in Room")
 
 
-## The coin readout stands on the counter ledge, so it is part of the Stage
-## picture like the back button -- not bottom-anchored in Safe, whose bottom
-## inset (768 px in a windowed editor run, a gesture bar on a phone) would
-## lift it off the ledge. Nothing over the shelf eats a tap.
-func test_koperasi_coin_hud_rides_the_stage() -> void:
+## The signboard and promo board (the top band) stand on the counter ledge,
+## so they are part of the Stage picture like the back button -- not
+## bottom-anchored in Safe, whose bottom inset (768 px in a windowed editor
+## run, a gesture bar on a phone) would lift them off the ledge. Nothing over
+## the shelf eats a tap. Renamed from test_koperasi_coin_hud_rides_the_stage
+## (2026-09-28 review): the ledge coin HUD it once pinned moved into the tray
+## footer (test_koperasi_kas_pill_rides_the_tray, below) -- this one now
+## checks the sign and board only.
+func test_koperasi_top_band_rides_the_stage() -> void:
 	var shop := _scene(KOPERASI)
-	var hud := shop.get_node_or_null("%CoinHUD") as Control
-	assert_true(hud != null and hud.get_parent() == shop.get_node_or_null("Stage"),
-		"CoinHUD is a child of the Stage")
-	for p in ["Safe", "Safe/UI", "WallFill", "Stage", "Stage/TrayDock"]:
+	var stage := shop.get_node_or_null("Stage")
+	for n in ["Signboard", "PromoBoard"]:
+		var c := shop.get_node_or_null("Stage/%s" % n) as Control
+		assert_true(c != null and c.get_parent() == stage,
+			"%s is a child of the Stage" % n)
+	for p in ["Safe", "Safe/UI", "World/WallFill", "World/Room", "Stage", "Stage/TrayDock"]:
 		var c := shop.get_node_or_null(p) as Control
 		assert_true(c != null and c.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 			p + " must let taps through to the shelf")
 
 
-## On a 1080x2400 phone the counter rides the bottom edge and the coins ride
-## with it.
+## The ledge coin HUD (2026-09-28 koperasi-top-band-promo Task 6) moved into
+## the tray footer's Kas Kelas pill, which rides the tray, which rides the
+## Stage -- no separate rect to pin, the tray's own rects (pinned above and
+## below in test_koperasi_on_a_tall_phone / test_koperasi_at_the_design_size)
+## already cover it.
+func test_koperasi_kas_pill_rides_the_tray() -> void:
+	var shop := _scene(KOPERASI)
+	var pill := shop.get_node_or_null(
+		"Stage/TrayDock/BasketTray/Body/Footer/KasCluster/KasPill")
+	assert_true(pill != null, "the Kas pill rides the tray, which rides the Stage")
+
+
+## On a 1080x2400 phone the counter rides the bottom edge and the top band
+## rides with it.
 func test_koperasi_on_a_tall_phone() -> void:
 	var shop := _stood_up(KOPERASI, TALL)
-	_assert_placed((shop.get_node("WallFill") as Control), Rect2(0, 0, 1080, 2400), "wall strip")
+	_assert_placed((shop.get_node("World/WallFill") as Control), Rect2(0, 0, 1080, 2400), "wall strip")
+	_assert_placed((shop.get_node("World/Room") as Control), Rect2(0, 480, 1080, 1920), "room, under the stage")
 	_assert_placed((shop.get_node("Stage") as Control), Rect2(0, 480, 1080, 1920), "stage")
 	_assert_placed((shop.get_node("Stage/TrayDock/BasketTray/Body") as Control),
 		Rect2(24, 1840, 1032, 560), "basket tray")
-	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(732, 1710), "the coins stay on the counter ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/Signboard") as Control).position,
+		Vector2(36, 504), "the sign stays on the counter ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/PromoBoard") as Control).position,
+		Vector2(580, 504), "the promo board stays on the counter ledge")
 
 
 ## At 1080x1920 the tray and back button are where they were.
@@ -279,8 +311,10 @@ func test_koperasi_at_the_design_size() -> void:
 		Rect2(24, 1360, 1032, 560), "basket tray, unchanged")
 	_assert_placed((shop.get_node("Stage/BackButton") as Control),
 		Rect2(24, 1157, 185, 185), "back button, unchanged")
-	assert_eq(_authored_rect(shop.get_node("%CoinHUD") as Control).position,
-		Vector2(732, 1230), "coins on the ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/Signboard") as Control).position,
+		Vector2(36, 24), "sign on the ledge")
+	assert_eq(_authored_rect(shop.get_node("Stage/PromoBoard") as Control).position,
+		Vector2(580, 24), "promo board on the ledge")
 
 
 # ── StudentCard ──────────────────────────────────────────────────────────────
@@ -398,13 +432,17 @@ func test_student_list_backdrop_fills() -> void:
 
 
 ## The roster cards are one Center-anchored piece at their 980x1410 rect.
+## Moved down 42px from its original -650/760 offsets (2026-09-29 avatar
+## bounce review round 2, "solve the whole vertical stack") to clear both
+## the active RosterAvatar's scaled ring above and the nav arrows below;
+## the rect's SIZE is unchanged.
 func test_student_list_cards_are_centred() -> void:
 	var cards := _scene(STUDENT_LIST).get_node_or_null("CardContainer") as Control
 	assert_true(cards != null, "missing CardContainer")
 	if cards == null:
 		return
 	assert_eq(_anchors(cards), Vector4(0.5, 0.5, 0.5, 0.5), "CardContainer is Center-anchored")
-	assert_eq(_offsets(cards), Vector4(-490, -650, 490, 760), "CardContainer keeps its rect")
+	assert_eq(_offsets(cards), Vector4(-490, -608, 490, 802), "CardContainer keeps its rect")
 
 
 ## The header and avatar strip on the top edge; the arrows and page dots in a
@@ -433,22 +471,23 @@ func test_student_list_ui_is_pinned_inside_the_safe_area() -> void:
 func test_student_list_on_a_tall_phone() -> void:
 	var list := _stood_up(STUDENT_LIST, TALL)
 	_assert_placed((list.get_node("CardContainer") as Control),
-		Rect2(50, 550, 980, 1410), "CardContainer")
+		Rect2(50, 592, 980, 1410), "CardContainer")
 	_assert_placed((list.get_node("%RightArrow") as Control),
 		Rect2(850, 2252, 160, 128), "RightArrow")
 	assert_eq(_authored_rect(list.get_node("%HeaderLabel") as Control).position,
 		Vector2(190, 24), "the header stays at the top")
 
 
-## At 1080x1920 the StudentList is where it was.
+## At 1080x1920 the StudentList is where it was, except CardContainer and
+## RosterStrip, both moved for the active-avatar-ring clearance fix above.
 func test_student_list_at_the_design_size_is_unchanged() -> void:
 	var list := _stood_up(STUDENT_LIST, DESIGN)
 	_assert_placed((list.get_node("CardContainer") as Control),
-		Rect2(50, 310, 980, 1410), "CardContainer")
+		Rect2(50, 352, 980, 1410), "CardContainer")
 	_assert_placed((list.get_node("%LeftArrow") as Control),
 		Rect2(70, 1772, 160, 128), "LeftArrow")
 	_assert_placed((list.get_node("%RosterStrip") as Control),
-		Rect2(70, 128, 940, 150), "RosterStrip")
+		Rect2(70, 175, 940, 150), "RosterStrip")
 	assert_eq(_authored_rect(list.get_node("%PageIndicator") as Control).position,
 		Vector2(400, 1794), "PageIndicator")
 
@@ -601,23 +640,17 @@ func test_settings_backdrop_fills() -> void:
 
 
 func test_settings_column_is_inside_the_safe_area() -> void:
-	_assert_under_safe_area(_scene(SETTINGS).get_node_or_null("SafeArea/MainColumn"),
-		"Settings MainColumn")
+	_assert_under_safe_area(_scene(SETTINGS).get_node_or_null("SafeArea/Frame"),
+		"Settings Frame")
 
 
-## At `screen` size: the header stays at the safe area's top-left, Kembali
-## sits on the bottom margin, and the scroll takes everything between them.
+## At `screen` size: the notebook fills the safe area below the tabs' 84 px
+## headroom, so the page grows with a tall phone and its tabs stay on screen.
 func _assert_settings_fills(screen: Vector2) -> void:
 	var s := _stood_up(SETTINGS, screen)
-	var header := s.get_node("SafeArea/MainColumn/Header") as Control
-	var scroll := s.get_node("SafeArea/MainColumn/Scroll") as Control
-	var back := s.get_node("SafeArea/MainColumn/BackButton") as Control
-	assert_eq(header.get_global_rect().position, Vector2(48, 48),
-		"the header stays at the top at %s" % str(screen))
-	assert_true(absf(back.get_global_rect().end.y - (screen.y - 48)) < 0.5,
-		"Kembali ends at %d, expected %d" % [back.get_global_rect().end.y, screen.y - 48])
-	assert_true(absf(scroll.get_global_rect().end.y - (back.get_global_rect().position.y - 32)) < 0.5,
-		"the scroll ends at %d, one gap above Kembali" % scroll.get_global_rect().end.y)
+	var frame := s.get_node("SafeArea/Frame") as Control
+	_assert_rect(frame.get_global_rect(),
+		Rect2(Vector2(48, 48 + 84), Vector2(screen.x - 96, screen.y - 96 - 84)), "the Settings notebook")
 
 
 func test_settings_on_a_tall_phone() -> void:
@@ -650,6 +683,8 @@ func test_unique_name_paths_are_not_format_strings() -> void:
 const LIT_BACKDROPS := {
 	"res://Scenes/Koperasi/ShopHub.tscn": "World/Room/Backdrop",
 	"res://Scenes/Koperasi/CosmeticShop.tscn": "World/Room/Backdrop",
+	"res://Scenes/EndGame/TesNotice.tscn": "World/Room/Backdrop",
+	"res://Scenes/EndGame/StatCheck.tscn": "World/Room/Backdrop",
 }
 
 
@@ -661,3 +696,16 @@ func test_the_lit_screens_backdrops_fill() -> void:
 		assert_true(room != null, path + " needs World/Room")
 		if room != null:
 			assert_eq(_anchors(room), Vector4(0, 0, 1, 1), path + ": Room is Full Rect")
+
+
+## The exam notices' scrim darkens the whole screen over their full-rect
+## backdrop; a fixed 1080x1920 scrim left the bottom of a tall phone
+## unscrimmed (found in the Part 2 review, 2026-09-28).
+func test_the_exam_notices_scrim_fills_the_screen() -> void:
+	for path in ["res://Scenes/EndGame/TesNotice.tscn", "res://Scenes/EndGame/StatCheck.tscn"]:
+		var scrim := _scene(path).get_node_or_null("Scrim") as Control
+		assert_true(scrim != null, path + " has a Scrim")
+		if scrim == null:
+			continue
+		assert_eq(_anchors(scrim), Vector4(0, 0, 1, 1), path + ": the Scrim is Full Rect")
+		assert_eq(_offsets(scrim), Vector4.ZERO, path + ": and not inset")

@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://df8hmrsqlb12n"]
 
 [ext_resource type="Script" uid="uid://c11vl4nq1k54h" path="res://Scripts/SchoolSimulation/WeekRecapBanner.gd" id="1_mtvdn"]
-[ext_resource type="Texture2D" uid="uid://cvhp38uu23hb5" path="res://Assets/Images/UI/Placeholders/icon_uang.svg" id="2_l8q1r"]
-[ext_resource type="Texture2D" path="res://Assets/Images/ResultCheckup/icon_minigame.png" id="4_eia8w"]
-[ext_resource type="Texture2D" path="res://Assets/Images/ResultCheckup/icon_event.png" id="5_80yyh"]
+[ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="2_f2nj5"]
+[ext_resource type="Texture2D" uid="uid://wfu31vam0k2" path="res://Assets/Images/ResultCheckup/icon_minigame.png" id="4_eia8w"]
+[ext_resource type="Texture2D" uid="uid://221ffnx5adby" path="res://Assets/Images/ResultCheckup/icon_event.png" id="5_80yyh"]
 [ext_resource type="PackedScene" uid="uid://ch10k6jbp1fe1" path="res://Scenes/SchoolSimulation/WeekRecapPill.tscn" id="6_bg3l5"]
 [ext_resource type="PackedScene" uid="uid://da1j2twwbqj4d" path="res://Scenes/SchoolSimulation/CoinShower.tscn" id="7_1fr3o"]
 
@@ -11,7 +11,7 @@
 custom_minimum_size = Vector2(0, 300)
 theme_type_variation = &"RecapBannerPanel"
 script = ExtResource("1_mtvdn")
-icon_uang = ExtResource("2_l8q1r")
+icon_uang = ExtResource("2_f2nj5")
 icon_menang = ExtResource("4_eia8w")
 icon_event = ExtResource("5_80yyh")
 

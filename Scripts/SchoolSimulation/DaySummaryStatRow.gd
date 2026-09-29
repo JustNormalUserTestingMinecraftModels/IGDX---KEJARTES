@@ -84,13 +84,9 @@ var _target: float = 0.0
 ## a change on top and restore it again.
 var _standing_current: float = 0.0
 
-## The in-flight fill and count of this row's weekly reveal, held so land()
-## can stop them: a skip must not leave a number still counting.
-var _reveal_tweens: Array[Tween] = []
-
 ## Reused burst node: created on first fire, reused while still alive,
 ## recreated after it self-frees. Cuts peak GPUParticles2D count in half
-## during the ResultCheckup reveal (one per row instead of two).
+## during a card's play_gain gesture (one per row instead of two).
 var _burst_node: RewardParticles = null
 
 
@@ -100,6 +96,28 @@ static func format_value(delta: float, target: float) -> String:
 	var d := int(round(delta))
 	var sign_str := "+" if d >= 0 else ""
 	return "%s%d/%d" % [sign_str, d, int(round(target))]
+
+
+## Whether this row shows a gain marker the reward can play from: the gold
+## chevron, on the nightly card and the weekly report alike.
+func shows_gain_marker() -> bool:
+	return chevron.visible
+
+
+## The control the gain's reward pops in and bursts from: the gold chevron.
+func _gain_marker() -> Control:
+	return chevron
+
+
+## The gain marker's centre in this row's local coordinates: where the
+## reward burst is thrown from.
+func _gain_marker_center() -> Vector2:
+	return chevron.position + chevron.size * 0.5
+
+
+## The counts' formatter: the "+12/65" text at the count's current value.
+func _count_text(v: float) -> String:
+	return format_value(v, _target)
 
 
 ## How full the track sits, 0-100. A full bar means the student has
@@ -226,9 +244,9 @@ func _reset_chevron() -> void:
 
 ## Replay today's movement: rewind the track to where it stood this
 ## morning and grow it back to where set_stat already left it, popping
-## the chevron in over the same beat and -- on a day that actually
-## gained -- throwing a star burst from the chevron. `delay` holds the
-## whole gesture so a card can stagger its three rows.
+## the gold chevron in over the same beat and -- on a day that actually
+## gained -- throwing a star burst from it. `delay` holds the whole gesture
+## so a card can stagger its three rows.
 ##
 ## `plays_sparkle` lets the card suppress the sparkle cue on the second and
 ## later bursts of one gesture, so three gaining rows do not fire three
@@ -249,8 +267,8 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	# together while the bars were still travelling; on `finished` they chime
 	# in sequence, patient, one bar landing after another.
 	var fill_tw := Juice.fill_bar(track, _fill_to, -1.0, delay)
-	if chevron.visible:
-		Juice.pop_in(chevron, delay)
+	if shows_gain_marker():
+		Juice.pop_in(_gain_marker(), delay)
 		_play_burst(delay, plays_sparkle)
 		if not Engine.is_editor_hint():
 			if fill_tw != null and fill_tw.is_valid():
@@ -264,8 +282,7 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 			fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_loss", self, {"queued": true}))
 		else:
 			RewardFeedback.play(&"stat_loss", self, {"queued": true})
-	Juice.count_up_formatted(value, 0.0, _delta,
-		func(v: float) -> String: return format_value(v, _target), delay)
+	Juice.count_up_formatted(value, 0.0, _delta, _count_text, delay)
 
 
 ## The gain's reward burst, centred on the chevron. The rising stat cue is
@@ -277,64 +294,9 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	if Engine.is_editor_hint():
 		return
-	var fx := _get_or_make_burst(chevron.position + chevron.size * 0.5)
+	var fx := _get_or_make_burst(_gain_marker_center())
 	fx.plays_sfx = plays_sparkle
 	fx.fire(delay)
-
-
-# ── The weekly reveal (2026-09-14 weekly-report-reveal spec) ─────────
-# ResultCheckup plays a card's rows one at a time rather than all at once,
-# so the row splits play_gain's single gesture into its beats. play_gain
-# and _play_burst above stay exactly as the nightly popup uses them.
-
-## The delta set_stat last cached: what ResultCheckup's reveal timeline
-## reads to decide whether this row pops.
-func shown_delta() -> float:
-	return _delta
-
-
-## The reveal's opening state: the track back on Monday, the number at +0,
-## the chevron armed but transparent until play_count pops it in. Call
-## set_stat first.
-func rewind() -> void:
-	_stop_reveal()
-	track.value = _fill_from
-	value.text = format_value(0.0, _target)
-	value.scale = Vector2.ONE
-	if chevron.visible:
-		chevron.modulate.a = 0.0
-
-
-## This row's turn: the track fills and the number counts up over
-## `seconds`, and a gaining row's chevron pops in as it starts. Never
-## awaited; the caller schedules land_pop() for when the count lands.
-func play_count(seconds: float) -> void:
-	_stop_reveal()
-	var fill := Juice.fill_bar(track, _fill_to, seconds)
-	var count := Juice.count_up_formatted(value, 0.0, _delta,
-		func(v: float) -> String: return format_value(v, _target), 0.0, seconds)
-	for tw in [fill, count]:
-		if tw != null:
-			_reveal_tweens.append(tw)
-	if chevron.visible:
-		var pop := Juice.pop_in(chevron)
-		if pop != null:
-			_reveal_tweens.append(pop)
-
-
-## A gaining row's reward, on the beat its count lands: the number punches
-## about its own text, the authored burst fires from it, and the tally
-## plays at `pitch`, the report's climbing step. The burst stays silent so
-## the climbing tally is the one sound. Editor-gated like _play_burst.
-func land_pop(pitch: float) -> void:
-	var center := Juice.text_center(value)
-	Juice.punch(value, center)
-	if Engine.is_editor_hint():
-		return
-	var fx := _get_or_make_burst(value.position + center)
-	fx.plays_sfx = false
-	fx.fire()
-	AudioDirector.play_sfx(&"tally", pitch)
 
 
 ## Returns the row's reusable burst node, creating it if it has already
@@ -346,20 +308,3 @@ func _get_or_make_burst(pos: Vector2) -> RewardParticles:
 		add_child(_burst_node)
 	_burst_node.position = pos
 	return _burst_node
-
-
-## The row on its final values at once: the skip's landing. Stops the
-## reveal's fill and count first, so neither writes over it afterwards.
-func land() -> void:
-	_stop_reveal()
-	track.value = _fill_to
-	value.text = format_value(_delta, _target)
-	value.scale = Vector2.ONE
-	_reset_chevron()
-
-
-func _stop_reveal() -> void:
-	for tw in _reveal_tweens:
-		if tw != null and tw.is_valid():
-			tw.kill()
-	_reveal_tweens.clear()

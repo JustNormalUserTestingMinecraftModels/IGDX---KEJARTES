@@ -32,11 +32,10 @@ func test_scene_exists_and_instantiates() -> void:
 
 func test_scene_supplies_every_node_the_script_binds() -> void:
 	var popup := _make()
-	for path in ["Scrim", "Scrim/Card", "Scrim/Card/Layout/Header",
-			"Scrim/Card/Layout/Header/IconRect",
-			"Scrim/Card/Layout/Header/TitleLabel",
-			"Scrim/Card/Layout/Header/CloseButton",
-			"Scrim/Card/Layout/BodyLabel"]:
+	for path in ["Scrim", "Scrim/Safe/Center/Frame", "Scrim/Safe/Center/Frame/Layout/Header",
+			"Scrim/Safe/Center/Frame/Layout/Header/IconRect",
+			"Scrim/Safe/Center/Frame/Layout/Header/TitleLabel",
+			"Scrim/Safe/Center/Frame/Layout/BodyLabel"]:
 		assert_not_null(popup.get_node_or_null(path), "missing node: %s" % path)
 
 
@@ -62,3 +61,19 @@ func test_script_carries_no_emoji() -> void:
 		"res://Scripts/UI/WeekRecapPillInfoPopup.gd")
 	for glyph in ["📊", "📝", "📢"]:
 		assert_false(src.contains(glyph), "emoji are banned")
+
+
+func test_the_card_is_the_notebook_dialog() -> void:
+	var popup := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Scrim/Safe/Center/Frame") as NotebookFrame
+	assert_true(frame != null, "the popup's box is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "INFO", "its sticker names the popup")
+		assert_true(frame.show_close, "the frame's round close replaces the typed one")
+
+
+func test_the_frame_close_closes() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/WeekRecapPillInfoPopup.gd")
+	assert_contains(src, "card.close_pressed.connect(close)", "the frame's close runs close()")
+	assert_false(src.contains("close_button"), "the old button is gone")

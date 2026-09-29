@@ -22,7 +22,7 @@ extends McpTestSuite
 ## 2026-09-01: the three stacked MULAI / PENGATURAN / KELUAR buttons were
 ## replaced by a minimal layout -- MULAI is now a blinking "ketuk di mana
 ## saja" prompt and a tap anywhere starts the game; PENGATURAN and KELUAR
-## are icon-only MainMenuButtons (Lobby brown since 2026-09-14) in a
+## are icon-only MainMenuIconButtons (no box since 2026-09-29) in a
 ## bottom IconBar. See Scripts/MainMenu/MainMenu.gd.
 
 func suite_name() -> String:
@@ -171,13 +171,13 @@ func test_icon_buttons_exist_and_are_wired() -> void:
 			name + " must sit in the IconBar")
 
 
-func test_icon_buttons_keep_the_yellow_menu_art() -> void:
+func test_icon_buttons_draw_no_box() -> void:
 	for name in ["SettingButton", "QuitButton"]:
 		var b := _icon_button(name)
 		if b == null:
 			continue
-		assert_eq(b.theme_type_variation, &"MainMenuButton",
-			name + " must keep the MainMenuButton variation")
+		assert_eq(b.theme_type_variation, &"MainMenuIconButton",
+			name + " must wear the box-less MainMenuIconButton variation")
 
 
 func test_icon_buttons_show_an_icon_and_no_text() -> void:
@@ -197,7 +197,7 @@ func test_icon_button_art_paths() -> void:
 			"gear icon art")
 	var exit := _icon_button("QuitButton")
 	if exit != null and exit.icon != null:
-		assert_eq(exit.icon.resource_path, "res://Assets/Images/UI/icon_exit.svg",
+		assert_eq(exit.icon.resource_path, "res://Assets/Images/UI/Icons/exit.png",
 			"exit icon art")
 
 

@@ -112,6 +112,10 @@ func _pump_cue_queue() -> void:
 	_cue_pump_running = true
 	while not _cue_queue.is_empty():
 		var item: Dictionary = _cue_queue.pop_front()
+		# Its screen closed before its turn (a result card tapped away mid-run):
+		# drop it, rather than hand a freed node to _play_now or ping late.
+		if is_stale_anchor(item["anchor"]):
+			continue
 		var opts: Dictionary = (item["opts"] as Dictionary).duplicate()
 		opts["queue_pitch"] = minf(1.0 + QUEUE_PITCH_STEP * float(_cue_rung), QUEUE_PITCH_MAX)
 		_cue_rung += 1
@@ -119,6 +123,12 @@ func _pump_cue_queue() -> void:
 		await get_tree().create_timer(QUEUE_GAP).timeout
 	_cue_rung = 0
 	_cue_pump_running = false
+
+## True for an anchor that was a node and has since been freed. Null (no
+## anchor) is not stale. Takes a Variant: a freed object cannot even be
+## passed through a typed `Node` parameter.
+static func is_stale_anchor(anchor: Variant) -> bool:
+	return typeof(anchor) == TYPE_OBJECT and not is_instance_valid(anchor)
 
 ## Fire the full multi-sensory combo for `moment` immediately (no queueing).
 func _play_now(moment: StringName, anchor: Node, opts: Dictionary) -> void:

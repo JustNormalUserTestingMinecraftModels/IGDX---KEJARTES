@@ -35,7 +35,7 @@ func test_scene_loads() -> void:
 
 
 func test_has_the_backdrop_and_no_scrim() -> void:
-	assert_true(_screen.get_node_or_null("Backdrop") != null, "Backdrop node")
+	assert_true(_screen.get_node_or_null("World/Room/Backdrop") != null, "Backdrop node")
 	assert_true(_screen.get_node_or_null("Scrim") == null,
 		"the exam art shows undarkened: the scrim was removed, and H1Label's "
 		+ "outline plus StatBar's opaque track carry legibility over it")
@@ -100,7 +100,7 @@ func test_the_backdrop_pans_alongside_the_fill() -> void:
 
 
 func test_the_backdrop_is_wider_than_the_viewport_so_the_pan_shows_no_edge() -> void:
-	var backdrop = _screen.get_node_or_null("Backdrop")
+	var backdrop = _screen.get_node_or_null("World/Room/Backdrop")
 	assert_true(backdrop is TextureRect, "Backdrop exists")
 	assert_true(backdrop.size.x >= 1080.0 - (-216.0),
 		"Backdrop must be at least viewport width plus |pan_pixels| wide (1296)")
@@ -108,7 +108,7 @@ func test_the_backdrop_is_wider_than_the_viewport_so_the_pan_shows_no_edge() -> 
 
 
 func test_the_backdrop_is_anchored_so_it_fills_a_taller_phone() -> void:
-	var backdrop: TextureRect = _screen.get_node("Backdrop")
+	var backdrop: TextureRect = _screen.get_node("World/Room/Backdrop")
 	assert_true(is_equal_approx(backdrop.anchor_right, 1.0),
 		"anchored to the right edge, so the width follows the viewport")
 	assert_true(is_equal_approx(backdrop.anchor_bottom, 1.0),
@@ -139,7 +139,7 @@ func test_the_scene_hands_the_script_a_real_pan_distance() -> void:
 
 
 func test_the_backdrop_shows_the_exam_art() -> void:
-	var backdrop: TextureRect = _screen.get_node("Backdrop")
+	var backdrop: TextureRect = _screen.get_node("World/Room/Backdrop")
 	assert_true(backdrop.texture != null, "Backdrop has a texture")
 	assert_eq(backdrop.texture.resource_path, "res://Assets/Images/CG/cg_ujian.png",
 		"ExamProgress shows the user's cg_ujian art (2026-09-14), not the cg_test placeholder")

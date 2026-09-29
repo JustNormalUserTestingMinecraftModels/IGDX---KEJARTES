@@ -248,7 +248,7 @@ these win.
    nearer band, so the parallax is between the picture and the UI. Every band
    in the `Room` moves together; `Backdrop`, `Tint`, `Light` and `Shafts` are
    overscanned so no edge shows.
-6. **StatCheck's `Backdrop` becomes Full Rect** as it moves. It was a fixed
+6. **StatCheck's `Backdrop` and `Scrim` become Full Rect** as it moves. It was a fixed
    1080x1920 rect, a tall-phone gap.
 7. **Bloom is measured with the ambient kit's method** (plan
    `2026-09-27-ambient-kit.md`, Task 12): **far** field bloom under 0.01 and
@@ -268,3 +268,7 @@ these win.
     through a window above the view and was accepted by eye on all three shop
     screens. Later passes place the origin above the frame over the pool, not
     on it.
+12. **The win-stage lights clip to the print.** WinStage's Stage is scaled and
+    letterboxed in code and does not clip, so a light pool placed in it
+    spilled past the white photo frame onto the letterbox bars. LightPass and
+    LightFail set clip_contents, which keeps each light inside the painting.

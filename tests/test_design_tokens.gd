@@ -49,3 +49,38 @@ func test_durations_are_positive_and_snappy() -> void:
 	assert_true(tokens.dur_instant > 0.0 and tokens.dur_instant <= 0.12, "dur_instant")
 	assert_true(tokens.dur_fast > 0.0 and tokens.dur_fast <= 0.25, "dur_fast")
 	assert_true(tokens.dur_normal > 0.0 and tokens.dur_normal <= 0.45, "dur_normal")
+
+
+## 2026-09-28 UI depth pass: the palette pairs, verbatim from the spec.
+func test_depth_palette_matches_the_spec() -> void:
+	var tokens := DesignTokens.load_default()
+	var want := {
+		"accent_mint": "2ec99a", "accent_mint_lip": "178a68",
+		"accent_sky": "5ea1e6", "accent_sky_lip": "3469b3",
+		"accent_sunflower": "ffc93c", "accent_sunflower_lip": "c9801a",
+		"accent_tomato": "e5553e", "accent_tomato_lip": "a3301e",
+		"accent_tangerine": "f58a3c", "accent_tangerine_lip": "bd561a",
+		"button_cream": "fff1dc", "button_cream_lip": "c9a57e",
+	}
+	for key in want:
+		assert_eq((tokens.get(key) as Color).to_html(false), want[key], key)
+
+
+## Every lip is darker than its face, so the slab reads as a shadow side.
+func test_every_lip_is_darker_than_its_face() -> void:
+	var tokens := DesignTokens.load_default()
+	for base in ["accent_mint", "accent_sky", "accent_sunflower", "accent_tomato",
+			"accent_tangerine", "button_cream"]:
+		var face: Color = tokens.get(base)
+		var lip: Color = tokens.get(base + "_lip")
+		assert_true(lip.get_luminance() < face.get_luminance(), base + "'s lip is darker")
+
+
+func test_depth_and_release_tokens() -> void:
+	var tokens := DesignTokens.load_default()
+	assert_eq(tokens.lip_height, 7, "lip_height")
+	assert_true(absf(tokens.gloss_strength - 0.35) < 0.001, "gloss_strength")
+	assert_true(absf(tokens.lipped_light_face_luminance - 0.7) < 0.001, "label-ink threshold")
+	assert_eq(tokens.lipped_label_outline, 8, "label outline")
+	assert_true(absf(tokens.release_pop_scale - 1.03) < 0.001, "release pop")
+	assert_true(absf(tokens.release_pop_duration - 0.12) < 0.001, "release pop length")

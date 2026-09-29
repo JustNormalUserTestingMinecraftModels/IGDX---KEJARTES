@@ -54,7 +54,7 @@ func test_title_uses_the_tile_title_variation_at_body_size() -> void:
 	assert_eq(theme.get_type_variation_base("AchievementTileTitleLabel"), &"Label")
 	assert_eq(theme.get_font_size("font_size", "AchievementTileTitleLabel"), tokens.font_body_size)
 	assert_eq(theme.get_color("font_color", "AchievementTileTitleLabel"), tokens.text_primary)
-	assert_eq(theme.get_font("font", "AchievementTileTitleLabel"), tokens.font_body)
+	assert_eq(theme.get_font("font", "AchievementTileTitleLabel"), tokens.font_display)
 
 
 func test_tile_geometry_matches_the_mockup() -> void:

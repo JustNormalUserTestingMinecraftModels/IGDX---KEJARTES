@@ -4,13 +4,14 @@ extends Node
 
 ## Fades `targets` to faded_alpha after idle_seconds with no input, and
 ## snaps them back on the next touch, click or key (2026-09-27 scrapbook
-## HUD spec §3, "Idle fade"). The Lobby uses it for its header and coin
-## plate; nothing else fades. It reads input in _input and never marks it
-## handled, so every tap still reaches its target. The timer is the
-## authored IdleTimer child, not built here. @tool so the lobby_hud suite
-## can instance it; _ready's timer start is gated.
+## HUD spec §3, "Idle fade"). The Lobby uses it for its progress tag only
+## (the coin box rides the book since 2026-09-29); nothing else fades. It
+## reads input in _input and never marks it handled, so every tap still
+## reaches its target. The timer is the authored IdleTimer child, not built
+## here. @tool so the lobby_hud suite can instance it; _ready's timer start
+## is gated.
 
-## What fades: the Lobby wires its header and coin plate here.
+## What fades: the Lobby wires its progress tag here.
 @export var targets: Array[CanvasItem] = []
 ## Seconds without input before the fade (spec: ~8 s).
 @export var idle_seconds: float = 8.0

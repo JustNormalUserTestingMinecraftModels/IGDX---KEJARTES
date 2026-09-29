@@ -1,9 +1,11 @@
 extends Control  # script Stage
 
-## The koperasi Stage (Koperasi.tscn:Stage): Pak Herman's counter as one
-## 1080x1920 piece -- the art layers, this week's six items on the shelf,
-## each with a coin-pill price tag and a little life, the chat bubble, the
-## back button and the basket tray.
+## The koperasi Stage (Koperasi.tscn:Stage): the shop's tappable layer as one
+## 1080x1920 piece -- this week's six items on the shelf, each with a
+## coin-pill price tag and a little life, the boards, the chat bubble, the
+## back button and the basket tray. The painted plates (backdrop, Pak Herman,
+## the counter) sit in World/Room, a CanvasLayer at -1 whose rect mirrors this
+## one, so the Lobby's bloom reaches them and never this UI (2026-09-29).
 ##
 ## The shelf is rolled once a week (GameState.shop_stock_for_week()) and can
 ## hold up to SHOP_MAX_COPIES (3) copies of an item. Each slot
@@ -109,9 +111,13 @@ func setup_shelf():
 		btn.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 
 		# Find price tag inside btn
-		var tag = _ensure_price_tag(btn)
+		var tag: Node = _ensure_price_tag(btn)
 		if tag:
 			tag.set_price(Cart.price_of(item))
+			if item.item_name == GameState.shop_promo_item:
+				tag.set_promo(Cart.list_price_of(item), GameState.shop_promo_percent)
+			else:
+				tag.clear_promo()
 
 		var life = _ensure_shelf_item(btn)
 		_shelf_items.append(life)

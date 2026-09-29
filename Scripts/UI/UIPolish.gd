@@ -84,13 +84,26 @@ func _skip(button: BaseButton) -> bool:
 func _on_button_down(button: BaseButton) -> void:
 	if _skip(button):
 		return
-	Juice.press(button)
+	if PressFeel.ticks(button.theme_type_variation):
+		Haptics.buzz(PressFeel.PRESS_TICK_MS)
+	# A lipped button sinks through its own pressed stylebox; shrinking it
+	# too would pinch the lip it is sinking onto.
+	if not _sinks(button):
+		Juice.press(button)
 
 
 func _on_button_up(button: BaseButton) -> void:
 	if _skip(button):
 		return
-	Juice.release(button)
+	if _sinks(button):
+		Juice.pop_release(button)
+	else:
+		Juice.release(button)
+
+
+## True when `button` rests on a lipped face (see PressFeel).
+func _sinks(button: BaseButton) -> bool:
+	return PressFeel.sinks_button(button)
 
 
 func _on_button_pressed(button: BaseButton) -> void:

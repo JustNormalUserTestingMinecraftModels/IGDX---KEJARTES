@@ -45,26 +45,25 @@ func test_scene_supplies_every_node_the_script_binds() -> void:
 	# The whole point of the extraction: these nodes live in the .tscn where a
 	# human can select them, not in an _ready() that builds them.
 	var popup := _make()
-	for path in ["Scrim", "Scrim/Card", "Scrim/Card/Layout/Header",
-			"Scrim/Card/Layout/Header/Row/IconRect",
-			"Scrim/Card/Layout/Header/Row/Titles/CategoryLabel",
-			"Scrim/Card/Layout/Header/Row/Titles/NameLabel",
-			"Scrim/Card/Layout/Header/Row/CloseButton",
-			"Scrim/Card/Layout/Body/BodyLayout/ValueLabel",
-			"Scrim/Card/Layout/Body/BodyLayout/Bar",
-			"Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel"]:
+	for path in ["Scrim", "Scrim/Safe/Center/Frame", "Scrim/Safe/Center/Frame/Layout/Header",
+			"Scrim/Safe/Center/Frame/Layout/Header/Row/IconRect",
+			"Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/CategoryLabel",
+			"Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/NameLabel",
+			"Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/ValueLabel",
+			"Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/Bar",
+			"Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/DescriptionLabel"]:
 		assert_not_null(popup.get_node_or_null(path), "missing node: %s" % path)
 
 
 func test_configure_fills_the_header_and_body_from_stat_info() -> void:
 	var popup := _make()
 	popup.configure("SeniBudaya", SAMPLE, null)
-	assert_eq(popup.get_node("Scrim/Card/Layout/Header/Row/Titles/CategoryLabel").text, "STATS")
-	assert_eq(popup.get_node("Scrim/Card/Layout/Header/Row/Titles/NameLabel").text, "Seni Budaya")
+	assert_eq(popup.get_node("Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/CategoryLabel").text, "STATS")
+	assert_eq(popup.get_node("Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/NameLabel").text, "Seni Budaya")
 	assert_contains(
-		popup.get_node("Scrim/Card/Layout/Body/BodyLayout/ValueLabel").text, "20")
+		popup.get_node("Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/ValueLabel").text, "20")
 	assert_contains(
-		popup.get_node("Scrim/Card/Layout/Body/BodyLayout/DescriptionLabel").text, "kesenian")
+		popup.get_node("Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/DescriptionLabel").text, "kesenian")
 
 
 func test_configure_tints_the_bar_with_the_right_category() -> void:
@@ -74,12 +73,12 @@ func test_configure_tints_the_bar_with_the_right_category() -> void:
 	# source diff.
 	var popup := _make()
 	popup.configure("Mood", SAMPLE, null)
-	var bar: StatBar = popup.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")
+	var bar: StatBar = popup.get_node("Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/Bar")
 	assert_eq(bar.category, "Istirahat")
 	assert_eq(bar.value, 61.0)
 	var seni := _make()
 	seni.configure("SeniBudaya", SAMPLE, null)
-	var seni_bar: StatBar = seni.get_node("Scrim/Card/Layout/Body/BodyLayout/Bar")
+	var seni_bar: StatBar = seni.get_node("Scrim/Safe/Center/Frame/Layout/Body/BodyLayout/Bar")
 	assert_eq(seni_bar.category, "SeniBudaya", "not the academic accent")
 	assert_eq(seni_bar.value, 20.0)
 
@@ -87,8 +86,8 @@ func test_configure_tints_the_bar_with_the_right_category() -> void:
 func test_configure_falls_back_to_the_glyph_when_no_icon_texture() -> void:
 	var popup := _make()
 	popup.configure("Mood", SAMPLE, null)
-	var icon_rect: TextureRect = popup.get_node("Scrim/Card/Layout/Header/Row/IconRect")
-	var glyph: Label = popup.get_node("Scrim/Card/Layout/Header/Row/GlyphLabel")
+	var icon_rect: TextureRect = popup.get_node("Scrim/Safe/Center/Frame/Layout/Header/Row/IconRect")
+	var glyph: Label = popup.get_node("Scrim/Safe/Center/Frame/Layout/Header/Row/GlyphLabel")
 	assert_false(icon_rect.visible, "icon rect should hide when there is no texture")
 	assert_true(glyph.visible, "glyph label should show when there is no texture")
 	assert_eq(glyph.text, "😊")
@@ -97,7 +96,7 @@ func test_configure_falls_back_to_the_glyph_when_no_icon_texture() -> void:
 func test_configure_on_an_unknown_bar_does_not_crash() -> void:
 	var popup := _make()
 	popup.configure("Nonsense", SAMPLE, null)
-	assert_eq(popup.get_node("Scrim/Card/Layout/Header/Row/Titles/NameLabel").text, "")
+	assert_eq(popup.get_node("Scrim/Safe/Center/Frame/Layout/Header/Row/Titles/NameLabel").text, "")
 
 
 func test_scene_has_no_theme_overrides() -> void:
@@ -142,3 +141,19 @@ func test_the_two_screens_share_one_popup_implementation() -> void:
 		var src := FileAccess.get_file_as_string(path)
 		assert_false(src.contains("StatBar.new("),
 			"%s builds a StatBar in code -- use StatDetailPopup" % path)
+
+
+func test_the_card_is_the_notebook_dialog() -> void:
+	var popup := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(popup)
+	var frame := popup.get_node_or_null("Scrim/Safe/Center/Frame") as NotebookFrame
+	assert_true(frame != null, "the popup's box is a NotebookFrame")
+	if frame != null:
+		assert_eq(frame.title_text, "STATISTIK", "its sticker names the popup")
+		assert_true(frame.show_close, "the frame's round close replaces the typed one")
+
+
+func test_the_frame_close_closes() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/StatDetailPopup.gd")
+	assert_contains(src, "card.close_pressed.connect(close)", "the frame's close runs close()")
+	assert_false(src.contains("close_button"), "the old button is gone")

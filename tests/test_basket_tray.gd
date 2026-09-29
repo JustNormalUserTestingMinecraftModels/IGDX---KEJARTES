@@ -25,6 +25,13 @@ func _entry(item: ItemData, quantity: int) -> Dictionary:
 	return {"data": item, "quantity": quantity}
 
 
+## A single-line cart whose total is exactly `amount` -- one unit of one
+## item priced at it. Enough for the Total pill's state tests, which only
+## care about the total against the Kas, not the row on the plank.
+func _entries_costing(amount: int) -> Dictionary:
+	return {"Barang": _entry(_item("Barang", amount), 1)}
+
+
 ## A live tray in the editor's root, so @onready resolves. Null (after a
 ## recorded failure) when the scene does not exist yet.
 func _tray() -> Node:
@@ -60,7 +67,107 @@ func test_the_footer_shows_the_total_in_koin() -> void:
 		"Susu Kotak": _entry(_item("Susu Kotak", 1000), 2),
 		"Pop Ice": _entry(_item("Pop Ice", 400), 1),
 	})
-	assert_eq(tray.get_total_text(), "Total: 2.400 koin")
+	assert_eq(tray.get_total_text(), "2.400")
+
+
+## The Kas Kelas and Total pills (2026-09-28 koperasi-top-band-promo Task 6):
+## the footer's twin pills. show_kas() drives the Kas balance; refresh()
+## re-derives the Total pill's state against it every time either changes.
+func test_an_empty_basket_sleeps() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh({})
+	assert_eq(tray.get_total_state(), &"TotalPillAsleep", "nothing picked, nothing owed")
+
+
+func test_items_wake_the_total() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh(_entries_costing(1000))
+	assert_eq(tray.get_total_state(), &"TotalPillAwake", "items wake it")
+
+
+func test_a_total_past_the_kas_turns_over() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh(_entries_costing(5000))
+	assert_eq(tray.get_total_state(), &"TotalPillOver", "more than the class fund holds")
+
+
+## Fix round 2 (2026-09-28 review): the Total pill used to jump straight to
+## its new text (`_total_number.text = format_koin(total)`), skipping the
+## spec's "count up ... a small coin_pulse/scale-pop on each change". A live
+## total change, with the tray inside the tree, must now start its own
+## count-up tween -- get_total_text() is unaffected either way, since it
+## always recomputes from _entries rather than reading the label.
+func test_an_awake_total_change_starts_a_total_tween() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	tray.refresh(_entries_costing(1000))
+	assert_true(is_instance_valid(tray._total_tween) and tray._total_tween.is_valid(),
+		"an awake total change should start its own count-up tween")
+	assert_eq(tray.get_total_text(), "1.000", "get_total_text() still reads the computed value")
+
+
+func test_the_kas_shows_the_balance() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(3880, false)
+	assert_eq(tray.get_kas_text(), "3.880", "the Kas reads the balance, thousands dotted")
+
+
+## Fix round 1 (2026-09-28 koperasi-top-band-promo Task 6): show_kas() must
+## kill its own prior count-up tween before starting a new one, matching
+## _tray_tween's kill-before-restart -- two money_changed signals back to
+## back must never leave two tweens racing on the same label. get_kas_text()
+## recomputes from _kas rather than reading the label's own text, so this
+## also holds even mid-tween.
+func test_two_quick_kas_updates_leave_the_last_amount() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(1000)
+	var first_tween: Tween = tray._kas_tween
+	tray.show_kas(2000)
+	assert_eq(tray.get_kas_text(), "2.000", "the second call wins, not a race with the first")
+	assert_true(is_instance_valid(first_tween), "the first tween object should still exist")
+	assert_false(first_tween.is_valid(),
+		"but be killed by the second call, or the two count-ups would race on the same label")
+
+
+## Fix round 1: a missing footer node must fail loudly (push_error, once)
+## and the caller must bail rather than silently skip its write -- but the
+## Kas balance itself, which does not live on that node, must still be
+## tracked so a later working label immediately reads the right amount.
+##
+## Fix round 2: show_kas() must re-derive the Total pill's state (against
+## its OWN nodes, which are unaffected by a missing KasLabel) before it
+## bails on the missing KasLabel -- a regression the round 1 fix introduced
+## by bailing before that call. Proven here by dropping the Kas so an
+## already-awake cart turns over, with the label gone the whole time.
+func test_a_missing_kas_label_bails_without_crashing() -> void:
+	var tray = _tray()
+	if tray == null:
+		return
+	tray.show_kas(5000, false)
+	tray.refresh(_entries_costing(4000))
+	assert_eq(tray.get_total_state(), &"TotalPillAwake", "affordable before the Kas drops")
+	var kas_label: Label = tray.get_node("%KasLabel")
+	kas_label.free()
+	tray.show_kas(3000)
+	assert_eq(tray.get_kas_text(), "3.000",
+		"the balance is still tracked even though the label is gone")
+	assert_eq(tray.get_total_state(), &"TotalPillOver",
+		"show_kas() must still re-derive the Total pill even with its own label gone")
 
 
 func test_koin_amounts_group_thousands_with_dots() -> void:
@@ -80,7 +187,7 @@ func test_an_empty_tray_shows_its_empty_state() -> void:
 	tray.refresh({})
 	assert_true(tray.get_node("Body/EmptyState").visible, "the empty state shows")
 	assert_false(tray.get_node("Body/Hint").visible, "no hold-to-return hint over nothing")
-	assert_eq(tray.get_total_text(), "Total: 0 koin")
+	assert_eq(tray.get_total_text(), "0")
 
 
 func test_a_filled_tray_hides_its_empty_state() -> void:

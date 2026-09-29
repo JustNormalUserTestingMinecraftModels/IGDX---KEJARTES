@@ -18,9 +18,13 @@ passes.
 
 | Grade | Weeks | Target uplift | Minigame win stat | Loss penalty |
 |---|---|---|---|---|
-| 7 | 6 | +15 | 10 | −3 |
-| 8 | 12 | +34 | 8 | −4 |
-| 9 | 16 | +40 | 6 | −5 |
+| 7 | 4 | +15 | 10 | −3 |
+| 8 | 6 | +22 | 8 | −4 |
+| 9 | 8 | +26 | 6 | −5 |
+
+Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
+`TARGET_UPLIFT_BY_GRADE` (ours, paired); `Balance.JUMLAH_MINGGU_KELAS_*` and
+`TARGET_KENAIKAN_KELAS_*` still say 6/12/16 and 15/34/40 but nothing reads them.
 
 **Loop:** **MainMenu (boot)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →
@@ -28,7 +32,7 @@ passes.
 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay instead runs
 **TesNotice → ExamProgress → StatCheck → EndCutscene → RunResult → MainMenu**.
 Every mid-day minigame and random event opens with the sliding EventWarning,
-then an EventDialogue line (`EventDialogueCatalog`); the three pick-students
+then an EventDialogue line (`EventDialogueCatalog`, drawn from `EventDialogueLines`); the three pick-students
 events ask Tolak / Terima there, before their picker. Settings' **Lewati Dialog
 Minigame** toggle (`GameSettings.skip_event_dialogue`, saved; the Lobby's gear
 opens Settings) skips the minigame lines;
@@ -130,14 +134,14 @@ pinned by `tests/test_illustration_ao.gd`); which, the Lobby's lighting and
 live tuning: `style-guide.md`, "Illustration materials".
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type
-variation instead (`PrimaryButton`, `SecondaryButton`, `DangerButton`,
-`SuccessButton`, `LobbyCtaButton`, `Card`, `SunkenPanel`, `Scrim`,
-`DisplayLabel`, `H1Label`, `H2Label`, `TitleLabel`, `CaptionLabel`,
-`MicroLabel`, `BarLabel`, `StatBar`, …). If none fits, add a new variation in
+variation instead (roster: style guide). If none fits, add a new variation in
 `ThemeFactory.gd` and rebake. Only accepted exception: layout-only constant
 overrides (`separation`, `margin_*`).
 
-Full detail: `docs/superpowers/design/style-guide.md`.
+Full detail: `docs/superpowers/design/style-guide.md`. **Buttons are lipped**
+faces from `LippedBox`, native only: a script StyleBox in the theme errors on
+every debug start. Mint is the main action, never gold. **Popups sit in
+`NotebookFrame`.**
 
 **The second rule: no visual is built at runtime.** Static chrome is a node in
 the `.tscn`; repeated rows are a `PackedScene` template; responsive geometry
@@ -165,6 +169,9 @@ the point: it is opaque over only the middle of its rect (numbers in
 `docs/superpowers/DEBT.md`). Measure the
 alpha before laying out on any soft-edged texture.
 
+**Popups** sit in `NotebookFrame` (style guide, "The notebook frame");
+`tests/test_popup_frames.gd` is the roster.
+
 **Asset constraints.** Placeholder art is drop-replaceable at the same path
 (inventory in `docs/superpowers/DEBT.md`), but a replacement **must** honour:
 
@@ -172,9 +179,6 @@ alpha before laying out on any soft-edged texture.
   `Assets/Images/UI/BarFill/README.md`. `tests/test_bar_contrast.gd` checks
   the luminance floor, `tests/test_ghost_track.gd` the ghost track; nothing
   tests the tile period.
-- `penjadwalan_card_bg.png` stays exactly 1080x1080: `AturJadwal.tscn`'s
-  Peringatan dialog crops it with a hardcoded `region_rect` that
-  `tests/test_atur_jadwal.gd` pins.
 - `EndCutscene`'s badge words are stroked **paths**, not SVG `<text>`, which
   ThorVG drops on import; `tests/test_end_cutscene.gd` pixel-checks them.
 - `tray_dots.png` stays 26x26 (`tests/test_koperasi_tray.gd`); it tiles via
@@ -200,7 +204,7 @@ overlay is a programmatic developer tool that styles itself directly.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 168 suites, 2599 tests (2026-09-28).
+the Godot AI MCP `test_run` tool. 183 suites, 2922 tests (2026-09-29).
 
 Hard constraints:
 
@@ -376,9 +380,7 @@ and an entry is deleted once resolved, not marked done. Constraints on future ch
 
 ## Current work
 
-The Lobby look, parts 2–3 (end game, minigames): plan
-docs/superpowers/plans/2026-09-28-lobby-look-everywhere.md, Tasks 7–14. Part 1
-(shops) has landed.
+Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
 
 ## Maintaining this file
 

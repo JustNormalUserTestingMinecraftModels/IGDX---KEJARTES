@@ -36,7 +36,8 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"pop")`: a small UI element appears (koperasi's basket
 ## item landing, the settings overlay).
 @export var sfx_pop: AudioStream
-## `play_sfx(&"swipe")`: paging through report_card/student_card.
+## `play_sfx(&"swipe")`: paging through report_card/student_card, and skin
+## select's carousel settling on a new skin.
 @export var sfx_swipe: AudioStream
 ## `play_sfx(&"stamp")`: student_card's approve-stamp animation.
 @export var sfx_stamp: AudioStream
@@ -49,7 +50,8 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## `play_sfx(&"popup_close")`: the closing half of sfx_popup_open's list.
 @export var sfx_popup_close: AudioStream
 ## `play_sfx(&"select")`: a list/grid item is chosen (atur_jadwal,
-## cutscene choices, inventory, event student picker, student_list).
+## cutscene choices, inventory, event student picker, student_list, skin
+## select).
 @export var sfx_select: AudioStream
 ## `play_sfx(&"error")`: an action is rejected (atur_jadwal, inventory,
 ## koperasi's insufficient-funds/empty-cart, lobby, student_card).
@@ -128,7 +130,8 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var sfx_transaction: AudioStream = preload("res://Assets/Audio/SFX/transactionShop.ogg")
 ## `play_sfx(&"item_applied")`: an inventory item lands on a student.
 @export var sfx_item_applied: AudioStream = preload("res://Assets/Audio/SFX/itemAfterAppliedEachCharacter.ogg")
-## `play_sfx(&"apply")`: a choice is committed on the apply screen.
+## `play_sfx(&"apply")`: a choice is committed on the apply screen (skin
+## select's TERAPKAN).
 @export var sfx_apply: AudioStream = preload("res://Assets/Audio/SFX/apply.ogg")
 ## `play_sfx(&"tutorial_popup")`: a tutorial overlay opens.
 @export var sfx_tutorial_popup: AudioStream = preload("res://Assets/Audio/SFX/tutorialPopUp.ogg")
@@ -167,8 +170,9 @@ const SETTINGS_PATH := "user://audio.cfg"
 ]
 ## `play_sfx(&"achievement_prize")`: an achievement that carries a prize.
 @export var sfx_achievement_prize: AudioStream = preload("res://Assets/Audio/SFX/achievementNotificationPrize.ogg")
-## `play_sfx(&"achievement_success")`: the full-set achievement flourish.
-@export var sfx_achievement_success: AudioStream = preload("res://Assets/Audio/SFX/notificationAchievementSuccess.ogg")
+## `play_sfx(&"achievement_success")`: the "achievement unlocked" banner cue
+## (RewardFeedback's `achievement_unlocked`).
+@export var sfx_achievement_success: AudioStream = preload("res://Assets/Audio/SFX/amazingReward.ogg")
 
 ## EndCutscene's badge reveal, one cue per grade band. A tier, not one sound:
 ## the badge word is the payoff of a whole grade, and a single sting would
@@ -318,8 +322,7 @@ func _make_bgm_player() -> AudioStreamPlayer:
 # -------------------------------------------------------------------- sfx
 
 ## Play one sfx cue. `pitch` scales the voice on top of the usual random
-## spread: 1.0, every call's default, leaves it exactly as before; the
-## weekly report's reveal climbs it one step per pop.
+## spread: 1.0, every call's default, leaves it exactly as before.
 func play_sfx(id: StringName, pitch: float = 1.0) -> void:
 	var stream := _resolve_sfx(id)
 	if stream == null:

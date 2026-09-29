@@ -3,9 +3,11 @@ extends Control
 ## "What the night cost them": a per-student breakdown of the daily energy
 ## and mood decay, with the bars animating down from yesterday's value.
 ##
-## Fully theme-driven now -- Scrim behind a Card, one &"Card" per student,
-## StatBars for the two needs, and the shared DaySummaryBadge chip for the
-## personality tag. No StyleBoxFlat and no Color literal remains.
+## Fully theme-driven now -- a BackgroundDim scrim behind a NotebookFrame
+## sheet (2026-09-28 UI depth pass; no close, since Lanjutkan Hari is the
+## only way on), one &"Card" per student inside it, StatBars for the two
+## needs, and the shared DaySummaryBadge chip for the personality tag. No
+## StyleBoxFlat and no Color literal remains.
 
 signal overview_closed
 
@@ -17,7 +19,7 @@ signal overview_closed
 # ── Visual - Header & Typography ──────────────────────────────────────────────
 @export_group("Visual - Header & Typography")
 ## Header title. `%s` is filled with the day name (e.g. "Senin").
-@export var title_format_text: String = "🌅 Aktivitas & Evaluasi Harian (%s)"
+@export var title_format_text: String = "Aktivitas & Evaluasi Harian (%s)"
 ## Header subtitle, under title_format_text.
 @export var subtitle_text: String = "Pengurangan Energi & Mood siswa sesuai kepribadian & rutinitas"
 ## Small icon appended into the title label -- see _apply_visual_exports().
@@ -38,17 +40,17 @@ const _BADGE_SCENE := "res://Scenes/SchoolSimulation/DaySummaryBadge.tscn"
 
 ## Shared icon(-or-glyph) + bar + number row used for the Energy/Mood
 ## breakdown lines. This screen never has an icon texture, so its rows
-## always show the full-sentence Glyph label ("Energy ⚡") instead.
+## always show the full-sentence Glyph label ("Energy") instead.
 @export var student_stat_row_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentStatRow.tscn")
 ## Shared Card+Margin chrome for the per-student decay card. Uses the
 ## component's own 20/16/20/16 margin defaults unchanged.
 @export var student_summary_card_scene: PackedScene = preload("res://Scenes/SchoolSimulation/StudentSummaryCard.tscn")
 
-@onready var title_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/TitleLabel
-@onready var subtitle_label: Label = $Margin/Panel/Margin/VBox/HeaderVBox/SubtitleLabel
-@onready var students_container: VBoxContainer = $Margin/Panel/Margin/VBox/ScrollContainer/StudentsContainer
-@onready var continue_button: Button = $Margin/Panel/Margin/VBox/ContinueButton
-@onready var scroll_container: ScrollContainer = $Margin/Panel/Margin/VBox/ScrollContainer
+@onready var title_label: Label = $Safe/Frame/VBox/HeaderVBox/TitleLabel
+@onready var subtitle_label: Label = $Safe/Frame/VBox/HeaderVBox/SubtitleLabel
+@onready var students_container: VBoxContainer = $Safe/Frame/VBox/ScrollContainer/StudentsContainer
+@onready var continue_button: Button = $Safe/Frame/VBox/ContinueButton
+@onready var scroll_container: ScrollContainer = $Safe/Frame/VBox/ScrollContainer
 
 var is_dragging_scroll: bool = false
 var drag_start_y: float = 0.0
@@ -169,7 +171,7 @@ func _create_student_decay_card(res: Dictionary) -> PanelContainer:
 		" %s " % res.get("personality", "Santai"), tokens.brand_primary))
 
 	var reason_lbl = Label.new()
-	reason_lbl.text = "💬 %s" % res.get("reason", "Aktivitas harian")
+	reason_lbl.text = str(res.get("reason", "Aktivitas harian"))
 	reason_lbl.theme_type_variation = &"TitleLabel"
 	reason_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	if font: reason_lbl.add_theme_font_override("font", font)
@@ -186,20 +188,20 @@ func _create_student_decay_card(res: Dictionary) -> PanelContainer:
 	# Energy and Mood are needs, not schedule categories; Libur (warm gold)
 	# and Istirahat (violet) are the accents the rest of the game already
 	# uses for them.
-	var e_data = _add_bar_row(vbox, "Energy ⚡", start_e, "Libur")
-	var m_data = _add_bar_row(vbox, "Mood 😊", start_m, "Istirahat")
+	var e_data = _add_bar_row(vbox, "Energy", start_e, "Libur")
+	var m_data = _add_bar_row(vbox, "Mood", start_m, "Istirahat")
 
 	var animate_func = func():
 		var e_bar = e_data["bar"] as StatBar
 		var e_info = e_data["info_lbl"] as Label
 		Juice.fill_bar(e_bar, curr_e)
-		e_info.text = "%d ➔ %d (-%d)" % [int(start_e), int(curr_e), int(e_loss)]
+		e_info.text = "%d → %d (-%d)" % [int(start_e), int(curr_e), int(e_loss)]
 		e_info.self_modulate = tokens.state_danger
 
 		var m_bar = m_data["bar"] as StatBar
 		var m_info = m_data["info_lbl"] as Label
 		Juice.fill_bar(m_bar, curr_m)
-		m_info.text = "%d ➔ %d (-%d)" % [int(start_m), int(curr_m), int(m_loss)]
+		m_info.text = "%d → %d (-%d)" % [int(start_m), int(curr_m), int(m_loss)]
 		m_info.self_modulate = tokens.state_danger
 
 	card.set_meta("animate_bars", animate_func)

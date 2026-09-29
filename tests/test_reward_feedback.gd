@@ -52,3 +52,25 @@ func test_celebration_throws_no_white_confetti() -> void:
 		"the retired confetti's scene is deleted")
 	assert_true(src.contains("return  # Tick and Celebration have no particles"),
 		"only the Pop tier bursts")
+
+
+## A queued cue holds its anchor across QUEUE_GAP waits. The day
+## summary and report rows queue theirs, and tapping past the card before the
+## queue drains frees those rows: handing a freed row to _play_now's typed
+## `anchor: Node` parameter broke the game (2026-09-28, after a minigame win).
+func test_a_freed_anchor_is_stale() -> void:
+	var row := Node.new()
+	assert_false(RewardFeedback.is_stale_anchor(row), "a live anchor is not stale")
+	row.free()
+	assert_true(RewardFeedback.is_stale_anchor(row), "a freed anchor is stale")
+	assert_false(RewardFeedback.is_stale_anchor(null), "no anchor at all is not stale")
+
+
+func test_the_cue_queue_drops_cues_whose_anchor_was_freed() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Feedback/RewardFeedback.gd")
+	var pump := src.substr(src.find("func _pump_cue_queue"))
+	pump = pump.substr(0, pump.find("\nfunc ", 1))
+	assert_true(pump.contains("is_stale_anchor(item[\"anchor\"])"),
+		"_pump_cue_queue checks each cue's anchor before _play_now")
+	assert_true(pump.find("is_stale_anchor") < pump.find("_play_now("),
+		"the check comes before the call it guards")

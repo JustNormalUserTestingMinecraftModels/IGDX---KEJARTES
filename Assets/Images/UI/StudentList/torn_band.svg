@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="120" viewBox="0 0 900 120">
+  <!-- WeekHeader's torn-paper band (MURIDMU RosterCard Task 1 groundwork).
+       Drawn white so RosterCard's Band TextureRect can self_modulate it to
+       DesignTokens.surface_sunken, the same recipe washi_tape.svg and
+       catatan_rule.png use - see docs/superpowers/DEBT.md. Torn top/bottom
+       edges are explicit polygon points, not a <pattern>, which ThorVG
+       drops (washi_tape.svg's comment). Sized to StickyNotesContainer's
+       900px width (RosterCard.tscn); a later task's Band node stretches or
+       9-slices it as needed. -->
+  <path d="M0,10 L90,3 L180,11 L270,4 L360,12 L450,3 L540,11 L630,4 L720,12 L810,3 L900,10
+           L900,110 L810,117 L720,109 L630,118 L540,108 L450,117 L360,109 L270,118 L180,108
+           L90,117 L0,110 Z" fill="#FFFFFF"/>
+  <!-- A few short fiber ticks along the tear, a shade darker, for a torn-
+       paper read once tinted (same "lighter grey than the fill" trick
+       washi_tape.svg uses for its stripes). -->
+  <g stroke="#E2E2E2" stroke-width="3" stroke-linecap="round">
+    <path d="M60,8 L68,18"/>
+    <path d="M245,7 L252,17"/>
+    <path d="M430,7 L438,18"/>
+    <path d="M615,7 L622,17"/>
+    <path d="M800,7 L808,18"/>
+    <path d="M115,112 L123,102"/>
+    <path d="M300,115 L308,105"/>
+    <path d="M485,113 L493,103"/>
+    <path d="M670,116 L678,106"/>
+    <path d="M855,111 L863,101"/>
+  </g>
+</svg>

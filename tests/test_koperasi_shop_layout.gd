@@ -66,10 +66,12 @@ func test_the_three_layers_stack_full_size_and_let_taps_through() -> void:
 	assert_true(stage != null, "missing the Stage")
 	if stage == null:
 		return
+	# The three plates sit in World/Room (2026-09-29), a layer under the goods
+	# so the Lobby's bloom reaches them; Room mirrors Stage's rect.
 	var art := {
-		"Background": "res://Assets/Images/Shop/Koperasi/shop_background.png",
-		"Herman": "res://Assets/Images/Shop/Koperasi/shop_herman.png",
-		"Foreground": "res://Assets/Images/Shop/Koperasi/shop_foreground.png",
+		"../World/Room/Background": "res://Assets/Images/Shop/Koperasi/shop_background.png",
+		"../World/Room/Herman": "res://Assets/Images/Shop/Koperasi/shop_herman.png",
+		"../World/Room/Foreground": "res://Assets/Images/Shop/Koperasi/shop_foreground.png",
 	}
 	for layer in art:
 		var tex := stage.get_node_or_null(layer) as TextureRect
@@ -81,8 +83,7 @@ func test_the_three_layers_stack_full_size_and_let_taps_through() -> void:
 		assert_eq(Vector4(tex.anchor_left, tex.anchor_top, tex.anchor_right, tex.anchor_bottom),
 			Vector4(0, 0, 1, 1), layer + " fills the stage")
 		assert_eq(tex.mouse_filter, Control.MOUSE_FILTER_IGNORE, layer + " never eats a tap")
-	var order := ["Background", "Barang1", "Barang6", "Herman", "Foreground",
-		"ChatBubble", "BackButton", "TrayDock"]
+	var order := ["Barang1", "Barang6", "ChatBubble", "BackButton", "TrayDock"]
 	for i in range(order.size() - 1):
 		assert_true(stage.get_node(order[i]).get_index() < stage.get_node(order[i + 1]).get_index(),
 			"%s draws under %s" % [order[i], order[i + 1]])

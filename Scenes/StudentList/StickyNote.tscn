@@ -2,6 +2,8 @@
 
 [ext_resource type="Texture2D" uid="uid://dbkqgaqqwkp57" path="res://Assets/Images/UI/stickynotes.png" id="1_iwtuy"]
 [ext_resource type="Script" uid="uid://c47ib8or275b3" path="res://Scripts/StudentList/StickyNote.gd" id="2_o72i2"]
+[ext_resource type="Texture2D" uid="uid://bexehf1g6hs2e" path="res://Assets/Images/UI/StudentList/sticky_empty_frame.svg" id="3_bexeh"]
+[ext_resource type="Texture2D" uid="uid://dv7re4xhg8tbg" path="res://Assets/Images/AturJadwal/washi_tape.svg" id="4_dv7re"]
 
 [node name="StickyNote" type="TextureRect" unique_id=159726911]
 self_modulate = Color(0.765, 0.712, 0.663, 1)
@@ -9,6 +11,30 @@ custom_minimum_size = Vector2(162, 200)
 texture = ExtResource("1_iwtuy")
 expand_mode = 1
 script = ExtResource("2_o72i2")
+
+[node name="EmptyFrame" type="TextureRect" parent="." unique_id=748219365]
+visible = false
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("3_bexeh")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Tape" type="TextureRect" parent="." unique_id=305817426]
+layout_mode = 0
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -55.0
+offset_top = -9.0
+offset_right = 55.0
+offset_bottom = 9.0
+rotation = -0.04
+mouse_filter = 2
+texture = ExtResource("4_dv7re")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="DayLabel" type="Label" parent="." unique_id=594998491]
 layout_mode = 0

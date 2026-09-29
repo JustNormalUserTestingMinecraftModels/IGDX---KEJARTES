@@ -8,6 +8,520 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Lobby layout grid
+
+The owner asked for spacing and for the Minggu plate off the students' faces.
+The progress plate is now a 232x192 tag in the gap between the two back-row
+heads. It clears every student's hair and face, in every skin, breathing and at
+full parallax tilt; the art was measured, and `test_lobby_layout` checks it
+pixel by pixel. `Minggu` moved to its own caption (`WEEK_FORMAT` is `"%d / %d"`),
+because the one-line week is 264 px wide. To fit beside the week, the grade
+badge's padding dropped from `space_sm` to `space_xs` (the `GradeBadge`
+variation, used only here; one rebake). The coin box moved into the book's
+step beside JADWAL! and rides the HUD swipe; only the tag idle-fades now. The
+book is back on the 48 px grid (`60d6d7d7`'s nudge had clipped the nav tiles),
+and the rail ends 24 px above the coin box. Spec:
+`specs/2026-09-29-lobby-layout-grid-design.md`.
+
+## 2026-09-29 — Every event and win line has five voices
+
+Every EventDialogue line and every MinigameWinScreen line is now drawn from a
+pool of at least five variations in the speaker's own voice: about 365 lines in
+all, covering 6 students x 8 events and x 3 win categories, plus Mom, both
+teachers and the Hujan narrator. They live in
+`Scripts/SchoolSimulation/EventDialogueLines.gd`, as drafts for the owner's
+writer. `EventDialogueCatalog.pick_line` and `win_line_for` draw without an
+immediate repeat and fall back to each entry's own `line`. Students now say
+"Pak" (the win fallback is "Terima kasih, Pak!"), and the win bubble grew
+upward to fit two lines (Bubble height 144 to 160 px); its tail now points
+up-right at the speaker.
+
+Every word was checked against KBBI: casual variants such as tapi and dulu stay
+in student speech, adults use standard forms; the checked list is the spec's
+appendix. `tests/test_event_dialogue_lines.gd` pins pool coverage, language,
+the question ending on choice lines and the real-font fit of the win lines.
+Spec: `specs/2026-09-29-dialogue-variations-design.md`.
+
+## 2026-09-29 — The real Guru Seni Budaya splash
+
+The flat placeholder silhouette behind Workshop Seni and the SeniBudaya win
+screen is replaced by the artist's Guru Seni Budaya (`GuruSBK.png`), dropped in
+at `Assets/Images/EventDialogue/splash_gurusenibudaya.png` on the same
+1080x1920 transparent frame; its `.import` and UID are unchanged, and no code
+moved. Her figure sits in a slightly smaller box than Guru Penjas's (alpha y
+104-1884 against 28-1916), as drawn. Its DEBT.md placeholder entry is gone.
+
+## 2026-09-29 — ResultCheckup clarity pass
+
+The week banner's pills now say what they count (UANG DIDAPAT, MINIGAME
+MENANG, EVENT TERJADI) under white, navy-rimmed numbers, and the money
+pill wears the Lobby coin. The weekly student cards are the daily cards
+showing a week: same readout, needs colours and entrance. The chip
+readout, week needs bars and staged reveal were retired. The captions
+wear the heading face at caption size so each fits on one line.
+Spec: `specs/2026-09-29-result-checkup-clarity-design.md`.
+
+## 2026-09-29 — Skin Select: the warm grade, and a lighter room
+
+The carousel's character cards were the one painted art in the game without
+the illustration grade. A card needs `skin_card_focus.gdshader` for its focus
+blur and can wear only one material, so the grade's colour half (saturation,
+contrast, exposure, tint, amount; same maths, same order) now lives in that
+shader too, and `test_skin_card` compares its defaults with
+`illustration_grade_material.tres` so a retune cannot leave the cards behind.
+The blurred room behind them read too dark: it is 25% lighter
+(1 - darkness 0.45 -> 0.5625) in its own `skin_select_backdrop_material.tres`,
+so ShopHub, CosmeticShop and the achievement popup keep the shared 0.55.
+
+## 2026-09-29 — RunResult: four rows, and the beaten-game crash
+
+The end-of-grade report drops "Total poin minigame" and "Barang dipakai" and
+keeps four rows: minigames won, minigames lost, wirausaha money, and **"Event
+yang diikuti"**. That last one used to read "Murid ikut event", which was the
+roster size the moment any event fired (an event marks the whole roster). It now
+counts events: `RunStats.events_attended`, booked by
+`SchoolDay._record_event_participation()` at all three event sites. `RunGrade`
+still scores the student share; `minigame_points` and `items_used` stay on
+`RunStats`, just unshown. The rows wear the artist's `gamewin_icon`,
+`gamelose_icon`, `coin_icon` and `event_icon` PNGs from
+`Assets/Images/EndGame/Icons/`.
+
+Pressing **Selesai** after beating Kelas 9 hard-crashed Godot 4.6.2 (signal 11,
+no script error). The cause was `RunResult.TUTORIAL_FLAGS`, a
+`Dictionary[String, PackedStringArray]` const built from Array literals:
+iterating it in `_apply_progression()` yielded empty flag names and then died
+on the fourth pass. It is now an untyped Dictionary of plain Arrays, and
+`test_run_result.gd` walks the real constant. Found by reading
+`%APPDATA%/Godot/app_userdata/KejarTes Ver9.00/logs/godot.log`, which holds the
+crash backtrace the editor's Output panel never shows.
+
+## 2026-09-29 — Weekly results under the design rules
+
+The weekly report (`ResultCheckup`) now follows the role palette. The red
+English "WEEKLY RESULTS" ribbon is a brown `ResultTitlePanel` plate reading
+HASIL MINGGUAN, and the summary panel is sunken cream with a cream-lip rim
+instead of butter yellow (`recap_banner_fill` is gone). On the weekly cards
+only, energy and mood wear the game-wide yellow and pink (`WeekEnergyBar`,
+`WeekMoodBar`) instead of Istirahat's purple and the warning orange, and each
+stat's week change is a green (`DeltaChipGain`) or red (`DeltaChipLoss`)
+chip followed by the run target, replacing the gold chevron. The nightly
+popup, the apply-item rows and the event picker share the card and are
+unchanged: `DaySummaryStudentRow._apply_look(week)` runs first in every entry
+point. Picked by the owner in the visual companion (header A, chips A,
+weekly only). Logs brown, cream tiles and the brown scroll fade came earlier
+the same day in #131. Checked live: the weekly report shows the plate, cream
+panel, yellow/pink needs and green/red chips, and a card through the nightly
+path keeps purple/orange needs, the gold chevron and `+6/52`. A weekly
+gain still plays its pop, burst and gain cue from the chip
+(test_a_weekly_gain_keeps_its_reward_marker), and a loss chip pops in
+without a burst.
+
+## 2026-09-29 — The event dialogue speaker's shadow is visible
+
+The speaker's shadow was outer AO at the shared strength (offset 0, scale 1,
+alpha 0.34, blur 1.2), which sits exactly behind the art and left a
+one-pixel hairline: hiding it changed 0.10% of the frame. It keeps the
+2026-09-23 rule of no drop shadow (offset stays 0) but is now denser and wider
+so it reads against the photographic backdrop: alpha 0.7, blur 4.0, scale
+1.02. That was option B of three compared at 1080x1920; the owner passed on a
+down-right drop shadow. The Lobby desks, Herman and BGHari keep the shared
+strength, and `test_paper_shadow` lets the speaker carry its own.
+
+## 2026-09-29 — The Lobby look and 30% less colour on the event dialogue
+
+EventDialogue (the character line before every minigame and event) now wears
+the Lobby look under its UI. A new kit piece, `ScreenSaturation`
+(`Scenes/Look/ScreenSaturation.tscn`, `screen_saturation.gdshader`), reads the
+frame and mixes it toward luminance: 0.7 keeps 70% of the colour, so the
+backdrop and speaker lose 30%. It grades the composed picture in one pass
+instead of forking the shared illustration grade materials, which a dozen
+tests pin. The scene order is Background, Blur, Splash, Desaturate, Light,
+Shafts, Bloom, then the header and dialogue box, so the lights are not
+desaturated and the UI is never graded, lit or bloomed. The bloom is the
+art-only `ScreenGlow` at threshold 0.85: on the bright school it lifts about a
+tenth of the art with the median untouched (+0.8% frame mean), where 0.7
+washed it out; the rain scene is too dark to bloom. Measured at 1080x1920 the
+picture's colour fell to about 75% of before (a chroma mix plus clipping). The
+debug Look tab gains a Saturasi Layar slider.
+
+One trap on the way: Godot copies the screen texture once and shares it, so
+the grade first read the frame from before the blur and the speaker and
+dropped both. Each screen reader now has a `BackBufferCopy` right before it
+(`GradeCopy`, `BloomCopy`), pinned by `test_event_dialogue`.
+
+## 2026-09-29 — Koperasi takes the Lobby's bloom
+
+The owner asked for the Lobby's WorldEnvironment on the shop, and Koperasi
+was the one shop without it. The copied glow had washed its text out
+because its art and UI shared layer 0, so the picture moved instead: a
+`World` CanvasLayer at −1 now holds `WallFill` and a `Room` that mirrors
+`Stage`'s bottom-pinned 1080×1920 rect, with the backdrop, light, shafts,
+Pak Herman and the counter on the Room's parallax driver at their old
+depths (0.15, 0.5, 1.0); `Stage/Parallax` is gone. `Glow` (an
+`AmbientGlow`) sits second in the root; `Stage/Bloom` is gone. The goods
+with their price tags and pips, the boards, the bubble, the back button and
+the tray stay on `Stage`, so no UI blooms. The goods used to draw under
+Herman and the counter; neither plate has an opaque pixel over any shelf
+slot, so drawing them above changes nothing. Measured live, glow on vs
+off: Herman +0.023 mean (peak +0.45, a soft warm halo), the counter +0.012,
+the lit corner +0.018; the price tags and goods +0.000, the boards' text
+and the tray about +0.0002. Reparenting the
+`LightPool` in the editor wrote its internal `Pool`/`Rays` into Koperasi
+as authored nodes, and saving baked copies of the local-to-scene materials
+and Environment, so the scene was cleaned by hand; `test_lobby_look` now
+fails if `World/Room/Light` has authored children.
+
+## 2026-09-29 — The Lobby's bloom on the shops and the end game
+
+The bloom still did not read in play, so the owner asked for the Lobby's own
+WorldEnvironment glow. `AmbientGlow` now defaults to `lobby_environment.tres`'s
+values (threshold 0.7, intensity 1.5, strength 1.2, screen blend, layer −1),
+and one `Glow` sits second in the root of ShopHub, CosmeticShop, TesNotice,
+StatCheck, ExamProgress, EndCutscene and RunResult, replacing their
+`ScreenGlow`. Measured in the running game (glow on vs off): the Lobby itself
++0.96% frame mean, peak +0.22; RunResult peak +0.38 over 12% of the screen;
+ShopHub +0.8% mean under its blur; TesNotice stays near zero under its
+scrim. The earlier "+0.0000" measurements were a harness artefact: an
+Environment glow never renders in an offscreen SubViewport.
+
+Koperasi and the minigames draw their UI on the same layer as their art, and
+the copied glow washed Koperasi's text and BELI button out (peak +0.998). By
+the owner's choice they keep the art-only `ScreenGlow`, raised to intensity
+0.8. The debug Look tab gained sliders for every `AmbientGlow` on screen.
+
+## 2026-09-29 — Debug Look tab on every screen; softer win photo; brighter bloom
+
+The debug overlay's Look tab moved out of `DebugManager.gd` (at its size
+ceiling) into `Scripts/Debug/DebugLookPanel.gd`, and now reaches whatever
+screen is up: switches for Efek Suasana and Efek Visual, and live sliders for
+every `ScreenGlow` (threshold, intensity, spread), `LightPool` and
+`SunShafts` on screen, each reporting how many nodes it reached. The Scenes
+tab lists every routed screen (LevelSelect, CutScene, StudentList,
+ReportCard, Inventory, Achievements, Koperasi, CosmeticShop and StatCheck
+joined), and the minigame launcher lost an entry that pointed at
+`AnswerCard`, a component of Menjodohkan.
+
+The bloom was measurable but too faint to notice in play (peaks +0.06 to
++0.15, frame mean about +1%), so `ScreenGlow`'s intensity doubled to 0.6,
+the exam notices went to 1.2 and ExamProgress to 1.0; the thresholds are
+unchanged. The pass photo on EndCutscene and RunResult was too contrasty (a
+near-black chalkboard under a hot floor): its pass light is dimmer (pool
+0.06, shafts 0.12) and carries a soften pair, a 0.88 multiply then a warm
+0.07 add, which cut the photo's luminance spread by 12% and lifted its
+darkest 2% from 0.008 to 0.069.
+## 2026-09-29 — MURIDMU: the RosterCard week planner
+
+Spec: `.superpowers/sdd/2026-09-29-muridmu-rostercard/`. Also covers
+StudentList's share of depth-pass Phase 3.
+
+The StudentList card is now a week planner on a desk.
+
+- **Card.** Plan-me sticky notes with tape and tilt, and a sunflower glow on
+  the day being planned; a torn week band with a mint tally; a paperclip on
+  the photo, a pencil on the catatan.
+- **Motion.** The whole card breathes on its Paper (roots stay free for the
+  deck), entry beats play on landing, and the screen reopens on the last
+  student. The roster ring is animated and the nav arrows nudge (`NudgeLoop`,
+  which follows the arrow's visibility, so a lone card never nudges).
+- **RosterDeck.** A stack-of-files swipe: the front card follows the finger
+  with a capped tilt, the authored GhostCard trails at parallax, and a switch
+  is one overlapped timeline.
+- **Behaviour change.** An avatar jump now throws like Next (later student)
+  or Prev, instead of an unanimated cut.
+- **Lesson.** StudentList is not `@tool` (the editor runner gets a
+  placeholder), so its logic moved onto `@tool` `RosterCard` / `RosterDeck`,
+  which tests can instance; StudentList itself is covered by source scans.
+
+## 2026-09-29 — UI depth pass, Phase 3: icons, roles and the glyph rule
+
+Plan: `docs/superpowers/plans/2026-09-29-ui-depth-pass-phase3.md`.
+
+The screen pass. Every screen's tiles, arrows, exit and category pictures
+now come from `Assets/Images/UI/Icons/`, so the owner's chunky set drops in
+at those paths with no scene change; two buttons got their right role; and
+typed emoji and dingbats left the UI text, with a suite that keeps them out
+(style guide, "Icons"; the folder README's "Where each icon is used").
+
+- **Lobby and MainMenu.** The five nav tiles wear `nav_students`,
+  `nav_jadwal`, `nav_koperasi`, `nav_inventory` and `nav_rapor`; MainMenu's
+  Quit wears `exit.svg`. The four rail icons are finished art and stayed.
+- **Paging arrows** (LevelSelect, StudentCard, StudentList, ReportCard)
+  wear `chevron_left` / `chevron_right`.
+- **Istirahat and Wirausaha** wear `cat_istirahat` / `cat_wirausaha` in
+  `RosterCard.SPECIALTY_ICONS`, `DayStickyNote.category_icons` and Dapatkan
+  Uang's tip, replacing the energy glyph, the coin and the generated
+  placeholder PNGs. `StudentList.CATEGORY_ICONS` (the card's day-note
+  preview) moved too, so a card's chip and its day notes agree; one shared
+  table in `test_student_list` pins both maps.
+- **Roles.** ReportCard's Back is brown (`SecondaryButton`), a return like
+  Inventory's and ShopHub's. Password/Variabel's Hapus, which only clears the
+  unsent answer, is brown beside the mint Kirim.
+- **Glyphs.** SchoolDay's tutorial, click-to-continue and skip, AturJadwal's
+  holiday line, DaySummaryBadge, DailyDecayOverview and CutScene's skip lost
+  their emoji. DayStickyNote's padlock is a `TextureRect` wearing
+  `icon_lock.svg`, not a "lock" emoji in a `Label`.
+
+Seven decisions taken while planning (the plan's table has the full
+rationale):
+
+- **P1** — The canonical back arrow stays: every Back keeps
+  `UI/Nav/return_button.png`; `chevron_left` is for paging, not Back.
+- **P2** — SchoolDay's end-of-week "Kembali ke Menu" stays mint: it is the
+  only way forward, that screen's main action, like RunResult's single CTA.
+- **P3** — Hapus is brown, not tomato: clearing an unsent answer is routine
+  and reversible, and `DangerButton` would tick the motor on every clear.
+- **P4** — StudentCard's page arrows keep `StudentCardSecondaryButtonL`
+  (cream, quiet); only the picture changed, so no pinned geometry moved.
+- **P5** — *Revised in Task 2.* The plan had each arrow draw its chevron as
+  the Button's own `icon` so it would sink with the face. The render showed
+  the lipped buttons' content margins squeezing the icon to about 15 px, so
+  each arrow instead draws its chevron as a child `Arrow` `TextureRect`: full
+  rect minus a 24 px inset, unrotated, `expand_mode` 1, `stretch_mode` 5, taps
+  ignored, and the Button's `icon` cleared. The chevrons now read at about
+  70 px. The local review caught that a child does not sink or dim like an
+  icon, so `Scripts/UI/ButtonGlyph.gd` on each `Arrow` drops it by the
+  button's own label drop while held and dims it while disabled.
+- **P6** — The glyph rule bans pictographs and dingbats (U+2300–23FF,
+  U+2600–27BF, U+2B00–2BFF, U+1F000–1FAFF, U+FE0F), not typography: the
+  Arrows block (`12 → 9`), `×` and code comments stay allowed. Two
+  reviewed exceptions: `StatInfo.gd`'s glyph fallback and CutScene's
+  debug-only level-select toggle.
+- **P7** — Phase 3 ran in the Phase 2 worktree on a new branch.
+
+Also decided along the way:
+
+- **Hapus wears `SecondaryButtonM`**, not the base `SecondaryButton` the plan
+  named: the base step's 36 px label looked lost beside Kirim's 64 px, and
+  the L step (166 px) overflows `AksiRow`'s 156 px band.
+- **The tutorial's cycle line was reworded**, not just stripped: with its
+  heavy arrows gone it reads "Atur Jadwal, Simulasi Hari Sekolah, lalu
+  Evaluasi Mingguan".
+- **The trait chips' gloss: checked, 14 px reads as a highlight on a 96 px
+  pill.** StudentList's trait row rendered at 1080x1920 and cropped 2x; no
+  crescent, so no code change and no `CHIP_GLOSS_WIDTH`.
+
+New suites: `lobby_tile_icons`, `paging_arrows`, `category_icons`,
+`button_roles_phase3` and `ui_text_glyphs` (the ratchet; its `ALLOWED` dict
+is the reviewed exception list). Suites that pinned an old path or variation
+(`main_menu`, `student_list`, `kalkulator`, `report_card`,
+`day_sticky_note`) were updated, not deleted.
+
+One hazard met again, no new rule: an editor `scene_save` of ReportCard, an
+`@tool`-scripted scene, baked `SafeAreaMargin`'s 48 px margin overrides into
+the file. The save was reverted and the one-line variation change made as
+text (the editor-save hazard CLAUDE.md 4b already covers).
+
+## 2026-09-29 — Bloom on the shops, end game and minigames
+
+The Lobby's bloom is a Canvas-mode `WorldEnvironment`, which reaches only
+layers at -1 or below; on the shops and end-game screens it measured as no
+bloom at all, and the minigames and Koperasi draw on layer 0 where it cannot
+reach. A new kit piece, `ScreenGlow` (`Scenes/Look/ScreenGlow.tscn`), runs
+the Efek Visual layer's `bloom.gdshader` per screen instead: a node named
+`Bloom`, placed right after each screen's last light piece, reads what is
+drawn so far and adds its bright parts back, so the UI drawn after it never
+blooms. It follows Efek Suasana and its screen's fades. Placed on ShopHub,
+CosmeticShop, Koperasi, TesNotice, StatCheck, ExamProgress, WinStage (so
+EndCutscene and RunResult bloom alike) and all eight lit minigames.
+
+Thresholds come from a full-size sweep (0.3-0.9) with each screen rendered
+bloom-off and -on: the highest that visibly blooms the light while the
+backdrop's median pixel moves by under +0.01. Pale wood (the four
+Akademis boards, BuatBatik) fogs below 0.8; MainBola, Badminton and
+LombaMenari take 0.75; the shops and WinStage 0.7; Koperasi 0.8, since its
+cream wall shows above its fixed 1920px Stage on a tall phone and a lower
+threshold leaves a step at the Stage's edge; ExamProgress
+0.5 at intensity 0.6; TesNotice and StatCheck, under their scrim, 0.4 at
+0.8 with a cool tint. `bloom.gdshader` now multiplies by its input `COLOR`,
+so the look layer's bloom fades with its modulate too.
+
+## 2026-09-29 — Skin select polish: class-only rail, scrapbook look
+
+Plan: `docs/superpowers/plans/2026-09-29-skin-select-polish.md`. The
+collaborator's own handoff spec
+(`docs/superpowers/specs/2026-09-28-skin-select-polish-design.md`) was
+revised before building, for the clean-code standard and the UI depth pass
+(both landed after it was written) -- see the plan's "Revision" section.
+
+The skin picker's rail now shows only the approved roster's names, 2-4 by
+grade, instead of always all six characters -- `Lobby.gd` calls down with
+`SkinSelect.roster_names(GameState.approved_students)`, and `SkinSelect`
+never reads `GameState` itself, so tests drive `open()` with plain arrays.
+An empty roster still falls back to every `StudentSkins.NAMES`, the
+pre-existing safety net. The screen also moved onto the UI depth pass's
+lipped look: TERAPKAN is a mint lipped `SkinApplyButton` with a "PAKAI!"
+sticker on its corner and the main-action haptic tick, in place of the
+2026-09-23 mockup's flat red/black rim; the rail's tiles are lipped photo
+cards, cream at rest and sunflower (the palette's highlight) when open,
+each with a washi-tape tab and a name caption; and the tray itself is ruled
+notebook paper (`paper_rule.png`, tiled) with two corner tape pieces, a
+centred "Kelasmu - N murid" header and "ketuk untuk pilih" hint above the
+rail, and paper-divider dots either side of the skin name. Three new SFX
+cues: `&"select"` on a rail tap, `&"swipe"` when the carousel settles on a
+new skin, `&"apply"` on TERAPKAN, each gated on an actual index change so a
+re-tap or a flick that snaps back home stays silent.
+
+Review pass, same day (whole-branch review, fix round 2): the header's
+"Kelasmu · N murid" used a "·" middle dot Boohong, the display face it
+renders in, does not carry (verified with fontTools) -- the same defect
+`ObjectiveHint.title` had already hit and fixed with a plain hyphen: the
+header is now "Kelasmu - N murid", pinned alongside the rest of the tray's
+display-face text by a glyph-coverage test mirroring
+`test_objective_hint.gd`'s. TERAPKAN now ticks the phone's motor on press
+-- `PressFeel.MAIN_ACTION_ROLES` had gained every other main action but
+missed `SkinApplyButton`. `SkinSelect.open()` now trims `_names` to the
+rail's own six authored tiles with a `push_warning`, so a 7+ name roster
+(reachable if the class-size cap ever moves) can no longer index past
+`%Rail`'s last child. A misnamed test
+(`test_open_takes_no_argument_and_first_student_is_open`, which no longer
+describes what it checks now that `open()` takes a roster) was renamed to
+`test_default_open_shows_the_first_students_tile_as_open`.
+
+## 2026-09-28 — UI depth pass, Phase 2: popups into the notebook
+
+Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase2.md`.
+
+All 17 popups now sit in `NotebookFrame` (Phase 1): tabs — Settings; sheets
+— AchievementDetailSheet, ItemDetailSheet, DapatkanUang, DailyLogin,
+WeekLogsPopup, DaySummaryPopup, DailyDecayOverview; dialogs — StatDetailPopup,
+TraitDetailPopup, WeekRecapPillInfoPopup, EventStudentSelectDialog,
+OpenAmplopConfirm, Peringatan, TesNotice, StatCheck, TutorialPanel.
+
+Six decisions taken while planning, each the conservative reading (style
+guide, "The notebook frame"; the plan's "Decisions taken while planning"
+section, `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase2.md`, for the
+full rationale):
+
+- **D1** — Settings' tabs are SUARA (the three sliders) and MAIN
+  (PERMAINAN/TAMPILAN switches).
+- **D2** — AchievementDetailSheet has no tabs; it shows one achievement,
+  nothing to switch between.
+- **D3** — Sticker titles are short fixed words; a popup's dynamic heading
+  (a stat name, an event name, a step title) stays in the host content.
+- **D4** — The frame's ✕ shows only where it adds nothing new, and stays
+  hidden where the player must decide or the flow is forced.
+- **D5** — Centred means centred: the stat/trait/pill dialogs and
+  ItemDetailSheet now centre inside `SafeAreaMargin` instead of a computed
+  `position` that ignored it.
+- **D6** — OpenAmplopConfirm and the Lobby's DailyLogin stay placed by their
+  screen (a tween and layered art respectively); TutorialPanel is placed by
+  each caller.
+
+New suite `tests/test_popup_frames.gd` is the 17-row roster (plus
+`SCREEN_SCRIPTS` for the two popups owned by `AturJadwal.tscn` and
+`Lobby.tscn`); `tests/fixtures/notebook_host.tscn` backs the nested-instance
+tests in `tests/test_notebook_frame.gd`.
+
+Fixes found while migrating: the tab strip sat low enough to clip its own
+labels behind the page edge (`NotebookFrame.tscn`'s `Tabs` moved to
+`offset_top -84`); an empty popup roster made every roster test a false
+green until rows were added, so each opens with an `assert_false` on the
+roster itself; a `MarginContainer` used as a plain host-content wrapper
+inherits the baked theme's 48px margins unless it zeroes them
+(`TutorialPanel`); TesNotice's body label read invisible light-on-cream
+until it moved from `ResultBodyLabel` to `EventBodyLabel`; and
+OpenAmplopConfirm's Batal/Terima buttons overlapped the taller frame until
+they moved inside `Letter/VBox`.
+
+## 2026-09-28 — Koperasi top-band promo: signboard, promo board, Kas Kelas footer
+
+Plan: `docs/superpowers/plans/2026-09-28-koperasi-top-band-promo.md`. The
+collaborator's own handoff plan was revised before building, for the
+clean-code standard and the UI depth pass (both landed after it was written)
+-- see the plan's "Revision" section.
+
+The shop's blank top band now carries a brown lipped Signboard and a cream
+lipped PromoBoard advertising the week's discount. The weekly promo is one
+deterministic pick per `(grade, week)` from the freshly rolled shelf
+(`GameState.promo_item_for`/`promo_percent_for`, hashed off the week key, not
+the shelf's own unseeded shuffle), surfaced through the single pricing
+chokepoint `Cart.price_of()` so the shelf's `PriceTag` (struck list price
+plus a tangerine "-N%" badge), the running Total and the Beli affordability
+check all agree. The old ledge `CoinHUD` is gone; the balance now lives in
+the basket tray's footer as a "KAS KELAS" pill beside its twin "TOTAL" pill,
+each a `ThemeFactory` lipped-cream variation with asleep (empty cart, the
+depth pass's own disabled look), awake and over-budget (tomato lip) states
+swapped by `theme_type_variation`, never a runtime colour override. A
+successful Beli sends a floating "-<total>" out of the Kas pill
+(`AnimUtils.create_floating_text`) with a `squash_bounce`, and the balance
+itself counts down through the existing `money_changed` -> `show_kas()`
+path.
+
+Review pass, same day: the Total pill now counts up and scale-pops on an
+awake change too (`Juice.count_up_formatted` on its own `_total_tween`,
+killed before a restart, mirroring `_kas_tween`), matching the spec's Part 3
+that the first cut had left as a straight text assignment.
+`GameState.promo_item_for` now sorts its distinct names before indexing, so
+the pick no longer depends on the shelf's shuffled order despite the suite's
+header claiming it did. `list_price_of` gained a test that actually proves
+it ignores the promo (the existing check could pass even if it didn't, since
+both sides of that comparison would be off by the same factor). An empty
+shelf now zeroes `shop_promo_percent` alongside `shop_promo_item`, matching
+its own doc comment. `Koperasi.gd`'s `_ready()` re-nudging `PromoBoard`
+after `Stage` rolls the shelf -- necessary because children ready before
+their parent -- is now pinned by a test instead of resting on an inline
+comment alone. Two stale test names from the pre-review cut
+(`test_koperasi_coin_hud_rides_the_stage`, `test_coin_hud_and_message_live_in_the_scene`)
+were renamed to what they actually check, and a couple of loop variables in
+`ThemeFactory._build_koperasi_chrome` and `BasketTray._ensure_nodes` picked
+up explicit types per the plan's clean-code revision (the ratchet itself
+only tracks `var` declarations and function signatures, not loop variables,
+so this is review guidance rather than a baseline move). No new bare
+numbers or untyped `var`s landed on any touched script.
+
+## 2026-09-28 — UI depth pass, Phase 1: lipped buttons
+
+Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase1.md`.
+
+Every framed button is now a lipped face — a native `StyleBoxFlat` built by
+`LippedBox`, on a darker lip with a soft gloss and no rim — coloured by its role: mint for the main action on
+every screen (matching the Lobby's green JADWAL!), tomato for danger, brown
+neutral, cream quiet. Held, a button sinks onto its lip through its pressed
+stylebox and pops on release (`Juice.pop_release`); main actions also tick
+the motor (`PressFeel`, 8 ms, honouring Getar). The scrapbook Lobby keeps
+its layout and gets the same surface. New for Phase 2: `NotebookFrame`, and
+16 placeholder icons at fixed paths for the owner's set.
+
+## 2026-09-28 — The Lobby look, part 3: the minigames
+
+Plan: `docs/superpowers/plans/2026-09-28-lobby-look-everywhere.md`, Tasks
+12–14. All eight minigames (PilihanGanda, Menjodohkan, Password, Variabel,
+MainBola, Badminton, LombaMenari, BuatBatik) now carry a warm `LightPool`
+right after their backdrop, on layer 0, plus `SunShafts` on every game but
+BuatBatik, which keeps rays off its drawing canvas. The desk games get a
+lamp pool upper left; MainBola and Badminton get a sun pool upper left,
+drawn under MainBola's pitch lines; LombaMenari gets a spotlight from the
+top with five downward shafts. None of them get bloom or a World layer:
+SchoolDay hosts each game inside its own tree over a layer-0 Background, so
+a World layer at -1 would draw under it, and SchoolDay's fade on the
+minigame root would not reach a CanvasLayer. Measured light, kit on vs off,
+on six of the eight games (Menjodohkan and Password share PilihanGanda's/
+Variabel's desk backdrop and values), lifted the upper-left corner about
++0.02 to +0.04 (LombaMenari's top-centre spot +0.0065 mean); nothing lands
+over the goal, net, hit zone or batik canvas. The illustration census now
+counts 42 graded plates, Badminton's court joining it.
+
+Badminton's court is now an authored `Background` node in `Badminton.tscn`
+(plain grade, ignores taps) instead of being built by `_add_background()`
+at runtime, dropping the runtime-construction ratchet for `Badminton.gd`
+8 → 7 and its `_ready` long-function count 64 → 63.
+
+With this part, the Lobby-look plan is done.
+
+## 2026-09-28 — Lomba Menari's notes are real arrows
+
+Plan: `docs/superpowers/plans/2026-09-28-lomba-menari-note-arrow.md`.
+
+The notes used to be a code-drawn coloured box with a `←`/`→`/`↖`/`↗` typed
+on it (and a bigger one flashed over the hit zone on each hit), glyphs
+neither Boohong nor Open Sans can draw, so they rode the device's fallback
+font. Each note is now `MenariNote.tscn`: one chunky, white-filled arrow
+(`note_arrow.png`, from the game's existing arrow art), turned per lane from
+`ARROW_DIRECTIONS` and tinted with the lane's `*_note_color`. A hit lightens
+it by `swiped_arrow_lighten` as it flies off. The eight never-filled
+per-direction texture slots are gone, and `LombaMenari.gd`'s runtime-UI
+baseline fell 4 → 1.
+
 ## 2026-09-28 — Atur Jadwal: "perlu" fix and the need gauge
 
 Plan: `docs/superpowers/plans/2026-09-28-atur-jadwal-perlu-gauge.md`.
@@ -43,6 +557,36 @@ available only when `is_dev_mode` is set and `OS.is_debug_build()` is true
 disabled and `open()` refuses, so no free coins are handed out before a
 real ad SDK exists. The debug check is a var the `dapatkan_uang` suite can
 flip to stand in for a release.
+
+## 2026-09-28 — The Lobby look, part 2: the end of the grade
+
+TesNotice and StatCheck moved their backdrop into `World/Room` with the
+plain grade, the existing TEGANG tint, a cool dim `LightPool` and
+`SunShafts`, under a flat parallax (`Backdrop`, `Light`, `Tint`, `Shafts`,
+all overscanned); StatCheck's backdrop is now Full Rect (it had shipped as
+a fixed 1080x1920 rect). ExamProgress got the same `World/Room` treatment
+with a warm `LightPool` and `SunShafts` but no parallax, because it already
+pans its own backdrop; `ExamProgress.gd` finds it as `%Backdrop`. WinStage
+carries two light groups in its `Stage`, `LightPass` (warm pool + shafts)
+and `LightFail` (dim cool pool), chosen by `dress()`; both clip to the
+photo print, found while measuring — the pool spilled past the white frame
+onto the letterbox bars before the fix. The painting's backdrop takes the
+plain grade, the four students the cutout grade. EndCutscene and RunResult
+moved `WinStage` into `World/Room` too, both finding it as `%WinStage`;
+RunResult's exit fade now also fades its `Room` (a `CanvasLayer` ignores
+the root's modulate), through a named `EXIT_FADE_SECONDS` const (its
+bare-number count dropped 8→7). Neither verdict screen parallaxes:
+WinStage is a letterboxed, framed print, not a diorama.
+
+Bloom, measured the same way as the shops: none of the five screens
+crosses the bar — every one measured +0.0000 core bloom at every threshold
+tried (ExamProgress and TesNotice down to 0.5, StatCheck 0.5, EndCutscene
+0.7), so none places a `Glow`. The EndCutscene → RunResult hand-over stays
+invisible, measured live on the running screen: max diff 0.0143 outside
+the report UI (limit 0.02). The census now counts 41 graded plates, the
+exam backdrops, ExamProgress, and WinStage's painting and lineup having
+joined `test_look_layer`'s GRADED. Full suite on the merged branch: 166
+suites, 2584 tests.
 
 ## 2026-09-28 — The Lobby look, part 1: the shops
 

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="192" viewBox="0 0 128 192">
+  <!-- Photo paperclip (MURIDMU RosterCard Task 1 groundwork), a decorative
+       prop pinned at the portrait's top-centre with a ~8deg rotation set on
+       its node, not baked in here. Drawn as a double pass over one wire
+       path - a wide dark stroke first, a narrower light stroke on top -
+       so it reads as a light metal wire with a dark rim, the same
+       light-fill/dark-outline language as Assets/Images/UI/Icons/README.md,
+       applied to a stroked shape instead of a closed glyph. Not scanned by
+       tests/test_ui_icons.gd (that suite is fixed to UI/Icons/), so the
+       contrast rule here is a style choice, not a pinned assertion. -->
+  <path d="M76 26 C94 26 108 40 108 58 L108 130 C108 154 88 174 64 174
+           C40 174 20 154 20 130 L20 56 C20 40 32 28 48 28
+           C64 28 76 40 76 56 L76 122 C76 132 68 140 58 140
+           C48 140 40 132 40 122 L40 66"
+        fill="none" stroke="#3B2412" stroke-width="20"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M76 26 C94 26 108 40 108 58 L108 130 C108 154 88 174 64 174
+           C40 174 20 154 20 130 L20 56 C20 40 32 28 48 28
+           C64 28 76 40 76 56 L76 122 C76 132 68 140 58 140
+           C48 140 40 132 40 122 L40 66"
+        fill="none" stroke="#FFF6E8" stroke-width="9"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

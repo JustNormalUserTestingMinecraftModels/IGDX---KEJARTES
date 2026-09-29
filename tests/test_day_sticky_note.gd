@@ -29,6 +29,18 @@ func test_scene_tree_shape() -> void:
 			  "Paper/WashiTape", "Paper/Lines/AturHint"]:
 		assert_true(_note.get_node_or_null(p) != null, "missing node: " + p)
 	assert_true(_note.get_node("Paper") is TextureButton, "Paper must be a TextureButton")
+	# The padlock is a picture, not a typed emoji (CLAUDE.md: no emoji as UI
+	# iconography; UI depth pass Phase 3, P6).
+	var lock := _note.get_node("Paper/Lock") as TextureRect
+	assert_true(lock != null, "Paper/Lock must be a TextureRect")
+	if lock == null:
+		return
+	assert_true(lock.texture != null, "the lock wears a picture")
+	if lock.texture == null:
+		return
+	assert_eq(lock.texture.resource_path, "res://Assets/Images/UI/Placeholders/icon_lock.svg",
+		"the lock wears icon_lock.svg")
+	assert_eq(lock.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the lock lets the tap through to Paper")
 	var shadow := _note.get_node("Shadow") as TextureRect
 	assert_true(shadow.material is ShaderMaterial, "Shadow needs the soft_shadow ShaderMaterial")
 
@@ -108,7 +120,7 @@ func test_show_scheduled_fills_text_icon_and_tint() -> void:
 	assert_true((_note.get_node("Paper/Lines/SubjectLabel") as Label).visible)
 	assert_true((_note.get_node("BackIcon") as TextureRect).visible)
 	assert_true((_note.get_node("BackIcon") as TextureRect).texture != null)
-	assert_false((_note.get_node("Paper/Lock") as Label).visible, "no lock on a normal scheduled day")
+	assert_false((_note.get_node("Paper/Lock") as TextureRect).visible, "no lock on a normal scheduled day")
 	assert_false((_note.get_node("Paper/Lines/AturHint") as Label).visible, "a scheduled day needs no hint")
 	var tape := _note.get_node("Paper/WashiTape") as TextureRect
 	assert_true(tape.visible, "a scheduled day wears its tape")
@@ -122,7 +134,7 @@ func test_show_empty_hides_the_extras() -> void:
 	assert_false((_note.get_node("Paper/Lines/SubjectLabel") as Label).visible)
 	assert_false((_note.get_node("Paper/Lines/FlavorLabel") as Label).visible)
 	assert_false((_note.get_node("BackIcon") as TextureRect).visible)
-	assert_false((_note.get_node("Paper/Lock") as Label).visible)
+	assert_false((_note.get_node("Paper/Lock") as TextureRect).visible)
 	assert_false((_note.get_node("Paper/WashiTape") as TextureRect).visible, "an empty day has no tape")
 	var hint := _note.get_node("Paper/Lines/AturHint") as Label
 	assert_true(hint.visible, "an empty day invites the tap")
@@ -190,7 +202,7 @@ func test_show_holiday_is_gold_locked_and_titled() -> void:
 	assert_eq((_note.get_node("Paper/DayLabel") as Label).text, "RABU")
 	assert_eq((_note.get_node("Paper/Lines/SubjectLabel") as Label).text, "Kemerdekaan RI")
 	assert_eq((_note.get_node("Paper/Lines/FlavorLabel") as Label).text, "Libur Nasional")
-	assert_true((_note.get_node("Paper/Lock") as Label).visible, "holiday note must show the lock")
+	assert_true((_note.get_node("Paper/Lock") as TextureRect).visible, "holiday note must show the lock")
 	assert_true((_note.get_node("BackIcon") as TextureRect).visible)
 	var tape := _note.get_node("Paper/WashiTape") as TextureRect
 	assert_true(tape.visible, "a holiday wears its tape")

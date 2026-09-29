@@ -12,6 +12,8 @@
 [ext_resource type="Texture2D" uid="uid://d025rina4pbxc" path="res://Assets/Images/Textures/batik_fase4.png" id="10_p0yls"]
 [ext_resource type="Texture2D" uid="uid://crkkqt6hdug0q" path="res://Assets/Images/Textures/batik_fase5.png" id="11_bm7ql"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6wcp2"]
 bg_color = Color(1, 1, 1, 1)
@@ -104,6 +106,15 @@ mouse_filter = 2
 texture = ExtResource("8_tjkcn")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="Light" parent="." instance=ExtResource("look_pool")]
+center = Vector2(0.15, 0.08)
+pool_size = Vector2(1400, 1400)
+intensity = 0.08
+
+[node name="Bloom" parent="." instance=ExtResource("look_bloom")]
+threshold = 0.8
+intensity = 0.8
 
 [node name="TitleLabel" type="Label" parent="." unique_id=220147040]
 layout_mode = 1

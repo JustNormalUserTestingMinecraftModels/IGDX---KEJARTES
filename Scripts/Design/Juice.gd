@@ -56,6 +56,23 @@ static func release(node: Control) -> void:
 	tw.tween_property(node, "scale", Vector2.ONE, t.dur_fast)
 
 
+## A lipped button's release (2026-09-28 UI depth pass). Its pressed
+## stylebox already sank it, so instead of springing back from a shrink it
+## bumps to release_pop_scale and settles, over release_pop_duration.
+static func pop_release(node: Control) -> Tween:
+	if not _alive(node):
+		return null
+	var t := tokens()
+	set_pivot_center(node)
+	var half := t.release_pop_duration * 0.5
+	var tw := node.create_tween()
+	tw.tween_property(node, "scale", Vector2.ONE * t.release_pop_scale, half) \
+		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	tw.tween_property(node, "scale", Vector2.ONE, half) \
+		.set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_QUAD)
+	return tw
+
+
 ## Grow a node in from 0.82 scale and zero alpha. Returns the tween so a
 ## caller can stop it mid-flight -- a skipped reveal must not let a
 ## half-faded node keep fading over the state it landed on.
@@ -158,8 +175,8 @@ static func count_up(label: Label, from: float, to: float, fmt: String = "%d") -
 ## "+12/65"). `formatter` takes the interpolated value and returns the
 ## full label text; `delay` matches pop_in/fill_bar's, so this can be
 ## staggered alongside a bar it travels with. `duration` defaults to
-## tokens.dur_slow; the weekly reveal passes its own count_seconds. Returns
-## the tween so a caller can stop it.
+## tokens.dur_slow; a caller such as MinigameWinStat passes its own
+## duration. Returns the tween so a caller can stop it.
 static func count_up_formatted(label: Label, from: float, to: float,
 		formatter: Callable, delay: float = 0.0, duration: float = -1.0) -> Tween:
 	if not _alive(label):

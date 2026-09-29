@@ -50,6 +50,7 @@ stretch_mode = 5
 
 [node name="Bubble" type="Control" parent="Root" unique_id=476304184]
 layout_mode = 1
+anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -89,7 +90,6 @@ offset_bottom = 2.0
 mouse_filter = 2
 texture = ExtResource("4_tail")
 expand_mode = 1
-flip_h = true
 flip_v = true
 
 [node name="Card" type="PanelContainer" parent="Root" unique_id=1256961919]

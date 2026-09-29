@@ -188,7 +188,7 @@ func test_the_screen_is_authored_and_themed() -> void:
 	assert_eq(s.splash.material.resource_path, "res://Scripts/Shaders/illustration_grade_cutout.tres")
 	var tail := s.get_node("Root/Bubble/Tail") as TextureRect
 	assert_eq(tail.texture.resource_path, "res://Assets/Images/Shop/UI/chat_bubble_tail.svg")
-	assert_true(tail.flip_h and tail.flip_v, "the tail points up-left at the speaker")
+	assert_true(not tail.flip_h and tail.flip_v, "the tail points up-right at the speaker")
 	assert_eq(s.star_row.get_child_count(), 3)
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameWinScreen.gd")
 	assert_false(src.contains(".new("), "the screen is fully authored")

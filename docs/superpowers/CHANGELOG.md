@@ -18,7 +18,8 @@ teachers and the Hujan narrator. They live in
 writer. `EventDialogueCatalog.pick_line` and `win_line_for` draw without an
 immediate repeat and fall back to each entry's own `line`. Students now say
 "Pak" (the win fallback is "Terima kasih, Pak!"), and the win bubble grew
-upward to fit two lines (Bubble height 144 to 160 px).
+upward to fit two lines (Bubble height 144 to 160 px); its tail now points
+up-right at the speaker.
 
 Every word was checked against KBBI: casual variants such as tapi and dulu stay
 in student speech, adults use standard forms; the checked list is the spec's

@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="MinigameHowTo" load_steps=9 format=3]
+[gd_resource type="Resource" script_class="MinigameHowTo" format=3 uid="uid://diwd3j0a1v7xf"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameHowTo.gd" id="1_howto"]
-[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameHowToStep.gd" id="2_step"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Icons/howto_read.svg" id="3_a"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Icons/howto_tap.svg" id="4_b"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Icons/howto_timer.svg" id="5_c"]
+[ext_resource type="Script" uid="uid://busc6jrhyuvjp" path="res://Scripts/Minigames/UI/MinigameHowTo.gd" id="1_howto"]
+[ext_resource type="Script" uid="uid://dq2rlfo6jfwrf" path="res://Scripts/Minigames/UI/MinigameHowToStep.gd" id="2_step"]
+[ext_resource type="Texture2D" uid="uid://c0yiir1oliyhr" path="res://Assets/Images/UI/Icons/howto_read.svg" id="3_a"]
+[ext_resource type="Texture2D" uid="uid://ce05fch5287ol" path="res://Assets/Images/UI/Icons/howto_tap.svg" id="4_b"]
+[ext_resource type="Texture2D" uid="uid://dhddekputr7go" path="res://Assets/Images/UI/Icons/howto_timer.svg" id="5_c"]
 
 [sub_resource type="Resource" id="Step_1"]
 script = ExtResource("2_step")

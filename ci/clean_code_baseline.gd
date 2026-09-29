@@ -31,7 +31,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::_instantiate_cards": 64,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::reveal_answers": 63,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::setup_game": 56,
-	"res://Scripts/Minigames/Akademis/PilihanGanda.gd::_show_current_question": 73,
+	"res://Scripts/Minigames/Akademis/PilihanGanda.gd::_show_current_question": 70,
 	"res://Scripts/Minigames/Akademis/Variabel.gd::_generate_question": 127,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd::_physics_process": 53,
 	"res://Scripts/Minigames/Olahraga/Badminton.gd::_ready": 63,

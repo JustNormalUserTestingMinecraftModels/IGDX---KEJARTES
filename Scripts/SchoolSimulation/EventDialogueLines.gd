@@ -429,7 +429,7 @@ const WIN_STUDENT_LINES := {
 		"Olahraga": [
 			"Ternyata olahraga juga ada rumusnya, Pak!",
 			"Aku sudah membaca strateginya, Pak.",
-			"Teman-teman mengajariku banyak hal, Pak.",
+			"Sudutnya sudah kuhitung di buku, Pak!",
 			"Menang berkat persiapan yang matang, Pak.",
 			"Akan kutulis di jurnal harianku, Pak.",
 		],
@@ -444,7 +444,7 @@ const WIN_STUDENT_LINES := {
 		],
 		"SeniBudaya": [
 			"Juara seni juga kita rebut, Pak!",
-			"Asyik! Tim seni kita enggak terkalahkan!",
+			"Asyik! Ternyata seni juga seru, Pak!",
 			"Lawan berikutnya mana, Pak? Aku siap!",
 			"Terima kasih, Pak! Aku makin semangat!",
 			"Siapa bilang aku cuma jago lari, Pak?",
@@ -513,7 +513,7 @@ const WIN_STUDENT_LINES := {
 		],
 		"SeniBudaya": [
 			"Karya asal-asalan pun menang. Bercanda!",
-			"Ternyata aku punya bakat terpendam, Pak!",
+			"Sambil menguap pun aku bisa, Pak!",
 			"Menang, Pak! Traktir es teh, ya?",
 			"Pajang karyaku di kelas, ya, Pak?",
 			"Sekarang waktunya bersantai, Pak!",
@@ -529,7 +529,7 @@ const WIN_STUDENT_LINES := {
 	"Thea": {
 		"Akademis": [
 			"Belajar tiap malam ada hasilnya, Pak!",
-			"Jariku pegal, tapi soalnya selesai semua!",
+			"Jariku pegal, tapi semua soal selesai!",
 			"Lega sekali, Pak! Terima kasih!",
 			"Besok aku mau berlatih sekali lagi, Pak.",
 			"Hampir sempurna, Pak! Nanti kuperbaiki.",
@@ -544,7 +544,7 @@ const WIN_STUDENT_LINES := {
 		"Olahraga": [
 			"Latihan tiap sore tidak sia-sia, Pak!",
 			"Lenganku pegal, tapi kita menang, Pak!",
-			"Syukurlah, Pak! Kerja sama kita kompak!",
+			"Fokusku terjaga sampai akhir, Pak!",
 			"Skornya bagus. Besok kuulang sekali lagi!",
 			"Aku lega sekali. Terima kasih banyak!",
 		],

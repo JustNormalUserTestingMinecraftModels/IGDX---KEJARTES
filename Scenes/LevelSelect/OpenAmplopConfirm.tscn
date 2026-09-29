@@ -76,7 +76,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 theme_type_variation = &"EventBodyLabel"
-text = "2 murid, 6 minggu, tingkat santai. Target paling ringan, cocok untuk memulai."
+text = "2 murid, 4 minggu, tingkat santai. Target paling ringan, cocok untuk memulai."
 autowrap_mode = 3
 
 [node name="Buttons" type="HBoxContainer" parent="Letter/VBox" unique_id=2098934961]

@@ -51,14 +51,15 @@ func _center(index: int) -> void:
 
 # ── Data ─────────────────────────────────────────────────────────────────────
 
-## Weeks and target must be read from Balance.gd, never hardcoded literals.
-func test_weeks_and_target_come_from_balance() -> void:
-	assert_eq(LS.weeks_for(7), Balance.JUMLAH_MINGGU_KELAS_7, "wk7")
-	assert_eq(LS.weeks_for(8), Balance.JUMLAH_MINGGU_KELAS_8, "wk8")
-	assert_eq(LS.weeks_for(9), Balance.JUMLAH_MINGGU_KELAS_9, "wk9")
-	assert_eq(LS.target_for(7), int(Balance.TARGET_KENAIKAN_KELAS_7), "t7")
-	assert_eq(LS.target_for(8), int(Balance.TARGET_KENAIKAN_KELAS_8), "t8")
-	assert_eq(LS.target_for(9), int(Balance.TARGET_KENAIKAN_KELAS_9), "t9")
+## Weeks and target come from GameState (WEEKS_BY_GRADE 4/6/8,
+## TARGET_UPLIFT_BY_GRADE 15/22/26), never hardcoded literals.
+func test_weeks_and_target_come_from_their_owners() -> void:
+	assert_eq(LS.weeks_for(7), GameState.WEEKS_BY_GRADE[7], "wk7")
+	assert_eq(LS.weeks_for(8), GameState.WEEKS_BY_GRADE[8], "wk8")
+	assert_eq(LS.weeks_for(9), GameState.WEEKS_BY_GRADE[9], "wk9")
+	assert_eq(LS.target_for(7), int(GameState.TARGET_UPLIFT_BY_GRADE[7]), "t7")
+	assert_eq(LS.target_for(8), int(GameState.TARGET_UPLIFT_BY_GRADE[8]), "t8")
+	assert_eq(LS.target_for(9), int(GameState.TARGET_UPLIFT_BY_GRADE[9]), "t9")
 
 
 ## Every grade has a difficulty word, a gauge fill, a tag and a brief line.
@@ -76,8 +77,8 @@ func test_difficulty_map_covers_all_grades() -> void:
 ## The screen must not re-type balance numbers as literals.
 func test_source_reads_balance_constants() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Balance.JUMLAH_MINGGU_KELAS_"), "reads weeks from Balance")
-	assert_true(src.contains("Balance.TARGET_KENAIKAN_KELAS_"), "reads target from Balance")
+	assert_true(src.contains("GameState.weeks_for_grade"), "reads weeks from GameState")
+	assert_true(src.contains("GameState.target_uplift_for_grade"), "reads target from GameState")
 
 
 ## The pupil count is the roster StudentCard really approves, not a copy.

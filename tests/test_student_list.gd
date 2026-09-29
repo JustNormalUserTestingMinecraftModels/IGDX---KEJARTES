@@ -327,14 +327,23 @@ func test_roster_avatar_inactive_state_shrinks_and_dims() -> void:
 	assert_eq(a.scale, Vector2(RosterAvatar.INACTIVE_SCALE, RosterAvatar.INACTIVE_SCALE),
 		"an inactive avatar shrinks to INACTIVE_SCALE")
 	assert_eq(a.position.y, 0.0, "and drops back to rest")
-	assert_eq(a.modulate.a, a.inactive_alpha, "and dims to inactive_alpha")
+	# modulate.a lives in a 32-bit Color; inactive_alpha is a plain (64-bit)
+	# exported float that never round-trips through one, so 0.55 reads
+	# back as 0.5500000119 -- same gotcha IdleFade's own suite documents.
+	assert_true(is_equal_approx(a.modulate.a, a.inactive_alpha), "and dims to inactive_alpha")
 	assert_eq(a.get_node("Highlight").modulate.a, 0.0, "the glow ring hides")
 	assert_eq(a.get_node("Border").modulate.a, 0.0, "the brand border hides")
 
 
-## The small state is still a legal tap target: scale is a render/input
-## transform that never touches get_combined_minimum_size(), which is
-## what the touch-target suite actually measures.
+## The small state is still a legal tap target. Control.scale is part of
+## the transform Godot hit-tests against, so it DOES shrink the real tap
+## region along with the visual -- get_combined_minimum_size() alone (the
+## sibling test above) proves nothing about that, since it never reads
+## `scale`. So this multiplies the two together: get_combined_minimum_size()
+## is timing-safe here (this suite's header note on why raw `.size` is
+## not, without an awaited frame), and `scale` is exactly what
+## _apply_current_state() just set. 150px * INACTIVE_SCALE (0.82) = 123px,
+## still above touch_target_min (96px).
 func test_roster_avatar_clears_touch_minimum_at_the_small_scale() -> void:
 	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
 	var a: RosterAvatar = packed.instantiate()
@@ -342,9 +351,10 @@ func test_roster_avatar_clears_touch_minimum_at_the_small_scale() -> void:
 	track(a)
 	a.is_current = false
 	var tokens := DesignTokens.load_default()
-	var m := a.get_combined_minimum_size()
-	assert_true(minf(m.x, m.y) >= float(tokens.touch_target_min),
-		"shrinking to INACTIVE_SCALE must not shrink the touch target, got %s" % m)
+	var effective := a.get_combined_minimum_size() * a.scale
+	assert_true(minf(effective.x, effective.y) >= float(tokens.touch_target_min),
+		"INACTIVE_SCALE=%s must still clear the effective touch target, got %s"
+			% [RosterAvatar.INACTIVE_SCALE, effective])
 
 
 ## Source scan: the bounce cannot be watched running live in the editor
@@ -360,8 +370,12 @@ func test_roster_avatar_bounce_is_guarded_and_cleaned_up() -> void:
 
 
 ## Nav arrow idle hint (2026-09-29 avatar bounce pass): a ±4px nudge while
-## there is more than one card to swipe between. StudentList drives
-## `enabled`; the node holds no opinion of its own about why.
+## there is more than one card to swipe between. StudentList sets
+## `enabled` once at setup; the per-card-count gate instead rides on the
+## arrow's own `visible`, which StudentList was already toggling from
+## card count -- NudgeLoop only runs while enabled AND
+## parent.is_visible_in_tree(), so the dynamic per-page toggling needs no
+## StudentList line of its own.
 func _nudge_loop(path: String) -> NudgeLoop:
 	var nudge := _list.get_node_or_null(path) as NudgeLoop
 	assert_true(nudge != null, "missing NudgeLoop at %s" % path)
@@ -373,8 +387,8 @@ func test_both_nav_arrows_carry_a_nudge_loop() -> void:
 	var right := _nudge_loop("%RightArrow/NudgeLoop")
 	if left == null or right == null:
 		return
-	assert_false(left.enabled, "authored default is off; StudentList turns it on for >1 card")
-	assert_false(right.enabled, "authored default is off; StudentList turns it on for >1 card")
+	assert_false(left.enabled, "authored default is off; StudentList turns it on once at setup")
+	assert_false(right.enabled, "authored default is off; StudentList turns it on once at setup")
 
 
 func test_nudge_loop_never_runs_in_the_editor_even_when_enabled() -> void:
@@ -396,6 +410,10 @@ func test_nudge_loop_is_guarded_and_cleaned_up() -> void:
 	var applying := src.get_slice("func _apply_enabled() -> void:", 1).get_slice("func _start() -> void:", 0)
 	assert_true(applying.contains("Engine.is_editor_hint()") and applying.contains("GameSettings.reduce_motion"),
 		"starting the loop must skip both the editor and reduce_motion")
+	assert_true(applying.contains("is_visible_in_tree()"),
+		"the loop must gate on the parent's own visibility, not just `enabled`")
+	assert_true(src.contains("visibility_changed.connect(_apply_enabled)"),
+		"a visibility flip must re-evaluate the loop without StudentList touching `enabled` again")
 	var exiting := src.get_slice("func _exit_tree() -> void:", 1).get_slice("func is_running() -> bool:", 0)
 	assert_true(exiting.contains("_stop()"), "_exit_tree must stop the loop")
 

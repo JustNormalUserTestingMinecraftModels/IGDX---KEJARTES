@@ -22,10 +22,13 @@ extends Button
 ## button itself is the GhostButton variation, which draws nothing at
 ## rest so the baked ring art can be the button. Ring art is white and
 ## tinted via self_modulate from tokens. Scale/lift animate the Button
-## itself rather than a visual child: Control.scale is a pure
-## render/input transform that leaves get_combined_minimum_size() --
-## what the touch-target test reads -- untouched, so even the shrunk
-## inactive state still measures above tokens.touch_target_min.
+## itself rather than a visual child: Control.scale is part of the
+## transform Godot hit-tests against, so it shrinks the real tap region
+## along with the visual, not just the look -- at INACTIVE_SCALE (0.82)
+## the 150px avatar's effective hit region is 123px, still comfortably
+## above tokens.touch_target_min (96px). get_combined_minimum_size()
+## alone (unaffected by `scale`) does NOT prove this on its own; the
+## touch-target test multiplies it by `scale` to check the real number.
 
 ## Visual scale for every avatar that is not the current one.
 const INACTIVE_SCALE := 0.82

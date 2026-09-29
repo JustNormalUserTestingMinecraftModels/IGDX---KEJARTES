@@ -215,10 +215,12 @@ func _setup_navigation_arrows():
 		_setup_button_juice(left_arrow)
 		if not left_arrow.pressed.is_connected(_prev_card):
 			left_arrow.pressed.connect(_prev_card)
+		(left_arrow.get_node(^"NudgeLoop") as NudgeLoop).enabled = true
 	if right_arrow:
 		_setup_button_juice(right_arrow)
 		if not right_arrow.pressed.is_connected(_next_card):
 			right_arrow.pressed.connect(_next_card)
+		(right_arrow.get_node(^"NudgeLoop") as NudgeLoop).enabled = true
 
 ## Deal one day-note its pin height: 0 up, 1 middle, 2 down.
 ##
@@ -445,13 +447,8 @@ func _update_page_indicators():
 			else:
 				dots[i].self_modulate = tokens.state_danger
 
-	var can_swipe: bool = card_nodes.size() > 1
-	for arrow: Button in [left_arrow, right_arrow]:
-		if not arrow:
-			continue
-		arrow.visible = can_swipe
-		var nudge := arrow.get_node_or_null(^"NudgeLoop") as NudgeLoop
-		if nudge: nudge.enabled = can_swipe
+	if left_arrow: left_arrow.visible = card_nodes.size() > 1
+	if right_arrow: right_arrow.visible = card_nodes.size() > 1
 
 func _next_card():
 	if card_animating or card_nodes.size() <= 1:

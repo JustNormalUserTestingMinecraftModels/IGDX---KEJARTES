@@ -57,7 +57,7 @@ const TILE_TEXT_MIN := 36
 
 # ─── Visual - Buttons ────────────────────────────────────────────────────────
 @export_group("Visual - Buttons")
-## Drag a PNG here to replace navigation arrows (◀ and ▶ on both carousels).
+## Drag a PNG here to replace the paging arrows' face on both carousels.
 @export var button_nav_texture: Texture2D    = null
 ## Drag a PNG here for the Lock / Unlock button.
 @export var button_lock_texture: Texture2D   = null
@@ -81,13 +81,8 @@ const TILE_TEXT_MIN := 36
 @export var submit_btn_active_style:   StyleBox = null
 ## Submit button's style while questions remain unmatched.
 @export var submit_btn_disabled_style: StyleBox = null
-## Style for both carousels' ◀/▶ navigation buttons.
+## Style for both carousels' paging buttons.
 @export var nav_btn_style:             StyleBox = null
-
-# ─── Visual - Icons (replace emoji with textures) ─────────────────────────────
-@export_group("Visual - Icons")
-## Replaces the 🔒 emoji on progress badges. Leave null to keep emoji.
-@export var badge_locked_texture: Texture2D = null
 
 # ─── Visual - Colors ─────────────────────────────────────────────────────────
 @export_group("Visual - Colors")
@@ -95,26 +90,6 @@ const TILE_TEXT_MIN := 36
 @export var correct_color: Color         = Color(0.3, 0.85, 0.4, 1)
 ## Flash tint for an incorrect submission.
 @export var wrong_color: Color           = Color(0.9, 0.3, 0.3, 1)
-## Default tint for a progress badge before it is locked.
-@export var badge_default_color: Color   = Color(0.85, 0.85, 0.9, 1)
-## Background fill behind each progress badge.
-@export var badge_bg_color: Color        = Color(0.2, 0.25, 0.35, 0.9)
-
-# ─── Visual - Typography ─────────────────────────────────────────────────────
-@export_group("Visual - Typography")
-## Optional font override applied across the game. Null keeps the theme
-## default.
-@export var font: Font = null
-## Font size for the progress badges. 36 is the font_title rung; this was
-## 26, under the 28px body floor, until 2026-09-21.
-##
-## The title, header and button sizes that used to sit beside it were
-## removed in the same pass, along with the two header colours: nothing read
-## any of them and nothing set them, and the colours were the pale inks --
-## Color(1, 0.7, 0.3) and Color(0.4, 0.7, 1) -- that
-## tests/test_minigame_art.gd forbids on this screen, so wiring them up
-## would have quietly failed the contrast floor.
-@export var badge_font_size: int  = 36
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
@@ -159,7 +134,6 @@ var locked_matches: Dictionary = {} # q_idx -> a_idx
 
 var question_cards: Array[Control] = []
 var answer_cards: Array[Control]   = []
-var progress_badges: Array[Node]   = []
 
 # Score tracking
 var correct_matches: int   = 0
@@ -177,23 +151,21 @@ var a_drag_start_x: float = 0.0
 var a_is_dragging: bool   = false
 
 # ─── Scene Nodes ─────────────────────────────────────────────────────────────
-@onready var title_label: Label           = $HeaderVBox/TitleLabel
-@onready var score_hud: MinigameScoreHUD  = $HeaderVBox/ScoreHUD
-@onready var progress_hbox: HBoxContainer = $HeaderVBox/ProgressHBox
+@onready var score_hud: MinigameHeader = %MinigameHeader
 
-@onready var top_carousel: Control          = $TopCarousel
-@onready var q_wheel_parent: Control        = $TopCarousel/QuestionWheelParent
-@onready var btn_prev_q: Button             = $TopCarousel/BtnPrevQ
-@onready var btn_next_q: Button             = $TopCarousel/BtnNextQ
+@onready var top_carousel: Control          = $Safe/Column/TopCarousel
+@onready var q_wheel_parent: Control        = $Safe/Column/TopCarousel/QuestionWheelParent
+@onready var btn_prev_q: Button             = $Safe/Column/TopCarousel/BtnPrevQ
+@onready var btn_next_q: Button             = $Safe/Column/TopCarousel/BtnNextQ
 
-@onready var middle_action_bar: HBoxContainer = $MiddleActionBar
-@onready var btn_lock: Button                 = $MiddleActionBar/BtnLock
-@onready var btn_submit: Button               = $MiddleActionBar/BtnSubmit
+@onready var middle_action_bar: HBoxContainer = $Safe/Column/MinigameTray/ActionRow
+@onready var btn_lock: Button                 = $Safe/Column/MinigameTray/ActionRow/BtnLock
+@onready var btn_submit: Button               = $Safe/Column/MinigameTray/ActionRow/BtnSubmit
 
-@onready var bottom_carousel: Control       = $BottomCarousel
-@onready var a_wheel_parent: Control        = $BottomCarousel/AnswerWheelParent
-@onready var btn_prev_a: Button             = $BottomCarousel/BtnPrevA
-@onready var btn_next_a: Button             = $BottomCarousel/BtnNextA
+@onready var bottom_carousel: Control       = $Safe/Column/MinigameTray/BottomCarousel
+@onready var a_wheel_parent: Control        = $Safe/Column/MinigameTray/BottomCarousel/AnswerWheelParent
+@onready var btn_prev_a: Button             = $Safe/Column/MinigameTray/BottomCarousel/BtnPrevA
+@onready var btn_next_a: Button             = $Safe/Column/MinigameTray/BottomCarousel/BtnNextA
 
 func _ready() -> void:
 	super._ready()
@@ -220,9 +192,6 @@ func _apply_visual_exports() -> void:
 		_apply_custom_button(btn_submit, button_submit_texture)
 	elif btn_submit and submit_btn_disabled_style:
 		btn_submit.add_theme_stylebox_override("normal", submit_btn_disabled_style)
-	# Apply font overrides to static labels
-	if font and title_label:
-		title_label.add_theme_font_override("font", font)
 
 func _apply_custom_button(btn: Button, tex: Texture2D) -> void:
 	if not btn or not tex:
@@ -283,6 +252,13 @@ func _connect_ui_signals() -> void:
 		top_carousel.gui_input.connect(_on_top_carousel_gui_input)
 	if bottom_carousel:
 		bottom_carousel.gui_input.connect(_on_bottom_carousel_gui_input)
+
+	# The wheels are sized by the Column and the tray's sort now, which can
+	# land after setup_game()'s deferred layout: re-place the cards whenever
+	# either wheel actually changes size.
+	for wheel: Control in [q_wheel_parent, a_wheel_parent]:
+		if wheel:
+			wheel.resized.connect(_update_carousel_layout.bind(true))
 
 func load_question_bank() -> Array:
 	var file_path = "res://Assets/Data/menjodohkan_questions.json"
@@ -367,7 +343,6 @@ func setup_game() -> void:
 		var target_pair_idx = q_order[q_i]
 		correct_answer_indices.append(a_order.find(target_pair_idx))
 		
-	_build_progress_badges()
 	_instantiate_cards(q_order, a_order)
 	_update_score_ui()
 	_update_action_bar_ui()
@@ -380,37 +355,8 @@ func _clear_containers() -> void:
 		child.queue_free()
 	for child in a_wheel_parent.get_children():
 		child.queue_free()
-	for child in progress_hbox.get_children():
-		child.queue_free()
 	question_cards.clear()
 	answer_cards.clear()
-	progress_badges.clear()
-
-func _build_progress_badges() -> void:
-	for i in range(questions.size()):
-		var badge = PanelContainer.new()
-		var style = StyleBoxFlat.new()
-		style.bg_color = badge_bg_color
-		style.corner_radius_top_left = 6
-		style.corner_radius_top_right = 6
-		style.corner_radius_bottom_left = 6
-		style.corner_radius_bottom_right = 6
-		style.content_margin_left = 8
-		style.content_margin_right = 8
-		style.content_margin_top = 2
-		style.content_margin_bottom = 2
-		badge.add_theme_stylebox_override("panel", style)
-		
-		var lbl = Label.new()
-		lbl.text = "Q%d ⚪" % (i + 1)
-		lbl.add_theme_font_size_override("font_size", badge_font_size)
-		lbl.add_theme_color_override("font_color", badge_default_color)
-		if font:
-			lbl.add_theme_font_override("font", font)
-		badge.add_child(lbl)
-		
-		progress_hbox.add_child(badge)
-		progress_badges.append(lbl)
 
 ## Fits a tile's text to its card, from the font_display_size rung down to
 ## font_title. This replaced two copies of a four-branch if-chain that picked
@@ -510,6 +456,8 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 func _update_score_ui() -> void:
 	if score_hud:
 		score_hud.set_score(locked_matches.size())
+	set_progress(locked_matches.size(), questions_count,
+		"Pasangan %d/%d" % [locked_matches.size(), questions_count])
 
 func _update_action_bar_ui() -> void:
 	if not is_game_active:
@@ -519,51 +467,28 @@ func _update_action_bar_ui() -> void:
 	
 	# Update Lock/Cancel Button (`BtnLock`)
 	if is_q_locked:
-		btn_lock.text = "" if button_lock_texture else "🔓 Batalkan"
-		if button_lock_texture:
-			var sb_cancel = _make_btn_stylebox(button_lock_texture, Color(1.0, 0.45, 0.45))
-			btn_lock.add_theme_stylebox_override("normal", sb_cancel)
-			btn_lock.add_theme_stylebox_override("hover", sb_cancel)
-		elif lock_btn_cancel_style:
-			btn_lock.add_theme_stylebox_override("normal", lock_btn_cancel_style)
-		else:
-			# Cancelling is the destructive action, so it takes the project's
-			# DangerButton rather than a hand-rolled red box.
-			btn_lock.theme_type_variation = &"DangerButton"
+		btn_lock.text = "" if button_lock_texture else "Batalkan"
+		if not button_lock_texture:
+			# Batalkan clears a pair the player can lock again: a reversible,
+			# neutral action, so it keeps the same brown as Kunci.
+			btn_lock.theme_type_variation = &"SecondaryButtonM"
 		btn_lock.disabled = false
 	else:
-		btn_lock.text = "" if button_lock_texture else "🔒 Kunci Jawaban!"
+		btn_lock.text = "" if button_lock_texture else "Kunci"
 		var is_a_used = (current_a_focus in locked_matches.values())
 		btn_lock.disabled = is_a_used
-		
-		if button_lock_texture:
-			if is_a_used:
-				var sb_dis = _make_btn_stylebox(button_lock_texture, button_disabled_tint)
-				btn_lock.add_theme_stylebox_override("disabled", sb_dis)
-			else:
-				var sb_norm = _make_btn_stylebox(button_lock_texture, Color.WHITE)
-				btn_lock.add_theme_stylebox_override("normal", sb_norm)
-				btn_lock.add_theme_stylebox_override("hover", sb_norm)
-		elif lock_btn_locked_style:
-			btn_lock.add_theme_stylebox_override("normal", lock_btn_locked_style)
-		else:
-			# Locking an answer is the screen's primary action.
-			btn_lock.theme_type_variation = &"PrimaryButton"
-		
+
+		if not button_lock_texture:
+			# Kunci is neutral brown; Selesai is the screen's one mint action.
+			btn_lock.theme_type_variation = &"SecondaryButtonM"
+
 	# Update Submit Button (`BtnSubmit`)
 	var all_locked = (locked_matches.size() >= questions_count)
 	btn_submit.disabled = not all_locked
-	
+
 	if button_submit_texture:
 		btn_submit.text = ""
-		if all_locked:
-			var sb_act = _make_btn_stylebox(button_submit_texture, Color.WHITE)
-			btn_submit.add_theme_stylebox_override("normal", sb_act)
-			btn_submit.add_theme_stylebox_override("hover", sb_act)
-		else:
-			var sb_dis = _make_btn_stylebox(button_submit_texture, button_disabled_tint)
-			btn_submit.add_theme_stylebox_override("disabled", sb_dis)
-	
+
 	if all_locked:
 		_start_impatient_submit_wiggle()
 	else:
@@ -639,6 +564,7 @@ func _animate_wheel(parent_node: Control, cards: Array[Control], focus_idx: int,
 	
 	for i in range(count):
 		var card = cards[i]
+		var fit := minf(1.0, maxf(10.0, container_h - 18.0) / maxf(1.0, card.size.y))
 		card.pivot_offset = card.size / 2.0
 		
 		var offset = i - focus_idx
@@ -650,11 +576,14 @@ func _animate_wheel(parent_node: Control, cards: Array[Control], focus_idx: int,
 		var target_x = center_x + (offset * card_spacing) - (card.size.x / 2.0)
 		var label_h = 18.0
 		var avail_h = max(10.0, container_h - label_h)
-		var target_y = label_h + max(0.0, (avail_h / 2.0) - (card.size.y / 2.0))
+		# Centre the unscaled rect in the slot, unclamped: the card scales by
+		# `fit` around its centre pivot, so a card taller than the slot still
+		# lands centred once shrunk (a top clamp here pushed it off the bottom).
+		var target_y = label_h + (avail_h - card.size.y) / 2.0
 		var target_pos = Vector2(target_x, target_y)
 		
 		var distance = abs(offset)
-		var target_scale = Vector2(1.0, 1.0) if distance == 0 else Vector2(card_side_scale, card_side_scale)
+		var target_scale = Vector2(fit, fit) if distance == 0 else Vector2(card_side_scale * fit, card_side_scale * fit)
 		var target_alpha = 1.0 if distance == 0 else (card_side_alpha if distance == 1 else 0.0)
 		var target_rot = 0.0 if distance == 0 else (sign(offset) * card_side_rotation)
 		var z_ord = 10 - distance
@@ -744,20 +673,20 @@ func _on_btn_lock_pressed() -> void:
 		
 		_set_question_card_lock_state(current_q_focus, false)
 		_set_answer_card_lock_state(prev_a, false)
-		_update_badge_status(current_q_focus, "⚪")
 		_play_button_boing(btn_lock)
 		_update_score_ui()
 		_update_action_bar_ui()
 	else:
-		# LOCK PAIR ("Kunci Jawaban!")
+		# LOCK PAIR ("Kunci")
 		if current_a_focus in locked_matches.values():
 			_play_wiggle_animation(answer_cards[current_a_focus])
 			return
 			
 		locked_matches[current_q_focus] = current_a_focus
+		if locked_matches.size() == 1:
+			hint_settle()
 		_set_question_card_lock_state(current_q_focus, true)
 		_set_answer_card_lock_state(current_a_focus, true)
-		_update_badge_status(current_q_focus, "🔒")
 		
 		_play_jump_animation(question_cards[current_q_focus])
 		_play_jump_animation(answer_cards[current_a_focus])
@@ -800,10 +729,6 @@ func _set_answer_card_lock_state(a_idx: int, is_locked: bool) -> void:
 		var lock_ov = card.find_child("LockOverlay", true, false)
 		if lock_ov:
 			lock_ov.visible = is_locked
-
-func _update_badge_status(q_idx: int, symbol: String) -> void:
-	if q_idx >= 0 and q_idx < progress_badges.size():
-		progress_badges[q_idx].text = "Q%d %s" % [q_idx + 1, symbol]
 
 func _on_btn_submit_pressed() -> void:
 	if not is_game_active: return
@@ -852,7 +777,6 @@ func reveal_answers() -> void:
 			
 			score += 1
 			correct_matches += 1
-			_update_badge_status(q_i, "✅")
 			_play_jump_animation(question_cards[q_i])
 			if user_a_idx >= 0 and user_a_idx < answer_cards.size():
 				_play_jump_animation(answer_cards[user_a_idx])
@@ -867,7 +791,6 @@ func reveal_answers() -> void:
 			await get_tree().create_timer(0.4).timeout
 			
 			incorrect_matches += 1
-			_update_badge_status(q_i, "❌")
 			_play_wiggle_animation(question_cards[q_i])
 			if user_a_idx >= 0 and user_a_idx < answer_cards.size():
 				_play_wiggle_animation(answer_cards[user_a_idx])
@@ -889,7 +812,6 @@ func reveal_answers() -> void:
 			await get_tree().create_timer(0.4).timeout
 			
 			incorrect_matches += 1
-			_update_badge_status(q_i, "❌")
 			_play_wiggle_animation(question_cards[q_i])
 			_update_score_ui()
 			

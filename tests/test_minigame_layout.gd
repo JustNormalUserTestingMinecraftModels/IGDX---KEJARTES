@@ -104,3 +104,29 @@ func test_the_calculator_games_share_one_layout() -> void:
 			path + ": Hapus/Kirim ride in the tray")
 		assert_eq(kirim.theme_type_variation, &"PrimaryButtonM", path + ": Kirim is mint, tray-sized")
 		assert_true(root.get_node_or_null("HeaderRow") == null, path + ": the old header row is gone")
+
+
+const MJ := "res://Scenes/Minigames/Akademis/Menjodohkan.tscn"
+const MJ_GD := "res://Scripts/Minigames/Akademis/Menjodohkan.gd"
+
+
+func test_menjodohkan_answers_and_actions_live_in_the_tray() -> void:
+	var root := _scene(MJ)
+	var tray := root.get_node_or_null("%MinigameTray")
+	assert_true(_under_safe(tray), "tray in the safe area")
+	for n: String in ["BottomCarousel", "ActionRow"]:
+		var c := root.get_node_or_null("Safe/Column/MinigameTray/" + n)
+		assert_true(c != null, n + " rides in the tray")
+	assert_true(root.get_node_or_null("HeaderVBox") == null, "title and badge row are gone")
+
+
+func test_menjodohkan_text_has_no_swipe_captions_or_emoji() -> void:
+	var scene := FileAccess.get_file_as_string(MJ)
+	var src := FileAccess.get_file_as_string(MJ_GD)
+	assert_false(scene.contains("GESER / SWIPE"))
+	for glyph: String in ["🔒", "🔓", "✨", "⚪", "✅", "❌", "◀", "▶"]:
+		assert_false(scene.contains(glyph) or src.contains(glyph), glyph + " is gone")
+
+
+func test_menjodohkan_reports_pairs_on_the_bar() -> void:
+	assert_contains(FileAccess.get_file_as_string(MJ_GD), "\"Pasangan %d/%d\"")

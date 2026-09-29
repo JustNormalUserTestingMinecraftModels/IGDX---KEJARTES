@@ -309,6 +309,8 @@ const DISPLAY_ROSTER := [
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill",
+	# 2026-09-29: achievement tile titles on the heading face.
+	"AchievementTileTitleLabel",
 	# 2026-09-24 Penjadwalan picker rebuild.
 	"PickerTitleLabel", "PickerTileName", "PickerTileValue", "PickerRibbonLabel",
 	# 2026-09-24 SchoolDay liveliness: the "selesai" stamp and the daily

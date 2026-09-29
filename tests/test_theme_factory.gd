@@ -344,6 +344,9 @@ const DISPLAY_ROSTER := [
 	"MinigameChoiceButton",
 	# 2026-09-25 minigame win screen: the bubble line and the stat numbers.
 	"MinigameWinLine", "MinigameWinStatLabel",
+	# 2026-09-29 minigame mobile layout: the progress label, and the HUD icon
+	# button (lipped via _add_button_variation, which sets the display face).
+	"MinigameProgressLabel", "MinigameHudIconButton",
 	# 2026-09-25: the Koperasi price, heading face in cream.
 	"PriceTagLabel",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left

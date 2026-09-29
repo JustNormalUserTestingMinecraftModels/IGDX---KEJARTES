@@ -325,59 +325,101 @@ func test_the_largest_balance_fits_the_coin_box() -> void:
 	_assert_fits_rect(label)
 
 
-## The rect no back-row hair may enter: the tag grown by the back seats'
-## parallax swing and HAIR_CLEARANCE.
-func _tag_keep_out(tag: Control) -> Rect2:
+## The Classroom child the back-row seats live in.
+const BACK_ROW := "StudentPortraitsContainer_Back"
+
+
+## `c`'s global rect as it lies on the design screen. The Lobby's World layer
+## is a CanvasLayer, which in the editor test frame anchors to the editor's
+## own viewport, so a Control under it reports a global rect far from the
+## design screen (Slot1's Portrait read (509, -429.5) instead of (89, 26)).
+## The Classroom is placed from the screen root by its own anchors and
+## offsets, and `c` is shifted by the difference between that spot and where
+## the Classroom really reports.
+func _design_rect(c: Control) -> Rect2:
+	var lr := _lobby.get_global_rect()
+	var room := _lobby.get_node("World/Classroom") as Control
+	var room_tl := lr.position + lr.size * Vector2(room.anchor_left, room.anchor_top) \
+		+ Vector2(room.offset_left, room.offset_top)
+	var r := c.get_global_rect()
+	r.position += room_tl - room.get_global_rect().position
+	return r
+
+
+## How far, px, Lobby._start_idle_bob lifts the back row, read off the Lobby
+## root; it must be a positive float, so the bob cannot silently drop out of
+## the check.
+func _idle_bob() -> float:
+	var bob: Variant = _lobby.get("idle_bob_pixels")
+	assert_true(bob is float and float(bob) > 0.0,
+		"the Lobby needs a positive float idle_bob_pixels, got " + str(bob))
+	return float(bob) if bob is float else 0.0
+
+
+## The rect no back-row hair may enter around `rect`: grown by the back
+## seats' parallax swing and HAIR_CLEARANCE.
+func _keep_out_around(rect: Rect2) -> Rect2:
 	var parallax := _lobby.get_node("World/Classroom/Parallax")
 	var depths := parallax.get("depth_by_child") as Dictionary
-	var depth: float = depths.get("StudentPortraitsContainer_Back", 0.0)
+	assert_true(depths.has(BACK_ROW), "the parallax needs a depth for " + BACK_ROW)
+	var depth: float = depths.get(BACK_ROW, 0.0)
 	var reach: Vector2 = (parallax.get("travel") as Vector2) * depth \
 		+ Vector2.ONE * HAIR_CLEARANCE
-	return _authored_rect(tag).grow_individual(reach.x, reach.y, reach.x, reach.y)
+	return rect.grow_individual(reach.x, reach.y, reach.x, reach.y)
 
 
-## The first on-screen point where `tex`, drawn as a face rig into
-## `portrait` (StudentFace.fit_canvas: keep aspect, centred) at rest or at
-## its breathing peak, puts an opaque pixel inside `keep_out`; Vector2.INF
-## when none does.
-func _first_hair_in(keep_out: Rect2, tex: Texture2D, portrait: Rect2) -> Vector2:
+## Scans `tex`, drawn as a face rig into `portrait` (StudentFace.fit_canvas:
+## keep aspect, centred), for an opaque pixel inside `keep_out`, at rest and
+## at its breathing peak, each also lifted by the idle bob `bob` (px; the
+## whole back row rises with its container). Returns {"hit": the first
+## on-screen point found, Vector2.INF when none; "scanned": how many art
+## pixels were sampled}. A scan of 0 checked nothing.
+func _first_hair_in(keep_out: Rect2, tex: Texture2D, portrait: Rect2, bob: float) -> Dictionary:
 	var img := tex.get_image()
 	if img.is_compressed():
 		img.decompress()
-	var fit := minf(portrait.size.x / RIG_CANVAS.x, portrait.size.y / RIG_CANVAS.y)
-	var drawn := RIG_CANVAS * fit
-	var origin := portrait.position + (portrait.size - drawn) * 0.5
-	var per_pixel := drawn / Vector2(img.get_width(), img.get_height())
-	var pivot := Vector2(portrait.get_center().x, portrait.end.y)
-	for peak: Vector2 in [Vector2.ONE, BREATH_PEAK]:
-		# Only the art pixels that can land in keep_out at this breath.
-		var lo := (pivot + (keep_out.position - pivot) / peak - origin) / per_pixel
-		var hi := (pivot + (keep_out.end - pivot) / peak - origin) / per_pixel
-		var x0 := clampi(floori(lo.x), 0, img.get_width())
-		var x1 := clampi(ceili(hi.x) + 1, 0, img.get_width())
-		var y0 := clampi(floori(lo.y), 0, img.get_height())
-		var y1 := clampi(ceili(hi.y) + 1, 0, img.get_height())
-		for y in range(y0, y1, HAIR_SAMPLE_STEP):
-			for x in range(x0, x1, HAIR_SAMPLE_STEP):
-				if img.get_pixel(x, y).a <= 0.5:
-					continue
-				var at := pivot + (origin + Vector2(x, y) * per_pixel - pivot) * peak
-				if keep_out.has_point(at):
-					return at
-	return Vector2.INF
+	var scanned := 0
+	for lift: float in [0.0, -bob]:
+		var seat := Rect2(portrait.position + Vector2(0.0, lift), portrait.size)
+		var fit := minf(seat.size.x / RIG_CANVAS.x, seat.size.y / RIG_CANVAS.y)
+		var drawn := RIG_CANVAS * fit
+		var origin := seat.position + (seat.size - drawn) * 0.5
+		var per_pixel := drawn / Vector2(img.get_width(), img.get_height())
+		var pivot := Vector2(seat.get_center().x, seat.end.y)
+		for peak: Vector2 in [Vector2.ONE, BREATH_PEAK]:
+			# Only the art pixels that can land in keep_out at this breath.
+			var lo := (pivot + (keep_out.position - pivot) / peak - origin) / per_pixel
+			var hi := (pivot + (keep_out.end - pivot) / peak - origin) / per_pixel
+			var x0 := clampi(floori(lo.x), 0, img.get_width())
+			var x1 := clampi(ceili(hi.x) + 1, 0, img.get_width())
+			var y0 := clampi(floori(lo.y), 0, img.get_height())
+			var y1 := clampi(ceili(hi.y) + 1, 0, img.get_height())
+			for y in range(y0, y1, HAIR_SAMPLE_STEP):
+				for x in range(x0, x1, HAIR_SAMPLE_STEP):
+					scanned += 1
+					if img.get_pixel(x, y).a <= 0.5:
+						continue
+					var at := pivot + (origin + Vector2(x, y) * per_pixel - pivot) * peak
+					if keep_out.has_point(at):
+						return {"hit": at, "scanned": scanned}
+	return {"hit": Vector2.INF, "scanned": scanned}
 
 
 ## The owner's rule for the tag (spec §2): it clears every back-row student's
-## hair and face, for every student and skin, in both back seats, breathing
-## and swaying with the parallax.
+## hair and face, for every student and skin, in both back seats, breathing,
+## bobbing with Lobby.idle_bob_pixels and swaying with the parallax. The seats
+## are mapped onto the design screen (_design_rect), and each slot must have
+## scanned at least one pixel, so an empty scan cannot pass for a clear one.
 func test_the_progress_tag_clears_every_back_row_head() -> void:
 	var tag := _hud("ProgressHeader")
 	if tag == null:
 		return
-	var keep_out := _tag_keep_out(tag)
-	var back := _lobby.get_node("World/Classroom/StudentPortraitsContainer_Back")
+	var keep_out := _keep_out_around(_authored_rect(tag))
+	var bob := _idle_bob()
+	var back := _lobby.get_node("World/Classroom/" + BACK_ROW)
 	for slot: String in ["Slot1", "Slot2"]:
-		var portrait := (back.get_node(slot + "/Portrait") as Control).get_global_rect()
+		var portrait := _design_rect(back.get_node(slot + "/Portrait") as Control)
+		var scanned := 0
 		for student: String in StudentSkins.NAMES:
 			for id: String in StudentSkins.skins_for(student):
 				var path := StudentSkins.layer_path(student, id, "face_base")
@@ -385,7 +427,30 @@ func test_the_progress_tag_clears_every_back_row_head() -> void:
 				assert_true(tex != null, "no face base at " + path)
 				if tex == null:
 					continue
-				var hit := _first_hair_in(keep_out, tex, portrait)
-				assert_eq(hit, Vector2.INF,
+				var result := _first_hair_in(keep_out, tex, portrait, bob)
+				scanned += result["scanned"] as int
+				assert_eq(result["hit"], Vector2.INF,
 					"%s (%s) in %s reaches the tag's keep-out %s at %s"
-						% [student, id, slot, str(keep_out), str(hit)])
+						% [student, id, slot, str(keep_out), str(result["hit"])])
+		assert_true(scanned > 0,
+			"%s scanned no pixels: the keep-out %s misses its portrait %s"
+				% [slot, str(keep_out), str(portrait)])
+
+
+## Guards the coordinate mapping. The pre-pass header, Rect2(48, 48, 516, 168),
+## covers a back-row head, so the hair check must find Andi's hair under it;
+## a check that reads the seats at the wrong place scans nothing and would
+## pass on this header too (the first version did).
+func test_the_hair_check_sees_a_head_under_the_old_header() -> void:
+	var keep_out := _keep_out_around(Rect2(48, 48, 516, 168))
+	var back := _lobby.get_node("World/Classroom/" + BACK_ROW)
+	var portrait := _design_rect(back.get_node("Slot1/Portrait") as Control)
+	var path := StudentSkins.layer_path("Andi", StudentSkins.DEFAULT_ID, "face_base")
+	var tex := load(path) as Texture2D
+	assert_true(tex != null, "no face base at " + path)
+	if tex == null:
+		return
+	var result := _first_hair_in(keep_out, tex, portrait, _idle_bob())
+	assert_true(result["hit"] != Vector2.INF,
+		"Andi's hair in Slot1 (portrait %s) is missed under the old header %s; scanned %d"
+			% [str(portrait), str(keep_out), result["scanned"] as int])

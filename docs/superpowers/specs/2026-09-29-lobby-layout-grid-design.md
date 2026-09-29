@@ -127,7 +127,7 @@ two rows. Local coordinates are within the 232×184 tag:
 | What | Change |
 |---|---|
 | `LobbyHud._set_book_live` | Also disables `DisplayUang` while hidden, so a double-tap reopen or a mid-slide tap cannot press `+`. |
-| `LobbyHud.tap_blockers()` | Adds `DisplayUang`, alongside the book parts. |
+| `LobbyHud.tap_blockers()` | Unchanged: `Lobby.gd` already hands the chatter `%DisplayUang` beside `hud.tap_blockers()`. |
 | `IdleFade.targets` | Only `ProgressHeader`. The coin box leaves with the book, so it no longer fades on its own. |
 | `DailyReward.wallet_anchor` | Still `%DisplayUang`, now beside JADWAL!. The daily gift opens from the rail, so the HUD is always open when the coins fly. |
 | `Lobby.gd`, `DailyLoginPanel.gd` | Already reach `DisplayUang` by unique name (`%DisplayUang/Label`, the chatter's `tap_blockers`). The reparent needs no code change there. |

@@ -67,6 +67,7 @@ origin = Vector2(0.1, -0.1)
 
 [node name="Bloom" parent="." instance=ExtResource("look_bloom")]
 threshold = 0.75
+intensity = 0.8
 
 [node name="Puck" type="RigidBody2D" parent="." unique_id=1694826156]
 position = Vector2(540, 960)

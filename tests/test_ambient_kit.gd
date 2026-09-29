@@ -535,9 +535,9 @@ func test_the_knobs_reach_the_environment() -> void:
 	assert_true(is_equal_approx(env.glow_hdr_threshold, 0.93), "threshold reaches the environment")
 	assert_true(is_equal_approx(env.glow_intensity, 1.4), "intensity reaches it")
 	assert_true(is_equal_approx(env.glow_strength, 0.8), "strength reaches it")
-	_glow.glow_threshold = 0.9
-	_glow.glow_intensity = 1.0
-	_glow.glow_strength = 1.0
+	_glow.glow_threshold = 0.7
+	_glow.glow_intensity = 1.5
+	_glow.glow_strength = 1.2
 
 
 func test_the_switch_turns_the_glow_off() -> void:

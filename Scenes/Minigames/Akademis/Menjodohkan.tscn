@@ -47,6 +47,7 @@ intensity = 0.12
 
 [node name="Bloom" parent="." instance=ExtResource("look_bloom")]
 threshold = 0.8
+intensity = 0.8
 
 [node name="HeaderVBox" type="VBoxContainer" parent="." unique_id=1252094437]
 layout_mode = 1

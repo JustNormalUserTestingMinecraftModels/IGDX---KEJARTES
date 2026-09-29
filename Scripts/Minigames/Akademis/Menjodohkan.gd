@@ -73,10 +73,6 @@ const TILE_TEXT_MIN := 36
 @export var button_press_duration: float = 0.07
 ## Margin (pixels) inside the button texture where content is drawn.
 @export var button_texture_margin: int   = 8
-## Fallback StyleBox overrides if no texture assigned (leave null = theme default).
-@export var lock_btn_locked_style:     StyleBox = null
-## Lock button's style while unlocking (cancelling a made match).
-@export var lock_btn_cancel_style:     StyleBox = null
 ## Submit button's style once every question is locked and it's pressable.
 @export var submit_btn_active_style:   StyleBox = null
 ## Submit button's style while questions remain unmatched.

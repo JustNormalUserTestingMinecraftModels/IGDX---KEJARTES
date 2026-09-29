@@ -988,8 +988,13 @@ func test_switch_card_wires_front_card_activation() -> void:
 	var settled_body := _function_body("_on_deck_settled")
 	assert_true(settled_body.contains("front.set_front(true)"),
 		"a card that lands must be turned on (its entry replays)")
-	assert_true(settled_body.contains("front.set_idle(true)"),
-		"a card that only sprang back resumes its idle loops without re-arriving")
+	var sprang_back: String = settled_body.get_slice("front.set_front(true)", 0)
+	assert_true(sprang_back.contains("front.set_idle(not tutorial_active)"),
+		"a card that only sprang back resumes its idle loops (paused while the tutorial is up)")
+	assert_false(sprang_back.contains("set_front(") or sprang_back.contains("play_entry"),
+		"a spring-back resumes the loops without re-arriving (no set_front, no entry replay)")
+	assert_true(settled_body.get_slice("front.set_front(true)", 1).contains("front.set_idle(false)"),
+		"the tutorial keeps a landed card's idle loops paused")
 	assert_true(settled_body.contains("_stagger_card_notes(front)"),
 		"the landed card's week re-drops on arrival")
 

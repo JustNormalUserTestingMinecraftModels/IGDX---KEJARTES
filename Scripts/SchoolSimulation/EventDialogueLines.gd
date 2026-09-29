@@ -237,11 +237,11 @@ const STUDENT_LINES := {
 	},
 	"Badminton": {
 		"Marcel": [
-			"Aturan bulu tangkis sudah kubaca, Pak. Yang lebih dulu mencapai skor target, dia menang.",
+			"Aturan bulu tangkis sudah kubaca, Pak. Siapa yang lebih dulu mencapai skor yang ditentukan, dialah pemenangnya.",
 			"Menurut buku olahraga, genggaman raket jangan terlalu kaku. Akan kucoba, Pak.",
 			"Arah kok akan kuperhitungkan dengan cermat supaya melewati raket lawan.",
 			"Olahraga memang bukan keahlianku, Pak. Tapi aku akan bermain dengan sungguh-sungguh.",
-			"Rekor kok tercepat lebih dari 400 kilometer per jam. Semoga lawanku tidak secepat itu.",
+			"Rekor laju kok tercepat lebih dari 400 kilometer per jam. Semoga lawanku tidak secepat itu.",
 		],
 		"Doni": [
 			"Raketku sudah siap dari tadi. Ayo tanding badminton, siapa takut?",
@@ -276,7 +276,7 @@ const STUDENT_LINES := {
 			"Pukulanku tadi pagi masih meleset. Boleh aku pemanasan sekali lagi, Pak?",
 			"Setiap pukulan harus terarah. Aku tidak mau mengembalikan kok sembarangan.",
 			"Seminggu ini aku berlatih memukul kok ke tembok setiap sore, Pak.",
-			"Skornya harus unggul jauh, Pak. Menang tipis belum cukup buatku!",
+			"Selisih skornya harus jauh, Pak. Menang tipis belum cukup buatku!",
 		],
 	},
 	"BuatBatik": {
@@ -289,7 +289,7 @@ const STUDENT_LINES := {
 		],
 		"Doni": [
 			"Membatik melawan waktu? Nah, ini baru pertandingan, Pak!",
-			"Tanganku lebih biasa memegang bola daripada canting. Tapi aku enggak mau kalah!",
+			"Tanganku lebih terbiasa memegang bola daripada canting. Tapi aku enggak mau kalah!",
 			"Empat alat, empat langkah! Satu per satu kutaklukkan, Pak!",
 			"Hore, pelajaran seni! Keringat enggak keluar, tapi semangatku tetap menyala!",
 			"Pewarna, tunggu giliranmu! Canting yang maju duluan!",
@@ -298,7 +298,7 @@ const STUDENT_LINES := {
 			"Pak, kenapa kompornya dipakai paling akhir? Ayo kita coba, biar tahu!",
 			"Aku membayangkan motif naga bersayap di kain ini. Seru, kan, Pak?",
 			"Malam itu lilin, ya, Pak? Berarti kain ini dihias seperti kue ulang tahun!",
-			"Siapa, ya, orang pertama yang terpikir melukis kain dengan lilin? Aku penasaran.",
+			"Siapa, ya, orang pertama yang punya ide melukis kain dengan lilin? Aku penasaran.",
 			"Alat-alatnya diacak! Seperti teka-teki, ya, Pak. Mana yang dipakai duluan?",
 		],
 		"Citra": [
@@ -311,15 +311,15 @@ const STUDENT_LINES := {
 		"Shinta": [
 			"Batiknya kubuat abstrak saja, ya, Pak? Salah urutan pun tetap jadi seni. Bercanda!",
 			"Boleh kainnya kubawa pulang, Pak? Lumayan untuk taplak meja di rumah.",
-			"Aduh, pewarnanya bikin tangan belepotan. Ya sudah, demi Bapak, aku lanjut.",
-			"Urutan alatnya sudah kuhafal sambil berbaring, Pak. Tinggal praktik saja.",
+			"Aduh, pewarnanya pasti bikin tangan belepotan. Ya sudah, demi Bapak, aku lanjut.",
+			"Kelihatannya repot, Pak, tapi aku pernah membantu Nenek membatik. Tenang saja.",
 			"Kompor ini untuk memanaskan kain, bukan untuk merebus mi, kan? Sayang sekali.",
 		],
 		"Thea": [
 			"Kain, canting, dan pewarna sudah siap. Aku mau membatik, tapi urutannya harus benar!",
-			"Tanganku masih pegal karena mencanting semalaman, tapi motif ini harus sempurna.",
+			"Tanganku pegal karena membatik dengan canting semalaman, tapi motif ini harus sempurna.",
 			"Batik pertamaku dulu luntur, Pak. Sejak itu aku berlatih setiap minggu.",
-			"Pola ini sudah kugambar berulang-ulang di buku. Hari ini sekali lagi, tapi di atas kain!",
+			"Pola ini sudah kugambar berulang-ulang di kertas. Hari ini sekali lagi, tapi di atas kain!",
 			"Warnanya harus meresap sempurna, jadi kompornya jangan sampai terlupa, Pak.",
 		],
 	},
@@ -334,14 +334,14 @@ const STUDENT_LINES := {
 		"Doni": [
 			"Lomba menari sebentar lagi dimulai! Ikuti iramanya dan jangan sampai salah langkah.",
 			"Menari itu olahraga juga, kan, Pak? Keringatnya sama! Aku pasti juara!",
-			"Ini sama saja dengan latihan kelincahan! Jariku cepat, kakiku lebih cepat!",
+			"Satu lagu, satu kesempatan! Skorku harus paling tinggi, Pak!",
 			"Sempurna terus! Enggak ada satu panah pun yang boleh lolos!",
 			"Kakiku kaku kayak papan, Pak! Tapi pantang menyerah, aku tetap menari!",
 		],
 		"Andi": [
 			"Pak, kenapa panahnya berwarna-warni? Jangan-jangan tiap warna punya gerakan sendiri!",
 			"Kalau aku jadi burung merak di festival ini, ekorku pasti paling lebar!",
-			"Aku penasaran, tarian daerah mana yang iramanya paling cepat?",
+			"Aku penasaran, tarian mana di Nusantara yang iramanya paling cepat?",
 			"Wah, halaman sekolah penuh tenda dan bendera kecil! Meriah sekali, Pak.",
 			"Bagaimana kalau tiap gerakan kuberi nama? Yang ini 'Elang Menyapa'!",
 		],
@@ -362,7 +362,7 @@ const STUDENT_LINES := {
 		"Thea": [
 			"Gerakan ini sudah kulatih sampai kakiku pegal. Ayo, Pak, kita tunjukkan!",
 			"Bagus saja belum cukup, Pak. Aku mau setiap langkah sempurna!",
-			"Tadi pagi aku mengulang gerakannya sekali lagi. Semoga tidak ada panah yang terlewat.",
+			"Tadi pagi gerakannya kulatih sekali lagi. Sekarang kakiku sudah hafal sendiri.",
 			"Iramanya sudah kuhafal dari rekaman, Pak. Kudengarkan tiap malam sebelum tidur.",
 			"Tanganku gemetar, Pak. Tapi latihan berminggu-minggu ini sayang kalau disia-siakan.",
 		],

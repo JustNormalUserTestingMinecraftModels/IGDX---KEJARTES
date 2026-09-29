@@ -138,6 +138,26 @@ static func shows_chip(chip_mode: bool, delta: float) -> bool:
 	return chip_mode and int(round(delta)) != 0
 
 
+## Whether this row shows a gain marker the reward can play from: the gold
+## chevron on the nightly card, or a gain chip on the weekly report.
+func shows_gain_marker() -> bool:
+	return chevron.visible or (chip_row.visible and _delta > 0.0)
+
+
+## The control the gain's reward pops in and bursts from: the chip when the
+## weekly readout shows one, the gold chevron otherwise.
+func _gain_marker() -> Control:
+	return delta_chip if chip_row.visible else chevron
+
+
+## The gain marker's centre in this row's local coordinates: where the
+## reward burst is thrown from.
+func _gain_marker_center() -> Vector2:
+	if chip_row.visible:
+		return chip_row.position + delta_chip.position + delta_chip.size * 0.5
+	return chevron.position + chevron.size * 0.5
+
+
 ## Turn the weekly chip readout on or off and redraw the row's readout.
 ## The card calls it before writing its rows.
 func set_chip_mode(on: bool) -> void:
@@ -294,8 +314,9 @@ func _reset_chevron() -> void:
 
 ## Replay today's movement: rewind the track to where it stood this
 ## morning and grow it back to where set_stat already left it, popping
-## the chevron in over the same beat and -- on a day that actually
-## gained -- throwing a star burst from the chevron. `delay` holds the
+## the gain marker in over the same beat (the chevron, or on the weekly
+## report the gain chip) and -- on a day that actually gained -- throwing a
+## star burst from it. `delay` holds the
 ## whole gesture so a card can stagger its three rows.
 ##
 ## `plays_sparkle` lets the card suppress the sparkle cue on the second and
@@ -317,8 +338,8 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	# together while the bars were still travelling; on `finished` they chime
 	# in sequence, patient, one bar landing after another.
 	var fill_tw := Juice.fill_bar(track, _fill_to, -1.0, delay)
-	if chevron.visible:
-		Juice.pop_in(chevron, delay)
+	if shows_gain_marker():
+		Juice.pop_in(_gain_marker(), delay)
 		_play_burst(delay, plays_sparkle)
 		if not Engine.is_editor_hint():
 			if fill_tw != null and fill_tw.is_valid():
@@ -335,7 +356,8 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 	Juice.count_up_formatted(value, 0.0, _delta, _count_text, delay)
 
 
-## The gain's reward burst, centred on the chevron. The rising stat cue is
+## The gain's reward burst, centred on the chevron (or, on the weekly
+## report, the gain chip). The rising stat cue is
 ## fired separately by play_gain, on the beat the fill bar LANDS, so a card's
 ## staggered rows chime in sequence rather than all at once. Only the burst's
 ## own sparkle cue is deduplicated across a card's gesture (see
@@ -344,7 +366,7 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	if Engine.is_editor_hint():
 		return
-	var fx := _get_or_make_burst(chevron.position + chevron.size * 0.5)
+	var fx := _get_or_make_burst(_gain_marker_center())
 	fx.plays_sfx = plays_sparkle
 	fx.fire(delay)
 

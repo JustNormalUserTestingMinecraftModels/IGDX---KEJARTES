@@ -283,7 +283,7 @@ func play_gain(delay: float = 0.0) -> void:
 	# deduplicated.
 	var sparkle_spent := false
 	for i in stat_rows.size():
-		var wants_sparkle := not sparkle_spent and stat_rows[i].chevron.visible
+		var wants_sparkle := not sparkle_spent and stat_rows[i].shows_gain_marker()
 		if wants_sparkle:
 			sparkle_spent = true
 		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP, wants_sparkle)

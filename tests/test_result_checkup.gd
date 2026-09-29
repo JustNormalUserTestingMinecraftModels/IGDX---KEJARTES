@@ -213,6 +213,23 @@ func test_the_weekly_reveal_rewinds_and_lands_the_chip() -> void:
 	assert_eq(row.delta_chip.scale, Vector2.ONE, "at rest")
 
 
+## The weekly report plays its cards through play_gain, which keys the
+## reward (pop, burst, gain cue, card sparkle) off the row's gain marker. In
+## chip mode that marker is the gain chip, so a weekly gain still rewards
+## and a loss still does not; the nightly card keeps the chevron.
+func test_a_weekly_gain_keeps_its_reward_marker() -> void:
+	var inst := _card()
+	var s := _student_with_week(
+		{"akademis": 40.0, "olahraga": 55.0},
+		{"akademis": 58.0, "olahraga": 49.0})
+	inst.setup_week_row(s)
+	assert_true(inst.stat_rows[0].shows_gain_marker(), "a weekly gain rewards from its chip")
+	assert_false(inst.stat_rows[2].shows_gain_marker(), "a weekly loss does not")
+	inst.setup_row("Marcel", [{"stat_key": "akademis", "delta": 6.0}], s)
+	assert_true(inst.stat_rows[0].shows_gain_marker(), "the nightly gain rewards from its chevron")
+	assert_true(inst.stat_rows[0].chevron.visible, "which is the chevron itself")
+
+
 ## The weekly card wears the game-wide energy yellow and mood pink.
 func test_the_week_card_wears_the_week_needs_bars() -> void:
 	var inst := _card()

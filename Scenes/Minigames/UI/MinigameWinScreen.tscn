@@ -1,19 +1,19 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://c8aiavjmmyrdx"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameWinScreen.gd" id="1_win"]
+[ext_resource type="Script" uid="uid://bat0vei6vps3u" path="res://Scripts/Minigames/UI/MinigameWinScreen.gd" id="1_win"]
 [ext_resource type="Material" path="res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres" id="2_blur"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="3_cut"]
-[ext_resource type="Texture2D" path="res://Assets/Images/Shop/UI/chat_bubble_tail.svg" id="4_tail"]
-[ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/ResultStar.tscn" id="5_star"]
+[ext_resource type="Texture2D" uid="uid://chs5y1k0f18x2" path="res://Assets/Images/Shop/UI/chat_bubble_tail.svg" id="4_tail"]
+[ext_resource type="PackedScene" uid="uid://bh43jlmr0mvth" path="res://Scenes/Minigames/UI/ResultStar.tscn" id="5_star"]
 [ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/MinigameWinStat.tscn" id="6_stat"]
-[ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="7_fw"]
+[ext_resource type="PackedScene" uid="uid://b1kjq7vxnf2ca" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="7_fw"]
 
-[node name="MinigameWinScreen" type="CanvasLayer"]
+[node name="MinigameWinScreen" type="CanvasLayer" unique_id=1709414837]
 process_mode = 3
 layer = 999
 script = ExtResource("1_win")
 
-[node name="Root" type="Control" parent="."]
+[node name="Root" type="Control" parent="." unique_id=728969664]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -21,7 +21,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Blur" type="ColorRect" parent="Root"]
+[node name="Blur" type="ColorRect" parent="Root" unique_id=329306556]
 material = ExtResource("2_blur")
 layout_mode = 1
 anchors_preset = 15
@@ -31,7 +31,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Splash" type="TextureRect" parent="Root"]
+[node name="Splash" type="TextureRect" parent="Root" unique_id=1240708777]
 material = ExtResource("3_cut")
 layout_mode = 1
 anchors_preset = -1
@@ -48,21 +48,20 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Bubble" type="Control" parent="Root"]
+[node name="Bubble" type="Control" parent="Root" unique_id=476304184]
 layout_mode = 1
-anchors_preset = -1
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 50.0
-offset_top = -1022.0
+offset_top = -1038.0
 offset_right = -50.0
 offset_bottom = -878.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="Panel" type="PanelContainer" parent="Root/Bubble"]
+[node name="Panel" type="PanelContainer" parent="Root/Bubble" unique_id=992153028]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -72,15 +71,16 @@ grow_vertical = 2
 mouse_filter = 2
 theme_type_variation = &"MinigameWinBubble"
 
-[node name="Line" type="Label" parent="Root/Bubble/Panel"]
+[node name="Line" type="Label" parent="Root/Bubble/Panel" unique_id=1827439744]
 layout_mode = 2
 theme_type_variation = &"MinigameWinLine"
-text = "Terima kasih, Guru!"
+text = "Terima kasih, Pak!"
 horizontal_alignment = 1
 vertical_alignment = 1
+autowrap_mode = 3
 uppercase = true
 
-[node name="Tail" type="TextureRect" parent="Root/Bubble"]
+[node name="Tail" type="TextureRect" parent="Root/Bubble" unique_id=2143471221]
 layout_mode = 1
 offset_left = 238.0
 offset_top = -58.0
@@ -92,7 +92,7 @@ expand_mode = 1
 flip_h = true
 flip_v = true
 
-[node name="Card" type="PanelContainer" parent="Root"]
+[node name="Card" type="PanelContainer" parent="Root" unique_id=1256961919]
 layout_mode = 1
 anchors_preset = -1
 anchor_top = 1.0
@@ -103,54 +103,54 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_type_variation = &"MinigameWinCard"
 
-[node name="Layout" type="VBoxContainer" parent="Root/Card"]
+[node name="Layout" type="VBoxContainer" parent="Root/Card" unique_id=918552367]
 layout_mode = 2
 theme_override_constants/separation = 56
 
-[node name="StarRow" type="HBoxContainer" parent="Root/Card/Layout"]
+[node name="StarRow" type="HBoxContainer" parent="Root/Card/Layout" unique_id=1240346187]
 layout_mode = 2
 theme_override_constants/separation = 36
 alignment = 1
 
-[node name="Star1" parent="Root/Card/Layout/StarRow" instance=ExtResource("5_star")]
+[node name="Star1" parent="Root/Card/Layout/StarRow" unique_id=1856059500 instance=ExtResource("5_star")]
 custom_minimum_size = Vector2(258, 258)
 layout_mode = 2
 
-[node name="Star2" parent="Root/Card/Layout/StarRow" instance=ExtResource("5_star")]
+[node name="Star2" parent="Root/Card/Layout/StarRow" unique_id=1081127760 instance=ExtResource("5_star")]
 custom_minimum_size = Vector2(258, 258)
 layout_mode = 2
 
-[node name="Star3" parent="Root/Card/Layout/StarRow" instance=ExtResource("5_star")]
+[node name="Star3" parent="Root/Card/Layout/StarRow" unique_id=35597462 instance=ExtResource("5_star")]
 custom_minimum_size = Vector2(258, 258)
 layout_mode = 2
 
-[node name="StatRow" type="HBoxContainer" parent="Root/Card/Layout"]
+[node name="StatRow" type="HBoxContainer" parent="Root/Card/Layout" unique_id=1748933625]
 layout_mode = 2
 theme_override_constants/separation = 100
 alignment = 1
 
-[node name="SkillChip" parent="Root/Card/Layout/StatRow" instance=ExtResource("6_stat")]
+[node name="SkillChip" parent="Root/Card/Layout/StatRow" unique_id=331614470 instance=ExtResource("6_stat")]
 layout_mode = 2
 
-[node name="EnergyChip" parent="Root/Card/Layout/StatRow" instance=ExtResource("6_stat")]
+[node name="EnergyChip" parent="Root/Card/Layout/StatRow" unique_id=190645777 instance=ExtResource("6_stat")]
 layout_mode = 2
 
-[node name="ButtonRow" type="HBoxContainer" parent="Root/Card/Layout"]
+[node name="ButtonRow" type="HBoxContainer" parent="Root/Card/Layout" unique_id=246901852]
 layout_mode = 2
 theme_override_constants/separation = 64
 alignment = 1
 
-[node name="LobbyButton" type="Button" parent="Root/Card/Layout/ButtonRow"]
+[node name="LobbyButton" type="Button" parent="Root/Card/Layout/ButtonRow" unique_id=585804402]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_type_variation = &"SecondaryButtonL"
 text = "LOBBY"
 
-[node name="LanjutButton" type="Button" parent="Root/Card/Layout/ButtonRow"]
+[node name="LanjutButton" type="Button" parent="Root/Card/Layout/ButtonRow" unique_id=1277325032]
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 2
 theme_type_variation = &"PrimaryButtonL"
 text = "LANJUT"
 
-[node name="ConfettiFireworks" parent="Root" instance=ExtResource("7_fw")]
+[node name="ConfettiFireworks" parent="Root" unique_id=2002758362 instance=ExtResource("7_fw")]
 layout_mode = 1

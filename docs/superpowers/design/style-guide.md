@@ -82,8 +82,7 @@ tiles also get a thicker lip (`ThemeFactory.LOBBY_HUD_LIP`).
   (`NotifBadgeLabel` for its digit/mark text).
 - `RosterChip` — the book's "N murid" pill.
 - `ResultTitlePanel` — the weekly report's brown "HASIL MINGGUAN" title plate
-  (`KoperasiSignPanel`'s recipe). `DeltaChipGain` / `DeltaChipLoss` — the weekly
-  report's change chips, `state_success` / `state_danger` pills.
+  (`KoperasiSignPanel`'s recipe).
 
 **Labels**:
 - `DisplayLabel` — largest heading, outlined, uses the display font.
@@ -111,14 +110,10 @@ tiles also get a thicker lip (`ThemeFactory.LOBBY_HUD_LIP`).
   white letters with a dark edge. Keep the base white: a dark base would
   crush the tint to near-black.
 - `ResultTitleLabel` — cream display letters on `ResultTitlePanel`.
-  `DeltaChipLabel` — the white number on a change chip.
 
 **Progress**:
 - `StatBar` — the mood/energy/skill bars. Fill renders white so callers tint
   per-category via `self_modulate` rather than needing per-stat styleboxes.
-- `WeekEnergyBar` / `WeekMoodBar` — the weekly report's needs bars, in the
-  game-wide `cat_energy_on_dark` / `cat_mood_on_dark`; the nightly popup keeps
-  `DaySummaryEnergyBar` / `DaySummaryMoodBar`.
 
 Unstyled `Label`, `Button`, and `Panel` nodes (no variation set) still get a
 sane themed default from `_build_base_overrides` — so a bare `Button` dropped

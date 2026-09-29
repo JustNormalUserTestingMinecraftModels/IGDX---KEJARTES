@@ -27,6 +27,12 @@ layout_mode = 2
 theme_type_variation = &"RecapPillValueLabel"
 horizontal_alignment = 1
 
+[node name="Caption" type="Label" parent="Column" unique_id=1093870008]
+layout_mode = 2
+theme_type_variation = &"RecapPillCaptionLabel"
+horizontal_alignment = 1
+autowrap_mode = 3
+
 [node name="Ring" parent="." unique_id=2106305868 instance=ExtResource("2_hxt6t")]
 position = Vector2(140, 130)
 amount = 10

@@ -23,9 +23,11 @@ signal pill_tapped
 ## The pill's icon. Left null the pill still lays out; the icon slot
 ## simply renders empty.
 @onready var icon: TextureRect = $Column/Icon
-## The formatted number. Tinted via self_modulate by set_pill, never by a
-## font colour override.
+## The formatted number. Coloured by RecapPillValueLabel (white on a navy rim);
+## never tinted or overridden.
 @onready var value_label: Label = $Column/Value
+## What the number counts ("UANG DIDAPAT"), under it in the heading face.
+@onready var caption_label: Label = $Column/Caption
 ## The one-shot pulse fired when this pill's count-up lands.
 @onready var ring: RewardParticles = $Ring
 
@@ -35,16 +37,17 @@ signal pill_tapped
 var _is_pressed: bool = false
 
 
-## Populate the pill. `tint` colours only the number, never the icon --
-## the icon SVGs carry their own colour and multiplying them would muddy
-## it.
+## Populate the pill: its icon, its formatted number and the caption that
+## says what the number counts. Colour comes from the theme variations
+## (white number on a navy rim, navy caption), never from the caller.
 func set_pill(icon_texture: Texture2D, value_text: String,
-		tint: Color) -> void:
+		caption_text: String) -> void:
 	if icon:
 		icon.texture = icon_texture
 	if value_label:
 		value_label.text = value_text
-		value_label.self_modulate = tint
+	if caption_label:
+		caption_label.text = caption_text
 
 
 ## Count this pill's number up from zero after `delay`, pulsing the ring

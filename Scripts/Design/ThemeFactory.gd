@@ -3211,12 +3211,6 @@ static func _build_day_summary(theme: Theme, tokens: DesignTokens) -> void:
 			tokens.day_energy_fill, tokens.day_bar_radius],
 		["DaySummaryMoodBar", tokens.day_bar_track,
 			tokens.day_mood_fill, tokens.day_bar_radius],
-		# The weekly report's needs bars: the game-wide energy yellow and
-		# mood pink (StatBarEnergy/StatBarMood), on the same track and rim.
-		["WeekEnergyBar", tokens.day_bar_track,
-			tokens.cat_energy_on_dark, tokens.day_bar_radius],
-		["WeekMoodBar", tokens.day_bar_track,
-			tokens.cat_mood_on_dark, tokens.day_bar_radius],
 		["DaySummaryStatTrackAkademis", tokens.day_stat_track,
 			tokens.cat_akademis_on_dark, tokens.radius_pill],
 		["DaySummaryStatTrackSeniBudaya", tokens.day_stat_track,
@@ -3285,21 +3279,29 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	recap_pill.set_content_margin_all(tokens.space_sm)
 	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
 
-	# The pill's number. Tinted per-pill via self_modulate, so the
-	# variation itself stays neutral.
+	# The pill's number: white on a navy rim, the event warning's own ink,
+	# so it reads on the near-white tile (2026-09-29 clarity spec).
 	theme.add_type("RecapPillValueLabel")
 	theme.set_type_variation("RecapPillValueLabel", "Label")
 	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
-	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
+	theme.set_color("font_color", "RecapPillValueLabel", Color.WHITE)
 	theme.set_constant("outline_size", "RecapPillValueLabel", tokens.text_outline_size)
-	theme.set_color("font_outline_color", "RecapPillValueLabel", tokens.text_outline_color)
+	theme.set_color("font_outline_color", "RecapPillValueLabel", tokens.event_warning_ink)
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
 
+	# What the number counts, under it: the heading face at caption size,
+	# so the longest caption (MINIGAME MENANG) fits on one line.
+	theme.add_type("RecapPillCaptionLabel")
+	theme.set_type_variation("RecapPillCaptionLabel", "Label")
+	theme.set_font_size("font_size", "RecapPillCaptionLabel", tokens.font_caption)
+	theme.set_color("font_color", "RecapPillCaptionLabel", tokens.event_warning_ink)
+	if tokens.font_display != null:
+		theme.set_font("font", "RecapPillCaptionLabel", tokens.font_display)
+
 
 ## The weekly report's own chrome (2026-09-29 weekly colours spec): the brown
-## "HASIL MINGGUAN" title plate and the green/red chips marking a week's gain
-## or loss on each stat row.
+## "HASIL MINGGUAN" title plate.
 static func _build_week_report(theme: Theme, tokens: DesignTokens) -> void:
 	# -- ResultTitlePanel / ResultTitleLabel: the title plate, the same
 	# carved-brown recipe as KoperasiSignPanel, cream letters on it. --
@@ -3323,32 +3325,6 @@ static func _build_week_report(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_constant("outline_size", "ResultTitleLabel", tokens.lipped_label_outline)
 	if tokens.font_display != null:
 		theme.set_font("font", "ResultTitleLabel", tokens.font_display)
-
-	# -- DeltaChipGain / DeltaChipLoss / DeltaChipLabel: a flat pill (a
-	# badge, not a button, so no lip) in the state colours, white number. --
-	for spec in [["DeltaChipGain", tokens.state_success],
-			["DeltaChipLoss", tokens.state_danger]]:
-		var chip_name: String = spec[0]
-		theme.add_type(chip_name)
-		theme.set_type_variation(chip_name, "PanelContainer")
-		var chip := StyleBoxFlat.new()
-		chip.bg_color = spec[1]
-		chip.set_corner_radius_all(tokens.radius_pill)
-		chip.content_margin_left = tokens.space_sm
-		chip.content_margin_right = tokens.space_sm
-		chip.content_margin_top = 2
-		chip.content_margin_bottom = 2
-		theme.set_stylebox("panel", chip_name, chip)
-
-	theme.add_type("DeltaChipLabel")
-	theme.set_type_variation("DeltaChipLabel", "Label")
-	theme.set_font_size("font_size", "DeltaChipLabel", tokens.day_needs_label_size)
-	theme.set_color("font_color", "DeltaChipLabel", Color.WHITE)
-	theme.set_constant("outline_size", "DeltaChipLabel",
-		maxi(2, tokens.text_outline_size / 2))
-	theme.set_color("font_outline_color", "DeltaChipLabel", tokens.day_glyph_outline)
-	if tokens.font_display != null:
-		theme.set_font("font", "DeltaChipLabel", tokens.font_display)
 
 
 # ----------------------------------------------------------------- id card

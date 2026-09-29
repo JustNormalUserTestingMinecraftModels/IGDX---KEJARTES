@@ -31,6 +31,12 @@ func test_every_declared_variation_exists() -> void:
 		"MinigameCard", "MinigameCardInner", "MinigameImagePlate",
 		"MinigameAnswerButton", "MinigameHudPill", "MinigameHudValue",
 		"MinigameHudIconButton", "MinigamePlankPanel", "MinigamePlankLabel",
+		# 2026-09-30 minigame hierarchy.
+		"MinigameTargetLabel", "MinigameTimerLabel", "MinigameToolNameLabel",
+		"MinigameKeyLabel", "MinigameLcdLabel", "MinigameChoiceButtonCorrect",
+		"MinigameChoiceButtonWrong", "MinigameCtaButton", "MinigameSecondaryButton",
+		"WoodNavArrow", "MinigameAnswerCard", "MinigameCardLock", "MinigameBadgePanel",
+		"MinigameToolCard", "MinigameToolRing",
 		# 2026-09-27 scrapbook HUD (Task 2).
 		"BookHeroButton", "NavTileKoperasi", "NavTileInventory", "NavTileRapor",
 		"PlusButton", "ChevronGripButton", "BookCoverPanel", "BookPagePanel",
@@ -403,6 +409,13 @@ const DISPLAY_ROSTER := [
 	# the HUD score value and the plank label. The kit's panels and its icon
 	# button carry no font.
 	"MinigameAnswerButton", "MinigameHudValue", "MinigamePlankLabel",
+	# 2026-09-30 minigame hierarchy: the plaque's target and the timer's
+	# seconds, the tool names, the calculator's keys and display, and the
+	# lipped flash, tray and arrow buttons.
+	"MinigameTargetLabel", "MinigameTimerLabel", "MinigameToolNameLabel",
+	"MinigameKeyLabel", "MinigameLcdLabel", "MinigameChoiceButtonCorrect",
+	"MinigameChoiceButtonWrong", "MinigameCtaButton", "MinigameSecondaryButton",
+	"WoodNavArrow",
 	# 2026-09-27 scrapbook HUD (Task 2): the book's hero button and nav
 	# tiles, the coin plate's +, the header's grade badge and week label,
 	# the star bar's number, and the icon rail's notification badge.

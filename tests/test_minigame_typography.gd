@@ -1,7 +1,10 @@
 @tool
 extends McpTestSuite
 
-## Pins the minigame type ladder: every minigame text size is one of the
+## Pins the minigame type ladder. Since 2026-09-30 (minigame hierarchy) the
+## question, the choices and the badge sit on the minigames' own x1.618 ladder,
+## MinigameType (28/45/73/118); the rest keep the token rungs below. The
+## original rule: every minigame text size is one of the
 ## three token rungs (36 font_title, 64 font_h1, 96 font_display_size), and
 ## each role reaches its size through a ThemeFactory variation rather than a
 ## theme_override_* or an add_theme_font_size_override literal.
@@ -22,10 +25,10 @@ func suite_name() -> String:
 
 ## Every variation this pass adds, with the token rung it must carry.
 const VARIATIONS: Dictionary = {
-	"MinigameQuestionLabel": 64,
-	"MinigameChoiceButton": 36,
+	"MinigameQuestionLabel": 73,
+	"MinigameChoiceButton": 45,
 	"MinigameMetaLabel": 36,
-	"MinigameBadgeLabel": 36,
+	"MinigameBadgeLabel": 28,
 	"MinigameOverlayLabel": 36,
 	"MinigameWheelHeaderWarm": 36,
 	"MinigameWheelHeaderCool": 36,

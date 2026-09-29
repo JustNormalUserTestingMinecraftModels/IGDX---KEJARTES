@@ -188,7 +188,7 @@ func test_pilihan_ganda_refits_once_laid_out_and_styles_through_the_theme() -> v
 # ------------------------------------------------------------- calculator
 
 const KALK := "res://Scenes/Minigames/Akademis/Kalkulator.tscn"
-const KalkScript := preload("res://Scripts/Minigames/Akademis/Kalkulator.gd")
+const KALK_GD := "res://Scripts/Minigames/Akademis/Kalkulator.gd"
 
 
 func _kalk(zero: bool) -> Control:
@@ -196,6 +196,12 @@ func _kalk(zero: bool) -> Control:
 	k.set("show_zero_key", zero)
 	LayoutFrame.settle(k)
 	return k
+
+
+## A Kalkulator.gd constant, read at run time so this suite still loads
+## before the constant exists.
+func _kc(name: String) -> Variant:
+	return (load(KALK_GD) as Script).get_script_constant_map().get(name)
 
 
 ## `r` as fractions of `body`'s rect.
@@ -209,11 +215,11 @@ func test_the_keypad_is_centred_on_the_painted_face() -> void:
 	var keys := (k.get_node("Body/KeyGrid") as Control).get_global_rect().merge(
 		(k.get_node("Body/ZeroRow") as Control).get_global_rect())
 	var f := _frac(keys, body)
-	var face: Rect2 = KalkScript.FACE_RECT
+	var face: Rect2 = _kc("FACE_RECT") if _kc("FACE_RECT") != null else Rect2()
 	assert_true(absf(f.get_center().x - face.get_center().x) <= 0.01,
 		"B3: keys centred on the face (%.4f vs %.4f)" % [f.get_center().x, face.get_center().x])
 	assert_true(face.encloses(f), "B3: the keys %s stay on the face %s" % [f, face])
-	var glass: Rect2 = KalkScript.GLASS_RECT
+	var glass: Rect2 = _kc("GLASS_RECT") if _kc("GLASS_RECT") != null else Rect2()
 	var lcd := _frac((k.get_node("Body/Layar") as Control).get_global_rect(), body)
 	assert_true(glass.grow(0.002).encloses(lcd), "B3: the display %s stays on the glass" % lcd)
 
@@ -222,7 +228,7 @@ func test_without_zero_the_grid_takes_its_row() -> void:
 	var k := _kalk(false)
 	var body := (k.get_node("Body") as Control).get_global_rect()
 	var grid := _frac((k.get_node("Body/KeyGrid") as Control).get_global_rect(), body)
-	assert_true(absf(grid.end.y - KalkScript.KEYPAD_BOTTOM) <= 0.005,
+	assert_true(absf(grid.end.y - float(_kc("KEYPAD_BOTTOM") if _kc("KEYPAD_BOTTOM") != null else -1.0)) <= 0.005,
 		"Variabel's three rows reach the keypad's bottom (%.4f)" % grid.end.y)
 
 

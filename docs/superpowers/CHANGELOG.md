@@ -8,6 +8,19 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Lobby layout grid
+
+The owner asked for spacing and for the Minggu plate off the students' faces.
+The progress plate is now a 232x192 tag in the gap between the two back-row
+heads. It clears every student's hair and face, in every skin, breathing and at
+full parallax tilt; the art was measured, and `test_lobby_layout` checks it
+pixel by pixel. `Minggu` moved to its own caption (`WEEK_FORMAT` is `"%d / %d"`),
+because the one-line week is 264 px wide. To fit beside the week, the grade badge's padding dropped from `space_sm` to `space_xs` (the `GradeBadge` variation, used only here; one rebake). The coin box moved into the book's
+step beside JADWAL! and rides the HUD swipe; only the tag idle-fades now. The
+book is back on the 48 px grid (`60d6d7d7`'s nudge had clipped the nav tiles),
+and the rail ends 24 px above the coin box. Spec:
+`specs/2026-09-29-lobby-layout-grid-design.md`.
+
 ## 2026-09-29 — ResultCheckup clarity pass
 
 The week banner's pills now say what they count (UANG DIDAPAT, MINIGAME

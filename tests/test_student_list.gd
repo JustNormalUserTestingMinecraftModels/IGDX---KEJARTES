@@ -369,20 +369,26 @@ func test_roster_avatar_bounce_is_guarded_and_cleaned_up() -> void:
 	assert_true(exiting.contains("_bounce_tween.kill()"), "_exit_tree must kill the bounce tween")
 
 
-## Review 2026-09-29: at the original ACTIVE_SCALE/padding, the active
-## avatar's Highlight ring scaled past HeaderLabel's bottom and past
-## CardContainer's top (a live capture caught the gold ring drawn over
-## "MURIDMU" and clipped by the card's edge). Mirrors the same pivot-
-## scaling arithmetic _apply_current_state() uses, read from authored
-## scene data at the design size, so a future change to ACTIVE_SCALE,
-## ACTIVE_LIFT_PX, Highlight's padding, or the strip/title/card's offsets
-## that reopens the collision fails loudly here instead of only in a
-## screenshot.
-func test_active_avatar_ring_clears_the_title_and_the_card() -> void:
-	var frame := track(LayoutFrame.stand_up(_SCENE_PATH, Vector2(1080, 1920))) as Control
+## Review 2026-09-29 (round 2 -- "solve the whole vertical stack"): at the
+## original ACTIVE_SCALE/padding, the active avatar's Highlight ring
+## scaled past HeaderLabel's bottom and past CardContainer's top (a live
+## capture caught the gold ring drawn over "MURIDMU" and clipped by the
+## card's edge); moving CardContainer down to fix that then pushed the
+## card's bottom past the nav arrows on a 1080x1920 phone. Pins all three
+## boundaries at once, at both screen sizes tests/test_tall_screen_-
+## layout.gd covers, mirroring the same pivot-scaling arithmetic
+## _apply_current_state() uses and reading everything from authored scene
+## data / RosterAvatar consts, so a future change to any of them that
+## reopens a collision fails loudly here instead of only in a screenshot.
+const _MIN_CLEARANCE_PX := 8.0
+
+
+func _assert_stack_clears(screen: Vector2) -> void:
+	var frame := track(LayoutFrame.stand_up(_SCENE_PATH, screen)) as Control
 	var list := frame.get_child(0) as Control
 	var title_bottom: float = (list.get_node("%HeaderLabel") as Control).get_global_rect().end.y
-	var card_top: float = (list.get_node("CardContainer") as Control).get_global_rect().position.y
+	var card_rect := (list.get_node("CardContainer") as Control).get_global_rect()
+	var arrow_top: float = (list.get_node("%LeftArrow") as Control).get_global_rect().position.y
 	var avatar := list.get_node("%RosterStrip/Avatar1") as Control
 	var avatar_rect := avatar.get_global_rect()
 	var highlight := avatar.get_node("Highlight") as Control
@@ -393,10 +399,23 @@ func test_active_avatar_ring_clears_the_title_and_the_card() -> void:
 	var ring_top: float = center - half_extent * RosterAvatar.ACTIVE_SCALE
 	var ring_bottom: float = center + half_extent * RosterAvatar.ACTIVE_SCALE
 
-	assert_true(ring_top >= title_bottom,
-		"active ring top %.1f must clear the title's bottom %.1f" % [ring_top, title_bottom])
-	assert_true(ring_bottom <= card_top,
-		"active ring bottom %.1f must clear the card's top %.1f" % [ring_bottom, card_top])
+	assert_true(ring_top - title_bottom >= _MIN_CLEARANCE_PX,
+		"%s: active ring top %.1f must clear the title's bottom %.1f by %.0fpx"
+			% [screen, ring_top, title_bottom, _MIN_CLEARANCE_PX])
+	assert_true(card_rect.position.y - ring_bottom >= _MIN_CLEARANCE_PX,
+		"%s: active ring bottom %.1f must clear the card's top %.1f by %.0fpx"
+			% [screen, ring_bottom, card_rect.position.y, _MIN_CLEARANCE_PX])
+	assert_true(arrow_top - card_rect.end.y >= _MIN_CLEARANCE_PX,
+		"%s: the card's bottom %.1f must clear the nav arrows' top %.1f by %.0fpx"
+			% [screen, card_rect.end.y, arrow_top, _MIN_CLEARANCE_PX])
+
+
+func test_active_avatar_ring_clears_the_title_and_the_card() -> void:
+	_assert_stack_clears(Vector2(1080, 1920))
+
+
+func test_active_avatar_ring_clears_the_title_and_the_card_on_a_tall_phone() -> void:
+	_assert_stack_clears(Vector2(1080, 2400))
 
 
 ## Nav arrow idle hint (2026-09-29 avatar bounce pass): a ±4px nudge while

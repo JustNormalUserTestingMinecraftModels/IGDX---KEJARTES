@@ -33,13 +33,17 @@ extends Button
 ## Visual scale for every avatar that is not the current one.
 const INACTIVE_SCALE := 0.82
 ## Visual scale for the current avatar. The spec says "~1.4"; review found
-## that scale, at the original Highlight padding, put the ring's scaled
-## top past HeaderLabel's bottom and its scaled bottom past CardContainer's
-## top (test_active_avatar_ring_clears_the_title_and_the_card does the
-## arithmetic). 1.3 -- with tighter ring padding and StudentList.tscn's
-## RosterStrip/CardContainer moved for headroom -- clears both with room
-## to spare while staying clearly dominant.
-const ACTIVE_SCALE := 1.3
+## that scale (even a first-round reduction to 1.3) put the ring's scaled
+## top past HeaderLabel's bottom and/or its scaled bottom past
+## CardContainer's top or the nav arrows -- the strip's natural position
+## sits close enough to both neighbours that the ring is always the
+## binding constraint. 1.25, the floor the review allows, paired with
+## tight ring padding and StudentList.tscn's RosterStrip/CardContainer
+## repositioned for headroom, clears the whole stack (title, ring, card,
+## arrows) with room to spare (test_active_avatar_ring_clears_the_-
+## title_and_the_card does the arithmetic for both screen sizes) while
+## staying clearly dominant.
+const ACTIVE_SCALE := 1.25
 ## How far the current avatar lifts upward, in px.
 const ACTIVE_LIFT_PX := 4.0
 ## Overshoot-settle duration for an is_current change (spec §4.2).

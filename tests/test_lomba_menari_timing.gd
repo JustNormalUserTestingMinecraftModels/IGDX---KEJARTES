@@ -21,12 +21,15 @@ func suite_name() -> String:
 func test_the_dancer_draws_behind_the_hit_zone() -> void:
 	var scene := load(SCENE_PATH).instantiate() as Node
 	track(scene)
-	var backdrop: int = scene.get_node("Background").get_index()
+	# The backdrop lives in the World room at -1 since 2026-09-30, under every
+	# layer-0 node, the dancer included.
+	var world := scene.get_node("World") as CanvasLayer
+	assert_true(scene.get_node_or_null("World/Room/Background") != null, "the backdrop is in the World room")
 	var dancer: int = scene.get_node("CharacterDisplay").get_index()
 	var zone: int = scene.get_node("HitZone").get_index()
 	var notes: int = scene.get_node("NotesParent").get_index()
 	assert_true(dancer < zone, "CharacterDisplay is before HitZone, so the zone draws over her")
-	assert_true(backdrop < dancer, "she still stands in front of the backdrop")
+	assert_true(world.layer < 0, "she still stands in front of the backdrop")
 	assert_true(zone < notes, "and the notes still fly over the zone")
 
 

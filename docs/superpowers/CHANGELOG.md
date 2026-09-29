@@ -28,6 +28,13 @@ sources are 512 px (626 px for the sad face) drawn into the 150 px `Face`
 slot, so each import generates mipmaps and joins `test_texture_mipmaps.gd`'s
 `TARGETS` (57 of the 57 allowed).
 
+## 2026-09-30 — Skin Select's splashes 15% softer
+
+The carousel's splashes are 15% less saturated and 15% less contrasty:
+`skin_card_focus.gdshader` gains `splash_saturation` and `splash_contrast`
+(both 0.85), applied before the neighbour dimming and the 1.25 gain. The
+lower contrast also pulls the gain's clipped highlights back from white.
+
 ## 2026-09-30 — Skin Select's splashes 25% brighter
 
 Every card in the Skin Select carousel (opened from the Lobby) draws its

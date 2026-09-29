@@ -75,8 +75,18 @@ func test_the_cards_show_the_art_ungraded() -> void:
 	for param in ["saturation", "contrast", "exposure", "tint", "amount"]:
 		var m := RegEx.create_from_string("uniform \\w+ %s\\b" % param).search(src)
 		assert_true(m == null, "the card shader must not grade the splash: found uniform %s" % param)
-	assert_true(src.contains("COLOR = vec4(c.rgb * brightness * splash_gain, c.a) * COLOR;"),
-		"the splash's own rgb, scaled only by brightness and the splash gain")
+	assert_true(src.contains("COLOR = vec4(rgb * brightness * splash_gain, c.a) * COLOR;"),
+		"the splash's rgb, scaled only by brightness and the splash gain")
+
+
+## The splashes are 15% less saturated and 15% less contrasty (2026-09-30).
+func test_the_splashes_are_softened_by_fifteen_percent() -> void:
+	var src := FileAccess.get_file_as_string(SHADER)
+	for param in ["splash_saturation", "splash_contrast"]:
+		var m := RegEx.create_from_string("uniform float %s\\s*=\\s*([0-9.]+);" % param).search(src)
+		assert_true(m != null, "the card shader declares " + param)
+		if m != null:
+			assert_eq(float(m.get_string(1)), 0.85, param + " is 15% lower")
 
 
 ## Skin Select's splashes read 25% brighter (2026-09-30): a flat gain on every

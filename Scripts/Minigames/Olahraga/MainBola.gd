@@ -106,7 +106,7 @@ extends BaseMinigame
 			_setup_layout()
 
 ## The ball's collision and sprite radius, as a fraction of viewport width.
-@export_range(0.0, 0.2, 0.001) var ball_radius_frac: float = 0.065:
+@export_range(0.0, 0.2, 0.001) var ball_radius_frac: float = 0.0975:
 	set(value):
 		ball_radius_frac = value
 		if is_inside_tree():

@@ -356,7 +356,7 @@ never `git switch` or `git checkout` there on an old reading. Re-check
 `git status` and `git reflog -1` in the same command, or put a second task in a
 worktree.
 
-**A full `test_run` drops the bridge.** The runner instances scenes test after
+**A full `test_run` can drop the bridge.** The runner instances scenes test after
 test with no frame between, so deferred layout calls flood the MessageQueue
 and the editor dies. A suite that instances a big scene per test builds it
 once in `suite_setup` instead.

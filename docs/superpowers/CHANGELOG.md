@@ -10,14 +10,14 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
 
 ## 2026-09-30 — CLAUDE.md context audit
 
-Every claim in `CLAUDE.md` was checked against source at `a1ddd315`. Fixed:
+Every claim in `CLAUDE.md` was checked against source on 2026-09-30. Fixed:
 the pass rule's timing, the end-of-grade route (RunResult goes on to
 StudentCard or MainMenu), StudentList's place in the loop, Wirausaha's cost
 (flat, not higher), the efficiency multipliers (0.55/0.85/1.28, not
 0.6/0.85/1.20), two missing autoloads, the debug Scenes tab's reach,
 `ActivityRow` → `ActivityTile`, and the cause of the full-run crash. Two user
 rules joined it: KBBI-natural Indonesian copy, and a screenshot for every
-visual change. Four stale pointers into `CLAUDE.md` were repointed.
+visual change. Three stale pointers into `CLAUDE.md` were repointed.
 
 Moved out of `CLAUDE.md` as history:
 

@@ -552,9 +552,73 @@ func test_seni_and_olahraga_are_the_teacher_or_the_student() -> void:
 		"with nobody on the roster the teacher always speaks")
 
 
-func test_each_speaker_has_its_own_thanks() -> void:
-	assert_eq(EventDialogueCatalog.win_line_for(_THEA_SPLASH), "Terima kasih, Guru!")
-	assert_eq(EventDialogueCatalog.win_line_for(""), "Terima kasih, Guru!")
-	assert_eq(EventDialogueCatalog.win_line_for(EventDialogueCatalog.SPLASH_GURU_PENJAS), "Kerja bagus! Latihannya berhasil.")
-	assert_eq(EventDialogueCatalog.win_line_for(EventDialogueCatalog.SPLASH_GURU_SENI),
-		"Indah sekali! Terima kasih sudah membimbing mereka.")
+# ── line pools (2026-09-29 dialogue-variations spec) ─────────────────────────
+
+func test_draw_never_repeats_the_last_line() -> void:
+	var pool := ["a", "b", "c", "d", "e"]
+	var last := ""
+	for i in 60:
+		var got: String = EventDialogueCatalog.draw(pool, last)
+		assert_true(got in pool, "draws from the pool")
+		assert_ne(got, last, "no line twice in a row")
+		last = got
+
+
+func test_draw_of_one_line_repeats_it_and_of_none_is_empty() -> void:
+	assert_eq(EventDialogueCatalog.draw(["a"], "a"), "a")
+	assert_eq(EventDialogueCatalog.draw([], ""), "")
+
+
+func test_an_unknown_student_hears_the_entry_line() -> void:
+	var fallback: String = EventDialogueCatalog.entry("Variabel")["line"]
+	assert_eq(EventDialogueCatalog.pool_for("Variabel", _student("Zed", "Akademis")), [fallback])
+	assert_eq(EventDialogueCatalog.pool_for("Variabel", null), [fallback])
+	assert_eq(EventDialogueCatalog.pool_for("no_such_key", null), [])
+
+
+func test_npc_and_narrator_entries_use_their_own_pool() -> void:
+	for key in ["nasi_kotak", "hujan", "latihan_olahraga", "workshop_seni", "MainBola"]:
+		var want: Array = EventDialogueLines.NPC_LINES.get(key, [EventDialogueCatalog.entry(key)["line"]])
+		assert_eq(EventDialogueCatalog.pool_for(key, _student("Marcel", "Akademis")), want, key)
+
+
+func test_a_student_speaks_from_their_own_pool() -> void:
+	var marcel := _student("Marcel", "Akademis")
+	var want: Array = EventDialogueLines.STUDENT_LINES.get("Variabel", {}).get("Marcel",
+		[EventDialogueCatalog.entry("Variabel")["line"]])
+	assert_eq(EventDialogueCatalog.pool_for("Variabel", marcel), want)
+
+
+func test_pick_line_fills_the_name() -> void:
+	var thea := _student("Thea", "SeniBudaya")
+	for i in 10:
+		assert_false(EventDialogueCatalog.pick_line("nasi_kotak", thea).contains("{nama}"))
+
+
+func test_win_pools_follow_the_speaker_and_the_category() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var fallback := [EventDialogueCatalog.WIN_LINE_STUDENT]
+	assert_eq(EventDialogueCatalog.win_pool_for(EventDialogueCatalog.SPLASH_GURU_SENI, "SeniBudaya", thea),
+		EventDialogueLines.WIN_TEACHER_LINES.get("SeniBudaya", fallback))
+	assert_eq(EventDialogueCatalog.win_pool_for(EventDialogueCatalog.SPLASH_GURU_PENJAS, "Olahraga", thea),
+		EventDialogueLines.WIN_TEACHER_LINES.get("Olahraga", fallback))
+	assert_eq(EventDialogueCatalog.win_pool_for(_THEA_SPLASH, "Akademis", thea),
+		EventDialogueLines.WIN_STUDENT_LINES.get("Thea", {}).get("Akademis", fallback))
+	assert_eq(EventDialogueCatalog.win_pool_for(_THEA_SPLASH, "Akademis", _student("Zed", "Akademis")), fallback)
+	assert_eq(EventDialogueCatalog.win_pool_for("", "Akademis", null), fallback)
+	assert_eq(EventDialogueCatalog.WIN_LINE_STUDENT, "Terima kasih, Pak!")
+
+
+func test_win_line_is_drawn_from_its_pool() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var pool: Array = EventDialogueCatalog.win_pool_for(_THEA_SPLASH, "SeniBudaya", thea)
+	for i in 10:
+		assert_true(EventDialogueCatalog.win_line_for(_THEA_SPLASH, "SeniBudaya", thea) in pool)
+
+
+func test_school_day_hands_over_the_picked_lines() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
+	assert_true(src.contains('e["line"] = EventDialogueCatalog.pick_line(key, featured)'),
+		"the dialogue shows a drawn line")
+	assert_true(src.contains("EventDialogueCatalog.win_line_for(speaker, category, featured)"),
+		"the win screen draws for its speaker and category")

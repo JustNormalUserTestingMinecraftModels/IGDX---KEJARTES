@@ -236,7 +236,7 @@ const DUPLICATE_GROUPS: Array[String] = [
 const LARGE_SCRIPTS: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 1578,
 	"res://Scripts/Debug/DebugManager.gd": 1747,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1638,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1637,
 	"res://Scripts/StudentCard/StudentCard.gd": 1451,
 }
 

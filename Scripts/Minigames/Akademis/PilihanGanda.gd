@@ -157,16 +157,18 @@ var is_submitting_answer: bool = false
 var score: int = 0
 var max_score: int = 3
 
-@onready var score_hud: MinigameScoreHUD  = $VBoxContainer/ScoreHUD
+@onready var score_hud: MinigameHeader = %MinigameHeader
 ## The shared QuestionCard (Password and Variabel instance the same scene).
 ## It owns the picture, the question and the "Soal N/M" badge, which used to
 ## be three loose siblings here in the wrong reading order.
-@onready var soal_card: Control           = $VBoxContainer/SoalCard
+@onready var soal_card: Control           = %SoalCard
 @onready var question_label: Label = soal_card.find_child("TextLabel", true, false) as Label
 @onready var question_image: TextureRect = soal_card.find_child("RowImage", true, false) as TextureRect
 @onready var progress_label: Label = soal_card.find_child("BadgeLabel", true, false) as Label
 @onready var status_badge: Control = soal_card.find_child("StatusBadge", true, false) as Control
-@onready var choices_container: GridContainer = $VBoxContainer/ChoicesGrid
+@onready var choices_container: GridContainer = %ChoicesGrid
+## The answer tray; it fades with the card between questions.
+@onready var answer_tray: Control = %MinigameTray
 
 func _ready() -> void:
 	super._ready()
@@ -177,7 +179,7 @@ func _ready() -> void:
 ## which the question fits the card without running under its "Soal N/M"
 ## badge. Password and Variabel fit their problem text the same way.
 func _fit_font_size(text: String) -> int:
-	return SoalFit.font_size(question_label, status_badge, text,
+	return SoalFit.font_size(question_label, null, text,
 		question_font_size, min_question_font_size)
 
 
@@ -231,24 +233,28 @@ func _show_current_question() -> void:
 		_finish_quiz()
 		return
 
-	var vbox := $VBoxContainer as Control
+	# The card and the tray fade between questions; the strip stays put.
+	var faded: Array[Control] = [soal_card, answer_tray]
 
 	# Fade out before swapping content.
 	# Skip on question 0 — SchoolDay already handles the minigame entrance fade.
 	if current_question_index > 0:
-		var tween_out = create_tween()
-		tween_out.tween_property(vbox, "modulate:a", 0.0, question_fade_out_duration)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		var tween_out = create_tween().set_parallel(true)
+		for node in faded:
+			tween_out.tween_property(node, "modulate:a", 0.0, question_fade_out_duration)\
+				.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		await tween_out.finished
 
 	# ── Swap content while invisible ─────────────────────────────────────────
 	is_submitting_answer = false
 	var q_data = active_questions[current_question_index]
 
-	# The card's badge is a short chip, so it carries the counter only --
-	# the score already has a home on MinigameScoreHUD.
-	if progress_label:
-		progress_label.text = "Soal %d/%d" % [current_question_index + 1, active_questions.size()]
+	# The counter lives on the strip's progress bar now; the card's badge
+	# no longer reserves room, so it stays hidden.
+	set_progress(current_question_index, active_questions.size(),
+		"Soal %d/%d" % [current_question_index + 1, active_questions.size()])
+	if status_badge:
+		status_badge.hide()
 
 	if question_label:
 		question_label.text = q_data.get("question", "")
@@ -279,12 +285,7 @@ func _show_current_question() -> void:
 		for child in choices_container.get_children():
 			child.queue_free()
 
-		var viewport_size = get_viewport_rect().size
-		if choices_container is GridContainer:
-			if viewport_size.x <= viewport_size.y:
-				choices_container.columns = 1
-			else:
-				choices_container.columns = 2
+		choices_container.columns = 1
 
 		var original_choices: Array = q_data.get("choices", []).duplicate()
 		var orig_correct_idx: int = int(q_data.get("correct_index", 0))
@@ -315,10 +316,11 @@ func _show_current_question() -> void:
 			choices_container.add_child(btn)
 
 	# Fade fresh content back in
-	vbox.modulate.a = 0.0
-	var tween_in = create_tween()
-	tween_in.tween_property(vbox, "modulate:a", 1.0, question_fade_in_duration)\
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	var tween_in = create_tween().set_parallel(true)
+	for node in faded:
+		node.modulate.a = 0.0
+		tween_in.tween_property(node, "modulate:a", 1.0, question_fade_in_duration)\
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	await tween_in.finished
 
 ## Applies the answer-button chrome -- texture StyleBoxes when a PNG is
@@ -423,6 +425,8 @@ func _on_choice_pressed(index: int, pressed_btn: Button) -> void:
 
 	if index == expected_answer_index:
 		score += 1
+		if score == 1:
+			hint_settle()
 		if score_hud:
 			score_hud.set_score(score)
 		_flash_button_box(pressed_btn, correct_color)
@@ -430,17 +434,13 @@ func _on_choice_pressed(index: int, pressed_btn: Button) -> void:
 	else:
 		apply_time_penalty(3.0)
 		_flash_button_box(pressed_btn, wrong_color)
-		_play_wiggle_animation($VBoxContainer)
+		_play_wiggle_animation(soal_card)
 
 		# Highlight correct answer button in green box for educational feedback
 		if expected_answer_index >= 0 and expected_answer_index < choices_container.get_child_count():
 			var correct_btn = choices_container.get_child(expected_answer_index) as Button
 			if correct_btn:
 				_flash_button_box(correct_btn, correct_color)
-
-	# Update progress label score immediately
-	if progress_label:
-		progress_label.text = "Pertanyaan %d dari %d | Skor: %d" % [current_question_index + 1, active_questions.size(), score]
 
 	# Pause briefly before advancing to next question
 	await get_tree().create_timer(feedback_hold_duration).timeout
@@ -469,6 +469,8 @@ func reveal_answers() -> void:
 				_flash_button_box(child, correct_color)
 
 func _finish_quiz() -> void:
+	set_progress(active_questions.size(), active_questions.size(),
+		"Soal %d/%d" % [active_questions.size(), active_questions.size()])
 	result_subtitle = "Skor Akhir: %d / %d" % [score, max_score]
 	if score >= get_target_win_score():
 		win_game()

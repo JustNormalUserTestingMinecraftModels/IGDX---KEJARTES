@@ -43,14 +43,25 @@ Bugs found during the audit:
   sit in `PilihanGanda.tscn` (`answer_btn_normal_style`, and the script's
   `add_theme_stylebox_override` calls), `AnswerCard.tscn` and
   `BuatBatik.tscn`. These are the `#3380D9` family Part 1 already flagged.
-- **B3** The calculator keys do not sit in the calculator art's painted key
-  wells (Password and Variabel).
+- **B3** The calculator keys look off-centre (Password and Variabel). Measured
+  on `kalkulator_base.png` (1080×1487): the art has **no** painted key wells.
+  The keypad face spans x 0.0537–0.9796 (centre 0.5167), but `KeyGrid` spans
+  0.1242–0.856 (centre 0.4901), about 29 texture px left. A stray painted key
+  outline sits in the art's top-left, at about (0.051, 0.293)–(0.275, 0.468).
+  `ZeroRow` ends at 0.9971, past the face's bottom (0.9812), onto the rim.
+  `Layar` ends at 0.274, past the LCD glass (0.0963, 0.0935)–(0.9037, 0.2495).
 - **B4** BuatBatik's tool cards show no names, although
-  `tool1_display_name`… exist and the hint says "Seret Pensil".
-- **B5** Badminton's hint pill sits on the court's bottom baseline.
-- **B6** Menjodohkan's reel arrows overlap the card edges and carry
-  `theme_override_font_sizes` and `StyleBoxFlat_nav_btn` overrides. Its
-  Kunci/Selesai carry `theme_override_colors`.
+  `tool0_display_name`…`tool3_display_name` exist (their `##` says "shown on
+  the tool slot") and the hint says "Seret Pensil". They reach only the
+  tooltip. `tool0_display_name` also says "Specialized Pencil" in English.
+- **B5** Badminton's hint pill sits on the court's bottom baseline. The
+  court, its lines and its net are all one painted background
+  (`lapanganBadminton.jpg`, Keep Aspect Covered), not nodes.
+- **B6** Menjodohkan's reel arrows sit 8px from the carousel edge, over
+  850px-wide cards, so they cover the card edges. The scene carries no
+  overrides. The script's unused `nav_btn_style`, `submit_btn_*_style`,
+  `correct_color` and `wrong_color` exports can add them, and
+  `submit_btn_active_style`, `correct_color` and `wrong_color` are never read.
 
 ## 2. Decisions
 
@@ -78,11 +89,13 @@ floor (`font_body_size` = 28):
 
 - **Relation to the 2026-09-21 type-ladder spec.** That spec declined to
   re-space the *house* tokens at ×1.618, because it would change ~40
-  screens. This pass does not touch the house tokens. The ladder lives in
-  `ThemeFactory` as one named block,
-  `const MINIGAME_TYPE_LADDER := [28, 45, 73, 118]`, with a `##` saying each
-  is ×1.618 of the last, and only minigame variations read it. It supersedes
-  the minigames' 36/64/96 rungs from that spec.
+  screens. This pass does not touch the house tokens. The ladder lives in one
+  small static script, `Scripts/Design/MinigameType.gd` (`class_name
+  MinigameType`): `T1 := 28`, `T2 := 45`, `T3 := 73`, `T4 := 118` and
+  `LADDER := [T1, T2, T3, T4]`, with a `##` saying each is ×1.618 of the last.
+  `ThemeFactory`'s minigame variations and the games' fit exports both read
+  it, so the numbers are written once. It supersedes the minigames' 36/64/96
+  rungs from that spec.
 - **Fitting.** Question maxima: PilihanGanda, Variabel and Menjodohkan's
   tiles T3 (73); Password T4 (118), since its sums are short. Every minimum is
   T2 (45), replacing today's 36 and 28. This retunes `question_font_size` /
@@ -102,15 +115,22 @@ All values are in 1080-wide game pixels, inside `SafeAreaMargin → UI`.
 
 | Where | Gap |
 |---|---|
-| Screen edge to any element (header, cards, tray contents, arrows) | **44** (`space_lg`) |
+| Screen edge to any element (header, cards, tray contents, arrows) | **48** (`screen_margin`) |
 | Header to first content | 28 (`space_md`) |
 | Field content to tray top | **72** (`space_xl`) |
 | Card to the controls under it (e.g. question card to calculator) | 44 |
 | Tray: top edge to first item | 28 (Menjodohkan: 44) |
 | Tray: between stacked buttons | 16 (`space_sm`) |
 | Tray: buttons to hint | 16 (Menjodohkan: 28) |
-| Hint to the safe area's bottom | 44 |
+| Hint to the screen's bottom | unchanged: the safe margin (48) plus the tray's bottom padding (24) |
 | Text to its card's inner edge | 28 |
+
+**48, not 44 (owner-approved 2026-09-30, after brainstorming).** Every
+minigame already sits in a `SafeAreaMargin`, which applies the house
+`screen_margin` (48) on every screen in the game. The edge rule therefore
+uses 48, and the tray stops adding its own 28px side padding on top of it
+(`MinigameTray.PADDING` goes from `(28, 28, 28, 24)` to `(0, 28, 0, 24)`).
+Its plank still bleeds to the screen edges through `expand_margin`.
 
 The values are the house `space_*` tokens. Where a scene needs them as
 container constants, they are layout-only `separation` / `margin_*`, the one
@@ -128,7 +148,7 @@ on the owning `@tool` script.
              └──────────────────────────────┘
 ```
 
-- **One row:** `PauseButton` · plaque · `TimerSlot`, each 44 from the edge.
+- **One row:** `PauseButton` · plaque · `TimerSlot`, each 48 from the edge.
   `MinigameHeader`'s `Stack/ProgressRow` moves into the plaque; `Stack`
   becomes the single `Row`. This frees ~50px for the field.
 - **The plaque is `MinigameScoreHUD`, extended rather than forked:**
@@ -195,10 +215,12 @@ on the owning `@tool` script.
   a new `MinigameToolNameLabel` (T2, `text_primary`) under the icon (**B4**).
   The blue `StyleBoxFlat_6wcp2` goes (**B2**).
 - **Menjodohkan's arrows** wear a **new** `WoodNavArrow` variation (named in
-  Part 1, never built: a brown lipped square, `radius_md`), sit in the 44px edge
-  lanes with 28 clear of the card, and lose their font and stylebox overrides
-  (**B6**). Kunci and Selesai take `MinigameSecondaryButton` and
-  `MinigameCtaButton` without colour overrides.
+  Part 1, never built: a brown lipped square, `radius_md`), sit in the 48px edge
+  lanes with 28 clear of the card. The cards are 736 wide
+  (1080 − 2 × (48 + 96 + 28)). The dead style exports (`nav_btn_style`,
+  `submit_btn_active_style`, `submit_btn_disabled_style`, `correct_color`,
+  `wrong_color`) go, and so do the override branches that read them (**B6**).
+  Kunci and Selesai take `MinigameSecondaryButton` and `MinigameCtaButton`.
 - **Planks.** SOAL and JAWABAN wear `MinigamePlankPanel` +
   `MinigamePlankLabel` (gold), raised to T1 28. The `MinigameWheelHeader*`
   variations retire if nothing else reads them.
@@ -209,10 +231,14 @@ on the owning `@tool` script.
   above the tray.
 - `Layar` at T4 118. Key labels at T3 73. `KalkulatorKey.tscn`'s
   `theme_override_colors/font_color` moves into a variation.
-- **B3:** measure the key-well centres in the body texture once (alpha and
-  luminance scan, per CLAUDE.md "measure the alpha before laying out"), then
-  set `KeyGrid` and `ZeroRow` anchors so every key is centred in its well.
-  Record the measured numbers in a `##` next to the anchors.
+- **B3:** re-anchor to the measured art. `KeyGrid` and `ZeroRow` are centred
+  on the face's centre (x 0.5167) and kept inside the face (x 0.0537–0.9796,
+  y 0.2751–0.9812). The grid starts far enough left (x ≤ 0.085) that key 1
+  covers most of the stray outline. `Layar` fits the LCD glass
+  (0.0963, 0.0935)–(0.9037, 0.2495). The measured fractions go in
+  `Kalkulator.gd` as documented `const`s, which the scene's anchors and the
+  test both use. The remaining sliver of the stray outline is the artist's:
+  log it in DEBT, and do not paint over it.
 - Variabel (`show_zero_key = false`): the three rows take the zero row's
   height instead of leaving it empty.
 
@@ -226,13 +252,13 @@ unchanged.
 
 | Game | Field | Tray / bottom |
 |---|---|---|
-| **PilihanGanda** | Bingkai Kayu card from header+28 to tray−72, 44 margins, question T3 centred, picture slot inside | 4 cream answers (130 tall, 16 apart), hint |
+| **PilihanGanda** | Bingkai Kayu card from header+28 to tray−72, 48 margins, question T3 centred, picture slot inside | 4 cream answers (130 tall, 16 apart), hint |
 | **Password** | 860 column: card hugging the sum (T4), 44, calculator | Hapus (brown) · Kirim (mint), hint |
 | **Variabel** | as Password; question fits T3→T2 (three lines at 45) | as Password |
 | **Menjodohkan** | SOAL plank; 736-wide framed card with peeking neighbours; arrows in the edge lanes | tray gaps 44/28/44/28: JAWABAN plank, answer card (320), Kunci · Selesai, hint |
-| **BuatBatik** | canvas, 44 margins | 4 tool cards with names, gold ring on the next tool, hint |
+| **BuatBatik** | canvas, 48 margins | 4 tool cards with names, gold ring on the next tool, hint |
 | **MainBola** | unchanged art | hint pill |
-| **Badminton** | court's bottom edge raised so its baseline sits 16 above the hint pill (**B5**) | hint pill |
+| **Badminton** | the court background shifts up (`offset_top` = `offset_bottom` = −N, so its cover scale is unchanged) until the painted baseline sits ≥ 16 above the hint pill; a `Surround` `ColorRect` in the art's edge colour fills the strip it uncovers (**B5**). N comes from the baseline's measured row in the texture | hint pill |
 | **LombaMenari** | unchanged art | hint pill |
 
 Thumb reach from #155 still holds: every tappable control is below 0.55 of
@@ -269,7 +295,7 @@ theme and measures nothing):
 - **Fitter (behaviour, B1):** PilihanGanda's sample question on the real card
   returns 73. Variabel's three-line question returns ≥ 45. No fit call passes
   a minimum below 45.
-- **Spacing:** at 1080×1920 and 1080×2400, cards and tray contents sit 44
+- **Spacing:** at 1080×1920 and 1080×2400, cards and tray contents sit 48
   from the edges; field content ends 72 above the tray. Password's card and
   calculator share left and right edges.
 - **Plaque:** the header is one row; `ProgressBar` lives under
@@ -278,8 +304,10 @@ theme and measures nothing):
 - **Bugs:** no `border_color` blue and no `theme_override_styles` in
   PilihanGanda, `AnswerCard`, `QuestionCard` or BuatBatik; no
   `add_theme_stylebox_override` in `PilihanGanda.gd` (B2). BuatBatik shows 4
-  tool names (B4). Each calculator key's centre lies within its measured well
-  (B3). Badminton's baseline is ≥ 16 above the pill's top (B5). Menjodohkan's
+  tool names (B4). The calculator's key block is centred on the measured face
+  within 0.01, stays inside the face, and `Layar` stays inside the glass (B3).
+  Badminton's painted baseline, computed from the cover geometry at
+  1080×1920 and 1080×2400, is ≥ 16 above the pill's top (B5). Menjodohkan's
   arrows do not intersect the card rects (B6).
 
 **Suites that change** (paths and values updated, asserted properties kept):

@@ -1274,13 +1274,14 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -96.0
-offset_top = -908.0
-offset_bottom = -452.0
+offset_left = -114.0
+offset_right = -18.0
+offset_top = -1062.0
+offset_bottom = -498.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 60
 
 [node name="DailyLogin" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=1799090163]
 unique_name_in_owner = true
@@ -1294,6 +1295,23 @@ stretch_mode = 5
 unique_name_in_owner = true
 layout_mode = 1
 
+[node name="DailyLoginLabel" type="PanelContainer" parent="Safe/UI/Hud/IconRail/DailyLogin" unique_id=1710000101]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -18.0
+offset_top = 98.0
+offset_right = 114.0
+offset_bottom = 142.0
+mouse_filter = 2
+theme_type_variation = &"RosterChip"
+
+[node name="Text" type="Label" parent="Safe/UI/Hud/IconRail/DailyLogin/DailyLoginLabel" unique_id=1710000201]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Hadiah"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="SettingsButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=575693895]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
@@ -1301,6 +1319,23 @@ layout_mode = 2
 texture_normal = ExtResource("29_gear")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="SettingsLabel" type="PanelContainer" parent="Safe/UI/Hud/IconRail/SettingsButton" unique_id=1710000102]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -18.0
+offset_top = 98.0
+offset_right = 114.0
+offset_bottom = 142.0
+mouse_filter = 2
+theme_type_variation = &"RosterChip"
+
+[node name="Text" type="Label" parent="Safe/UI/Hud/IconRail/SettingsButton/SettingsLabel" unique_id=1710000202]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Setelan"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="AchievementButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=919427951]
 unique_name_in_owner = true
@@ -1316,6 +1351,23 @@ layout_mode = 1
 shows_count = false
 wiggle_delay_seconds = 0.8
 
+[node name="AchievementLabel" type="PanelContainer" parent="Safe/UI/Hud/IconRail/AchievementButton" unique_id=1710000103]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -18.0
+offset_top = 98.0
+offset_right = 114.0
+offset_bottom = 142.0
+mouse_filter = 2
+theme_type_variation = &"RosterChip"
+
+[node name="Text" type="Label" parent="Safe/UI/Hud/IconRail/AchievementButton/AchievementLabel" unique_id=1710000203]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Prestasi"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="SkinSwitchButton" type="TextureButton" parent="Safe/UI/Hud/IconRail" unique_id=1019305615]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 96)
@@ -1323,6 +1375,23 @@ layout_mode = 2
 texture_normal = ExtResource("30_62a4m")
 ignore_texture_size = true
 stretch_mode = 5
+
+[node name="SkinSwitchLabel" type="PanelContainer" parent="Safe/UI/Hud/IconRail/SkinSwitchButton" unique_id=1710000104]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = -18.0
+offset_top = 98.0
+offset_right = 114.0
+offset_bottom = 142.0
+mouse_filter = 2
+theme_type_variation = &"RosterChip"
+
+[node name="Text" type="Label" parent="Safe/UI/Hud/IconRail/SkinSwitchButton/SkinSwitchLabel" unique_id=1710000204]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Kostum"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="HudHint" type="Label" parent="Safe/UI/Hud" unique_id=57765894]
 unique_name_in_owner = true

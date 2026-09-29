@@ -8,6 +8,15 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Lobby rail labels
+
+Each icon on the Lobby's rail now carries its word on the cream chip (Hadiah,
+Setelan, Prestasi, Kostum), reusing `RosterChip` and `CaptionLabel` with no
+theme change. The pills hang under their buttons, so the buttons stay the
+rail's direct children. Their right edges line up with the coin box at x 1032,
+and the rail now starts at y 810, so the last pill still ends 24 px above the
+coin box. Spec: `specs/2026-09-29-lobby-rail-labels-design.md`.
+
 ## 2026-09-29 — Lobby layout grid
 
 The owner asked for spacing and for the Minggu plate off the students' faces.

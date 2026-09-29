@@ -200,7 +200,7 @@ func test_lobby_on_a_tall_phone() -> void:
 	_assert_placed((lobby.get_node("%ReportStudent") as Control),
 		Rect2(706, 2136, 285, 160), "ReportStudent")
 	_assert_placed((lobby.get_node("%DailyLogin") as Control),
-		Rect2(936, 1444, 96, 96), "DailyLogin")
+		Rect2(918, 1290, 96, 96), "DailyLogin")
 	_assert_placed((lobby.get_node("%DisplayUang") as Control),
 		Rect2(684, 1924, 348, 112), "DisplayUang")
 	_assert_placed((lobby.get_node("%ProgressHeader") as Control),

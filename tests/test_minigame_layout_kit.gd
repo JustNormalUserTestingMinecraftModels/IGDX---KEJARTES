@@ -128,6 +128,18 @@ func test_the_tray_is_as_tall_as_its_content() -> void:
 		"each host row adds its height plus one separation")
 
 
+## Regression: an autowrapping Label measured before it has a width reports
+## one character per line, which blew the tray's minimum height up to ~1200px.
+## The hint is a one-line caption that ellipsises instead.
+func test_a_long_hint_never_makes_the_tray_tall() -> void:
+	var tray := _tray_with(1)
+	tray.set_hint("Ketuk jawaban yang benar. ".repeat(8))
+	var hint := tray.get_node("HintLabel") as Label
+	assert_eq(hint.autowrap_mode, TextServer.AUTOWRAP_OFF, "the hint does not wrap")
+	assert_true(tray.get_combined_minimum_size().y < 300.0,
+		"one 100px row plus a long hint stays short (was %s)" % tray.get_combined_minimum_size().y)
+
+
 func test_tray_settle_fades_the_hint_but_never_hides_it() -> void:
 	var tray := _tray_with(1)
 	tray.set_hint("Ketuk jawaban yang benar")

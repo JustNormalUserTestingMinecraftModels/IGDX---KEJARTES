@@ -17,5 +17,5 @@ visible = false
 layout_mode = 2
 theme_type_variation = &"MinigameHintLabel"
 horizontal_alignment = 1
-autowrap_mode = 3
+text_overrun_behavior = 3
 metadata/minigame_tray_hint = true

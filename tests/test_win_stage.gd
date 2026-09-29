@@ -284,6 +284,30 @@ func test_the_stage_carries_both_lights_over_the_figures() -> void:
 	assert_eq(s.get_node("Stage/LightFail").get_child_count(), 1, "and no shafts")
 
 
+## The pass photo was too contrasty: a near-black chalkboard under a hot, lit
+## floor (2026-09-29). Its light carries a soften pair -- a multiply below 1
+## then a warm add -- which lifts the blacks and calms the highlights. It rides
+## LightPass, so only the pass verdict softens, and the dimmer pool and shafts
+## leave the bloom less to catch.
+func test_the_pass_light_softens_the_photo() -> void:
+	var s := _stage()
+	var darken := s.get_node_or_null("Stage/LightPass/Darken") as ColorRect
+	var lift := s.get_node_or_null("Stage/LightPass/Lift") as ColorRect
+	assert_true(darken != null and lift != null, "the pass light carries Darken and Lift")
+	if darken == null or lift == null:
+		return
+	assert_eq((darken.material as CanvasItemMaterial).blend_mode, CanvasItemMaterial.BLEND_MODE_MUL,
+		"Darken multiplies")
+	assert_true(darken.color.r < 1.0 and darken.color.r >= 0.8, "by a gentle grey")
+	assert_eq((lift.material as CanvasItemMaterial).blend_mode, CanvasItemMaterial.BLEND_MODE_ADD,
+		"Lift adds")
+	assert_true(lift.color.r > 0.0 and lift.color.r <= 0.1, "a small warm lift")
+	assert_true(lift.color.r >= lift.color.b, "warm, not cool")
+	for rect in [darken, lift]:
+		assert_eq(rect.mouse_filter, Control.MOUSE_FILTER_IGNORE, "never eats a tap")
+	assert_true(float(s.get_node("Stage/LightPass/Light").intensity) <= 0.06, "the pool is dimmed")
+	assert_true(float(s.get_node("Stage/LightPass/Shafts").intensity) <= 0.12, "and so are the shafts")
+
 func test_dressing_picks_one_light() -> void:
 	var s := _live_stage()
 	s.dress(false, _FOUR)

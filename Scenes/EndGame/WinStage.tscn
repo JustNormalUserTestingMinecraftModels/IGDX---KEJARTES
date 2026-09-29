@@ -16,6 +16,11 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_soften_mul"]
+blend_mode = 3
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_soften_add"]
+blend_mode = 1
 [node name="WinStage" type="Control" unique_id=702781057]
 layout_mode = 3
 anchors_preset = 15
@@ -147,9 +152,32 @@ mouse_filter = 2
 [node name="Light" parent="Stage/LightPass" instance=ExtResource("look_pool")]
 center = Vector2(0.2, 0.1)
 pool_size = Vector2(2000, 2000)
-intensity = 0.1
+intensity = 0.06
 
 [node name="Shafts" parent="Stage/LightPass" instance=ExtResource("look_shafts")]
+intensity = 0.12
+
+[node name="Darken" type="ColorRect" parent="Stage/LightPass"]
+material = SubResource("CanvasItemMaterial_soften_mul")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.88, 0.88, 0.88, 1)
+
+[node name="Lift" type="ColorRect" parent="Stage/LightPass"]
+material = SubResource("CanvasItemMaterial_soften_add")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.07, 0.06, 0.05, 1)
 
 [node name="LightFail" type="Control" parent="Stage"]
 visible = false

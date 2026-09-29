@@ -108,3 +108,64 @@ func test_the_header_adds_no_theme_overrides() -> void:
 	for banned: String in ["theme_override_colors", "theme_override_fonts",
 			"theme_override_font_sizes", "theme_override_styles", "theme_override_icons"]:
 		assert_false(scene_src.contains(banned), "no %s in the header scene" % banned)
+
+
+func test_set_progress_fills_the_bar_and_writes_the_label() -> void:
+	var header: MinigameHeader = _make()
+	header.set_progress(3, 10, "Soal 3/10")
+	var bar: ProgressBar = header.get_node("%ProgressBar")
+	assert_eq(bar.max_value, 10.0, "max follows the round length")
+	assert_eq(bar.value, 3.0, "value is written straight through in the editor")
+	assert_eq((header.get_node("%ProgressLabel") as Label).text, "Soal 3/10")
+
+
+func test_segmented_draws_one_tick_per_step() -> void:
+	var header: MinigameHeader = _make()
+	header.segmented = true
+	header.set_progress(1, 4, "Langkah 1/4")
+	assert_eq((header.get_node("%Ticks") as ProgressTicks).segments, 4)
+	header.segmented = false
+	header.set_progress(1, 4, "Langkah 1/4")
+	assert_eq((header.get_node("%Ticks") as ProgressTicks).segments, 0)
+
+
+func test_set_time_drains_the_ring_and_turns_danger_late() -> void:
+	var header: MinigameHeader = _make()
+	header.set_time(20.0, 40.0)
+	var ring: TimerRing = header.get_node("%Ring")
+	assert_true(is_equal_approx(ring.fraction, 0.5), "half the time left, half a ring")
+	assert_false(ring.danger, "not yet in the danger window")
+	header.set_time(header.danger_seconds - 0.1, 40.0)
+	assert_true(ring.danger, "the last danger_seconds turn the ring red")
+
+
+func test_hidden_score_and_progress_hide_their_nodes() -> void:
+	var header: MinigameHeader = _make()
+	header.show_score = false
+	header.show_progress = false
+	assert_false((header.get_node("%ScoreHud") as Control).visible)
+	assert_false((header.get_node("%ProgressBar") as Control).is_visible_in_tree())
+
+
+func test_hidden_timer_keeps_its_slot_so_the_pill_stays_centred() -> void:
+	var header: MinigameHeader = _make()
+	header.show_timer = false
+	var slot := header.get_node("Stack/Row/TimerSlot") as Control
+	assert_true(slot.visible, "the slot stays, only the button hides")
+	assert_eq(slot.custom_minimum_size, Vector2(96, 96))
+
+
+func test_icons_are_glyph_children_not_button_icons() -> void:
+	var header: MinigameHeader = _make()
+	assert_eq((header.get_node("%PauseGlyph") as TextureRect).texture.resource_path,
+		"res://Assets/Images/UI/Icons/pause.svg")
+	assert_eq((header.get_node("%TimerGlyph") as TextureRect).texture.resource_path,
+		"res://Assets/Images/UI/Icons/timer.svg")
+	assert_true((header.get_node("%PauseButton") as Button).icon == null,
+		"a lipped button squeezes an icon; the glyph is a child")
+
+
+func test_set_pause_enabled_disables_the_button() -> void:
+	var header: MinigameHeader = _make()
+	header.set_pause_enabled(false)
+	assert_true((header.get_node("%PauseButton") as Button).disabled)

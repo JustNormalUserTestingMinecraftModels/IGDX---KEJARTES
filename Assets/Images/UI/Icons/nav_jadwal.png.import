@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c20481fiqs6vb"
-path="res://.godot/imported/nav_jadwal.svg-57d0cfc050b1e5bc42b105ff4807f452.ctex"
+uid="uid://cvwlo21egl6k"
+path="res://.godot/imported/nav_jadwal.png-0ffc5772be217533bd5b3568fdaca134.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/UI/Icons/nav_jadwal.svg"
-dest_files=["res://.godot/imported/nav_jadwal.svg-57d0cfc050b1e5bc42b105ff4807f452.ctex"]
+source_file="res://Assets/Images/UI/Icons/nav_jadwal.png"
+dest_files=["res://.godot/imported/nav_jadwal.png-0ffc5772be217533bd5b3568fdaca134.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

@@ -41,7 +41,7 @@
 [ext_resource type="Script" uid="uid://b7vwvw12t4yux" path="res://Scripts/UI/IdleFade.gd" id="52_rsfel"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
-[ext_resource type="Texture2D" uid="uid://c20481fiqs6vb" path="res://Assets/Images/UI/Icons/nav_jadwal.svg" id="ic_nav_jadwal"]
+[ext_resource type="Texture2D" uid="uid://cvwlo21egl6k" path="res://Assets/Images/UI/Icons/nav_jadwal.png" id="ic_nav_jadwal"]
 [ext_resource type="Texture2D" uid="uid://bjccxqjbt3wyo" path="res://Assets/Images/UI/Icons/nav_students.svg" id="ic_nav_students"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout_lobby.tres" id="illus_grade_cut"]

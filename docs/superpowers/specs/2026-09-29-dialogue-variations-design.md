@@ -275,3 +275,212 @@ word is in KBBI. After the lines are written:
 - Mood- or state-dependent lines.
 - Naming the teachers.
 - Any persistence.
+
+## Appendix: KBBI check (2026-09-29)
+
+### Method
+
+1013 distinct words were extracted from all 365 lines. About 275 casual, borrowed, affixed, reduplicated or "-in"-ending words were flagged and looked up. Sources: the official KBBI Daring (kbbi.kemendikdasmen.go.id, KBBI VI), which rate-limits anonymous lookups, so only words a to d and "tuh" were checked there; and mirrors of an older KBBI edition (kbbi.co.id for the lookup pass, typoonline.com/kbbi for the controller's spot checks). Words checked only on a mirror may carry KBBI VI labels that differ.
+
+### Rulings
+
+- Words KBBI lists as non-standard variants of a standard form (tapi for tetapi, dulu for dahulu, meleset under peleset, seru, poin (cak.)) stay in student speech: they are KBBI entries and natural for teens. Adults (the NPC lines: Mom, Guru Penjas, Guru Seni Budaya, the hujan narrator; and the win-screen teacher lines) use standard forms only. Only words missing from KBBI, or used in a sense KBBI does not give, are replaced.
+- kokoh became kukuh in the Guru Penjas line (KBBI: kokoh is a variant of kukuh).
+- Bare "tanding" used as a verb became "bertanding" in two student lines (KBBI: tanding is a noun meaning "lawan"; the verb is bertanding). The noun phrase "lawan tanding" is unchanged.
+- "Hitung-hitungan bukan keahlianku" became "Berhitung bukan keahlianku" (KBBI lists hitung-hitungan only as "banyak perhitungan", not arithmetic).
+- "pewarnanya pasti bikin tangan belepotan" became "... bikin tanganku kotor" (belepotan is not a KBBI headword; only berlepotan).
+- "duluan" became "lebih dulu" in three lines (no KBBI entry).
+- Open point: one adult line (Guru Penjas, MainBola: "Yang meleset, lari satu putaran.") still uses meleset, a KBBI variant of peleset; left as is for the owner to rule on.
+
+### Flagged words
+
+Columns: word | found? | KBBI label | sense fits our line? | source and note.
+
+#### Particles and interjections
+
+| Word | Found | Label | Sense fits | Source / note |
+|---|---|---|---|---|
+| ah | yes | p cak | yes | OFF |
+| aduh | yes | p | yes | OFF |
+| ayo | yes | p | yes | OFF |
+| dong | yes | p cak | yes | MIR |
+| deh | yes | p Jk (dialek Jakarta) | yes | OFF and MIR. Not cak., but the entry exists; used once (Shinta, "aku hitung sungguhan, deh") |
+| eh | yes | p | yes | MIR |
+| hore | yes | p | yes | MIR |
+| kan | yes | kp (kependekan dari "bukan") | yes | MIR; entry exists as kependekan, used as a tag question |
+| kok (and koknya) | yes | kok1 n (shuttlecock); kok2 p cak | yes, both | MIR; `kok` is the shuttlecock in badminton lines, the particle elsewhere |
+| nah | yes | p | yes | MIR |
+| pun | yes | p | yes | MIR |
+| sih | yes | p cak | yes | MIR |
+| tuh | yes | p cak | yes | OFF ("itu (dengan penegasan)"); MIR has no page for it |
+| wah | yes | p | yes | MIR |
+| ya | yes | p | yes | MIR |
+| yuk | yes | p | yes | MIR |
+| tak | yes | adv | yes | MIR |
+| tapi | variant | "? tetapi" (non-baku) | n/a | MIR. kept for students (variant/cak. listed in KBBI) |
+
+#### Casual, cak. candidates, loanwords
+
+| Word | Found | Label | Sense fits | Source / note |
+|---|---|---|---|---|
+| enggak | yes | adv cak (tidak) | yes | MIR |
+| capek | yes | a cak (capai) | yes | OFF |
+| gampang | yes | a (baku) | yes | MIR |
+| bikin | yes | v cak (buat) | yes | OFF |
+| bilang (kubilang) | yes | v cak (berkata) | yes | OFF |
+| kayak | yes | p cak (seperti) | yes | MIR |
+| jago | yes | n (juara; kampiun) | yes | MIR |
+| oke | yes | cak (p setuju; v setuju) | yes | MIR |
+| cuma | yes | adv (hanya) | yes | OFF |
+| bakal | yes | adv (akan) | yes | OFF |
+| masa | yes | adv (ketidakpercayaan, retoris) | yes ("Masa aku ketinggalan?") | MIR |
+| traktir | yes | v | yes | MIR |
+| balapan | yes | n (lomba adu kecepatan); the v sense "berbalapan" is cak | yes (noun sense) | OFF |
+| dadakan | yes | n / adv (tiba-tiba) | yes | OFF |
+| mendadak | yes | via root `dadak` | yes | OFF |
+| belepotan | variant | OFF: "belepotan -> berlepotan" | n/a | OFF. replaced (tangan belepotan -> tanganku kotor) |
+| kebobolan | yes | v ki (tertembus pertahanan karena lengah) | yes | MIR via root `bobol` |
+| asal-asalan | yes | a (sembarangan) | yes | OFF |
+| kapan-kapan | yes | n cak (sewaktu-waktu) | yes | MIR |
+| iseng | yes | a | yes (sense 3, suka mengganggu) | MIR |
+| kompak | yes | a | yes | MIR |
+| lumayan | yes | a | yes | MIR |
+| pegal | yes | a | yes | MIR |
+| repot | yes | a | yes | MIR |
+| seru | partly | a "bengis; sengit; hebat" | **no** (we mean "fun") | MIR. kept for students (variant/cak. listed in KBBI) |
+| asyik | yes | a (baku; "asik" is tidak baku) | yes | OFF |
+| gratis | yes | a | yes | MIR |
+| dulu | variant | "? dahulu" (non-baku) | n/a | MIR. kept for students (variant/cak. listed in KBBI) |
+| duluan | **no** | none | n/a | MIR 404. replaced with "lebih dulu" |
+| sembarangan | yes | a | yes | MIR via root `sembarang` |
+| sungguhan | yes | n cak (yang sebenarnya) | yes | MIR via root `sungguh` |
+| kewalahan | yes | v | yes | MIR via root `walah` |
+| ketinggalan | yes | v (tertinggal; terbelakang) | yes | MIR via root `tinggal` |
+| kelelahan | yes | a / v | yes | MIR via root `lelah` |
+| santai, bersantai | yes | a; v | yes | OFF |
+| camilan | yes | n (baku; "cemilan" is tidak baku) | yes | OFF |
+| menyontek | yes | v under sontek2 (mengutip; menjiplak). Baku: "contek -> sontek" | yes | OFF and MIR |
+| permisi | yes | n | yes | MIR |
+| piket | yes | n / v | yes | MIR |
+| les | yes | n cak / v cak | yes | MIR |
+| kuis | yes | n (ujian singkat) | yes | MIR |
+| lokakarya | yes | n | yes | MIR |
+| hafal, menghafal | yes | v | yes | MIR |
+| lembap | yes | a (baku) | yes | MIR |
+| napas | yes | n (baku) | yes | MIR |
+| kesatria | yes | n | yes | MIR |
+| praktik (praktiknya) | yes | n | yes | MIR |
+| mi, teh, es | yes | n | yes | MIR |
+| kuyup | yes | a (basah) | yes ("basah kuyup") | MIR |
+| sebangku | yes | regular se- + bangku | yes | MIR root `bangku` (no separate entry; productive se-) |
+| muram, luntur, lesu | yes | a | yes | MIR |
+| kaget | yes | a (baku) | yes | MIR |
+| bohong | yes | a (baku; "boong" is tidak baku) | yes | OFF |
+| bingung | yes | a | yes | OFF |
+| silakan | yes | v (baku spelling) | yes | MIR via root `sila` |
+| izinkan, mengizinkan | yes | v (baku spelling with z) | yes | MIR via root `izin` |
+| ide, kode, digit, net, tim | yes | n | yes | OFF and MIR |
+| skor | yes | n (jumlah angka kemenangan) | yes | MIR |
+| kiper, penalti, voli, badminton, raket | yes | n | yes | OFF and MIR |
+| motif, rekor, stamina, festival, fokus | yes | n | yes | MIR |
+| disiplin, asisten, atlet, aljabar, abstrak, atlas, jurnal, materi, strategi | yes | n | yes | OFF and MIR (abstrak sense 3, "karya seni abstrak", fits "Batiknya kubuat abstrak") |
+| kilometer | yes | n | yes | MIR |
+| sketsa, prakarya, rekaman | yes | n | yes | MIR |
+| poin | yes | n cak "titik" only | **no** (we mean a game point) | MIR. kept for students (variant/cak. listed in KBBI) |
+| kokoh | variant | "? kukuh" | n/a | MIR. replaced with kukuh |
+| meleset | variant | "? peleset" (baku verb memeleset) | n/a | MIR. kept for students (variant/cak. listed in KBBI) |
+| hitung-hitungan | partial | v cak "banyak perhitungan" | **no** (we mean arithmetic) | MIR. replaced with berhitung |
+| tanding (bare) | partial | n "yang seimbang"; the verb is bertanding | verb use: no | MIR. replaced with bertanding ("lawan tanding" is a noun and stays) |
+
+#### Every word ending in -in
+
+| Word | Found | Label | Note |
+|---|---|---|---|
+| angin | yes | n | MIR |
+| bermain, main | yes | v (main sense 2 is cak) | OFF |
+| bikin | yes | v cak | OFF (see above) |
+| dingin | yes | a | OFF |
+| disiplin | yes | n | OFF |
+| kain, kainnya | yes | n | MIR |
+| kemarin | yes | n | MIR |
+| lain | yes | a | MIR |
+| licin | yes | a | MIR |
+| lilin | yes | n | MIR (sense 1, "bahan untuk membatik", matches) |
+| makin | yes | adv | MIR |
+| menyalin | yes | v | MIR |
+| mungkin | yes | adv | MIR |
+| pengin | yes | v cak (ingin) | MIR |
+| poin | see above | n cak titik | kept for students (variant/cak. listed in KBBI) |
+| yakin | yes | a | MIR |
+
+No colloquial -in verbs (bantuin, ajarin, ...) exist in the list.
+
+#### Other affixed, borrowed or unusual words
+
+| Word | Found | Label / note | Source |
+|---|---|---|---|
+| menjumlah | yes | v (menghitung; menambah) | MIR |
+| menjumlahkan | yes | v | MIR |
+| mengajari | yes | v (mengajar kepada) | MIR |
+| menyemangati | yes | v (memberi semangat) | MIR |
+| mempermalukan | yes | v | MIR |
+| memperingati | yes | v (mengadakan kegiatan untuk mengenangkan), listed under `ingat` | MIR |
+| punya | yes | v (memiliki) | MIR |
+| kenapa | yes | pron cak | MIR |
+| malah | yes | adv (bahkan; justru) | MIR |
+| justru | yes | adv | MIR |
+| sepulang | yes | v | MIR |
+| semalaman | yes | n | MIR |
+| sekelas, sekuat, secepat, serapi, sekecil | yes | regular se- + root | MIR roots `kelas`, `kuat`, `cepat`, `rapi`, `kecil` |
+| menyerah | yes | v | MIR |
+| sanggar | yes | n (tempat kegiatan seni) | MIR |
+| sayang | yes | a / v | MIR |
+| pas | yes | a cak (tepat; cocok) | MIR |
+| tiap | yes | a | MIR |
+| lolos | yes | v | MIR |
+| kunjung | yes | a "lekas; pernah", used in "tidak kunjung reda" | MIR |
+| usah | yes | v (tak / tidak usah) | MIR |
+| ajaib | yes | a (ganjil; mengherankan) | OFF |
+| pekerjaan, bimbingannya, ketelitian, kesukaan, coretan, genggaman, rekaman | yes | n | OFF and MIR via roots |
+| pewarna, penghapus, penggaris, rautan, pergelangan, perhitungan | yes | n | MIR via roots |
+| pulpen, taplak, gembok, canting, wayang, tenda, merak, elang, busur, jangka, pojok, serong, telak, sanggup, selisih, pantang, genderang | yes | n / a / v | OFF and MIR |
+| tandai | yes | menandai v (memberi tanda) | MIR via root `tanda` |
+| kutaklukkan | yes | menaklukkan v | MIR root `takluk` |
+| ku- forms: kuambil, kuanggap, kubaca, kubawa, kuberi, kubuat, kucari, kucatat, kucoba, kudengar, kudengarkan, kugambar, kugeser, kuhafal, kuhitung, kukalahkan, kukerjakan, kukuasai, kulatih, kulingkari, kupecahkan, kupelajari, kuperbaiki, kuperhatikan, kuperhitungkan, kuperiksa, kuragukan, kurebut, kusuka, kutanyakan, kutemukan, kutulis, kuulang | yes | ku- + verb; every root confirmed (catat, baca, bawa, beri, cari, dengar, hafal, hitung, kalah, kuasa, lingkar, pecah, ajar, baik, hati, periksa, ragu, rebut, suka, tanya, temu, tulis, ulang, ...) | OFF and MIR roots |
+| terpeleset, terpendam, tertukar, terkalahkan, terlupa, terbayar, terarah, bersusun, berpasangan, bersorak, bertepuk, menggigil, menggenang, menguap, menyapa, membatik, menerbangkan, memasangkan, menjodohkan, mengacak | yes | regular verbs found in their root pages | MIR (menjodohkan, mengacak: OFF) |
+
+#### Reduplications
+
+| Word | Found | Label / note | Source |
+|---|---|---|---|
+| alat-alat, benda-benda, buku-buku, kartu-kartu, kawan-kawan, murid-murid, soal-soal, teman-teman, anak-anak | plain plurals | regular reduplication; not separate entries (anak-anak and kartu-kartu are listed in places) | rule-based |
+| ancang-ancang | yes | n (persiapan; gerakan permulaan) | OFF |
+| apa-apa, siapa-siapa, mana-mana | yes | pron / n | OFF and MIR |
+| asal-usul | yes | n (asal keturunan; riwayat) | OFF |
+| baik-baik | yes | a / adv | OFF |
+| benar-benar | yes | a / adv | OFF |
+| berhari-hari, berminggu-minggu | yes | num | OFF, MIR |
+| berulang-ulang | yes | v | MIR |
+| berwarna-warni | yes | v | OFF |
+| diam-diam | yes | adv | OFF |
+| gara-gara | yes | n | MIR |
+| hati-hati | yes | adv | MIR |
+| jangan-jangan | yes | adv (barangkali) | MIR |
+| kira-kira | yes | adv | MIR |
+| keras-keras | regular | "keras" + reduplication | rule-based |
+| kuda-kuda | yes | n, sense 3 "sikap siaga (bela diri)" fits | MIR |
+| mata-mata | yes | n | MIR |
+| pelan-pelan | yes | v cak (perlahan-lahan) | MIR |
+| pura-pura | yes | adv | MIR |
+| ragu-ragu | yes | a | MIR |
+| sia-sia | yes | a | MIR |
+| disia-siakan | yes | passive of `menyia-nyiakan` (v), listed under sia-sia | MIR |
+| sungguh-sungguh | yes | adv / a | MIR |
+| terburu-buru, tergesa-gesa | yes | v / a | MIR |
+| hitung-hitungan | see above | replaced with berhitung | MIR |
+| sebanyak-banyaknya | unverified | `sebanyak` is a listed num; the reduplicated superlative is regular but not separately found | MIR (root page only) |
+| teka-teki | unverified | the mirror has no page for the hyphenated word (`teka` only says "? terka"); it is the standard KBBI entry behind "teka-teki silang", but the OFF check was locked by the daily limit | not verified |
+
+### Unverified
+
+teka-teki and sebanyak-banyaknya were not found on the mirror. Both are regular formations (teka-teki is a standard KBBI headword in KBBI V; sebanyak-banyaknya is the se-/-nya superlative of banyak). Recheck on KBBI Daring when convenient.

@@ -112,10 +112,10 @@ const STUDENT_LINES := {
 			"Setiap jawaban harus kita masukkan kembali ke persamaan awal. Begitu cara yang benar.",
 		],
 		"Doni": [
-			"Ayo tanding, benda-benda! Hari ini kalian lawanku!",
-			"Hitung-hitungan bukan keahlianku, tapi aku enggak takut! Ayo, Pak, serang!",
+			"Ayo bertanding, benda-benda! Hari ini kalian lawanku!",
+			"Berhitung bukan keahlianku, tapi aku enggak takut! Ayo, Pak, serang!",
 			"Pensil sama dengan tiga? Ya! Satu benda tumbang, tinggal sisanya!",
-			"Siapa cepat, dia menang! Aku tebak duluan, Pak, penghapusnya lima!",
+			"Siapa cepat, dia menang! Aku tebak lebih dulu, Pak, penghapusnya lima!",
 			"Kepalaku panas, tapi pantang mundur! Tinggal sedikit lagi, Pak!",
 		],
 		"Andi": [
@@ -244,7 +244,7 @@ const STUDENT_LINES := {
 			"Rekor laju kok tercepat lebih dari 400 kilometer per jam. Semoga lawanku tidak secepat itu.",
 		],
 		"Doni": [
-			"Raketku sudah siap dari tadi. Ayo tanding badminton, siapa takut?",
+			"Raketku sudah siap dari tadi. Ayo bertanding badminton, siapa takut?",
 			"Lawan di seberang net, bersiaplah! Poin pertama milikku!",
 			"Kebobolan satu poin? Aku balas dengan dua poin, Pak!",
 			"Dari pagi aku menunggu saat ini! Lapangan bulu tangkis, aku datang!",
@@ -292,14 +292,14 @@ const STUDENT_LINES := {
 			"Tanganku lebih terbiasa memegang bola daripada canting. Tapi aku enggak mau kalah!",
 			"Empat alat, empat langkah! Satu per satu kutaklukkan, Pak!",
 			"Hore, pelajaran seni! Keringat enggak keluar, tapi semangatku tetap menyala!",
-			"Pewarna, tunggu giliranmu! Canting yang maju duluan!",
+			"Pewarna, tunggu giliranmu! Canting yang maju lebih dulu!",
 		],
 		"Andi": [
 			"Pak, kenapa kompornya dipakai paling akhir? Ayo kita coba, biar tahu!",
 			"Aku membayangkan motif naga bersayap di kain ini. Seru, kan, Pak?",
 			"Malam itu lilin, ya, Pak? Berarti kain ini dihias seperti kue ulang tahun!",
 			"Siapa, ya, orang pertama yang punya ide melukis kain dengan lilin? Aku penasaran.",
-			"Alat-alatnya diacak! Seperti teka-teki, ya, Pak. Mana yang dipakai duluan?",
+			"Alat-alatnya diacak! Seperti teka-teki, ya, Pak. Mana yang dipakai lebih dulu?",
 		],
 		"Citra": [
 			"...Membatik tidak perlu banyak bicara. Itu yang kusuka.",
@@ -311,7 +311,7 @@ const STUDENT_LINES := {
 		"Shinta": [
 			"Batiknya kubuat abstrak saja, ya, Pak? Salah urutan pun tetap jadi seni. Bercanda!",
 			"Boleh kainnya kubawa pulang, Pak? Lumayan untuk taplak meja di rumah.",
-			"Aduh, pewarnanya pasti bikin tangan belepotan. Ya sudah, demi Bapak, aku lanjut.",
+			"Aduh, pewarnanya pasti bikin tanganku kotor. Ya sudah, demi Bapak, aku lanjut.",
 			"Kelihatannya repot, Pak, tapi aku pernah membantu Nenek membatik. Tenang saja.",
 			"Kompor ini untuk memanaskan kain, bukan untuk merebus mi, kan? Sayang sekali.",
 		],
@@ -402,7 +402,7 @@ const NPC_LINES := {
 	],
 	"MainBola": [
 		"Ayo latihan adu penalti! Tendang bolanya sekuat tenaga dan jangan sampai ditangkap kiper!",
-		"Kuda-kuda yang kokoh, lalu tendang dengan keras! Kiper ini tidak akan memberi ampun.",
+		"Kuda-kuda yang kukuh, lalu tendang dengan keras! Kiper ini tidak akan memberi ampun.",
 		"Baris yang rapi! Satu per satu maju ke titik penalti. Yang meleset, lari satu putaran.",
 		"Fokus! Lihat sudut gawang, bukan kipernya. Tendangan yang ragu-ragu pasti tertangkap.",
 		"Semua siap? Ambil ancang-ancang, tarik napas, lalu lepaskan tendangan terbaik kalian!",

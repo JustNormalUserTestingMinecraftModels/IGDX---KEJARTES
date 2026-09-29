@@ -8,6 +8,28 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — RunResult: four rows, and the beaten-game crash
+
+The end-of-grade report drops "Total poin minigame" and "Barang dipakai" and
+keeps four rows: minigames won, minigames lost, wirausaha money, and **"Event
+yang diikuti"**. That last one used to read "Murid ikut event", which was the
+roster size the moment any event fired (an event marks the whole roster). It now
+counts events: `RunStats.events_attended`, booked by
+`SchoolDay._record_event_participation()` at all three event sites. `RunGrade`
+still scores the student share; `minigame_points` and `items_used` stay on
+`RunStats`, just unshown. The rows wear the artist's `gamewin_icon`,
+`gamelose_icon`, `coin_icon` and `event_icon` PNGs from
+`Assets/Images/EndGame/Icons/`.
+
+Pressing **Selesai** after beating Kelas 9 hard-crashed Godot 4.6.2 (signal 11,
+no script error). The cause was `RunResult.TUTORIAL_FLAGS`, a
+`Dictionary[String, PackedStringArray]` const built from Array literals:
+iterating it in `_apply_progression()` yielded empty flag names and then died
+on the fourth pass. It is now an untyped Dictionary of plain Arrays, and
+`test_run_result.gd` walks the real constant. Found by reading
+`%APPDATA%/Godot/app_userdata/KejarTes Ver9.00/logs/godot.log`, which holds the
+crash backtrace the editor's Output panel never shows.
+
 ## 2026-09-29 — Weekly results under the design rules
 
 The weekly report (`ResultCheckup`) now follows the role palette. The red

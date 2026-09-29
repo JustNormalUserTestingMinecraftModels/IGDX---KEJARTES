@@ -214,11 +214,15 @@ func test_the_rows_box_starts_empty_in_the_scene() -> void:
 	assert_eq(count, 0, "rows are instanced from the template at runtime")
 
 
-func test_it_reports_all_six_figures() -> void:
+func test_it_reports_exactly_four_figures() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	for label in ["Minigame selesai", "Minigame kalah", "Total poin minigame",
-			"Barang dipakai", "Uang dari wirausaha", "Murid ikut event"]:
+	for label in ["Minigame selesai", "Minigame kalah",
+			"Uang dari wirausaha", "Event yang diikuti"]:
 		assert_true(src.contains(label), "the report includes '%s'" % label)
+	for gone in ["Total poin minigame", "Barang dipakai", "Murid ikut event"]:
+		assert_false(src.contains(gone), "the report no longer shows '%s'" % gone)
+	assert_true(src.contains("stats.events_attended"),
+		"the event row counts events, not students")
 
 
 func test_it_grades_through_run_grade() -> void:
@@ -280,8 +284,11 @@ func test_it_plays_the_report_bgm_and_the_grade_stings() -> void:
 
 func test_the_report_uses_texture_icons_not_emoji() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Assets/Images/UI/Placeholders/icon_uang.svg"),
-		"the rows reference real icon assets")
+	for icon_name in ["gamewin_icon", "gamelose_icon", "coin_icon", "event_icon"]:
+		var path := "res://Assets/Images/EndGame/Icons/%s.png" % icon_name
+		assert_true(src.contains(path), "the rows reference %s" % icon_name)
+		assert_true(ResourceLoader.exists(path) and load(path) is Texture2D,
+			"%s exists and loads as a Texture2D" % icon_name)
 	for glyph in ["🎮", "💰", "⭐", "🎒", "🎪"]:
 		assert_false(src.contains(glyph),
 			"no emoji glyph is used as an icon")
@@ -476,9 +483,27 @@ func test_every_tutorial_flag_to_reset_exists_on_its_script() -> void:
 			assert_true(owner != null and flag in owner, "%s has a static %s" % [path, flag])
 	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
 	var beaten := src.find("GameState.is_game_beaten = true")
-	var reset := src.find("_reset_static_flag(path, flag)")
+	var reset := src.find("_reset_static_flag(String(path), String(flag))")
 	assert_true(beaten != -1 and reset > beaten,
 		"the beaten-game branch runs the reset over TUTORIAL_FLAGS")
+
+
+## Iterating a `Dictionary[String, PackedStringArray]` const built from Array
+## literals gave empty flag names and then hard-crashed Godot 4.6.2 (signal 11)
+## when a beaten game pressed Selesai. This walks the very constant and loop
+## the game uses, so a return of the typed form fails here instead of in play.
+func test_the_tutorial_flag_table_is_untyped_and_iterates_to_real_names() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	assert_true(src.contains("const TUTORIAL_FLAGS := {"),
+		"the flag table stays an untyped Dictionary")
+	var consts: Dictionary = (load("res://Scripts/EndGame/RunResult.gd") as GDScript).get_script_constant_map()
+	var flags: Dictionary = consts.get("TUTORIAL_FLAGS", {})
+	var seen := 0
+	for path in flags:
+		for flag in flags[path]:
+			assert_true(String(flag) != "", "%s lists a non-empty flag name" % path)
+			seen += 1
+	assert_true(seen >= 3, "all three tutorial flags are listed")
 
 
 ## The reset really clears the flag, through the same helper the game uses.

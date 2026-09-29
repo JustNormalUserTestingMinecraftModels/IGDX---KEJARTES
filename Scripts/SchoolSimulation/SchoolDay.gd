@@ -874,11 +874,17 @@ func _pick_minigame_category(w_akademis: int, w_olahraga: int, w_seni: int) -> S
 
 func _trigger_random_event(day_name: String) -> void:
 	events_triggered_this_week += 1
-	# Every student on the roster is present for an event, so
-	# an event marks the whole roster as having participated.
+	_record_event_participation()
+	await _run_event(randi() % 5, day_name)
+
+
+## Books one event onto the run tally: the count the report shows, and every
+## roster student as having taken part (every student is present for an
+## event, and RunGrade scores that share).
+func _record_event_participation() -> void:
+	GameState.run_stats.record_event_attended()
 	for s in GameState.approved_students:
 		GameState.run_stats.record_event_student(int(s.get("id", -1)))
-	await _run_event(randi() % 5, day_name)
 
 
 ## Plays random event `event_id` (0-4) on `day_name`: its warning, its
@@ -1249,10 +1255,7 @@ func skip_to_results() -> void:
 			else:
 				category = "Event"
 				events_triggered_this_week += 1
-				# Every student on the roster is present for an event, so
-				# an event marks the whole roster as having participated.
-				for s in GameState.approved_students:
-					GameState.run_stats.record_event_student(int(s.get("id", -1)))
+				_record_event_participation()
 
 			var skip_lose_chance := Balance.SKIP_PELUANG_KALAH_KELAS_7
 			match GameState.current_grade:
@@ -1631,8 +1634,5 @@ func force_event(event_id: int) -> void:
 	# Trigger a specific event immediately during simulation
 	var day_name = DAYS[current_day] if current_day < DAYS.size() else "Senin"
 	events_triggered_this_week += 1
-	# Every student on the roster is present for an event, so
-	# an event marks the whole roster as having participated.
-	for s in GameState.approved_students:
-		GameState.run_stats.record_event_student(int(s.get("id", -1)))
+	_record_event_participation()
 	await _run_event(event_id, day_name)

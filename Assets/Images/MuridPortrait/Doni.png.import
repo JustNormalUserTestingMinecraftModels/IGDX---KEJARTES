@@ -3,22 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://duxd6l4g4wrho"
-path.bptc="res://.godot/imported/Doni.png-06dee2b1ad33cc29f636380a2ebc0c29.bptc.ctex"
-path.astc="res://.godot/imported/Doni.png-06dee2b1ad33cc29f636380a2ebc0c29.astc.ctex"
+path="res://.godot/imported/Doni.png-06dee2b1ad33cc29f636380a2ebc0c29.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/MuridPortrait/Doni.png"
-dest_files=["res://.godot/imported/Doni.png-06dee2b1ad33cc29f636380a2ebc0c29.bptc.ctex", "res://.godot/imported/Doni.png-06dee2b1ad33cc29f636380a2ebc0c29.astc.ctex"]
+dest_files=["res://.godot/imported/Doni.png-06dee2b1ad33cc29f636380a2ebc0c29.ctex"]
 
 [params]
 
-compress/mode=2
-compress/high_quality=true
+compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

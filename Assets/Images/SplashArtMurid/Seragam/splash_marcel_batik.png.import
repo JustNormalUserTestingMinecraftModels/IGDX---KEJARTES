@@ -3,22 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxw6hmj0a1ceo"
-path.bptc="res://.godot/imported/splash_marcel_batik.png-0fddcafce9ee698c721187706d3e2550.bptc.ctex"
-path.astc="res://.godot/imported/splash_marcel_batik.png-0fddcafce9ee698c721187706d3e2550.astc.ctex"
+path="res://.godot/imported/splash_marcel_batik.png-0fddcafce9ee698c721187706d3e2550.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/Seragam/splash_marcel_batik.png"
-dest_files=["res://.godot/imported/splash_marcel_batik.png-0fddcafce9ee698c721187706d3e2550.bptc.ctex", "res://.godot/imported/splash_marcel_batik.png-0fddcafce9ee698c721187706d3e2550.astc.ctex"]
+dest_files=["res://.godot/imported/splash_marcel_batik.png-0fddcafce9ee698c721187706d3e2550.ctex"]
 
 [params]
 
-compress/mode=2
-compress/high_quality=true
+compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

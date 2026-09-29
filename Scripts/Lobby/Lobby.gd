@@ -147,7 +147,7 @@ func _ready() -> void:
 	if chatter:
 		chatter.can_speak = _chatter_allowed
 		# The HUD sits over the front-row faces; its taps are not theirs.
-		chatter.tap_blockers = [progress_header, get_node("%DisplayUang")] + hud.tap_blockers()
+		chatter.tap_blockers = [progress_header] + hud.tap_blockers()
 	_setup_students()
 	_start_idle_bob(portraits_back, 0.0)
 	_start_idle_bob(portraits_front, idle_bob_period * FRONT_ROW_BOB_PHASE)

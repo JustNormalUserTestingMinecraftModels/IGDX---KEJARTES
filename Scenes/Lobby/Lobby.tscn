@@ -1218,7 +1218,7 @@ offset_left = 636.0
 offset_top = 52.0
 offset_right = 984.0
 offset_bottom = 164.0
-mouse_filter = 2
+mouse_filter = 1
 theme_type_variation = &"CoinPlate"
 
 [node name="CoinIcon" type="TextureRect" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=1731951124]

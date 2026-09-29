@@ -361,6 +361,50 @@ func test_the_hud_hands_the_chatter_its_blockers() -> void:
 		assert_true(blockers.has(hud.get_node("%" + part)), part + " blocks face taps")
 
 
+## The coin plate rides in the book, so a tap on it is not a tap on a face.
+func test_the_coin_plate_blocks_face_taps() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	assert_true(hud.tap_blockers().has(hud.get_node("%DisplayUang")),
+		"DisplayUang blocks face taps")
+
+
+## A vertical drag that starts on the coin plate swipes the book like a drag
+## on JADWAL or the shelf: the plate passes the mouse on to its gui_input
+## and the HUD's handler reads it.
+func test_a_drag_on_the_coin_plate_hides_the_book() -> void:
+	var hud := _hud()
+	if hud == null:
+		return
+	GameSettings.reduce_motion = true
+	hud.activate(false)
+	LayoutFrame.settle(_lobby)
+	var coins := hud.get_node("%DisplayUang") as Control
+	assert_eq(coins.mouse_filter, Control.MOUSE_FILTER_PASS,
+		"the plate receives gui_input")
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(10.0, 10.0)
+	var drag := InputEventMouseMotion.new()
+	drag.position = Vector2(10.0, 10.0 + hud.swipe_threshold_pixels + 20.0)
+	hud._on_book_gui_input(press)
+	hud._on_book_gui_input(drag)
+	assert_false(hud.is_open, "a downward drag on the coin plate hides the book")
+	hud.set_open(true)
+	GameSettings.reduce_motion = _saved_reduce_motion
+
+
+## The plate is wired to the same swipe handler and enters with the book.
+func test_the_coin_plate_is_wired_to_the_swipe_and_the_entrance() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/LobbyHud.gd")
+	assert_true(src.contains("coin_box.gui_input.connect(_on_book_gui_input)"),
+		"_ready connects the coin plate's gui_input to the swipe")
+	assert_true(src.contains("Juice.stagger_in([koperasi, inventory, report_student, coin_box])"),
+		"the coin plate drops in with the tiles")
+
+
 ## Task 6: NotifBadge, the icon rail and nav tiles' red count pill. Fails
 ## loudly until Scenes/Lobby/NotifBadge.tscn exists (the [editor] scene
 ## step), matching this suite's existing Task 3-5 fixture pattern.

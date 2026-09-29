@@ -103,6 +103,7 @@ func _ready() -> void:
 	chevron_grip.pressed.connect(_on_chevron_pressed)
 	raised_block.gui_input.connect(_on_book_gui_input)
 	shelf.gui_input.connect(_on_book_gui_input)
+	coin_box.gui_input.connect(_on_book_gui_input)
 	resized.connect(_on_resized)
 	if Engine.is_editor_hint():
 		return
@@ -111,13 +112,13 @@ func _ready() -> void:
 	GameSettings.reduce_motion_changed.connect(_on_reduce_motion_changed)
 
 
-## Turns the swipe on; the entrance (tiles drop in, staggered) plays only
+## Turns the swipe on; the entrance (tiles and the coin plate drop in, staggered) plays only
 ## when asked, then JADWAL breathes. The open rest positions are read at
 ## each hide that does not interrupt a slide, once layout has settled.
 func activate(with_entrance: bool) -> void:
 	is_active = true
 	if with_entrance and not GameSettings.reduce_motion:
-		Juice.stagger_in([koperasi, inventory, report_student])
+		Juice.stagger_in([koperasi, inventory, report_student, coin_box])
 	_update_breathe()
 
 
@@ -207,9 +208,10 @@ func refresh(is_daily_claimable: bool) -> void:
 	_refresh_counts()
 
 
-## What the chatter must not treat as a tap on a face.
+## What the chatter must not treat as a tap on a face: the book's two steps,
+## the coin plate beside JADWAL, the chevron and the rail.
 func tap_blockers() -> Array[Control]:
-	return [raised_block, shelf, chevron_grip, icon_rail]
+	return [raised_block, shelf, coin_box, chevron_grip, icon_rail]
 
 
 ## The badges that follow autoload state. The daily badge is left alone:
@@ -290,7 +292,8 @@ func _on_reduce_motion_changed(_still: bool) -> void:
 
 
 ## A vertical drag on the book past swipe_threshold_pixels: down hides, up
-## reopens. Only the book's own margins see it; its buttons keep their taps.
+## reopens. Only the book's own margins and the coin plate see it; its
+## buttons keep their taps.
 func _on_book_gui_input(event: InputEvent) -> void:
 	if not is_active:
 		return

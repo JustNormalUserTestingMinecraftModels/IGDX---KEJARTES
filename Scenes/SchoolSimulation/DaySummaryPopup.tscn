@@ -8,8 +8,7 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/teacher_2.svg" id="v_teacher_2"]
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/teacher_3.svg" id="v_teacher_3"]
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/teacher_4.svg" id="v_teacher_4"]
-[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/star_on.svg" id="v_star_on"]
-[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/star_off.svg" id="v_star_off"]
+[ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="v_star_on"]
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/crown.svg" id="v_crown"]
 [ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
@@ -25,7 +24,8 @@ script = ExtResource("1_popup")
 student_row_scene = ExtResource("2_row_scene")
 teacher_faces = Array[Texture2D]([ExtResource("v_teacher_1"), ExtResource("v_teacher_2"), ExtResource("v_teacher_3"), ExtResource("v_teacher_4")])
 star_on_texture = ExtResource("v_star_on")
-star_off_texture = ExtResource("v_star_off")
+star_off_texture = ExtResource("v_star_on")
+star_off_tint = Color(0.28, 0.28, 0.32, 1)
 
 [node name="Backdrop" type="TextureRect" parent="." unique_id=1837002046]
 layout_mode = 0
@@ -123,7 +123,8 @@ theme_override_constants/separation = 6
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("v_star_off")
+self_modulate = Color(0.28, 0.28, 0.32, 1)
+texture = ExtResource("v_star_on")
 expand_mode = 1
 stretch_mode = 5
 
@@ -131,7 +132,8 @@ stretch_mode = 5
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("v_star_off")
+self_modulate = Color(0.28, 0.28, 0.32, 1)
+texture = ExtResource("v_star_on")
 expand_mode = 1
 stretch_mode = 5
 
@@ -139,7 +141,8 @@ stretch_mode = 5
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("v_star_off")
+self_modulate = Color(0.28, 0.28, 0.32, 1)
+texture = ExtResource("v_star_on")
 expand_mode = 1
 stretch_mode = 5
 
@@ -147,7 +150,8 @@ stretch_mode = 5
 custom_minimum_size = Vector2(52, 52)
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("v_star_off")
+self_modulate = Color(0.28, 0.28, 0.32, 1)
+texture = ExtResource("v_star_on")
 expand_mode = 1
 stretch_mode = 5
 

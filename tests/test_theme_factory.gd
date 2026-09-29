@@ -183,24 +183,20 @@ func test_stat_bar_variation_is_unchanged() -> void:
 	assert_true(bg is StyleBoxFlat, "StatBar keeps its flat track")
 
 
-func test_main_menu_button_variation_exists_and_is_sized_for_the_mockup() -> void:
-	var tokens := DesignTokens.load_default()
-	var theme := ThemeFactory.build(tokens)
+## 2026-09-29: the gear and exit on the title screen lost their box; the
+## variation draws nothing in any state, and the old brown one is gone.
+func test_main_menu_icon_button_draws_no_box() -> void:
+	var theme := ThemeFactory.build(DesignTokens.load_default())
 
-	assert_true(theme.get_type_list().has("MainMenuButton"),
-		"MainMenuButton variation must exist")
-	assert_eq(theme.get_type_variation_base("MainMenuButton"), &"Button",
-		"MainMenuButton must vary the Button type")
-
-	# Since the 2026-09-28 UI depth pass it is a brown lipped box.
-	var normal := theme.get_stylebox("normal", "MainMenuButton") as StyleBoxFlat
-	assert_true(normal != null and normal.bg_color == tokens.brand_primary_light,
-		"MainMenuButton wears the Lobby's fill")
-
-	# Font size 80, not the mockup-implied 100: see the spec's typography
-	# section -- PENGATURAN at 100 overflows the 624 px inner box by 131 px.
-	assert_eq(theme.get_font_size("font_size", "MainMenuButton"), 80,
-		"MainMenuButton font size")
+	assert_true(theme.get_type_list().has("MainMenuIconButton"),
+		"MainMenuIconButton variation must exist")
+	assert_eq(theme.get_type_variation_base("MainMenuIconButton"), &"Button",
+		"MainMenuIconButton must vary the Button type")
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
+		assert_true(theme.get_stylebox(state, "MainMenuIconButton") is StyleBoxEmpty,
+			"MainMenuIconButton's %s state must draw nothing" % state)
+	assert_false(theme.get_type_list().has("MainMenuButton"),
+		"the boxed MainMenuButton is retired")
 
 
 ## The bars used to be a flat sunken capsule with the fill running flush
@@ -309,7 +305,7 @@ func test_body_labels_do_not_take_the_display_font() -> void:
 const DISPLAY_ROSTER := [
 	"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 	"CardSectionLabel", "ResultHeroLabel",
-	"MainMenuButton", "PrimaryButton", "SecondaryButton", "DangerButton",
+	"PrimaryButton", "SecondaryButton", "DangerButton",
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill",

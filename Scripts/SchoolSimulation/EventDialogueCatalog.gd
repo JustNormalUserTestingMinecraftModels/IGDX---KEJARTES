@@ -164,8 +164,8 @@ static func fill_line(line: String, featured: StudentData) -> String:
 
 
 ## The featured student's splash on `day_name`: the day outfit on Kamis and
-## Jumat (StudentSkins.DAY_OUTFITS), their own (equipped) look otherwise, ""
-## for nobody.
+## Jumat (StudentSkins.DAY_OUTFITS) when they wear no skin, their own
+## (equipped) look otherwise, "" for nobody.
 static func student_splash(featured: StudentData, day_name: String) -> String:
 	if featured == null:
 		return ""

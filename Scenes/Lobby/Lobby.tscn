@@ -33,7 +33,7 @@
 [ext_resource type="Script" uid="uid://c7na1rk10q6kb" path="res://Scripts/Lobby/LobbyProgressHeader.gd" id="38_ayldy"]
 [ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
 [ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="39_nese6"]
-[ext_resource type="Texture2D" uid="uid://cv0nm0atmx7dv" path="res://Assets/Images/DaySummary/Verdict/star_on.svg" id="40_2xndu"]
+[ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="40_2xndu"]
 [ext_resource type="Texture2D" uid="uid://bedjpscelrj33" path="res://Assets/Images/UI/DailyLogin/streak_flame.svg" id="40_hp3mh"]
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]

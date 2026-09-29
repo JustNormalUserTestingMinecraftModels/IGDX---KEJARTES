@@ -9,7 +9,7 @@
 [ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/title_weekly_results.png" id="7_ribbon"]
 
 [sub_resource type="Gradient" id="Gradient_qpkja"]
-colors = PackedColorArray(0.93333334, 0.9529412, 1, 0.8, 0.93333334, 0.9529412, 1, 0)
+colors = PackedColorArray(0.3373, 0.1961, 0.1059, 0.55, 0.3373, 0.1961, 0.1059, 0)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_67i1b"]
 gradient = SubResource("Gradient_qpkja")

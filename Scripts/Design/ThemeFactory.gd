@@ -1483,14 +1483,16 @@ static func _build_result_button(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("font_size", "ResultLogsButton", tokens.day_stat_size)
 
 
-## The main menu's icon buttons, in the Lobby look (2026-09-14
-## lobby-style-buttons spec; the painted gold menu_button.png is retired).
-## Icon-only boxes, so the sides stay tight and the vertical padding zero --
-## the Lobby recipe's space_lg sides would squeeze the icon.
-static func _build_main_menu_button(theme: Theme, tokens: DesignTokens) -> void:
-	_add_lobby_button(theme, tokens, "MainMenuButton")
-	_set_content_margins(theme, "MainMenuButton", 20, 0)
-	theme.set_font_size("font_size", "MainMenuButton", 80)
+## The main menu's gear and exit: just the painted icon, no box behind it
+## (2026-09-29; before that they sat on a brown lipped button). Every state
+## draws nothing -- UIPolish's press/release squash is the feedback -- and the
+## sides stay at zero so the icon fills its whole 128 px cell.
+static func _build_main_menu_button(theme: Theme, _tokens: DesignTokens) -> void:
+	const NAME := "MainMenuIconButton"
+	theme.add_type(NAME)
+	theme.set_type_variation(NAME, "Button")
+	for state in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
+		theme.set_stylebox(state, NAME, StyleBoxEmpty.new())
 
 
 ## The brown neutral role: brand_primary_light on brand_primary_dark.

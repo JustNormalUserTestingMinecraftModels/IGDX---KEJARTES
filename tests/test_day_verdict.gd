@@ -78,6 +78,25 @@ func test_a_hard_day_scores_one_star_and_encourages() -> void:
 	assert_eq(v["star_name"], "", "nobody gained, so no star of the day")
 
 
+## 2026-09-29: the lit and unlit stars are one star.png; the unlit ones are
+## the same art dimmed by the scene's star_off_tint, both before the verdict
+## lands (the authored stars) and when it does (_show_verdict).
+func test_unlit_stars_are_star_png_dimmed_by_the_scene_tint() -> void:
+	var popup := (load(POPUP_SCENE) as PackedScene).instantiate()
+	var tint: Color = popup.get("star_off_tint")
+	assert_true(tint != Color.WHITE, "the scene sets a dimming tint")
+	assert_eq((popup.get("star_on_texture") as Texture2D).resource_path, "res://Assets/Images/UI/star.png",
+		"a lit star is star.png")
+	assert_eq(popup.get("star_off_texture"), popup.get("star_on_texture"), "an unlit star is the same art")
+	var stars := popup.get_node("DimOverlay/Safe/Content/Frame/Body/Reward/Rows/Header/Words/Stars")
+	for star in stars.get_children():
+		assert_eq((star as TextureRect).self_modulate, tint, star.name + " starts unlit")
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/DaySummaryPopup.gd")
+	assert_contains(src, "star.self_modulate = Color.WHITE if i < stars else star_off_tint",
+		"_show_verdict lights the earned stars and dims the rest")
+	popup.free()
+
+
 func test_the_popup_carries_the_reward_layer() -> void:
 	var popup := (load(POPUP_SCENE) as PackedScene).instantiate()
 	var base := "DimOverlay/Safe/Content/Frame/Body/"

@@ -319,8 +319,10 @@ const DISPLAY_ROSTER := [
 	"RecapPillValueLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
-	# 2026-09-19 weekly results mockup: the light-red Logs button.
+	# 2026-09-19 weekly results mockup: the Logs button (brown since 2026-09-29).
 	"ResultLogsButton",
+	# 2026-09-29 weekly colours: the HASIL MINGGUAN plate and the change chips.
+	"ResultTitleLabel", "DeltaChipLabel",
 	# 2026-09-14 lobby-style-buttons: the two kept looks.
 	"StudentCardSecondaryButton", "StudentCardSecondaryButtonL",
 	"RosterStatusBelum", "RosterStatusSudah",

@@ -1085,13 +1085,17 @@ func test_the_script_no_longer_carries_the_tabs() -> void:
 			"%s belongs to the retired tabs" % dead)
 
 
-## 2026-09-19 mockup pass: yellow banner, cream tiles, outlined numbers.
-func test_recap_theme_matches_the_mockup() -> void:
+## 2026-09-29 weekly colours (header option A): the summary panel is sunken
+## cream with a cream-lip rim, no longer butter yellow; the tiles stay card
+## cream and their numbers keep the white rim.
+func test_recap_theme_is_brown_and_cream() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 	var banner := theme.get_stylebox("panel", "RecapBannerPanel") as StyleBoxFlat
-	assert_eq(banner.bg_color, tokens.recap_banner_fill, "the banner is the mockup's yellow")
-	assert_eq(banner.border_width_left, 0, "and has no brown rim")
+	assert_eq(banner.bg_color, tokens.surface_sunken, "the panel is sunken cream, not butter yellow")
+	assert_eq(banner.border_color, tokens.button_cream_lip, "with the cream lip as its rim")
+	assert_eq(banner.border_width_left, 2, "a 2 px rim")
+	assert_eq(banner.corner_radius_top_left, tokens.radius_lg, "it keeps its large radius")
 	var tile := theme.get_stylebox("panel", "RecapPillPanel") as StyleBoxFlat
 	assert_eq(tile.bg_color, tokens.recap_tile_fill, "each tile is card cream")
 	assert_eq(tokens.recap_tile_fill, tokens.surface_card, "the same cream as the student cards")
@@ -1099,6 +1103,40 @@ func test_recap_theme_matches_the_mockup() -> void:
 		"a rounded square, not a capsule")
 	assert_eq(theme.get_constant("outline_size", "RecapPillValueLabel"),
 		tokens.text_outline_size, "the number carries the white rim")
+	assert_false("recap_banner_fill" in tokens, "the butter-yellow token is gone")
+
+
+## The weekly report's own variations (2026-09-29 weekly colours spec):
+## the brown title plate, the green and red change chips, and the needs
+## bars in the game-wide energy yellow and mood pink.
+func test_the_week_report_variations_are_built() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var plate := theme.get_stylebox("panel", "ResultTitlePanel") as StyleBoxFlat
+	assert_eq(plate.bg_color, tokens.brand_primary, "the title plate is brand brown")
+	assert_eq(plate.shadow_color, tokens.brand_primary_dark, "on the dark brown lip")
+	assert_eq(theme.get_color("font_color", "ResultTitleLabel"), tokens.text_on_brand,
+		"cream letters")
+	assert_eq(theme.get_font_size("font_size", "ResultTitleLabel"), tokens.font_h1,
+		"at H1 size")
+	var gain := theme.get_stylebox("panel", "DeltaChipGain") as StyleBoxFlat
+	var loss := theme.get_stylebox("panel", "DeltaChipLoss") as StyleBoxFlat
+	assert_eq(gain.bg_color, tokens.state_success, "a gain chip is success green")
+	assert_eq(loss.bg_color, tokens.state_danger, "a loss chip is danger red")
+	assert_eq(gain.corner_radius_top_left, tokens.radius_pill, "chips are pills")
+	assert_eq(loss.corner_radius_top_left, tokens.radius_pill, "both of them")
+	assert_eq(theme.get_color("font_color", "DeltaChipLabel"), Color.WHITE,
+		"white on both chips")
+	assert_eq(theme.get_font_size("font_size", "DeltaChipLabel"),
+		tokens.day_needs_label_size, "one step under the stat number")
+	var energy := theme.get_stylebox("fill", "WeekEnergyBar") as StyleBoxTexture
+	var mood := theme.get_stylebox("fill", "WeekMoodBar") as StyleBoxTexture
+	assert_eq(energy.modulate_color, tokens.cat_energy_on_dark, "week energy is the game-wide yellow")
+	assert_eq(mood.modulate_color, tokens.cat_mood_on_dark, "week mood is the game-wide pink")
+	var day_track := theme.get_stylebox("background", "DaySummaryEnergyBar") as StyleBoxFlat
+	var week_track := theme.get_stylebox("background", "WeekEnergyBar") as StyleBoxFlat
+	assert_eq(week_track.bg_color, day_track.bg_color, "the same dark track as the nightly bar")
+	assert_eq(week_track.border_color, day_track.border_color, "and the same rim")
 
 
 ## Logs is the neutral brown (it is not a danger action, so no tomato);

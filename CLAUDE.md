@@ -204,7 +204,7 @@ polish pass. The debug overlay is out of scope for the design system.
 
 Suites live in `tests/test_*.gd`, extend `McpTestSuite`
 (`addons/godot_ai/testing/test_suite.gd`), and run **inside the editor** via
-the Godot AI MCP `test_run` tool. 184 suites, 2939 tests (2026-09-29).
+the Godot AI MCP `test_run` tool. 188 suites, 3011 tests (2026-09-30).
 
 Hard constraints:
 

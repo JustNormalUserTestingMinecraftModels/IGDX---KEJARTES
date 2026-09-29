@@ -287,7 +287,7 @@ func test_the_look_tab_reaches_the_screen_that_is_up() -> void:
 	assert_true(_source().contains("panels[\"Look\"] = DebugLookPanel.build(content_area)"),
 		"DebugManager builds the Look tab through DebugLookPanel")
 	var look := FileAccess.get_file_as_string(_LOOK_PATH)
-	for kind in ["&\"AmbientGlow\"", "&\"ScreenGlow\"", "&\"LightPool\"", "&\"SunShafts\""]:
+	for kind in ["&\"AmbientGlow\"", "&\"ScreenGlow\"", "&\"ScreenSaturation\"", "&\"LightPool\"", "&\"SunShafts\""]:
 		assert_true(look.contains("[" + kind + ", "),
 			"the Look tab tunes every %s on screen" % kind)
 	for setting in ["\"ambient_effects_enabled\"", "\"look_layer_enabled\""]:

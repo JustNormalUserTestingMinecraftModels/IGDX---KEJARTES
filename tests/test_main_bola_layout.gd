@@ -262,3 +262,10 @@ func test_design_to_screen_maps_each_axis_proportionally() -> void:
 	var wide: Vector2 = s.call("design_to_screen", Vector2(270, 960), design, Vector2(1440, 1920))
 	assert_true(wide.is_equal_approx(Vector2(360, 960)),
 		"on a wider screen he moves sideways in proportion, got %s" % wide)
+
+
+## The owner asked for the ball 50% larger than the old 0.065 (2026-09-29).
+func test_ball_is_half_again_the_old_size() -> void:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	assert_true(src.contains("var ball_radius_frac: float = 0.0975"),
+		"MainBola's ball_radius_frac should be 0.0975 (1.5x the old 0.065)")

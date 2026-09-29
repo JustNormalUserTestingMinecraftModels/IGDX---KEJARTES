@@ -18,7 +18,7 @@ size = Vector2(874.368, 537.6)
 size = Vector2(453.6, 422.4)
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_gt578"]
-radius = 70.2
+radius = 105.3
 
 [node name="MainBola" type="Control" unique_id=1326671625]
 layout_mode = 3
@@ -137,10 +137,10 @@ shape = SubResource("CircleShape2D_gt578")
 
 [node name="GFX" type="TextureRect" parent="Ball" unique_id=1147258294]
 material = ExtResource("illus_grade_cut")
-offset_left = -70.2
-offset_top = -70.2
-offset_right = 70.2
-offset_bottom = 70.2
+offset_left = -105.3
+offset_top = -105.3
+offset_right = 105.3
+offset_bottom = 105.3
 texture = ExtResource("4_rtmmt")
 expand_mode = 1
 stretch_mode = 6

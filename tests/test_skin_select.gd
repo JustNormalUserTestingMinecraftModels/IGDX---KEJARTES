@@ -263,8 +263,25 @@ func test_commit_button_is_indonesian_and_not_danger_red() -> void:
 
 func test_backdrop_still_blurs_the_live_lobby() -> void:
 	var src := FileAccess.get_file_as_string(SCREEN)
-	assert_true(src.contains("shop_hub_blur_material.tres"),
+	assert_true(src.contains("skin_select_backdrop_material.tres"),
 		"the live-screen blur is why this stays an overlay instead of a scene change")
+
+
+## The room behind the carousel is lit 25% brighter than the shop hub's
+## backdrop: 1 - darkness goes 0.45 -> 0.5625 (2026-09-29). Its own copy, so
+## ShopHub, CosmeticShop and the achievement popup keep their 0.55.
+func test_the_backdrop_is_a_quarter_lighter_than_the_shop_hub() -> void:
+	var own := load("res://Scenes/Skins/skin_select_backdrop_material.tres") as ShaderMaterial
+	var hub := load("res://Scenes/Koperasi/shop_hub_blur_material.tres") as ShaderMaterial
+	assert_true(own != null and hub != null, "both blur materials load")
+	if own == null or hub == null:
+		return
+	var own_light := 1.0 - float(own.get_shader_parameter("darkness"))
+	var hub_light := 1.0 - float(hub.get_shader_parameter("darkness"))
+	assert_true(absf(own_light - hub_light * 1.25) < 0.0001,
+		"%s is 25%% lighter than the hub's %s" % [own_light, hub_light])
+	assert_eq(float(own.get_shader_parameter("lod")),
+		float(hub.get_shader_parameter("lod")), "same blur strength as the hub")
 
 
 func test_the_popup_era_nodes_are_gone() -> void:

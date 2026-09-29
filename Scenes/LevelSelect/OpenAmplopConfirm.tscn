@@ -63,7 +63,7 @@ show_well = false
 
 [node name="VBox" type="VBoxContainer" parent="Letter" unique_id=783693095]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 32
 
 [node name="Title" type="Label" parent="Letter/VBox" unique_id=1243450989]
 unique_name_in_owner = true

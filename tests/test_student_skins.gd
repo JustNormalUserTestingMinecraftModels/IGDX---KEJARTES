@@ -183,14 +183,27 @@ func test_the_other_days_and_strangers_have_no_outfit() -> void:
 	assert_eq(StudentSkins.day_splash_for("Bejo", "Kamis"), "", "only the six have outfits")
 
 
-## The one resolver every screen asks: the outfit on its day, else the
-## student's own (possibly skinned) splash.
+## The one resolver every screen asks: the outfit on its day for a student in
+## the default look, else the student's own (possibly skinned) splash.
 func test_splash_for_day_falls_back_to_the_student_s_own() -> void:
-	var own := "res://Assets/Images/Skins/Thea/splash_thea_skin1.png"
+	var own := "res://Assets/Images/SplashArtMurid/splash_thea.png"
 	assert_eq(StudentSkins.splash_for_day("Thea", own, "Kamis"),
-		"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png", "the outfit beats a skin")
+		"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png", "the default look wears the outfit")
 	assert_eq(StudentSkins.splash_for_day("Thea", own, "Senin"), own)
 	assert_eq(StudentSkins.splash_for_day("Thea", own, ""), own)
+
+
+## 2026-09-29: an applied skin is worn for the whole run -- no batik on Kamis,
+## no pramuka on Jumat -- and only for the student wearing it.
+func test_an_applied_skin_is_worn_on_outfit_days_too() -> void:
+	var skinned := "res://Assets/Images/Skins/Thea/splash_thea_skin1.png"
+	GameState.equip_skin("Thea", "skin1")
+	for day in ["Kamis", "Jumat"]:
+		assert_eq(StudentSkins.day_splash_for("Thea", day), "", "no outfit over a skin on " + day)
+		assert_eq(StudentSkins.splash_for_day("Thea", skinned, day), skinned, "the skin stays on " + day)
+	assert_ne(StudentSkins.day_splash_for("Andi", "Jumat"), "", "another student's outfit is unaffected")
+	GameState.equip_skin("Thea", StudentSkins.DEFAULT_ID)
+	assert_ne(StudentSkins.day_splash_for("Thea", "Jumat"), "", "back to default, back to the outfit")
 
 
 ## Same canvas and import as the default splashes, or the outfit would jump

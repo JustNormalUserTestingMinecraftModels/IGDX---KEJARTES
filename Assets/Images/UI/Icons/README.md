@@ -30,7 +30,7 @@ Checked 2026-09-29 (UI depth pass, Phase 3). A new caller adds its row.
 | `nav_rapor.png` (owner art) | Report card | Lobby's `ReportStudent` tile (`ShelfPage`) | `test_lobby_tile_icons` |
 | `chevron_left.svg` | Previous page | the `Arrow` child of LevelSelect's `PrevArrow`, StudentCard's `NextButtonKiri`, StudentList's `LeftArrow`, ReportCard's `NextButtonKiri` | `test_paging_arrows` |
 | `chevron_right.svg` | Next page | the `Arrow` child of LevelSelect's `NextArrow`, StudentCard's `NextButtonKanan`, StudentList's `RightArrow`, ReportCard's `NextButtonKanan` | `test_paging_arrows` |
-| `exit.svg` | Quit the game | MainMenu's `QuitButton` | `test_main_menu` |
+| `exit.png` (owner art) | Quit the game | MainMenu's `QuitButton` | `test_main_menu` |
 | `close.svg` | Close a popup | `NotebookFrame`'s `Chrome/Close` | — |
 | `cat_istirahat.svg` | Istirahat (rest) | `RosterCard.SPECIALTY_ICONS`, `StudentList.CATEGORY_ICONS`, `DayStickyNote.category_icons` | `test_category_icons`, `test_student_list` |
 | `cat_wirausaha.svg` | Wirausaha (earning) | the same three maps, and Dapatkan Uang's `TipIcon` | `test_category_icons`, `test_student_list` |

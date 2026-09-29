@@ -29,8 +29,11 @@ signal summary_dismissed
 @export var teacher_faces: Array[Texture2D] = []
 ## A lit rating star.
 @export var star_on_texture: Texture2D
-## An unlit rating star.
+## An unlit rating star. Since 2026-09-29 this is the same star.png as the lit
+## one, dimmed by `star_off_tint`.
 @export var star_off_texture: Texture2D
+## Multiplied onto an unlit rating star, turning star.png into a dark silhouette.
+@export var star_off_tint: Color = Color(0.28, 0.28, 0.32)
 
 @onready var dim_overlay: Panel = $DimOverlay
 @onready var content: VBoxContainer = $DimOverlay/Safe/Content
@@ -188,6 +191,7 @@ func _show_verdict(v: Dictionary) -> void:
 			var star := _stars.get_child(i) as TextureRect
 			if star:
 				star.texture = star_on_texture if i < stars else star_off_texture
+				star.self_modulate = Color.WHITE if i < stars else star_off_tint
 	var money: int = v.get("money", 0)
 	if _money_value:
 		# "-" rather than "0": no Wirausaha today, not a loss.

@@ -1085,7 +1085,7 @@ func test_the_script_no_longer_carries_the_tabs() -> void:
 			"%s belongs to the retired tabs" % dead)
 
 
-## 2026-09-19 mockup pass: yellow banner, white tiles, outlined numbers.
+## 2026-09-19 mockup pass: yellow banner, cream tiles, outlined numbers.
 func test_recap_theme_matches_the_mockup() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
@@ -1093,21 +1093,25 @@ func test_recap_theme_matches_the_mockup() -> void:
 	assert_eq(banner.bg_color, tokens.recap_banner_fill, "the banner is the mockup's yellow")
 	assert_eq(banner.border_width_left, 0, "and has no brown rim")
 	var tile := theme.get_stylebox("panel", "RecapPillPanel") as StyleBoxFlat
-	assert_eq(tile.bg_color, tokens.recap_tile_fill, "each tile is white")
+	assert_eq(tile.bg_color, tokens.recap_tile_fill, "each tile is card cream")
+	assert_eq(tokens.recap_tile_fill, tokens.surface_card, "the same cream as the student cards")
 	assert_eq(tile.corner_radius_top_left, tokens.radius_md,
 		"a rounded square, not a capsule")
 	assert_eq(theme.get_constant("outline_size", "RecapPillValueLabel"),
 		tokens.text_outline_size, "the number carries the white rim")
 
 
-## Logs is a lighter red than the ribbon; Selanjutnya keeps the brown.
-func test_logs_wears_the_light_red_result_button() -> void:
+## Logs is the neutral brown (it is not a danger action, so no tomato);
+## Selanjutnya keeps the mint main action.
+func test_logs_wears_the_brown_result_button() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 	assert_true(theme.get_type_list().has("ResultLogsButton"),
 		"ResultLogsButton is a variation")
 	var sb := theme.get_stylebox("normal", "ResultLogsButton") as StyleBoxFlat
-	assert_eq(sb.bg_color, tokens.result_logs_fill, "its face is the light red")
+	assert_eq(sb.bg_color, tokens.result_logs_fill, "its face is result_logs_fill")
+	assert_eq(tokens.result_logs_fill, tokens.brand_primary_light, "which is the neutral brown")
+	assert_eq(tokens.result_logs_dark, tokens.brand_primary_dark, "on the brown lip")
 	assert_eq(theme.get_font_size("font_size", "ResultLogsButton"),
 		theme.get_font_size("font_size", "ResultButton"),
 		"same text size as its neighbour, so the row reads as a pair")

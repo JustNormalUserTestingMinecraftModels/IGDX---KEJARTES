@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://c50fsdshij16h" path="res://Scenes/StudentList/RosterAvatar.tscn" id="13_35ggc"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
 [ext_resource type="Script" uid="uid://clanrs0mbexi3" path="res://Scripts/UI/NudgeLoop.gd" id="20_nudge"]
+[ext_resource type="Script" uid="uid://cwcnucohtx4pl" path="res://Scripts/StudentList/RosterDeck.gd" id="21_deck"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]
 shader = ExtResource("3_ovxc5")
@@ -61,6 +62,23 @@ offset_top = -608.0
 offset_right = 490.0
 offset_bottom = 802.0
 
+[node name="GhostCard" type="Panel" parent="CardContainer" unique_id=1366096193]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0.5)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 34.0
+offset_right = 34.0
+grow_horizontal = 2
+grow_vertical = 2
+rotation = 0.06981317
+scale = Vector2(0.9, 0.9)
+pivot_offset = Vector2(490, 705)
+mouse_filter = 2
+theme_type_variation = &"SunkenPanel"
+
 [node name="Murid1" parent="CardContainer" unique_id=1291523057 instance=ExtResource("5_cv71g")]
 layout_mode = 1
 grow_horizontal = 2
@@ -103,6 +121,10 @@ portrait_texture = ExtResource("9_y2vk7")
 specialty = "Olahraga"
 persona = "Seni Dalam Kesunyian"
 quirk = "Penyendiri"
+
+[node name="RosterDeck" type="Node" parent="." unique_id=1103012061]
+unique_name_in_owner = true
+script = ExtResource("21_deck")
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=1348774161]
 layout_mode = 1
@@ -268,3 +290,8 @@ offset_right = 3.0
 offset_bottom = -1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[connection signal="picked_up" from="RosterDeck" to="." method="_on_deck_picked_up"]
+[connection signal="thrown" from="RosterDeck" to="." method="_on_deck_thrown"]
+[connection signal="switched" from="RosterDeck" to="." method="_on_deck_switched"]
+[connection signal="settled" from="RosterDeck" to="." method="_on_deck_settled"]

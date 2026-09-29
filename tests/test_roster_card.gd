@@ -334,6 +334,24 @@ func test_set_front_false_stops_breathing_and_every_notes_glow() -> void:
 		assert_false(note.is_inviting(), "%s must stop inviting" % note.name)
 
 
+## set_idle() is the RosterDeck drag's pause/resume (MURIDMU Task 6): the
+## same idle loops as set_front, but a card that springs back never
+## re-arrives, so it must not replay the entry.
+func test_set_idle_pauses_and_resumes_without_replaying_the_entry() -> void:
+	_card.apply_week({"Senin": {"category": "Akademis"}})
+	_card.set_idle(true)
+	assert_true(_card.is_breathing(), "set_idle(true) resumes the breath")
+	for note: StickyNote in _card.get_notes():
+		assert_eq(note.is_inviting(), not note.scheduled, "%s invites only when empty" % note.name)
+	_card.set_idle(false)
+	assert_false(_card.is_breathing(), "set_idle(false) pauses the breath")
+	for note: StickyNote in _card.get_notes():
+		assert_false(note.is_inviting(), "%s pauses its glow" % note.name)
+	var src := FileAccess.get_file_as_string(_CARD_SCRIPT)
+	var body := src.get_slice("func set_idle(on: bool) -> void:", 1).get_slice("\n\n", 0)
+	assert_false(body.contains("play_entry"), "a spring-back must not replay the entry")
+
+
 ## play_entry() itself is a no-op in the editor (see the test below), so
 ## this only pins that set_front(true) is wired to call it.
 func test_set_front_true_is_wired_to_play_entry() -> void:

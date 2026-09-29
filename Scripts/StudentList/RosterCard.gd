@@ -622,6 +622,17 @@ func _stop_breathing() -> void:
 
 # --------------------------------------------------------------- front card
 
+## Pauses (false) or resumes (true) the front card's idle loops -- the
+## paper's breath and the empty notes' glow -- WITHOUT replaying the entry.
+## The RosterDeck's drag is its caller: a card picked up by a finger stops
+## breathing, and one that springs back resumes. It never left, so it must
+## not re-arrive: set_front(true) would re-hide the name and re-thunk the
+## stamp on every nudge.
+func set_idle(on: bool) -> void:
+	set_breathing(on)
+	set_inviting(on)
+
+
 ## Turns this card's front-card-only idle loops (breathing, the empty
 ## notes' "tap me" glow) on or off in one call, so StudentList need not walk
 ## breathing/inviting separately. `on` also plays the entry beats, so set
@@ -631,5 +642,4 @@ func _stop_breathing() -> void:
 func set_front(on: bool) -> void:
 	if on:
 		play_entry()
-	set_breathing(on)
-	set_inviting(on)
+	set_idle(on)

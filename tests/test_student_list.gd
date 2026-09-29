@@ -952,12 +952,113 @@ func test_init_carousel_state_reopens_via_roster_card() -> void:
 		"_init_carousel_state must resolve the starting card through RosterCard's static helper")
 
 
-## _switch_card() awaits two 0.2s tweens before the new card lands, so its
-## front-card handoff cannot be observed synchronously in this harness --
-## pinned by source instead.
-func test_switch_card_wires_front_card_activation() -> void:
+# ------------------------------------------ Task 6: the RosterDeck carousel
+#
+# The swipe/drag/switch moved out of StudentList.gd into RosterDeck
+# (Scripts/StudentList/RosterDeck.gd, @tool), whose behaviour
+# tests/test_roster_deck.gd drives directly. What StudentList still owns is
+# the wiring, pinned here: the authored GhostCard and RosterDeck nodes, the
+# scene connections, and the call sites -- by source, since StudentList is
+# a placeholder instance in the editor (see the Task 4 note above).
+
+## The body of StudentList.gd's `name` function, up to the next func.
+func _function_body(name: String) -> String:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("old_card.set_front(false)"),
+	return src.get_slice("func %s(" % name, 1).get_slice("
+func ", 0)
+
+
+## The switch is one overlapped timeline on the deck now: _switch_card no
+## longer awaits a slide-out before the slide-in, and the front-card
+## handoff rides the deck's signals -- off as the card leaves, on (entry
+## replayed) when the deck says the new card LANDED.
+func test_switch_card_wires_front_card_activation() -> void:
+	var switch_body := _function_body("_switch_card")
+	assert_false(switch_body.contains("await "),
+		"_switch_card must not await: the deck overlaps out and in")
+	assert_false(FileAccess.get_file_as_string(_SCRIPT_PATH).contains("tween_out.finished"),
+		"the sequential slide-out gate is gone")
+	assert_true(switch_body.contains("old_card.set_front(false)"),
 		"_switch_card must turn off the card it is leaving")
-	assert_true(src.contains("new_card.set_front(true)"),
-		"_switch_card must turn on the card that lands")
+	assert_true(switch_body.contains("deck.switch(old_card, new_card, direction)"),
+		"_switch_card must hand the swap to the RosterDeck")
+	var settled_body := _function_body("_on_deck_settled")
+	assert_true(settled_body.contains("front.set_front(true)"),
+		"a card that lands must be turned on (its entry replays)")
+	assert_true(settled_body.contains("front.set_idle(true)"),
+		"a card that only sprang back resumes its idle loops without re-arriving")
+	assert_true(settled_body.contains("_stagger_card_notes(front)"),
+		"the landed card's week re-drops on arrival")
+
+
+func test_the_tutorial_still_advances_when_the_slide_lands() -> void:
+	assert_true(_function_body("_on_deck_settled").contains(
+			"if tutorial_active and current_step == 2:"),
+		"the Navigasi Card step auto-advances once the deck lands a card")
+
+
+func test_the_swipe_is_delegated_to_the_roster_deck() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("@onready var deck: RosterDeck = %RosterDeck"),
+		"StudentList reaches the deck by its unique name")
+	assert_true(_function_body("_on_card_gui_input").contains(
+			"deck.handle_pointer(event, card_node)"),
+		"every pointer event on the front card goes to the deck")
+	assert_false(src.contains("card_animating"),
+		"card_animating is the deck's busy now")
+	assert_false(src.contains("min_swipe_distance"),
+		"the swipe threshold lives on RosterDeck")
+	for fn in ["_next_card", "_prev_card", "_on_avatar_pressed", "_switch_card"]:
+		assert_true(_function_body(fn).contains("deck.busy"),
+			"%s must respect the deck's busy guard" % fn)
+
+
+## A drag's release reaches the deck before the card's Button emits
+## `pressed`, so the tap gate is what keeps a drag from routing to
+## AturJadwal; the tutorial lock (only step 3 may pick) stays behind it.
+func test_a_tap_still_routes_and_a_drag_does_not() -> void:
+	var pressed_body := _function_body("_on_card_pressed")
+	assert_true(pressed_body.contains("if not deck.accepts_tap():"),
+		"a drag or a busy deck must not route the card")
+	assert_true(pressed_body.contains("if current_step == 3:"),
+		"the tutorial still locks the pick to its final step")
+	assert_true(_function_body("_on_student_selected").contains(
+			"Transition.change_scene(\"res://Scenes/AturJadwal/AturJadwal.tscn\")"),
+		"picking a card still routes to AturJadwal")
+
+
+func test_the_deck_signals_are_wired_in_the_scene() -> void:
+	var scene := FileAccess.get_file_as_string(_SCENE_PATH)
+	for pair in [["picked_up", "_on_deck_picked_up"], ["thrown", "_on_deck_thrown"],
+			["switched", "_on_deck_switched"], ["settled", "_on_deck_settled"]]:
+		assert_true(scene.contains(
+				"[connection signal=\"%s\" from=\"RosterDeck\" to=\".\" method=\"%s\"]" % pair),
+			"RosterDeck.%s must be wired to %s" % pair)
+		assert_true(FileAccess.get_file_as_string(_SCRIPT_PATH).contains("func %s(" % pair[1]),
+			"StudentList must define %s" % pair[1])
+
+
+func test_the_roster_deck_is_an_authored_node() -> void:
+	var deck := _list.get_node_or_null("RosterDeck")
+	assert_true(deck is RosterDeck, "StudentList must carry a RosterDeck node")
+	assert_true(deck != null and deck.unique_name_in_owner, "reached as %RosterDeck")
+
+
+## The next file peeking out behind the front one: an authored,
+## surface_sunken paper panel at the peek pose, drawn behind every card,
+## and inert to touch so the card above it keeps every tap.
+func test_the_ghost_card_is_an_authored_inert_peek() -> void:
+	var ghost := _list.get_node_or_null("CardContainer/GhostCard") as Panel
+	assert_true(ghost != null, "CardContainer must carry a GhostCard Panel")
+	if ghost == null:
+		return
+	assert_eq(ghost.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the ghost ignores the mouse")
+	assert_eq(ghost.get_index(), 0, "the ghost draws behind every card")
+	assert_eq(ghost.theme_type_variation, &"SunkenPanel", "surface_sunken paper, from the theme")
+	assert_true(ghost.modulate.a > 0.0 and ghost.modulate.a < 1.0, "half-seen, behind the stack")
+	assert_true(absf(ghost.rotation_degrees - 4.0) < 0.01, "tilted 4 degrees")
+	assert_eq(ghost.scale, Vector2(0.9, 0.9), "set back at 0.9")
+	assert_eq(ghost.offset_left, 34.0, "shifted 34px, peeking out on the right")
+	var deck := _list.get_node_or_null("RosterDeck") as RosterDeck
+	assert_true(deck != null and deck.ghost == ghost,
+		"the deck resolves %GhostCard as the card its drag trails")

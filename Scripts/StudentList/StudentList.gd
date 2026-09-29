@@ -35,6 +35,12 @@ const REQUIRED_DAYS := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 @onready var left_arrow = %LeftArrow
 @onready var right_arrow = %RightArrow
 @onready var page_indicator = %PageIndicator
+## The carousel's motion (drag, throw, spring-back, the overlapped switch)
+## and its single re-entry guard, `busy`. Its signals are wired in the .tscn.
+@onready var deck: RosterDeck = %RosterDeck
+
+## A page dot's tint fade to its new state as the deck switches, seconds.
+const DOT_TINT_SECONDS := 0.2
 
 static var tutorial_shown := false  # <-- penanda global
 
@@ -158,12 +164,7 @@ var default_students = [
 var active_students: Array = []
 var card_nodes: Array[RosterCard] = []
 var current_card_index: int = 0
-
-# Pointer & Swipe Gesture variables
-var is_pointer_down: bool = false
-var pointer_start_pos: Vector2 = Vector2.ZERO
-var min_swipe_distance: float = 75.0
-var card_animating: bool = false
+var _dots_tween: Tween
 
 # Tutorial UI variables
 const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
@@ -367,8 +368,8 @@ func _is_student_scheduled(student: Dictionary) -> bool:
 	return true
 
 ## Pushes every student's scheduled state and the current index onto the
-## strip. Called after _setup_students() and from _switch_card(), so the
-## strip and the carousel never disagree.
+## strip. Called after _setup_students() and as the deck starts a switch,
+## so the strip and the carousel never disagree.
 func _sync_roster_strip() -> void:
 	var strip := get_node_or_null("%RosterStrip")
 	if strip == null:
@@ -395,9 +396,10 @@ func _sync_roster_strip() -> void:
 ## Jumps straight to a student instead of paging. Reuses the carousel's
 ## own switch so the slide direction and the animation guard still apply.
 func _on_avatar_pressed(index: int) -> void:
-	if card_animating or index == current_card_index:
+	if deck.busy or index == current_card_index:
 		return
-	var direction := 1 if index > current_card_index else -1
+	# -1 throws left, as Next does: a later student comes off the stack.
+	var direction := -1 if index > current_card_index else 1
 	_switch_card(index, direction)
 
 func _build_page_indicators():
@@ -417,11 +419,10 @@ func _init_carousel_state():
 		var card = card_nodes[i]
 		if i == current_card_index:
 			card.show()
-			card.position = Vector2.ZERO
-			card.rotation_degrees = 0
-			card.modulate.a = 1.0
+			RosterDeck.place_at_rest(card)
 		else:
 			card.hide()
+	deck.set_card_count(card_nodes.size())
 	_update_page_indicators()
 	Juice.stagger_in(card_nodes)
 	_stagger_card_notes(card_nodes[current_card_index])
@@ -435,92 +436,83 @@ func _stagger_card_notes(card: Control) -> void:
 		return
 	Juice.stagger_in(sticky_container.get_children(), DesignTokens.load_default().stagger_step * 0.5)
 
+## Fades each page dot to its state (gold current, green scheduled, red
+## not) on one stored Tween, killed if the next switch starts mid-fade.
 func _update_page_indicators():
 	var tokens := DesignTokens.load_default()
-	if page_indicator:
-		var dots = page_indicator.get_children()
-		for i in range(min(dots.size(), active_students.size())):
-			if i == current_card_index:
-				dots[i].self_modulate = tokens.currency_gold
-			elif _is_student_scheduled(active_students[i]):
-				dots[i].self_modulate = tokens.state_success
-			else:
-				dots[i].self_modulate = tokens.state_danger
+	if _dots_tween and _dots_tween.is_valid():
+		_dots_tween.kill()
+	var dot_count: int = mini(page_indicator.get_child_count(), active_students.size())
+	if dot_count > 0:
+		_dots_tween = create_tween().set_parallel(true)
+	for i: int in range(dot_count):
+		var tone: Color = tokens.state_danger
+		if i == current_card_index:
+			tone = tokens.currency_gold
+		elif _is_student_scheduled(active_students[i]):
+			tone = tokens.state_success
+		_dots_tween.tween_property(page_indicator.get_child(i), "self_modulate", tone, DOT_TINT_SECONDS)
 
 	if left_arrow: left_arrow.visible = card_nodes.size() > 1
 	if right_arrow: right_arrow.visible = card_nodes.size() > 1
 
 func _next_card():
-	if card_animating or card_nodes.size() <= 1:
+	if deck.busy or card_nodes.size() <= 1:
 		return
 	var target_index = (current_card_index + 1) % card_nodes.size()
 	_switch_card(target_index, -1)
 
 func _prev_card():
-	if card_animating or card_nodes.size() <= 1:
+	if deck.busy or card_nodes.size() <= 1:
 		return
 	var target_index = (current_card_index - 1 + card_nodes.size()) % card_nodes.size()
 	_switch_card(target_index, 1)
 
-func _switch_card(new_index: int, direction: int):
-	if card_animating or new_index == current_card_index:
+## Hands the swap to the deck: one overlapped timeline, never awaited here.
+## The rest of the switch answers the deck's signals below.
+func _switch_card(new_index: int, direction: int) -> void:
+	if deck.busy or new_index == current_card_index:
 		return
-	card_animating = true
-
-	var old_card = card_nodes[current_card_index]
-	var new_card = card_nodes[new_index]
+	var old_card: RosterCard = card_nodes[current_card_index]
+	var new_card: RosterCard = card_nodes[new_index]
 	current_card_index = new_index
 	old_card.set_front(false)
+	deck.switch(old_card, new_card, direction)
 
-	var screen_width = get_viewport_rect().size.x
-	var throw_distance = screen_width * direction
-	var orig_pos = Vector2.ZERO
-
-	# Step 1: Sequential Tween OUT (Throw old card off screen cleanly)
-	var tween_out = create_tween().set_parallel(true)
-	tween_out.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tween_out.tween_property(old_card, "position:x", orig_pos.x + throw_distance, 0.20)
-	tween_out.tween_property(old_card, "rotation_degrees", 12.0 * direction, 0.20)
-	tween_out.tween_property(old_card, "modulate:a", 0.0, 0.20)
-
-	await tween_out.finished
-
-	# Reset old card transform & hide
-	old_card.hide()
-	old_card.position = orig_pos
-	old_card.rotation_degrees = 0
-	old_card.modulate.a = 1.0
-
-	# Prepare new card off-screen
-	new_card.show()
-	new_card.position = orig_pos - Vector2(throw_distance, 0)
-	new_card.rotation_degrees = -12.0 * direction
-	new_card.modulate.a = 0.0
-
+## The deck started a switch: the strip and the dots follow now, during
+## the slide, not after it lands.
+func _on_deck_switched(_card: Control) -> void:
 	_update_page_indicators()
-
-	# Step 2: Sequential Tween IN (Slide new card in smoothly)
-	var tween_in = create_tween().set_parallel(true)
-	tween_in.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween_in.tween_property(new_card, "position", orig_pos, 0.20)
-	tween_in.tween_property(new_card, "rotation_degrees", 0.0, 0.20)
-	tween_in.tween_property(new_card, "modulate:a", 1.0, 0.20)
-
-	await tween_in.finished
-
-	_stagger_card_notes(new_card)
-	new_card.set_front(true)
-	card_animating = false
-
 	_sync_roster_strip()
 
+## A drag picked the front card up: its idle loops pause under the finger.
+func _on_deck_picked_up(card: RosterCard) -> void:
+	card.set_idle(false)
+
+## A release threw the front card; the carousel's own paging answers it.
+func _on_deck_thrown(kind: int) -> void:
+	if kind == RosterDeck.Release.NEXT:
+		_next_card()
+	else:
+		_prev_card()
+
+## The deck is at rest. A card that LANDED re-drops its week and replays
+## its entry; one that only sprang back from a short drag resumes its idle
+## loops without re-arriving (see RosterCard.set_idle).
+func _on_deck_settled(front: RosterCard, landed: bool) -> void:
+	if not landed:
+		front.set_idle(true)
+		return
+	_stagger_card_notes(front)
+	front.set_front(true)
 	# The Navigasi Card step (index 2 since the Status Jadwal step was
 	# inserted at 1) auto-advances once the card slide it asked for lands.
 	if tutorial_active and current_step == 2:
 		_next_step()
 
 func _on_card_pressed(student_data: Dictionary, card_node: Control):
-	if card_animating:
+	# The deck read this same release first: a drag is not a tap.
+	if not deck.accepts_tap():
 		return
 	if tutorial_active:
 		if current_step == 3:  # Pilih Murid, the final step, locks onto the card
@@ -530,47 +522,15 @@ func _on_card_pressed(student_data: Dictionary, card_node: Control):
 
 	_on_student_selected(student_data, card_node)
 
-func _on_card_gui_input(event: InputEvent, student_data: Dictionary, card_node: Control):
-	if card_animating:
-		return
-
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				is_pointer_down = true
-				pointer_start_pos = event.global_position
-			else:
-				if is_pointer_down:
-					is_pointer_down = false
-					var delta = event.global_position - pointer_start_pos
-					var total_distance = delta.length()
-
-					if total_distance >= min_swipe_distance and abs(delta.x) > abs(delta.y) * 1.2:
-						if delta.x < 0:
-							_next_card()
-						else:
-							_prev_card()
-
-	elif event is InputEventScreenTouch:
-		if event.pressed:
-			is_pointer_down = true
-			pointer_start_pos = event.position
-		else:
-			if is_pointer_down:
-				is_pointer_down = false
-				var delta = event.position - pointer_start_pos
-				var total_distance = delta.length()
-
-				if total_distance >= min_swipe_distance and abs(delta.x) > abs(delta.y) * 1.2:
-					if delta.x < 0:
-						_next_card()
-					else:
-						_prev_card()
+## Every pointer event on the front card goes to the deck, which follows
+## the finger and answers a throw through its `thrown` signal.
+func _on_card_gui_input(event: InputEvent, _student_data: Dictionary, card_node: Control) -> void:
+	deck.handle_pointer(event, card_node)
 
 func _on_student_selected(student: Dictionary, card_node: Control = null):
-	if card_animating:
+	if deck.busy:
 		return
-	card_animating = true
+	deck.busy = true  # the screen is leaving: hold the deck for good
 
 	if card_node and is_instance_valid(card_node):
 		card_node.pivot_offset = card_node.size / 2.0

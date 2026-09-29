@@ -27,6 +27,10 @@ const ALLOWED := {
 	# The shared DaySummary card's need words (also DaySummaryPopup,
 	# EventStudentCard, ResultCheckup, WeekHistoryRow).
 	"DaySummaryNeedsLabel": 30,
+	# The weekly report's change chip on that same shared card; it is sized by
+	# day_needs_label_size and only shows on ResultCheckup's cards, though the
+	# Apply rows instance the same stat row.
+	"DeltaChipLabel": 30,
 	# The empty-grid hint, shared with ResultCheckup.
 	"EmptyStateLabel": 32,
 }

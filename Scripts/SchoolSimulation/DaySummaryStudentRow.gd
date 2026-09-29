@@ -26,6 +26,14 @@ const TARGET_FOR := {
 ## it is a property of the card's three-row rhythm, not of one row.
 const GAIN_STEP := 0.08
 
+## Which needs-bar variation each look wears. The weekly report uses the
+## game-wide energy yellow and mood pink (2026-09-29 weekly colours spec);
+## every other screen keeps the popup's own purple and orange.
+const NEEDS_VARIATION := {
+	true: {"energy": &"WeekEnergyBar", "mood": &"WeekMoodBar"},
+	false: {"energy": &"DaySummaryEnergyBar", "mood": &"DaySummaryMoodBar"},
+}
+
 @onready var avatar: DaySummaryAvatar = $Avatar
 @onready var name_label: Label = $NameLabel
 ## The two needs bars now carry their own icon and tier word inside
@@ -93,7 +101,23 @@ static func format_needs_delta(delta: float) -> String:
 	return "%s%d" % [sign_str, d]
 
 
+## Dress the card for the weekly report (`week` true) or for every other
+## screen: the needs bars' colours and the stat rows' chip readout. Every
+## entry point calls it first, so a reused card never carries one screen's
+## look into another. The needs arrows go dark on the weekly card so they
+## read on the yellow energy bar, and stay the art's gold everywhere else.
+func _apply_look(week: bool) -> void:
+	energy_bar.theme_type_variation = NEEDS_VARIATION[week]["energy"]
+	mood_bar.theme_type_variation = NEEDS_VARIATION[week]["mood"]
+	for row in stat_rows:
+		row.set_chip_mode(week)
+	var arrow_tint := Juice.tokens().text_primary if week else Color.WHITE
+	energy_delta_chevron.self_modulate = arrow_tint
+	mood_delta_chevron.self_modulate = arrow_tint
+
+
 func setup_row(student_name: String, changes: Array, student: StudentData, day_name: String = "") -> void:
+	_apply_look(false)
 	name_label.text = student_name
 	avatar.set_student(student, day_name)
 
@@ -183,6 +207,7 @@ func gained_ground() -> bool:
 ## rewinds to (current - delta) / target, which IS Monday's ratio once
 ## the delta is a week long.
 func setup_week_row(student: StudentData, day_name: String = "") -> void:
+	_apply_look(true)
 	name_label.text = student.student_name if student != null else ""
 	avatar.set_student(student, day_name)
 
@@ -262,7 +287,7 @@ func play_gain(delay: float = 0.0) -> void:
 	# deduplicated.
 	var sparkle_spent := false
 	for i in stat_rows.size():
-		var wants_sparkle := not sparkle_spent and stat_rows[i].chevron.visible
+		var wants_sparkle := not sparkle_spent and stat_rows[i].shows_gain_marker()
 		if wants_sparkle:
 			sparkle_spent = true
 		stat_rows[i].play_gain(delay + float(i) * GAIN_STEP, wants_sparkle)
@@ -334,6 +359,7 @@ func _play_needs_travel(bar: ProgressBar, from_value: float, delay: float) -> vo
 ## event-cards spec, 1.1). Both needs bars at their current values with no
 ## chevron; every stat row at current/target via set_standing().
 func setup_current_row(student: StudentData, day_name: String = "") -> void:
+	_apply_look(false)
 	name_label.text = student.student_name if student != null else ""
 	avatar.set_student(student, day_name)
 	_standing.clear()

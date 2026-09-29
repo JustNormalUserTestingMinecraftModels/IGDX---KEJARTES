@@ -151,6 +151,137 @@ func test_the_week_card_pairs_each_stat_with_its_own_target() -> void:
 	assert_eq(inst.stat_rows[2].value.text, "+3/75", "olahraga reads target_olahraga")
 
 
+# ------------------------------------------- the 2026-09-29 weekly colours
+
+## The chip's text, its target and its colour, without a scene.
+func test_the_chip_reads_the_change_and_its_colour() -> void:
+	assert_eq(DaySummaryStatRow.chip_text(12.0), "+12", "a gain carries its plus")
+	assert_eq(DaySummaryStatRow.chip_text(-3.0), "-3", "a loss reads '-3', never '+-3'")
+	assert_eq(DaySummaryStatRow.chip_text(2.6), "+3", "rounded, not truncated")
+	assert_eq(DaySummaryStatRow.chip_text(0.0), "+0", "a count starts at +0")
+	assert_eq(DaySummaryStatRow.target_text(52.0), "/52", "the run target after a slash")
+	assert_eq(DaySummaryStatRow.chip_variation(5.0), &"DeltaChipGain", "a gain is green")
+	assert_eq(DaySummaryStatRow.chip_variation(-5.0), &"DeltaChipLoss", "a loss is red")
+	assert_true(DaySummaryStatRow.shows_chip(true, -3.0), "a loss in chip mode shows a chip")
+	assert_false(DaySummaryStatRow.shows_chip(true, 0.4), "a change that rounds to zero shows none")
+	assert_false(DaySummaryStatRow.shows_chip(false, 12.0), "no chip outside chip mode")
+
+
+## Option A: a gain is a green chip, a loss a red one, each followed by the
+## run target; a flat stat keeps the plain "+0/65". The plain label keeps
+## the full reading as data either way.
+func test_the_week_card_marks_gains_and_losses_with_chips() -> void:
+	var inst := _card()
+	var s := _student_with_week(
+		{"akademis": 40.0, "seni_budaya": 30.0, "olahraga": 55.0},
+		{"akademis": 58.0, "seni_budaya": 30.0, "olahraga": 49.0})
+
+	inst.setup_week_row(s)
+
+	var gain: DaySummaryStatRow = inst.stat_rows[0]
+	var flat: DaySummaryStatRow = inst.stat_rows[1]
+	var loss: DaySummaryStatRow = inst.stat_rows[2]
+	assert_true(gain.chip_row.visible, "a gain shows the chip")
+	assert_false(gain.value.visible, "in place of the plain number")
+	assert_eq(gain.delta_chip.theme_type_variation, &"DeltaChipGain", "green")
+	assert_eq(gain.chip_label.text, "+18", "carrying the week's change")
+	assert_eq(gain.target_label.text, "/65", "then the run target")
+	assert_false(gain.chevron.visible, "the chip replaces the gold chevron")
+	assert_eq(gain.value.text, "+18/65", "the plain label still holds the reading")
+	assert_true(loss.chip_row.visible, "a loss shows the chip too")
+	assert_eq(loss.delta_chip.theme_type_variation, &"DeltaChipLoss", "red")
+	assert_eq(loss.chip_label.text, "-6", "with a minus")
+	assert_false(flat.chip_row.visible, "a flat stat shows no chip")
+	assert_true(flat.value.visible, "and keeps the plain number")
+	assert_eq(flat.value.text, "+0/65", "reading +0")
+
+
+## The weekly reveal opens the chip at +0, transparent, and the skip lands
+## it on the week's change, fully shown and at rest.
+func test_the_weekly_reveal_rewinds_and_lands_the_chip() -> void:
+	var inst := _card()
+	inst.setup_week_row(_student_with_week({"akademis": 40.0}, {"akademis": 58.0}))
+	var row: DaySummaryStatRow = inst.stat_rows[0]
+
+	row.rewind()
+	assert_eq(row.chip_label.text, "+0", "the reveal opens the chip at +0")
+	assert_eq(row.delta_chip.modulate.a, 0.0, "armed but transparent until its turn")
+
+	row.land()
+	assert_eq(row.chip_label.text, "+18", "the skip lands the week's change")
+	assert_eq(row.delta_chip.modulate.a, 1.0, "fully shown")
+	assert_eq(row.delta_chip.scale, Vector2.ONE, "at rest")
+
+
+## The weekly report plays its cards through play_gain, which keys the
+## reward (pop, burst, gain cue, card sparkle) off the row's gain marker. In
+## chip mode that marker is the gain chip, so a weekly gain still rewards
+## and a loss still does not; the nightly card keeps the chevron.
+func test_a_weekly_gain_keeps_its_reward_marker() -> void:
+	var inst := _card()
+	var s := _student_with_week(
+		{"akademis": 40.0, "olahraga": 55.0},
+		{"akademis": 58.0, "olahraga": 49.0})
+	inst.setup_week_row(s)
+	assert_true(inst.stat_rows[0].shows_gain_marker(), "a weekly gain rewards from its chip")
+	assert_false(inst.stat_rows[2].shows_gain_marker(), "a weekly loss does not")
+	inst.setup_row("Marcel", [{"stat_key": "akademis", "delta": 6.0}], s)
+	assert_true(inst.stat_rows[0].shows_gain_marker(), "the nightly gain rewards from its chevron")
+	assert_true(inst.stat_rows[0].chevron.visible, "which is the chevron itself")
+
+
+## A row re-armed after a reveal starts from a visible chip: set_stat undoes
+## what the reveal's pop-in left on it, the way it already does for the chevron.
+func test_a_rearmed_row_resets_its_chip() -> void:
+	var inst := _card()
+	var s := _student_with_week({"akademis": 40.0}, {"akademis": 58.0})
+	inst.setup_week_row(s)
+	var row: DaySummaryStatRow = inst.stat_rows[0]
+	row.rewind()
+	row.delta_chip.scale = Vector2(0.5, 0.5)
+	inst.setup_week_row(s)
+	assert_eq(row.delta_chip.modulate.a, 1.0, "the chip is visible again")
+	assert_eq(row.delta_chip.scale, Vector2.ONE, "and at rest")
+
+
+## The weekly card wears the game-wide energy yellow and mood pink.
+func test_the_week_card_wears_the_week_needs_bars() -> void:
+	var inst := _card()
+	inst.setup_week_row(_student_with_week({"energy": 80.0}, {"energy": 60.0}))
+	assert_eq(inst.energy_bar.theme_type_variation, &"WeekEnergyBar",
+		"energy is the game-wide yellow")
+	assert_eq(inst.mood_bar.theme_type_variation, &"WeekMoodBar",
+		"mood is the game-wide pink")
+	var ink := DesignTokens.load_default().text_primary
+	assert_eq(inst.energy_delta_chevron.self_modulate, ink, "the energy arrow is dark on the yellow bar")
+	assert_eq(inst.mood_delta_chevron.self_modulate, ink, "and the mood arrow matches")
+
+
+## Scope is the weekly report only: a card re-armed for the nightly popup or
+## a picker drops the week look entirely.
+func test_a_reused_card_drops_the_week_look() -> void:
+	var inst := _card()
+	var s := _student_with_week({"akademis": 40.0}, {"akademis": 58.0})
+	inst.setup_week_row(s)
+
+	inst.setup_row("Marcel", [{"stat_key": "akademis", "delta": 6.0}], s)
+	assert_eq(inst.energy_bar.theme_type_variation, &"DaySummaryEnergyBar",
+		"the nightly energy colour is back")
+	assert_eq(inst.mood_bar.theme_type_variation, &"DaySummaryMoodBar",
+		"the nightly mood colour is back")
+	assert_false(inst.stat_rows[0].chip_row.visible, "no chip in the nightly popup")
+	assert_true(inst.stat_rows[0].value.visible, "the plain number is back")
+	assert_true(inst.stat_rows[0].chevron.visible, "with the gold chevron on a gain")
+	assert_eq(inst.energy_delta_chevron.self_modulate, Color.WHITE, "the nightly arrows keep their gold")
+
+	inst.setup_week_row(s)
+	inst.setup_current_row(s)
+	assert_eq(inst.energy_bar.theme_type_variation, &"DaySummaryEnergyBar",
+		"a picker card keeps the nightly colours")
+	assert_false(inst.stat_rows[0].chip_row.visible, "and shows no chip")
+	assert_true(inst.stat_rows[0].value.visible, "only its standing number")
+
+
 ## The bars still read tonight's value -- what is new is the number
 ## beside them, which is the week's movement and is shown here (and only
 ## here). Energy usually falls over a week and mood usually does not; the
@@ -1085,13 +1216,17 @@ func test_the_script_no_longer_carries_the_tabs() -> void:
 			"%s belongs to the retired tabs" % dead)
 
 
-## 2026-09-19 mockup pass: yellow banner, cream tiles, outlined numbers.
-func test_recap_theme_matches_the_mockup() -> void:
+## 2026-09-29 weekly colours (header option A): the summary panel is sunken
+## cream with a cream-lip rim, no longer butter yellow; the tiles stay card
+## cream and their numbers keep the white rim.
+func test_recap_theme_is_brown_and_cream() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
 	var banner := theme.get_stylebox("panel", "RecapBannerPanel") as StyleBoxFlat
-	assert_eq(banner.bg_color, tokens.recap_banner_fill, "the banner is the mockup's yellow")
-	assert_eq(banner.border_width_left, 0, "and has no brown rim")
+	assert_eq(banner.bg_color, tokens.surface_sunken, "the panel is sunken cream, not butter yellow")
+	assert_eq(banner.border_color, tokens.button_cream_lip, "with the cream lip as its rim")
+	assert_eq(banner.border_width_left, 2, "a 2 px rim")
+	assert_eq(banner.corner_radius_top_left, tokens.radius_lg, "it keeps its large radius")
 	var tile := theme.get_stylebox("panel", "RecapPillPanel") as StyleBoxFlat
 	assert_eq(tile.bg_color, tokens.recap_tile_fill, "each tile is card cream")
 	assert_eq(tokens.recap_tile_fill, tokens.surface_card, "the same cream as the student cards")
@@ -1099,6 +1234,40 @@ func test_recap_theme_matches_the_mockup() -> void:
 		"a rounded square, not a capsule")
 	assert_eq(theme.get_constant("outline_size", "RecapPillValueLabel"),
 		tokens.text_outline_size, "the number carries the white rim")
+	assert_false("recap_banner_fill" in tokens, "the butter-yellow token is gone")
+
+
+## The weekly report's own variations (2026-09-29 weekly colours spec):
+## the brown title plate, the green and red change chips, and the needs
+## bars in the game-wide energy yellow and mood pink.
+func test_the_week_report_variations_are_built() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	var plate := theme.get_stylebox("panel", "ResultTitlePanel") as StyleBoxFlat
+	assert_eq(plate.bg_color, tokens.brand_primary, "the title plate is brand brown")
+	assert_eq(plate.shadow_color, tokens.brand_primary_dark, "on the dark brown lip")
+	assert_eq(theme.get_color("font_color", "ResultTitleLabel"), tokens.text_on_brand,
+		"cream letters")
+	assert_eq(theme.get_font_size("font_size", "ResultTitleLabel"), tokens.font_h1,
+		"at H1 size")
+	var gain := theme.get_stylebox("panel", "DeltaChipGain") as StyleBoxFlat
+	var loss := theme.get_stylebox("panel", "DeltaChipLoss") as StyleBoxFlat
+	assert_eq(gain.bg_color, tokens.state_success, "a gain chip is success green")
+	assert_eq(loss.bg_color, tokens.state_danger, "a loss chip is danger red")
+	assert_eq(gain.corner_radius_top_left, tokens.radius_pill, "chips are pills")
+	assert_eq(loss.corner_radius_top_left, tokens.radius_pill, "both of them")
+	assert_eq(theme.get_color("font_color", "DeltaChipLabel"), Color.WHITE,
+		"white on both chips")
+	assert_eq(theme.get_font_size("font_size", "DeltaChipLabel"),
+		tokens.day_needs_label_size, "one step under the stat number")
+	var energy := theme.get_stylebox("fill", "WeekEnergyBar") as StyleBoxTexture
+	var mood := theme.get_stylebox("fill", "WeekMoodBar") as StyleBoxTexture
+	assert_eq(energy.modulate_color, tokens.cat_energy_on_dark, "week energy is the game-wide yellow")
+	assert_eq(mood.modulate_color, tokens.cat_mood_on_dark, "week mood is the game-wide pink")
+	var day_track := theme.get_stylebox("background", "DaySummaryEnergyBar") as StyleBoxFlat
+	var week_track := theme.get_stylebox("background", "WeekEnergyBar") as StyleBoxFlat
+	assert_eq(week_track.bg_color, day_track.bg_color, "the same dark track as the nightly bar")
+	assert_eq(week_track.border_color, day_track.border_color, "and the same rim")
 
 
 ## Logs is the neutral brown (it is not a danger action, so no tomato);
@@ -1116,18 +1285,26 @@ func test_logs_wears_the_brown_result_button() -> void:
 		theme.get_font_size("font_size", "ResultButton"),
 		"same text size as its neighbour, so the row reads as a pair")
 
-const _RIBBON := "res://Assets/Images/DaySummary/title_weekly_results.png"
-
-
-func test_the_screen_opens_with_the_weekly_results_ribbon() -> void:
+## 2026-09-29 weekly colours: the red English ribbon became a brown plate
+## reading HASIL MINGGUAN, still the column's first child.
+func test_the_screen_opens_with_the_hasil_mingguan_plate() -> void:
 	var screen: Control = load(_CHECKUP_SCENE).instantiate()
-	var ribbon := screen.get_node_or_null("Margin/VBox/TitleRibbon") as TextureRect
-	assert_not_null(ribbon, "the mockup's ribbon is authored")
-	if ribbon != null:
-		assert_eq(ribbon.texture.resource_path, _RIBBON, "wearing the WEEKLY RESULTS art")
-		assert_eq(ribbon.get_index(), 0, "it tops the column, above the banner")
-	assert_true(screen.get_node_or_null("Margin/VBox/HeaderPanel") == null,
-		"the old title and subtitle are replaced by the ribbon")
+	var plate := screen.get_node_or_null("Margin/VBox/TitlePlate") as PanelContainer
+	assert_not_null(plate, "the title plate is authored")
+	if plate != null:
+		assert_eq(plate.get_index(), 0, "it tops the column, above the banner")
+		assert_eq(plate.theme_type_variation, &"ResultTitlePanel", "the brown plate")
+		assert_eq(plate.size_flags_horizontal, Control.SIZE_SHRINK_CENTER,
+			"centred, shrunk to its words")
+		var title := plate.get_node_or_null("Title") as Label
+		assert_not_null(title, "with its label")
+		if title != null:
+			assert_eq(title.text, "HASIL MINGGUAN", "in Indonesian")
+			assert_eq(title.theme_type_variation, &"ResultTitleLabel", "cream display letters")
+	assert_true(screen.get_node_or_null("Margin/VBox/TitleRibbon") == null,
+		"the red ribbon art is gone")
+	assert_false(FileAccess.file_exists("res://Assets/Images/DaySummary/title_weekly_results.png"),
+		"and so is its PNG")
 	screen.free()
 
 

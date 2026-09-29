@@ -220,3 +220,32 @@ func test_every_outfit_is_a_splash_canvas_imported_like_the_default() -> void:
 			assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
 			assert_eq(cfg.get_value("params", "compress/mode"), 2, path + " is VRAM-compressed like splash_thea")
 			assert_eq(cfg.get_value("params", "mipmaps/generate"), true, path + " carries mipmaps like splash_thea")
+
+
+## Every VRAM-compressed texture imports at high quality. Low quality (S3TC on
+## desktop, ETC2 on mobile) leaves 4x4 block artifacts on the student art's
+## smooth shading and line work; high quality (BPTC / ASTC) costs no extra
+## memory. Walks every image import, so new VRAM art is held to it too.
+func test_vram_compressed_art_is_high_quality() -> void:
+	var vram := 0
+	var low: Array[String] = []
+	var stack: Array[String] = ["res://Assets/Images"]
+	while not stack.is_empty():
+		var dir_path: String = stack.pop_back()
+		var d := DirAccess.open(dir_path)
+		if d == null:
+			continue
+		for f in d.get_files():
+			if not f.ends_with(".import"):
+				continue
+			var text := FileAccess.get_file_as_string(dir_path.path_join(f))
+			if not text.contains("compress/mode=2"):
+				continue
+			vram += 1
+			if not text.contains("compress/high_quality=true"):
+				low.append(f.get_basename())
+		for sub in d.get_directories():
+			stack.append(dir_path.path_join(sub))
+	# 6 portraits, 6 default splashes and 12 day outfits.
+	assert_true(vram >= 24, "sanity: expected the student art to be VRAM-compressed, saw %d" % vram)
+	assert_true(low.is_empty(), "import these at compress/high_quality=true: %s" % ", ".join(low))

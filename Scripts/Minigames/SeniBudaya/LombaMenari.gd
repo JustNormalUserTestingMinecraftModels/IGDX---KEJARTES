@@ -244,7 +244,7 @@ var active_pattern_index: int = 0
 var pattern_step_index: int = 0
 
 @onready var background_rect: TextureRect = $Background
-@onready var score_hud: MinigameScoreHUD = $ScoreHUD
+@onready var score_hud: MinigameHeader = %MinigameHeader
 @onready var hit_zone: Control = $HitZone
 @onready var notes_parent: Control = $NotesParent
 @onready var character_display: DancerRig = $CharacterDisplay
@@ -316,6 +316,7 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	best_combo = 0
 	if score_hud:
 		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_seni.svg"), target_score)
+	_update_lives()
 
 	# Setup Dancer Character Display
 	if character_display:
@@ -409,6 +410,7 @@ func _process(delta: float) -> void:
 		if vec_from_target.dot(move_dir) > bagus_window_px:
 			missed_notes += 1
 			current_combo = 0
+			_update_lives()
 			if score_hud:
 				score_hud.set_combo(current_combo)
 			notes_to_remove.append(note)
@@ -421,6 +423,8 @@ func _process(delta: float) -> void:
 		note.queue_free()
 		misses_left -= 1
 		_show_hit_feedback(miss_text(misses_left), GRADE_COLOR[Grade.UPS])
+		if misses_left > 0 and misses_left <= MISS_WARN_REMAINING:
+			show_hint(miss_text(misses_left))
 		_play_dancer_fail_motion()
 
 	if missed_notes >= miss_limit:
@@ -589,6 +593,8 @@ func _evaluate_swipe(swipe_type: int) -> void:
 	if grade != Grade.UPS:
 		current_combo += 1
 		best_combo = maxi(best_combo, current_combo)
+		if score_hud and current_combo == 1:
+			hint_settle()
 		_play_dancer_motion(swipe_type)
 		active_notes.erase(best_note)
 		_animate_swiped_note(best_note, swipe_type)
@@ -626,6 +632,12 @@ static func grade_for_distance(distance: float, sempurna_px: float, bagus_px: fl
 ## Affects: nothing. Pure. Static so a test can call it with no instance.
 static func miss_limit_for(game_difficulty: int) -> int:
 	return MISS_LIMIT_BY_DIFFICULTY[clampi(game_difficulty, EASIEST_DIFFICULTY, HARDEST_DIFFICULTY)]
+
+
+## The strip's lives bar: misses left of the grade's limit.
+func _update_lives() -> void:
+	var left := maxi(0, miss_limit - missed_notes)
+	set_progress(left, miss_limit, "Nyawa %d/%d" % [left, miss_limit])
 
 
 ## The word shown for a note that slipped past, with `misses_left` still to

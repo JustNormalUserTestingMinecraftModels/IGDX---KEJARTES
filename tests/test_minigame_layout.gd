@@ -183,3 +183,20 @@ func test_badminton_has_the_strip_the_pill_and_a_covering_court() -> void:
 		TextureRect.STRETCH_KEEP_ASPECT_COVERED, "the court covers, never stretches")
 	assert_contains(FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd"),
 		"\"Poin %d/%d\"")
+
+
+const MENARI := "res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn"
+const MENARI_GD := "res://Scripts/Minigames/SeniBudaya/LombaMenari.gd"
+
+
+func test_menari_has_the_strip_and_the_pill() -> void:
+	var root := _scene(MENARI)
+	assert_true(_under_safe(root.get_node_or_null("%MinigameHeader")))
+	assert_true(_under_safe(root.get_node_or_null("%MinigameHintPill")))
+	assert_true(root.get_node_or_null("ScoreHUD") == null, "the off-centre HUD is gone")
+
+
+func test_menari_shows_lives_on_the_bar_and_warnings_in_the_pill() -> void:
+	var src := FileAccess.get_file_as_string(MENARI_GD)
+	assert_contains(src, "\"Nyawa %d/%d\"")
+	assert_contains(src, "show_hint(miss_text(")

@@ -191,7 +191,7 @@ func _play_entrance_animations(cards: Array = []) -> void:
 	fader.tween_property(self, "modulate:a", 1.0, t.dur_normal)
 	await fader.finished
 
-	# Stages 1-3 belong to the banner: slide, four pill count-ups, and
+	# Stages 1-3 belong to the banner: slide, three pill count-ups, and
 	# the gated coin shower.
 	banner.play_entrance()
 	await get_tree().create_timer(t.dur_normal).timeout

@@ -38,7 +38,7 @@ Spec: `docs/superpowers/specs/2026-09-29-result-checkup-clarity-design.md`.
 - Regenerate: `Assets/Theme/kejartes_theme.tres`
 
 **Interfaces:**
-- Produces: theme variations `RecapPillValueLabel` (white, navy rim) and `RecapPillCaptionLabel` (display font, 28 px, navy). Task 2's scene uses both names.
+- Produces: theme variations `RecapPillValueLabel` (white, navy rim) and `RecapPillCaptionLabel` (display font, 22 px, navy). Task 2's scene uses both names.
 
 - [ ] **Step 1: Write the failing test** — append to `tests/test_result_checkup.gd` after `test_theme_carries_the_recap_variations`:
 

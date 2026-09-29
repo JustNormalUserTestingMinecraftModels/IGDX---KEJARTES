@@ -86,7 +86,7 @@ var _standing_current: float = 0.0
 
 ## Reused burst node: created on first fire, reused while still alive,
 ## recreated after it self-frees. Cuts peak GPUParticles2D count in half
-## during the ResultCheckup reveal (one per row instead of two).
+## during a card's play_gain gesture (one per row instead of two).
 var _burst_node: RewardParticles = null
 
 
@@ -297,12 +297,6 @@ func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	var fx := _get_or_make_burst(_gain_marker_center())
 	fx.plays_sfx = plays_sparkle
 	fx.fire(delay)
-
-
-## The delta set_stat last cached: what a caller reads to decide whether
-## this row gained.
-func shown_delta() -> float:
-	return _delta
 
 
 ## Returns the row's reusable burst node, creating it if it has already

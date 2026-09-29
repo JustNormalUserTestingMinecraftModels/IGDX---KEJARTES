@@ -1145,7 +1145,7 @@ func test_the_script_no_longer_carries_the_tabs() -> void:
 
 ## 2026-09-29 weekly colours (header option A): the summary panel is sunken
 ## cream with a cream-lip rim, no longer butter yellow; the tiles stay card
-## cream and their numbers keep the white rim.
+## cream and their numbers keep the navy rim.
 func test_recap_theme_is_brown_and_cream() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
@@ -1160,7 +1160,7 @@ func test_recap_theme_is_brown_and_cream() -> void:
 	assert_eq(tile.corner_radius_top_left, tokens.radius_md,
 		"a rounded square, not a capsule")
 	assert_eq(theme.get_constant("outline_size", "RecapPillValueLabel"),
-		tokens.text_outline_size, "the number carries the white rim")
+		tokens.text_outline_size, "the number carries the navy rim")
 	assert_false("recap_banner_fill" in tokens, "the butter-yellow token is gone")
 
 

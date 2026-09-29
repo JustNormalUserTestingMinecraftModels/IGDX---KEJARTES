@@ -23,8 +23,8 @@ signal pill_tapped
 ## The pill's icon. Left null the pill still lays out; the icon slot
 ## simply renders empty.
 @onready var icon: TextureRect = $Column/Icon
-## The formatted number. Tinted via self_modulate by set_pill, never by a
-## font colour override.
+## The formatted number. Coloured by RecapPillValueLabel (white on a navy rim);
+## never tinted or overridden.
 @onready var value_label: Label = $Column/Value
 ## What the number counts ("UANG DIDAPAT"), under it in the heading face.
 @onready var caption_label: Label = $Column/Caption

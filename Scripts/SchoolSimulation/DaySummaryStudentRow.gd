@@ -72,7 +72,7 @@ var _targets: Dictionary = {}
 var _row_for_key: Dictionary = {}
 
 
-## "+8" / "-12" -- the week's movement on a needs bar. Same sign rule as
+## "+8" / "-12" -- a proposed change on a needs bar (the item/event preview). Same sign rule as
 ## DaySummaryStatRow.format_value: the "+" is explicit and the "-" comes
 ## free from %d, so a loss never reads "+-12". Zero reads "+0" rather
 ## than blank, because an empty slot on the card looks like a bug.

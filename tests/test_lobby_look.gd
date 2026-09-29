@@ -61,15 +61,16 @@ const BLOOM := {
 	EXAM_PROGRESS: GLOW_DEFAULT,
 	END_CUTSCENE: GLOW_DEFAULT,
 	RUN_RESULT: GLOW_DEFAULT,
+	"res://Scenes/Koperasi/Koperasi.tscn": GLOW_DEFAULT,
 }
 
 ## Screens whose art is drawn on layer 0 -> [the path of their ScreenGlow,
 ## its threshold]. The Lobby's Environment bloom cannot sit under their UI (it
 ## blooms whole layers, and their UI shares layer 0 with the art: measured, it
-## washed Koperasi's text out), so they keep the screen-read bloom, which reads
-## only the art drawn before it, at 0.8 intensity (owner's call, 2026-09-29).
+## washed Koperasi's text out before Koperasi's room moved to World), so they
+## keep the screen-read bloom, which reads only the art drawn before it, at 0.8
+## intensity (owner's call, 2026-09-29).
 const LAYER_0_BLOOM := {
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Bloom", 0.8],
 	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Bloom", 0.8],
 	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Bloom", 0.8],
 	"res://Scenes/Minigames/Akademis/Password.tscn": ["Bloom", 0.8],
@@ -165,7 +166,7 @@ func test_every_world_screen_carries_the_lobby_bloom() -> void:
 			float(BLOOM[scene_path]), scene_path + ": the Lobby's threshold")
 
 
-## Koperasi and the minigames keep one ScreenGlow, at its threshold and the
+## The minigames keep one ScreenGlow, at its threshold and the
 ## raised intensity, and no Environment bloom that would wash their UI; nothing
 ## tappable is drawn before it.
 func test_every_layer_0_screen_blooms_its_art_only() -> void:
@@ -230,26 +231,49 @@ func _drawn(scene_path: String) -> Array[String]:
 
 
 const KOPERASI := "res://Scenes/Koperasi/Koperasi.tscn"
-## Koperasi's backdrop band depth (its Parallax, 2026-09-22): the light rides it.
-const KOPERASI_BACK_DEPTH := 0.15
 
 
-## Koperasi stays on layer 0: its backdrop shares Stage with the tappable goods
-## and the parallax driving Stage's children. So the light sits in Stage,
-## straight after the backdrop and under the goods, and its art-only bloom
-## follows the light.
-func test_koperasi_lights_its_stage_under_the_goods() -> void:
+## Koperasi's picture -- wall, backdrop, light, shafts, Pak Herman and the
+## counter -- sits in a World CanvasLayer at -1 (2026-09-29) so the Lobby's
+## bloom reaches it and never the shop UI. Room mirrors Stage's bottom-pinned
+## 1080x1920 rect, so the picture and the goods on Stage still move as one
+## piece on a tall phone. The goods (with their price tags and pips), the
+## boards, the bubble, the back button and the tray stay on Stage, on layer 0.
+## The goods used to draw under Herman and the counter; neither plate has an
+## opaque pixel over any shelf slot (measured 2026-09-29), so drawing them
+## above instead changes nothing on screen.
+func test_koperasi_blooms_its_room_under_the_goods() -> void:
 	var c := Census.of(KOPERASI)
-	var kids := Census.children_of(c, "Stage")
-	assert_eq(kids.slice(0, 5), ["Background", "Light", "Shafts", "Bloom", "Barang1"] as Array[String],
-		"the backdrop, its light, its bloom, then the goods")
-	assert_eq(Census.entry(c, "Stage/Light").get("instance"), LIGHT_POOL, "Light is a LightPool")
-	assert_eq(Census.entry(c, "Stage/Shafts").get("instance"), SUN_SHAFTS, "Shafts are SunShafts")
-	var depths: Dictionary = Census.prop(Census.entry(c, "Stage/Parallax"), "depth_by_child", {})
-	for band in ["Light", "Shafts"]:
-		assert_eq(float(depths.get(band, 0.0)), KOPERASI_BACK_DEPTH,
-			band + " rides the backdrop's depth, so it stays on its window")
-	assert_true(Census.entry(c, "World").is_empty(), "no World layer")
+	var world := Census.entry(c, "World")
+	assert_eq(world.get("type"), "CanvasLayer", "World is a CanvasLayer")
+	assert_eq(Census.prop(world, "layer"), -1, "World draws at -1, below the UI")
+	assert_eq(Census.children_of(c, ".").slice(0, 3), ["World", "Glow", "Stage"] as Array[String],
+		"the room, its bloom, then the shop")
+	assert_eq(Census.children_of(c, "World"), ["WallFill", "Room"] as Array[String],
+		"the wall strip, then the room")
+	assert_eq(Census.children_of(c, "World/Room"),
+		["Background", "Light", "Shafts", "Herman", "Foreground", "Parallax"] as Array[String],
+		"the room's bands")
+	assert_eq(Census.entry(c, "World/Room/Light").get("instance"), LIGHT_POOL, "Light is a LightPool")
+	assert_eq(Census.entry(c, "World/Room/Shafts").get("instance"), SUN_SHAFTS, "Shafts are SunShafts")
+	assert_eq(Census.children_of(c, "World/Room/Light"), [] as Array[String],
+		"the LightPool's own Pool is not re-authored in Koperasi")
+	var room := Census.entry(c, "World/Room")
+	var stage := Census.entry(c, "Stage")
+	for key in ["anchor_top", "anchor_bottom", "offset_top", "offset_right"]:
+		assert_eq(Census.prop(room, key, 0.0), Census.prop(stage, key, 0.0),
+			"Room matches Stage's %s, so the picture stays under the goods" % key)
+	assert_eq(Census.prop(room, "mouse_filter"), Control.MOUSE_FILTER_IGNORE, "Room never eats a tap")
+	assert_eq(Census.prop(room, "unique_name_in_owner"), true, "%Room, for a future root fade")
+	# A CanvasLayer ignores its parent's modulate: a root fade must fade %Room too.
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/Koperasi.gd")
+	if src.contains("tween_property(self, \"modulate"):
+		assert_true(src.contains("tween_property(room, \"modulate"),
+			"Koperasi's root fade must also fade %Room")
+	for e in c:
+		if (e["path"] as String).begins_with("World/"):
+			assert_false(BUTTON_TYPES.has(e["type"]), e["path"] + " is tappable and must stay on layer 0")
+	assert_eq(Census.children_of(c, "Stage")[0], "Barang1", "the goods open the Stage")
 
 
 ## The exam notices' light is cool and dim, to sit under their TEGANG tint.

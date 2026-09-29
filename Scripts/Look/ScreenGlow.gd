@@ -7,7 +7,7 @@ extends ColorRect
 ## (bloom.gdshader, the same shader the Efek Visual layer uses).
 ##
 ## WHY NOT AmbientGlow. AmbientGlow is the Lobby's WorldEnvironment glow, which
-## reaches only CanvasLayers at -1 or below. The minigames and Koperasi draw
+## reaches only CanvasLayers at -1 or below. The minigames draw
 ## their backdrops on layer 0 (SchoolDay hosts a minigame inside its own
 ## tree), and on the shops and end-game screens that glow measured as no
 ## bloom at all (DEBT.md, "Ambient kit gaps"). This one reads the screen, so it

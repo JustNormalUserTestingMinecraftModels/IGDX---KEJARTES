@@ -144,8 +144,10 @@ this spec, and states that the lines are drafts for the owner's writer.
 - `STUDENT_LINES: Dictionary`: `event_key -> {student_name -> Array[String]}`
 - `NPC_LINES: Dictionary`: `event_key -> Array[String]` (includes `hujan`)
 - `WIN_STUDENT_LINES: Dictionary`: `student_name -> {category -> Array[String]}`
-- `WIN_TEACHER_LINES: Dictionary`: `splash_path -> Array[String]`, keyed by
-  `EventDialogueCatalog.SPLASH_GURU_PENJAS` / `SPLASH_GURU_SENI`
+- `WIN_TEACHER_LINES: Dictionary`: `category -> Array[String]`, keyed
+  `"Olahraga"` (Guru Penjas) and `"SeniBudaya"` (Guru Seni Budaya), the same
+  keys as `EventDialogueCatalog.WIN_TEACHER`. The file references no other
+  script, so there is no cyclic `class_name` const reference.
 
 Student keys are `StudentData.student_name` values: Marcel, Doni, Andi,
 Citra, Shinta, Thea.
@@ -168,8 +170,8 @@ Citra, Shinta, Thea.
   that key (a static `_last_line` Dictionary; a one-line pool repeats), then
   returns it through `fill_line`.
 - `static func win_pool_for(speaker_path: String, category: String, featured: StudentData) -> Array`
-  returns the teacher's `WIN_TEACHER_LINES` pool when `speaker_path` is a
-  teacher, else `WIN_STUDENT_LINES[featured.student_name][category]`, else
+  returns `WIN_TEACHER_LINES[category]` when `speaker_path` is that
+  category's teacher (`WIN_TEACHER[category]`), else `WIN_STUDENT_LINES[featured.student_name][category]`, else
   `[WIN_LINE_STUDENT]`.
 - `win_line_for(speaker_path, category, featured) -> String` draws from
   `win_pool_for` with the same no-repeat rule.
@@ -196,9 +198,10 @@ the editor, not by hand):
 - `Root/Bubble/Panel/Line`: `autowrap_mode = AUTOWRAP_WORD_SMART`. This is a
   node property, not a theme override.
 - `Root/Bubble`: raise its height so two lines plus the panel's margins fit.
-  Grow into whichever side has room, the splash above or the card below, as
-  judged at full size on a 1080×1920 and a 1080×2400 capture. The Tail stays
-  attached. Keep `test_tall_screen_layout` green.
+  It grows **upward**: its bottom stays at −878, only 50 px above the card
+  (−828), and the Tail is anchored to its top-left, so the Tail rides along.
+  Judge the overlap on the speaker at full size on a 1080×1920 and a
+  1080×2400 capture. Keep `test_tall_screen_layout` green.
 - No theme change and no rebake.
 
 ### Guru Seni Budaya art

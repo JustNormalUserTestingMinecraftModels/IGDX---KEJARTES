@@ -1,5 +1,9 @@
 extends BaseMinigame
 
+## Seconds between the losing point and the loss card, the beat
+## BaseMinigame.lose_game() gave before this game overrode it.
+const LOSS_CARD_DELAY := 1.2
+
 # ─── Visual - Shuttlecock ───────────────────────────────────────────────────
 @export_group("Visual - Shuttlecock")
 ## Drag a PNG here to replace the default shuttlecock/puck.
@@ -648,6 +652,8 @@ func lose_game() -> void:
 	if timer:
 		timer.stop()
 	set_process_input(false)
+	# The base version's beat before the card: the last rally lands first.
+	await get_tree().create_timer(LOSS_CARD_DELAY).timeout
 	_show_result_overlay(false, result_subtitle)
 
 ## Stops the puck dead, deferred because it may be mid physics callback.

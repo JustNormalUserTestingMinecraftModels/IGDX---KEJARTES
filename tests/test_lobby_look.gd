@@ -386,12 +386,12 @@ func test_school_day_uncovers_its_picture_only_when_the_last_host_closes() -> vo
 		assert_true(cover.contains(n), "DAY_PICTURE lists " + n)
 	assert_true(cover.contains("covers += 1") and cover.contains("covers -= 1"), "covers are counted")
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
-	assert_true(src.contains("tween_in.tween_property(current_minigame, \"modulate:a\", 1.0, 0.4)\n\t_day_cover.cover(tween_in)"),
+	assert_true(src.contains("tween_in.tween_property(current_minigame, \"modulate:a\", 1.0, 0.4)\n\t_day_cover.cover(true)"),
 		"the day's picture fades out as the minigame fades in")
-	assert_true(src.contains("tween_close.tween_property(current_minigame, \"modulate:a\", 0.0, 0.4)\n\t_day_cover.uncover(tween_close)"),
+	assert_true(src.contains("tween_close.tween_property(current_minigame, \"modulate:a\", 0.0, 0.4)\n\t_day_cover.uncover(true)"),
 		"and back in as it fades out")
-	assert_true(src.contains("add_child(dialogue)\n\t_day_cover.cover(null)"), "EventDialogue covers the day")
-	assert_true(src.contains("dialogue.queue_free()\n\t_day_cover.uncover(null)"), "and uncovers it on close")
+	assert_true(src.contains("add_child(dialogue)\n\t_day_cover.cover(false)"), "EventDialogue covers the day")
+	assert_true(src.contains("dialogue.queue_free()\n\t_day_cover.uncover(false)"), "and uncovers it on close")
 
 
 ## Behaviour, on a stand-in host: two overlapping covers need two uncovers,
@@ -405,16 +405,32 @@ func test_the_day_cover_is_counted_and_restores_each_alpha() -> void:
 		host.add_child(item)
 	(host.get_node("Motes") as CanvasItem).modulate.a = 0.45
 	var cover = (load("res://Scripts/SchoolSimulation/DayPictureCover.gd") as GDScript).new(host)
-	cover.cover(null)
-	cover.cover(null)
+	cover.cover(false)
+	cover.cover(false)
 	assert_eq((host.get_node("Background") as CanvasItem).modulate.a, 0.0, "covered")
-	cover.uncover(null)
+	cover.uncover(false)
 	assert_eq((host.get_node("Background") as CanvasItem).modulate.a, 0.0, "still covered by the second host")
-	cover.uncover(null)
+	cover.uncover(false)
 	assert_eq((host.get_node("Background") as CanvasItem).modulate.a, 1.0, "back once the last host closes")
 	assert_true(is_equal_approx((host.get_node("Motes") as CanvasItem).modulate.a, 0.45), "the motes keep their own alpha")
-	cover.uncover(null)
+	cover.uncover(false)
 	assert_eq(cover.covers, 0, "an extra uncover does nothing")
+	host.free()
+
+
+## A dev skip mid fade-in snaps the picture back while the cover's fade is
+## still running: the fade is settled first, so it cannot drive the sky back
+## to 0 afterwards.
+func test_an_instant_uncover_settles_a_running_cover_fade() -> void:
+	var host := Control.new()
+	var sky := ColorRect.new()
+	sky.name = "Background"
+	host.add_child(sky)
+	var cover = (load("res://Scripts/SchoolSimulation/DayPictureCover.gd") as GDScript).new(host)
+	cover.cover(true)
+	cover.uncover(false)
+	assert_eq(sky.modulate.a, 1.0, "the sky is back at once")
+	assert_eq(cover.get("_tween"), null, "and no fade is left running to undo it")
 	host.free()
 
 
@@ -432,3 +448,27 @@ func test_the_debug_launcher_clears_the_way_for_a_lit_minigame() -> void:
 	var stash := FileAccess.get_file_as_string("res://Scripts/Debug/SceneStash.gd")
 	assert_true(stash.contains("canvas.layer = maxi(canvas.layer, 0)"), "negative layers are parked at 0")
 	assert_true(stash.contains("parent.remove_child(env)"), "the scene's environments step aside")
+
+
+## Behaviour: hide() hides the scene, parks its negative layer at 0 and lifts
+## its WorldEnvironment out; restore() puts all three back where they were.
+## Built detached, so no environment ever reaches the editor's own viewport.
+func test_the_scene_stash_puts_everything_back() -> void:
+	var scene := Control.new()
+	var world := CanvasLayer.new()
+	world.layer = -1
+	scene.add_child(world)
+	var env := WorldEnvironment.new()
+	scene.add_child(env)
+	var stash = (load("res://Scripts/Debug/SceneStash.gd") as GDScript).new()
+	stash.hide(scene)
+	assert_false(scene.visible, "the scene is hidden")
+	assert_false(world.visible, "its World too")
+	assert_eq(world.layer, 0, "parked at 0, where a hidden layer cannot switch the glow off")
+	assert_eq(env.get_parent(), null, "its environment is lifted out")
+	stash.restore()
+	assert_true(scene.visible and world.visible, "shown again")
+	assert_eq(world.layer, -1, "back at -1")
+	assert_eq(env.get_parent(), scene, "the environment is back")
+	assert_eq(env.get_index(), 1, "in its old place")
+	scene.free()

@@ -71,8 +71,8 @@ const TARGETS := {
 	"res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_pramuka.png": 2.63,
 	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png": 2.67,
 	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_pramuka.png": 2.67,
-	# Minigame sprites. Their inner play art has had no polish pass
-	# (CLAUDE.md, Visual system), but an .import flag is not a design decision, and
+	# Minigame sprites. CLAUDE.md puts Scenes/Minigames/** out of scope for
+	# the design system, but an .import flag is not a design decision, and
 	# these are the project's worst ratios on art that is always moving.
 	"res://Assets/Images/Textures/bola.png": 12.49,
 	"res://Assets/Images/Textures/puck.png": 10.15,

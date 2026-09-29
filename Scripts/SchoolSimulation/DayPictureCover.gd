@@ -25,6 +25,11 @@ var covers: int = 0
 var _host: Node
 ## Each picture node's own alpha while covered, put back by uncover().
 var _alpha: Dictionary = {}
+## The fade in flight, owned here so the next cover or uncover can finish it
+## first (a dev skip mid fade-in would otherwise see the fade-out win).
+var _tween: Tween
+## Whether the current cover or uncover fades (true) or snaps (false).
+var _fading: bool = false
 
 
 ## `host` is the SchoolDay the DAY_PICTURE paths are read from.
@@ -32,37 +37,51 @@ func _init(host: Node) -> void:
 	_host = host
 
 
-## Fades the picture out, remembering each node's alpha. With a `tween` the
-## fade runs alongside the caller's own; with null it is instant.
-func cover(tween: Tween) -> void:
+## Fades the picture out over FADE (alongside the minigame's own fade) when
+## `fade`, else at once, remembering each node's alpha.
+func cover(fade: bool) -> void:
 	covers += 1
 	if covers > 1:
 		return
+	_settle(fade)
 	for path in DAY_PICTURE:
 		var item := _host.get_node_or_null(path) as CanvasItem
 		if item == null:
 			continue
 		_alpha[item] = item.modulate.a
-		_fade(item, 0.0, tween)
+		_fade(item, 0.0)
 
 
 ## Brings the picture back to the saved alphas, the same way. Only the last
 ## open cover does; an uncover with nothing covered does nothing.
-func uncover(tween: Tween) -> void:
+func uncover(fade: bool) -> void:
 	if covers == 0:
 		return
 	covers -= 1
 	if covers > 0:
 		return
+	_settle(fade)
 	for item in _alpha:
 		if is_instance_valid(item):
-			_fade(item as CanvasItem, _alpha[item], tween)
+			_fade(item as CanvasItem, _alpha[item])
 	_alpha.clear()
 
 
-## Sets `item`'s alpha at once, or tweens it alongside `tween`.
-func _fade(item: CanvasItem, alpha: float, tween: Tween) -> void:
-	if tween == null:
+## Runs any fade still in flight to its end, so what follows starts from its
+## final alphas, then sets up the next call's fade.
+func _settle(fade: bool) -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.custom_step(FADE)
+		_tween.kill()
+	_tween = null
+	_fading = fade
+
+
+## Sets `item`'s alpha at once, or tweens it over FADE.
+func _fade(item: CanvasItem, alpha: float) -> void:
+	if not _fading:
 		item.modulate.a = alpha
-	else:
-		tween.tween_property(item, "modulate:a", alpha, FADE)
+		return
+	if _tween == null:
+		_tween = _host.create_tween().set_parallel(true)
+	_tween.tween_property(item, "modulate:a", alpha, FADE)

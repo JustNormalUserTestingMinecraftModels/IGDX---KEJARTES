@@ -1045,9 +1045,9 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		var diff_level = clampi(GameState.current_grade - 6, 1, 3)
 		current_minigame.start_minigame(diff_level, duration)
 
-	var tween_in = create_tween().set_parallel(true)
+	var tween_in = create_tween()
 	tween_in.tween_property(current_minigame, "modulate:a", 1.0, 0.4)
-	_day_cover.cover(tween_in)
+	_day_cover.cover(true)
 	await tween_in.finished
 
 	if current_minigame.has_method("activate_minigame"):
@@ -1081,9 +1081,9 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		exit_choice = current_minigame.result_exit
 
 	AudioDirector.stop_minigame_bgm()
-	var tween_close = create_tween().set_parallel(true)
+	var tween_close = create_tween()
 	tween_close.tween_property(current_minigame, "modulate:a", 0.0, 0.4)
-	_day_cover.uncover(tween_close)
+	_day_cover.uncover(true)
 	await tween_close.finished
 	current_minigame.queue_free()
 	current_minigame = null
@@ -1223,7 +1223,7 @@ func skip_to_results() -> void:
 		# are put right here.
 		AudioDirector.stop_minigame_bgm()
 		AudioDirector.resume_bgm()
-		_day_cover.uncover(null)
+		_day_cover.uncover(false)
 		current_minigame.queue_free()
 		current_minigame = null
 		
@@ -1278,7 +1278,7 @@ func _notification(what: int) -> void:
 
 
 func _on_back_pressed() -> void:
-	if _leaving:
+	if _leaving or Transition.is_busy():
 		return
 	_leaving = true
 	back_button.disabled = true
@@ -1575,11 +1575,11 @@ func _show_event_dialogue(key: String) -> bool:
 	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
 	var dialogue = dialogue_scene.instantiate()
 	add_child(dialogue)
-	_day_cover.cover(null)
+	_day_cover.cover(false)
 	dialogue.open(e, featured, GameState.minggu_ke, GameState.get_max_weeks(), day_name)
 	var accepted: bool = await dialogue.closed
 	dialogue.queue_free()
-	_day_cover.uncover(null)
+	_day_cover.uncover(false)
 	return accepted
 
 

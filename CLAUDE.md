@@ -106,8 +106,8 @@ and `DayOff`→`Istirahat`. Student art goes through `StudentSkins`
 event screens and result portraits dress for the day via `splash_for_day`.
 
 Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
-disk (`user://inventory.cfg`, flushed on every
-`Transition.change_scene`, quit and pause, loaded in `GameState._ready`), plus achievement
+disk (`user://inventory.cfg`, saved by `Transition.change_scene` and on
+quit/pause, loaded by `GameState._ready`), plus achievement
 progress (`user://achievements.cfg`, saved by `Achievements` on every change;
 the debug `RESET_ON_LAUNCH` wipe is in DEBT.md). Roster, money, week,
 grade and schedules are session-scoped by design. **Do not add further
@@ -193,8 +193,8 @@ alpha before laying out on any soft-edged texture.
   `coin_pulse`, `create_floating_text`, …). It is a plain
   static-function script, **not** an autoload.
 
-Minigames share one layout
-(`docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
+Minigames share one layout (strip · field · tray/hint pill, CARA MAIN card;
+spec `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
 and follow the glyph and popup rules; their inner play art still had no
 polish pass. The debug overlay is out of scope for the design system.
 

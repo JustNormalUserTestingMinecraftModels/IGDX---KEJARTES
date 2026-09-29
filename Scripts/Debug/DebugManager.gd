@@ -23,6 +23,8 @@ var active_minigame: Node = null
 var minigame_canvas: CanvasLayer = null
 ## Clears the open scene out of a standalone minigame's way.
 var _scene_stash := preload("res://Scripts/Debug/SceneStash.gd").new()
+## A standalone Menjodohkan's clock, as SchoolDay gives it; every other game 30 s.
+const MENJODOHKAN_SECONDS := 40.0
 
 # --- Tab Panels ---
 var panels: Dictionary = {}
@@ -1221,7 +1223,7 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 		active_minigame.minigame_lost.connect(func(): _on_standalone_minigame_finished(false))
 		
 	if active_minigame.has_method("start_minigame"):
-		active_minigame.start_minigame(1, 30.0)
+		active_minigame.start_minigame(1, MENJODOHKAN_SECONDS if scene_path.ends_with("Menjodohkan.tscn") else 30.0)
 	if active_minigame.has_method("activate_minigame"):
 		active_minigame.activate_minigame()
 		

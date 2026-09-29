@@ -164,7 +164,7 @@ func test_skip_mid_minigame_restores_audio_and_the_day_picture() -> void:
 	var body := _body(FileAccess.get_file_as_string(SCHOOL_DAY), "skip_to_results")
 	var free_at := body.find("current_minigame.queue_free()")
 	assert_true(free_at != -1, "skip_to_results still frees a running minigame")
-	for needle in ["AudioDirector.stop_minigame_bgm()", "AudioDirector.resume_bgm()", "_day_cover.uncover(null)"]:
+	for needle in ["AudioDirector.stop_minigame_bgm()", "AudioDirector.resume_bgm()", "_day_cover.uncover(false)"]:
 		var at := body.find(needle)
 		assert_true(at != -1 and at < free_at, "%s before the minigame is freed" % needle)
 

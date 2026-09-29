@@ -71,7 +71,7 @@ const STUDENT_LINES := {
 			"Kartu soal dan jawabannya tercampur semua! Bantu aku menjodohkannya sebelum waktunya habis.",
 			"Balapan melawan jam, Pak! Setiap detik berharga, aku enggak boleh kalah!",
 			"Satu pasang, satu poin! Ayo, Pak, kita kumpulkan skor sebanyak-banyaknya!",
-			"Meleset satu? Tidak masalah! Aku enggak kenal kata menyerah, Pak!",
+			"Meleset satu? Enggak masalah! Aku enggak kenal kata menyerah, Pak!",
 			"Anggap saja kartu ini lawan tanding! Pasangannya pasti kutemukan, Pak!",
 		],
 		"Andi": [
@@ -90,7 +90,7 @@ const STUDENT_LINES := {
 		],
 		"Shinta": [
 			"Kartunya tercampur? Bukan aku yang mengacaknya, kok, Pak. Bercanda!",
-			"Teman sebangkuku masih bingung di kartu pertama, Pak. Aku sudah dapat lima pasang!",
+			"Teman sebangkuku masih bingung di kartu pertama, Pak. Aku sudah hampir selesai!",
 			"Aku pasangkan semuanya, tapi nanti pulang lebih cepat, ya, Pak? Setuju?",
 			"Kartu ini jawabannya... ah, gampang. Sudah, Pak, kartu berikutnya!",
 			"Santai saja, Pak. Aku justru paling cepat kalau waktunya sudah hampir habis.",
@@ -98,7 +98,7 @@ const STUDENT_LINES := {
 		"Thea": [
 			"Semua pasangan harus benar, Pak. Satu salah saja, aku ulang dari awal.",
 			"Kalau ada yang kuragukan, aku tandai dulu, Pak. Nanti kuperiksa lagi di akhir.",
-			"Kartunya terus berputar, Pak. Tidak apa-apa, aku sudah terbiasa berlatih fokus.",
+			"Kartunya terus berputar, Pak. Tidak apa-apa, aku sudah terbiasa tetap fokus.",
 			"Aku tidak mau asal pasang, Pak. Cepat itu bagus, tapi tepat lebih penting!",
 			"Mataku sampai perih menghafal soal pengetahuan umum. Sekarang saatnya membuktikan, Pak!",
 		],
@@ -135,7 +135,7 @@ const STUDENT_LINES := {
 		"Shinta": [
 			"Tiap benda nilainya seratus. Selesai! Bercanda, Pak, aku hitung sungguhan, deh.",
 			"Gampang, Pak. Bukunya enam, pulpennya dua. Yang lain masih menghitung, ya?",
-			"Semuanya kupecahkan, istirahatnya ditambah, ya, Pak? Tawaran bagus, kan?",
+			"Semua kupecahkan asal istirahatnya ditambah, ya, Pak? Tawaran bagus, kan?",
 			"Siapa sih yang menulis soal ini? Tulisannya miring semua. Tapi, oke, aku kerjakan.",
 			"Santai saja, Pak. Teka-teki begini biasa kukerjakan sambil makan camilan.",
 		],
@@ -143,7 +143,7 @@ const STUDENT_LINES := {
 			"Sudah kuhitung dua kali, Pak. Tapi biar pasti, aku hitung sekali lagi.",
 			"Aku berlatih soal seperti ini tiap malam. Sekarang pasti bisa!",
 			"Satu jawaban meleset, semuanya ikut salah. Aku mau teliti sampai akhir.",
-			"Coretanku sudah penuh satu halaman, Pak. Sedikit lagi selesai!",
+			"Coretanku sudah penuh satu halaman, Pak. Jawabannya harus rapi sampai akhir!",
 			"Hasilnya harus pas, bukan kira-kira. Ayo, Pak, kita periksa bersama!",
 		],
 	},
@@ -194,7 +194,7 @@ const STUDENT_LINES := {
 	"Password": {
 		"Marcel": [
 			"Kita jumlahkan angkanya dengan teliti, Pak, seperti di buku latihan.",
-			"Buku-buku pelajaran kita tersimpan di dalamnya. Aku harus membukanya, Pak.",
+			"Buku-buku pelajaran kita tersimpan di lemari kelas. Aku harus membukanya, Pak.",
 			"Tolong tunggu sebentar, Pak. Aku tulis dulu hitungannya di buku catatan.",
 			"Penjumlahan bersusun sudah kupelajari sejak kelas dua. Ini pasti bisa.",
 			"Satuan dulu, baru puluhan. Jangan lupa angka yang disimpan, Pak.",

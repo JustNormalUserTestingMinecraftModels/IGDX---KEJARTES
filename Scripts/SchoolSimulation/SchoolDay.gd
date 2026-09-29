@@ -1569,12 +1569,11 @@ func _show_event_dialogue(key: String) -> bool:
 		dialogue_scene = load("res://Scenes/SchoolSimulation/EventDialogue.tscn")
 	if dialogue_scene == null:
 		return true
-	var e: Dictionary = EventDialogueCatalog.entry(key)
-	var roster: Array = []
-	if student_manager:
-		roster = student_manager.students
+	var e: Dictionary = EventDialogueCatalog.entry(key).duplicate()
+	var roster: Array = Array(student_manager.students) if student_manager else []
 	var featured: StudentData = EventDialogueCatalog.pick_featured(roster, e.get("category", ""))
 	_last_featured = featured
+	e["line"] = EventDialogueCatalog.pick_line(key, featured)
 	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
 	var dialogue = dialogue_scene.instantiate()
 	add_child(dialogue)
@@ -1618,7 +1617,7 @@ func _win_context(category: String, day_name: String) -> Dictionary:
 	if featured == null and student_manager:
 		featured = EventDialogueCatalog.pick_featured(student_manager.students, category)
 	var speaker: String = EventDialogueCatalog.win_speaker_path(category, featured, day_name, randf())
-	return {"category": category, "speaker": speaker, "line": EventDialogueCatalog.win_line_for(speaker)}
+	return {"category": category, "speaker": speaker, "line": EventDialogueCatalog.win_line_for(speaker, category, featured)}
 
 
 ## The win screen's LOBBY: leave the week now. Today's decay and roll have

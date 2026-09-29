@@ -32,10 +32,16 @@ extends Button
 
 ## Visual scale for every avatar that is not the current one.
 const INACTIVE_SCALE := 0.82
-## Visual scale for the current avatar.
-const ACTIVE_SCALE := 1.4
+## Visual scale for the current avatar. The spec says "~1.4"; review found
+## that scale, at the original Highlight padding, put the ring's scaled
+## top past HeaderLabel's bottom and its scaled bottom past CardContainer's
+## top (test_active_avatar_ring_clears_the_title_and_the_card does the
+## arithmetic). 1.3 -- with tighter ring padding and StudentList.tscn's
+## RosterStrip/CardContainer moved for headroom -- clears both with room
+## to spare while staying clearly dominant.
+const ACTIVE_SCALE := 1.3
 ## How far the current avatar lifts upward, in px.
-const ACTIVE_LIFT_PX := 6.0
+const ACTIVE_LIFT_PX := 4.0
 ## Overshoot-settle duration for an is_current change (spec §4.2).
 const BOUNCE_SECONDS := 0.42
 
@@ -119,6 +125,9 @@ func _apply_current_state(animate: bool) -> void:
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_bounce_tween.tween_property(self, "position:y", target_lift, BOUNCE_SECONDS) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_bounce_tween.tween_property(self, "modulate:a", target_alpha, BOUNCE_SECONDS)
-	_bounce_tween.tween_property($Highlight, "modulate:a", ring_alpha, BOUNCE_SECONDS)
-	_bounce_tween.tween_property($Border, "modulate:a", ring_alpha, BOUNCE_SECONDS)
+	_bounce_tween.tween_property(self, "modulate:a", target_alpha, BOUNCE_SECONDS) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_bounce_tween.tween_property($Highlight, "modulate:a", ring_alpha, BOUNCE_SECONDS) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_bounce_tween.tween_property($Border, "modulate:a", ring_alpha, BOUNCE_SECONDS) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

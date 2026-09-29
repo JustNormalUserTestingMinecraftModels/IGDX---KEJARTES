@@ -131,19 +131,6 @@ extends BaseMinigame
 ## height up from his feet -- his chest, so the ball lands in his hands.
 @export_range(0.0, 1.0, 0.01) var keeper_catch_height_frac: float = 0.55
 
-# ─── Visual - Typography ─────────────────────────────────────────────────────
-@export_group("Visual - Typography")
-## Assign a custom Font resource. Leave null to use default theme font.
-@export var font: Font = null
-## Font size for the remaining-attempts label.
-@export var attempts_font_size: int = 30
-## Font size for the aiming hint text.
-@export var hint_font_size: int     = 26
-## Text colour for the remaining-attempts label.
-@export var attempts_color: Color   = Color.WHITE
-## Text colour for the aiming hint text.
-@export var hint_color: Color       = Color(1, 1, 1, 0.65)
-
 # ─── Constants ───────────────────────────────────────────────────────────────
 ## Shots a game gives, by difficulty. SchoolDay passes
 ## clampi(current_grade - 6, 1, 3), so 1 is Kelas 7, 2 Kelas 8, 3 Kelas 9.
@@ -190,9 +177,7 @@ var is_swiping: bool = false
 @onready var goalie: CharacterBody2D     = $Goalie
 @onready var ball: CharacterBody2D       = $Ball
 @onready var field_markings: Node2D      = $FieldMarkings
-@onready var score_hud: MinigameScoreHUD = $HUDLayer/ScoreHUD
-@onready var attempts_label: Label       = $HUDLayer/AttemptsLabel
-@onready var swipe_hint: Label           = $HUDLayer/SwipeHint
+@onready var score_hud: MinigameHeader   = %MinigameHeader
 @onready var target_box_node: Control    = $TargetBox
 
 # ─── Target Box (Pou style moving square target) ─────────────────────────────
@@ -600,19 +585,9 @@ func _on_field_markings_draw() -> void:
 func _update_hud() -> void:
 	if score_hud:
 		score_hud.set_score(score)
-	if attempts_label:
-		attempts_label.text = "Shots Left: %d" % attempts_left
-		attempts_label.add_theme_font_size_override("font_size", attempts_font_size)
-		attempts_label.add_theme_color_override("font_color", attempts_color)
-		attempts_label.add_theme_constant_override("outline_size", 6)
-		attempts_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-		if font:
-			attempts_label.add_theme_font_override("font", font)
-	if swipe_hint:
-		swipe_hint.add_theme_font_size_override("font_size", hint_font_size)
-		swipe_hint.add_theme_color_override("font_color", hint_color)
-		if font:
-			swipe_hint.add_theme_font_override("font", font)
+	var taken := max_attempts - attempts_left
+	set_progress(taken, max_attempts,
+		"Tendangan %d/%d" % [mini(taken + 1, max_attempts), max_attempts])
 
 
 # ─── Input handling ──────────────────────────────────────────────────────────
@@ -655,10 +630,8 @@ func _shoot_ball(swipe_vec: Vector2) -> void:
 	attempts_left -= 1
 	_update_hud()
 
-	# Hide hint after first shot
-	if swipe_hint:
-		var ht: Tween = create_tween()
-		ht.tween_property(swipe_hint, "modulate:a", 0.0, 0.3)
+	# The first shot settles the hint
+	hint_settle()
 
 	var sw: float = screen_size.x
 
@@ -930,9 +903,9 @@ func lose_game() -> void:
 	is_game_active = false
 	is_game_over   = true
 	process_mode   = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled     = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var strip := header()
+	if strip != null:
+		strip.set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)

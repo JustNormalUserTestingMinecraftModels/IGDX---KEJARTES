@@ -65,13 +65,10 @@ func test_a_loss_is_not_promoted_to_a_win() -> void:
 
 
 func test_the_how_to_card_warns_about_misses() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
-	var body := src.substr(src.find("func _get_active_tutorial_instructions("))
-	var line := body.substr(body.find("\"LombaMenari\": return"))
-	line = line.substr(0, line.find("\n"))
-	assert_true(line.contains("Geser"), "Menari is played by swiping")
-	assert_false(line.contains("waktu habis"), "and has no clock to beat")
-	assert_true(line.contains("terlewat"), "the card warns that missed notes lose the game")
+	var card := FileAccess.get_file_as_string("res://Resources/Minigames/HowTo/LombaMenari.tres")
+	assert_true(card.contains("Geser"), "Menari is played by swiping")
+	assert_false(card.contains("waktu habis"), "and has no clock to beat")
+	assert_true(card.contains("terlewat"), "the card warns that missed notes lose the game")
 
 
 ## Two notes can slip past on one frame; each label counts down in turn.

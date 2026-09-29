@@ -1,59 +1,72 @@
 [gd_scene format=3 uid="uid://br4pstl80mtp4"]
 
 [ext_resource type="Script" uid="uid://binqx2scuw8a3" path="res://Scripts/Minigames/UI/QuitConfirmDialog.gd" id="1_1jnih"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="3_frame"]
 
-[node name="QuitConfirmDialog" type="CanvasLayer" unique_id=204567359]
+[node name="QuitConfirmDialog" type="CanvasLayer" unique_id=2055429931]
 process_mode = 3
 layer = 210
 script = ExtResource("1_1jnih")
 
-[node name="Backdrop" type="TextureRect" parent="." unique_id=634963513]
+[node name="Scrim" type="Panel" parent="." unique_id=849209479]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
-expand_mode = 1
+theme_type_variation = &"Scrim"
 
-[node name="Center" type="CenterContainer" parent="." unique_id=955806392]
+[node name="Safe" type="MarginContainer" parent="." unique_id=1952612913]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="Card" type="PanelContainer" parent="Center" unique_id=851289083]
-custom_minimum_size = Vector2(960, 560)
-layout_mode = 2
-
-[node name="Margin" type="MarginContainer" parent="Center/Card" unique_id=561445198]
-layout_mode = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 48
 theme_override_constants/margin_top = 48
 theme_override_constants/margin_right = 48
 theme_override_constants/margin_bottom = 48
+script = ExtResource("2_safe")
 
-[node name="Layout" type="VBoxContainer" parent="Center/Card/Margin" unique_id=2107023515]
+[node name="Center" type="CenterContainer" parent="Safe" unique_id=733251359]
 layout_mode = 2
-theme_override_constants/separation = 48
+mouse_filter = 2
 
-[node name="MessageLabel" type="Label" parent="Center/Card/Margin/Layout" unique_id=726742691]
+[node name="Frame" parent="Safe/Center" unique_id=1998027358 instance=ExtResource("3_frame")]
+unique_name_in_owner = true
 layout_mode = 2
+title_text = "KELUAR?"
+ring_count = 4
+show_well = false
+show_close = false
+
+[node name="Layout" type="VBoxContainer" parent="Safe/Center/Frame" unique_id=210440600]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+theme_override_constants/separation = 44
+
+[node name="MessageLabel" type="Label" parent="Safe/Center/Frame/Layout" unique_id=1199546676]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"MinigameHowToLabel"
+text = "Kalau keluar sekarang, minigame ini dianggap gagal."
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Buttons" type="HBoxContainer" parent="Center/Card/Margin/Layout" unique_id=1406325427]
+[node name="Buttons" type="VBoxContainer" parent="Safe/Center/Frame/Layout" unique_id=1134182137]
 layout_mode = 2
-theme_override_constants/separation = 48
-alignment = 1
+theme_override_constants/separation = 28
 
-[node name="YesButton" type="Button" parent="Center/Card/Margin/Layout/Buttons" unique_id=484149495]
-custom_minimum_size = Vector2(360, 120)
+[node name="NoButton" type="Button" parent="Safe/Center/Frame/Layout/Buttons" unique_id=1836843127]
+unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"DangerButton"
+theme_type_variation = &"PrimaryButtonM"
+text = "Tidak, lanjut main"
 
-[node name="NoButton" type="Button" parent="Center/Card/Margin/Layout/Buttons" unique_id=1381431617]
-custom_minimum_size = Vector2(360, 120)
+[node name="YesButton" type="Button" parent="Safe/Center/Frame/Layout/Buttons" unique_id=660355677]
+unique_name_in_owner = true
 layout_mode = 2
-theme_type_variation = &"SecondaryButton"
+theme_type_variation = &"DangerButtonM"
+text = "Ya, keluar"

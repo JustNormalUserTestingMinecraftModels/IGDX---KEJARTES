@@ -3,7 +3,10 @@
 [ext_resource type="Script" uid="uid://j0ixncgl13v1" path="res://Scripts/Minigames/Akademis/PilihanGanda.gd" id="1_pilihanganda"]
 [ext_resource type="Texture2D" uid="uid://c8kmcioj5mvjv" path="res://Assets/Images/UI/meja_background.png" id="4_doxun"]
 [ext_resource type="PackedScene" uid="uid://b7q8saw0x1y20" path="res://Scenes/Minigames/Akademis/QuestionCard.tscn" id="5_4ughg"]
-[ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_b17uc"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="safe_margin"]
+[ext_resource type="PackedScene" uid="uid://bfy1n2cpht386" path="res://Scenes/Minigames/UI/MinigameHeader.tscn" id="mg_header"]
+[ext_resource type="PackedScene" uid="uid://dwtv8eq0kf57d" path="res://Scenes/Minigames/UI/MinigameTray.tscn" id="mg_tray"]
+[ext_resource type="Resource" path="res://Resources/Minigames/HowTo/PilihanGanda.tres" id="howto_pg"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
@@ -74,6 +77,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_pilihanganda")
+how_to = ExtResource("howto_pg")
 background_texture = ExtResource("4_doxun")
 answer_btn_normal_style = SubResource("StyleBoxFlat_doxun")
 answer_btn_correct_style = SubResource("StyleBoxFlat_b17uc")
@@ -103,34 +107,46 @@ intensity = 0.12
 threshold = 0.8
 intensity = 0.8
 
-[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=859146038]
+[node name="Safe" type="MarginContainer" parent="."]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.05
-anchor_top = 0.08
-anchor_right = 0.95
-anchor_bottom = 0.95
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 16
+mouse_filter = 2
+script = ExtResource("safe_margin")
 
-[node name="ScoreHUD" parent="VBoxContainer" unique_id=584836618 instance=ExtResource("5_b17uc")]
+[node name="Column" type="VBoxContainer" parent="Safe"]
 layout_mode = 2
-size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 24
 
-[node name="SoalCard" parent="VBoxContainer" unique_id=82108006 instance=ExtResource("5_4ughg")]
+[node name="MinigameHeader" parent="Safe/Column" instance=ExtResource("mg_header")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SoalCard" parent="Safe/Column" unique_id=82108006 instance=ExtResource("5_4ughg")]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 0
 
-[node name="Spacer" type="Control" parent="VBoxContainer" unique_id=1859218808]
+[node name="Spacer" type="Control" parent="Safe/Column" unique_id=1859218808]
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="ChoicesGrid" type="GridContainer" parent="VBoxContainer" unique_id=1089490452]
+[node name="MinigameTray" parent="Safe/Column" instance=ExtResource("mg_tray")]
+unique_name_in_owner = true
+layout_mode = 2
+hint_text = "Ketuk jawaban yang benar"
+
+[node name="ChoicesGrid" type="GridContainer" parent="Safe/Column/MinigameTray" unique_id=1089490452]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 12
+columns = 1

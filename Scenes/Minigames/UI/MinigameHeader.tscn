@@ -1,0 +1,154 @@
+[gd_scene format=3 uid="uid://bfy1n2cpht386"]
+
+[ext_resource type="Script" uid="uid://cuoe5ctkfarjp" path="res://Scripts/Minigames/UI/MinigameHeader.gd" id="1_ord25"]
+[ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="2_nm1gy"]
+[ext_resource type="Script" uid="uid://cyeju7jnivbp7" path="res://Scripts/Minigames/UI/TimerRing.gd" id="3_ring"]
+[ext_resource type="Script" uid="uid://rswrtc2lg4er" path="res://Scripts/Minigames/UI/ProgressTicks.gd" id="4_ticks"]
+[ext_resource type="Script" uid="uid://dubfgs8jhk55n" path="res://Scripts/UI/ButtonGlyph.gd" id="5_glyph"]
+[ext_resource type="Texture2D" uid="uid://dwj3dcjjxq8df" path="res://Assets/Images/UI/Icons/pause.svg" id="6_pause"]
+[ext_resource type="Texture2D" uid="uid://cuodjpianbbwo" path="res://Assets/Images/UI/Icons/timer.svg" id="7_timer"]
+
+[node name="MinigameHeader" type="Control" unique_id=615373285]
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 160.0
+grow_horizontal = 2
+mouse_filter = 2
+script = ExtResource("1_ord25")
+pause_icon = ExtResource("6_pause")
+timer_icon = ExtResource("7_timer")
+
+[node name="Stack" type="VBoxContainer" parent="." unique_id=1457502924]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Row" type="HBoxContainer" parent="Stack" unique_id=576564000]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="PauseButton" type="Button" parent="Stack/Row" unique_id=388898880]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+theme_type_variation = &"MinigameHudIconButton"
+
+[node name="PauseGlyph" type="TextureRect" parent="Stack/Row/PauseButton" unique_id=1748990834]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 22.0
+offset_top = 18.0
+offset_right = -22.0
+offset_bottom = -26.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_pause")
+expand_mode = 1
+stretch_mode = 5
+script = ExtResource("5_glyph")
+
+[node name="Center" type="CenterContainer" parent="Stack/Row" unique_id=2133430264]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="ScoreHud" parent="Stack/Row/Center" unique_id=584836618 instance=ExtResource("2_nm1gy")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TimerSlot" type="Control" parent="Stack/Row" unique_id=514896330]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TimerButton" type="Button" parent="Stack/Row/TimerSlot" unique_id=1827989972]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+mouse_filter = 2
+theme_type_variation = &"MinigameHudIconButton"
+
+[node name="Ring" type="Control" parent="Stack/Row/TimerSlot/TimerButton" unique_id=1089221213]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = -6.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_ring")
+
+[node name="TimerGlyph" type="TextureRect" parent="Stack/Row/TimerSlot/TimerButton" unique_id=58006506]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 28.0
+offset_top = 24.0
+offset_right = -28.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("7_timer")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ProgressRow" type="CenterContainer" parent="Stack" unique_id=1730872699]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="Stack/ProgressRow" unique_id=1059673829]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 48)
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"MinigameProgressBar"
+max_value = 1.0
+show_percentage = false
+
+[node name="Ticks" type="Control" parent="Stack/ProgressRow/ProgressBar" unique_id=900966419]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_ticks")
+
+[node name="ProgressLabel" type="Label" parent="Stack/ProgressRow/ProgressBar" unique_id=462937041]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"MinigameProgressLabel"
+horizontal_alignment = 1
+vertical_alignment = 1

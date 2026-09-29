@@ -709,3 +709,28 @@ func test_the_exam_notices_scrim_fills_the_screen() -> void:
 			continue
 		assert_eq(_anchors(scrim), Vector4(0, 0, 1, 1), path + ": the Scrim is Full Rect")
 		assert_eq(_offsets(scrim), Vector4.ZERO, path + ": and not inset")
+
+
+# ── Minigames (2026-09-29 minigame mobile layout) ───────────────────────────
+
+## Game -> its bottom piece: the wood tray in the button games, the floating
+## hint pill in the sports games. Their stood-up rects at 1080x2400 are
+## pinned by tests/test_minigame_layout.gd.
+const MINIGAME_BOTTOMS := {
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": "%MinigameTray",
+	"res://Scenes/Minigames/Akademis/Password.tscn": "%MinigameTray",
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": "%MinigameTray",
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": "%MinigameTray",
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": "%MinigameTray",
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": "%MinigameHintPill",
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": "%MinigameHintPill",
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": "%MinigameHintPill",
+}
+
+
+func test_minigame_chrome_is_inside_the_safe_area() -> void:
+	for path: String in MINIGAME_BOTTOMS:
+		var screen := _scene(path)
+		var bottom: String = MINIGAME_BOTTOMS[path]
+		_assert_under_safe_area(screen.get_node_or_null("%MinigameHeader"), path + " strip")
+		_assert_under_safe_area(screen.get_node_or_null(bottom), path + " " + bottom)

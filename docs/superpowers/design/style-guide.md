@@ -6,9 +6,11 @@ structured, how to change it safely, and the one rule that keeps it that way.
 
 Scope: the 10 core screens (Splashscreen, Loading, MainMenu, CutScene,
 StudentCard, Lobby, AturJadwal, StudentList, SchoolDay, SemesterEnd) plus the
-Settings screen added in Task 18. **Minigames (`Scenes/Minigames/**`) are
-explicitly out of scope** — they inherit the Theme automatically but have not
-had a dedicated juice/layout pass.
+Settings screen added in Task 18. **Minigames (`Scenes/Minigames/**`)** share
+one layout (strip · field · tray or hint pill, and a CARA MAIN card; spec
+`docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`) and
+follow the glyph and popup rules; their inner play art has not had a polish
+pass.
 
 ## Changing a color, radius, or font globally
 
@@ -182,7 +184,7 @@ children of the frame and it lays them into the page. Set `title_text`,
 `tabs` (up to three), `ring_count`, `show_well`, `show_tape` and
 `show_close` on the instance's root, and listen to `tab_selected` /
 `close_pressed`. The ring, rule and sticker textures are placeholders
-(`Assets/Images/UI/Notebook/README.md`). All 17 popups now use it;
+(`Assets/Images/UI/Notebook/README.md`). All 20 popups now use it;
 `tests/test_popup_frames.gd` is the roster — a new popup adds its row there.
 
 **The three kinds:**
@@ -265,7 +267,7 @@ colour; a picture is a texture from `Icons/` (or a placeholder SVG) on a
 U+2B00–2BFF, U+1F000–1FAFF and U+FE0F. Typography stays allowed: the
 Arrows block (`12 → 9`), `×`, and anything in a code comment.
 `tests/test_ui_text_glyphs.gd` scans every `.tscn` and `.gd` under
-`Scenes/` and `Scripts/` (minigames and the debug overlay excepted, both
+`Scenes/` and `Scripts/`, minigames included (the debug overlay excepted,
 outside the design system); its `ALLOWED` dict is the reviewed list of
 exceptions, and a new one needs a comment saying why.
 
@@ -366,7 +368,8 @@ test suite needs to exercise exactly that wiring.
 
 ## Out of scope (deferred, not this pass)
 
-See the plan's task briefs for the full list — in short: minigames, haptic
+See the plan's task briefs for the full list — in short: minigames (their
+shared layout landed 2026-09-29; their inner play art still waits), haptic
 vibration, BGM tracks, localization, landscape/tablet layouts, and custom
 9-slice/icon art. None of these are regressions; they're documented,
 intentional deferrals.

@@ -123,8 +123,8 @@ const SCORING_MINIGAME_SCRIPTS := [
 func test_every_scoring_minigame_mounts_the_shared_hud() -> void:
 	for path in SCORING_MINIGAME_SCENES:
 		var src := FileAccess.get_file_as_string(path)
-		assert_true(src.contains("MinigameScoreHUD.tscn"),
-			"%s instances the shared HUD" % path)
+		assert_true(src.contains("MinigameScoreHUD.tscn") or src.contains("MinigameHeader.tscn"),
+			"%s instances the shared HUD (directly or through the header)" % path)
 
 
 func test_no_scoring_minigame_still_styles_a_score_label_at_runtime() -> void:

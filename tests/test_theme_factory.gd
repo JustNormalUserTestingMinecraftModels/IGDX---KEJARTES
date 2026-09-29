@@ -28,6 +28,9 @@ func test_every_declared_variation_exists() -> void:
 		"DisplayLabel", "H1Label", "H2Label", "TitleLabel",
 		"CaptionLabel", "MicroLabel", "StatBar", "AchievementTileBar", "FilterChipButton",
 		"EventDialoguePanel", "EventDialogueText", "DayBannerPanel", "DayBannerLabel", "CalendarLabel",
+		"MinigameCard", "MinigameCardInner", "MinigameImagePlate",
+		"MinigameAnswerButton", "MinigameHudPill", "MinigameHudValue",
+		"MinigameHudIconButton", "MinigamePlankPanel", "MinigamePlankLabel",
 		# 2026-09-27 scrapbook HUD (Task 2).
 		"BookHeroButton", "NavTileKoperasi", "NavTileInventory", "NavTileRapor",
 		"PlusButton", "ChevronGripButton", "BookCoverPanel", "BookPagePanel",
@@ -341,6 +344,9 @@ const DISPLAY_ROSTER := [
 	"MinigameChoiceButton",
 	# 2026-09-25 minigame win screen: the bubble line and the stat numbers.
 	"MinigameWinLine", "MinigameWinStatLabel",
+	# 2026-09-29 minigame mobile layout: the progress label, and the HUD icon
+	# button (lipped via _add_button_variation, which sets the display face).
+	"MinigameProgressLabel", "MinigameHudIconButton",
 	# 2026-09-25: the Koperasi price, heading face in cream.
 	"PriceTagLabel",
 	# 2026-09-08 warm-UI pass: the M and L size steps. LobbyNavButton left
@@ -393,6 +399,10 @@ const DISPLAY_ROSTER := [
 	"PlateNameLabel",
 	# 2026-09-11 Koperasi Part 2: the tray's ×N and count badges.
 	"TrayBadgeLabel",
+	# 2026-09-28 minigame kit (Minigame Polish Part 1): the answer button,
+	# the HUD score value and the plank label. The kit's panels and its icon
+	# button carry no font.
+	"MinigameAnswerButton", "MinigameHudValue", "MinigamePlankLabel",
 	# 2026-09-27 scrapbook HUD (Task 2): the book's hero button and nav
 	# tiles, the coin plate's +, the header's grade badge and week label,
 	# the star bar's number, and the icon rail's notification badge.

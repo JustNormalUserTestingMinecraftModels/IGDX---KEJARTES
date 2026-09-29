@@ -4,7 +4,11 @@
 [ext_resource type="Texture2D" uid="uid://co5rcx5gefm1v" path="res://Assets/Images/Textures/Gawang.jpg" id="2_ticf0"]
 [ext_resource type="Texture2D" uid="uid://d0a5rmvgdg1yo" path="res://Assets/Images/Textures/kiper_idle.png" id="3_m0rci"]
 [ext_resource type="Texture2D" uid="uid://8faghs2oje04" path="res://Assets/Images/Textures/bola.png" id="4_rtmmt"]
-[ext_resource type="PackedScene" uid="uid://c252mxoppqb74" path="res://Scenes/Minigames/UI/MinigameScoreHUD.tscn" id="5_m0rci"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="safe_margin"]
+[ext_resource type="PackedScene" uid="uid://bfy1n2cpht386" path="res://Scenes/Minigames/UI/MinigameHeader.tscn" id="mg_header"]
+[ext_resource type="PackedScene" uid="uid://cverw04dh1ddm" path="res://Scenes/Minigames/UI/MinigameHintPill.tscn" id="mg_pill"]
+[ext_resource type="Resource" path="res://Resources/Minigames/HowTo/MainBola.tres" id="howto"]
+[ext_resource type="Texture2D" uid="uid://bl2mum2k3f66i" path="res://Assets/Images/UI/Icons/swipe_up.svg" id="swipe_up"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
@@ -28,6 +32,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mainbola")
+how_to = ExtResource("howto")
 
 [node name="FieldBG" type="TextureRect" parent="." unique_id=1315448352]
 material = ExtResource("illus_grade")
@@ -145,41 +150,38 @@ texture = ExtResource("4_rtmmt")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="HUDLayer" type="CanvasLayer" parent="." unique_id=2137222322]
-layer = 10
-
-[node name="AttemptsLabel" type="Label" parent="HUDLayer" unique_id=704406724]
-anchors_preset = 10
-anchor_right = 1.0
-offset_top = 56.0
-offset_bottom = 96.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 30
-text = "Shots Left: 8"
-horizontal_alignment = 1
-
-[node name="SwipeHint" type="Label" parent="HUDLayer" unique_id=1146487421]
-modulate = Color(1, 1, 1, 0.65)
-anchors_preset = 12
-anchor_top = 1.0
+[node name="Safe" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -80.0
-offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("safe_margin")
+
+[node name="UI" type="Control" parent="Safe"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MinigameHeader" parent="Safe/UI" instance=ExtResource("mg_header")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 160.0
+grow_horizontal = 2
+
+[node name="MinigameHintPill" parent="Safe/UI" instance=ExtResource("mg_pill")]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_bottom = -24.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_colors/font_color = Color(1, 1, 1, 0.65)
-theme_override_font_sizes/font_size = 26
-text = "↑ Swipe Up to Shoot"
-horizontal_alignment = 1
-
-[node name="ScoreHUD" parent="HUDLayer" unique_id=584836618 instance=ExtResource("5_m0rci")]
-offset_left = 390.0
-offset_top = 10.0
-offset_right = 390.0
-offset_bottom = 10.0
-grow_horizontal = 2
+hint_text = "Geser ke atas untuk menendang"
+icon_texture = ExtResource("swipe_up")

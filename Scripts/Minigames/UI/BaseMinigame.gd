@@ -18,8 +18,9 @@ class_name BaseMinigame
 ## result upward; it never writes stats itself. Difficulty scales with
 ## GameState.current_grade -- see the grade table in CLAUDE.md.
 ##
-## Not covered by the design system: minigames inherit the Theme but had no
-## polish pass, so a theme variation may not exist for a given surface here.
+## The in-play chrome is the scene's own: its MinigameHeader strip and its
+## MinigameTray or MinigameHintPill, found by unique name (%MinigameHeader,
+## %MinigameTray, %MinigameHintPill); this script builds none of it.
 
 signal minigame_won
 signal minigame_lost
@@ -31,10 +32,8 @@ var has_time_limit: bool = false
 
 # ─── Tutorial Settings (Inspector Editable) ─────────────────────────────────
 @export_group("Tutorial")
-## Title shown on the pre-game tutorial popup, if this game shows one.
-@export var tutorial_title: String = ""
-## Body text for the same pre-game tutorial popup.
-@export_multiline var tutorial_instructions: String = ""
+## This game's CARA MAIN card (Resources/Minigames/HowTo/<Game>.tres).
+@export var how_to: MinigameHowTo
 
 # ─── Visual - Result Overlay (Win/Lose Condition Texts) ─────────────────────
 @export_group("Visual - Result Overlay")
@@ -123,41 +122,6 @@ var has_time_limit: bool = false
 ## The steps played in order before the game (or a resume) unlocks input.
 @export var countdown_steps_text: Array[String] = ["3", "2", "1", "Mulai!"]
 
-# ─── Visual - Quit Dialog Overlay ───────────────────────────────────────────
-@export_group("Visual - Quit Dialog Overlay")
-## Body text on the pause menu's quit confirmation, shown when the
-## player taps Quit -- abandoning here always counts as a loss.
-@export var quit_dialog_message_text: String = "Apakah anda yakin?\nSeluruh progress minigame anda akan dianggap gagal!"
-## Label on the confirm (abandon) button.
-@export var quit_dialog_yes_button_text: String = "Iya"
-## Label on the cancel (keep playing) button.
-@export var quit_dialog_no_button_text: String = "Tidak"
-## Optional PNG for the dialog's backdrop. Null uses quit_dialog_bg_color.
-@export var quit_dialog_bg_texture: Texture2D = null
-## Backdrop fill used when quit_dialog_bg_texture is null.
-@export var quit_dialog_bg_color: Color = Color(0, 0, 0, 0.75)
-## Optional PNG for the dialog card. Null uses quit_dialog_card_color.
-@export var quit_dialog_card_texture: Texture2D = null
-## Card fill used when quit_dialog_card_texture is null.
-@export var quit_dialog_card_color: Color = Color(0.12, 0.14, 0.2, 0.95)
-## Card rim colour, procedural mode only.
-@export var quit_dialog_card_border_color: Color = Color(0.8, 0.3, 0.3, 0.8)
-## Optional PNG for the Yes button. Null keeps the theme's DangerButton styling.
-@export var quit_dialog_yes_button_texture: Texture2D = null
-## Optional PNG for the No button. Null keeps the theme's SecondaryButton styling.
-@export var quit_dialog_no_button_texture: Texture2D = null
-## Font for the dialog's message/buttons. Null keeps the theme default.
-@export var quit_dialog_font: Font = null
-## Font size for the dialog's message text.
-@export var quit_dialog_font_size: int = 46
-## Text colour for the dialog's message.
-@export var quit_dialog_font_color: Color = Color.WHITE
-
-# ─── Visual - UI Controls ───────────────────────────────────────────────────
-@export_group("Visual - UI Controls")
-## Drag a PNG here to replace the in-game Pause (⏸) button icon.
-@export var pause_button_texture: Texture2D = null
-
 # ─── Achievements ────────────────────────────────────────────────────────────
 const AchievementsScript := preload("res://Scripts/Achievements/Achievements.gd")
 ## Stars the last result card showed (0 on a loss). SchoolDay reads it.
@@ -168,11 +132,9 @@ var last_time_left_ratio: float = -1.0
 # ─── Custom Time Management ──────────────────────────────────────────────────
 var max_game_time: float   = 30.0
 var game_time_left: float  = 30.0
-var visual_timer: Control  = null
 
 # ─── [NEW FEATURE] Pause System ──────────────────────────────────────────────
 var is_paused: bool = false
-var pause_button: TextureButton = null
 var pause_menu_instance: Node = null
 var quit_dialog_instance: Node = null
 
@@ -210,78 +172,15 @@ func start_minigame(game_difficulty: int, time_limit: float = 30.0) -> void:
 		max_game_time = time_limit
 		game_time_left = time_limit
 		has_time_limit = true
-		_create_visual_timer()
 	else:
 		has_time_limit = false
-	_create_pause_button()
-
-func _create_pause_button() -> void:
-	if pause_button:
-		pause_button.queue_free()
-		
-	pause_button = TextureButton.new()
-	pause_button.name = "PauseButton"
-	
-	# Load texture png if available
-	var pause_path := "res://Assets/Images/pause_button.png"
-	if ResourceLoader.exists(pause_path):
-		var tex = load(pause_path)
-		if tex and tex.get_width() > 0:
-			pause_button.texture_normal = tex
-			pause_button.ignore_texture_size = true
-			pause_button.stretch_mode = TextureButton.STRETCH_SCALE
-	
-	pause_button.custom_minimum_size = Vector2(140, 140)
-	
-	# Top left anchor
-	pause_button.anchor_left = 0.0
-	pause_button.anchor_right = 0.0
-	pause_button.anchor_top = 0.0
-	pause_button.anchor_bottom = 0.0
-	pause_button.offset_left = 32.0
-	pause_button.offset_top = 28.0
-	pause_button.offset_right = 172.0
-	pause_button.offset_bottom = 168.0
-	
-	pause_button.z_index = 100
-	
-	if pause_button_texture:
-		var sb = StyleBoxTexture.new()
-		sb.texture = pause_button_texture
-		pause_button.add_theme_stylebox_override("normal", sb)
-		pause_button.add_theme_stylebox_override("hover", sb)
-		pause_button.add_theme_stylebox_override("pressed", sb)
-
-	# Fallback procedural vector drawing if texture fails to render or load
-	var draw_node = Control.new()
-	draw_node.name = "FallbackDraw"
-	draw_node.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	draw_node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	draw_node.draw.connect(func():
-		if pause_button_texture == null and (pause_button.texture_normal == null or not pause_button.texture_normal.get_width() > 0):
-			var btn_size = draw_node.size
-			var center = btn_size / 2.0
-			var radius = min(btn_size.x, btn_size.y) / 2.0
-			
-			# Circular dark background
-			draw_node.draw_circle(center, radius, Color(0.12, 0.15, 0.22, 0.95))
-			draw_node.draw_arc(center, radius - 1, 0, TAU, 32, Color(0.8, 0.85, 0.9, 0.9), 6.0, true)
-			
-			# Pause bars (II)
-			var bar_w = 14.0
-			var bar_h = 56.0
-			var gap = 14.0
-			
-			var bar1_rect = Rect2(center.x - gap/2.0 - bar_w, center.y - bar_h/2.0, bar_w, bar_h)
-			var bar2_rect = Rect2(center.x + gap/2.0, center.y - bar_h/2.0, bar_w, bar_h)
-			
-			draw_node.draw_rect(bar1_rect, Color(0.95, 0.95, 0.95, 1.0))
-			draw_node.draw_rect(bar2_rect, Color(0.95, 0.95, 0.95, 1.0))
-	)
-	pause_button.add_child(draw_node)
-	
-	pause_button.pressed.connect(_on_pause_button_pressed)
-	_get_or_create_ui_layer().add_child(pause_button)
+	var strip := header()
+	if strip != null:
+		strip.show_timer = has_time_limit
+		strip.set_time(game_time_left, max_game_time)
+		strip.set_pause_enabled(true)
+		if not strip.pause_pressed.is_connected(_on_pause_button_pressed):
+			strip.pause_pressed.connect(_on_pause_button_pressed)
 
 ## Android delivers the hardware/gesture back press as a notification, not as
 ## ui_cancel. A minigame answers it by opening the pause menu -- never by
@@ -299,34 +198,7 @@ func _notification(what: int) -> void:
 func _on_pause_button_pressed() -> void:
 	if not is_game_active or is_paused:
 		return
-		
-	_play_pause_button_boing_animation()
-
-func _play_pause_button_boing_animation() -> void:
-	if pause_button and is_instance_valid(pause_button):
-		pause_button.pivot_offset = pause_button.size / 2.0
-		
-		var tween = create_tween()
-		tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
-		tween.set_process_mode(Tween.TWEEN_PROCESS_IDLE)
-		# Phase 1: Cute squash down (flat wide)
-		tween.tween_property(pause_button, "scale", Vector2(1.25, 0.72), 0.07)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		# Phase 2: Stretch up boing (tall thin)
-		tween.tween_property(pause_button, "scale", Vector2(0.78, 1.32), 0.12)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		# Phase 3: Bounce landing
-		tween.tween_property(pause_button, "scale", Vector2(1.1, 0.88), 0.09)\
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-		# Phase 4: Elastic return to original size
-		tween.tween_property(pause_button, "scale", Vector2(1.0, 1.0), 0.1)\
-			.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
-			
-		tween.tween_callback(func():
-			pause_minigame()
-		)
-	else:
-		pause_minigame()
+	pause_minigame()
 
 # ─── [NEW FEATURE] Pause & Resume Logic ──────────────────────────────────────
 func pause_minigame() -> void:
@@ -413,12 +285,6 @@ func _show_quit_confirmation() -> void:
 	var dialog: QuitConfirmDialog = quit_dialog_scene.instantiate()
 	quit_dialog_instance = dialog
 	add_child(dialog)
-	dialog.configure(quit_dialog_message_text, quit_dialog_yes_button_text,
-		quit_dialog_no_button_text, quit_dialog_bg_texture, quit_dialog_bg_color,
-		quit_dialog_card_texture, quit_dialog_card_color, quit_dialog_card_border_color,
-		quit_dialog_yes_button_texture, quit_dialog_no_button_texture,
-		quit_dialog_font, quit_dialog_font_size, quit_dialog_font_color)
-
 	dialog.confirmed.connect(func():
 		quit_dialog_instance.queue_free()
 		quit_dialog_instance = null
@@ -435,37 +301,15 @@ func _show_quit_confirmation() -> void:
 			pause_menu_instance.show()
 	)
 
-func _create_visual_timer() -> void:
-	if visual_timer:
-		visual_timer.queue_free()
-		
-	visual_timer = Control.new()
-	visual_timer.name = "VisualTimer"
-	visual_timer.custom_minimum_size = Vector2(140, 140)
-	visual_timer.z_index = 100
-	_get_or_create_ui_layer().add_child(visual_timer)
-	
-	# Position in top-right corner
-	visual_timer.anchor_left = 1.0
-	visual_timer.anchor_right = 1.0
-	visual_timer.anchor_top = 0.0
-	visual_timer.anchor_bottom = 0.0
-	visual_timer.offset_left = -172.0
-	visual_timer.offset_top = 28.0
-	visual_timer.offset_right = -32.0
-	visual_timer.offset_bottom = 168.0
-	visual_timer.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	
-	visual_timer.draw.connect(_on_visual_timer_draw)
-
 func _process(delta: float) -> void:
 	if is_game_active and has_time_limit and not is_paused:
 		game_time_left -= delta
 		if game_time_left <= 0.0:
 			game_time_left = 0.0
 			lose_game()
-		if visual_timer:
-			visual_timer.queue_redraw()
+		var strip := header()
+		if strip != null:
+			strip.set_time(game_time_left, max_game_time)
 
 func apply_time_penalty(seconds: float) -> void:
 	if not is_game_active or not has_time_limit or is_paused:
@@ -475,64 +319,79 @@ func apply_time_penalty(seconds: float) -> void:
 		game_time_left = 0.0
 		lose_game()
 
-func _get_active_tutorial_title() -> String:
-	if tutorial_title != "":
-		return tutorial_title
-	var s_name = ""
-	if get_script() and get_script().resource_path != "":
-		s_name = get_script().resource_path.get_file().get_basename()
-	if s_name == "" or s_name == "BaseMinigame":
-		s_name = name
-	match s_name:
-		"PilihanGanda": return "🎓 Pilihan Ganda"
-		"Menjodohkan": return "🔗 Menjodohkan"
-		"Password": return "🔢 Password"
-		"Variabel": return "🧮 Variabel"
-		"MainBola": return "⚽ Tendangan Penalti"
-		"Badminton": return "🏸 Badminton"
-		"BuatBatik": return "🎨 Membuat Batik"
-		"LombaMenari": return "💃 Lomba Menari"
-		_: return "🎮 Tutorial Minigame"
-
-func _get_active_tutorial_instructions() -> String:
-	if tutorial_instructions != "":
-		return tutorial_instructions
-	var s_name = ""
-	if get_script() and get_script().resource_path != "":
-		s_name = get_script().resource_path.get_file().get_basename()
-	if s_name == "" or s_name == "BaseMinigame":
-		s_name = name
-	match s_name:
-		"PilihanGanda": return "Baca pertanyaan dengan teliti, lalu pilih satu jawaban yang paling benar dari pilihan yang tersedia.\n\nJawaban salah akan mengurangi waktu 3 detik!"
-		"Menjodohkan": return "Geser kartu pertanyaan dan jawaban menggunakan tombol panah kiri/kanan.\n\nPasangkan pertanyaan dengan jawaban yang benar, lalu tekan tombol Kunci (🔒).\n\nSetelah semua pasangan terkunci, tekan tombol Kirim untuk menyelesaikan!"
-		"Password": return "Selesaikan soal matematika (penjumlahan/pengurangan) yang ditampilkan di layar.\n\nGunakan keypad angka untuk memasukkan jawaban.\n\nJawaban benar akan lanjut ke soal berikutnya!"
-		"Variabel": return "Temukan nilai variabel yang belum diketahui dari persamaan yang diberikan.\n\nMasukkan jawaban menggunakan numpad, lalu tekan tombol Kirim.\n\nSetiap jawaban benar akan menampilkan nilai variabel yang tersembunyi!"
-		"MainBola": return "Geser jari ke arah gawang untuk menendang bola.\n\nArahkan tendangan ke kotak target yang bergerak di dalam gawang.\n\nCetak gol sebanyak-banyaknya sebelum kesempatan habis!"
-		"Badminton": return "Geser jari di area bawah layar untuk menggerakkan pemukul.\n\nPantulkan shuttlecock melewati lawan untuk mencetak poin.\n\nRaih skor target lebih dulu untuk menang!"
-		"BuatBatik": return "Seret alat-alat batik ke kanvas dalam urutan yang benar:\nPensil → Canting → Pewarna → Kompor\n\nTahan alat untuk melihat deskripsinya.\n\nUrutan salah akan mengurangi waktu!"
-		"LombaMenari": return "Geser jari ke arah panah saat not musik memasuki zona target di layar.\n\nGeser tepat waktu untuk mendapatkan skor lebih tinggi!\n\nRaih skor target untuk menang, tapi terlalu banyak not terlewat berarti kalah!"
-		_: return "Selesaikan minigame dengan baik!"
-
 func activate_minigame() -> void:
-	var active_title = _get_active_tutorial_title()
-	var active_instructions = _get_active_tutorial_instructions()
-	if active_title != "" and GameSettings.minigame_tutorial_enabled:
-		var tut_scene = load("res://Scenes/Minigames/UI/MinigameTutorial.tscn")
-		var tutorial = tut_scene.instantiate() if tut_scene else preload("res://Scripts/Minigames/UI/MinigameTutorial.gd").new()
-		tutorial.setup(active_title, active_instructions)
+	var key := how_to.resource_path if how_to != null else ""
+	if should_show_how_to(GameSettings.minigame_tutorial_enabled,
+			GameState.seen_minigame_how_to, key):
+		GameState.seen_minigame_how_to[key] = true
+		var tutorial: MinigameTutorial = (load("res://Scenes/Minigames/UI/MinigameTutorial.tscn")
+			as PackedScene).instantiate()
 		_get_or_create_ui_layer().add_child(tutorial)
+		tutorial.setup(how_to)
 		await tutorial.tutorial_finished
-		await _play_countdown()
+		tutorial.queue_free()
+	await _play_countdown()
 	is_game_active = true
+
+
+## Whether to show the CARA MAIN card: the Settings switch is on, the game
+## has a card, and it has not shown this session. Pure, so it is testable.
+static func should_show_how_to(enabled: bool, seen: Dictionary, key: String) -> bool:
+	return enabled and key != "" and not seen.has(key)
+
+
+# --- mobile layout (spec 2026-09-29 minigame mobile layout, 6) ---------
+
+## The scene's shared top strip, or null in a scene that has none.
+func header() -> MinigameHeader:
+	return get_node_or_null("%MinigameHeader") as MinigameHeader
+
+
+## The scene's tray or hint pill -- whichever it has -- or null.
+func _hint_host() -> Node:
+	var tray := get_node_or_null("%MinigameTray")
+	return tray if tray != null else get_node_or_null("%MinigameHintPill")
+
+
+## Show `text` in the hint line, at full strength.
+func show_hint(text: String) -> void:
+	var host := _hint_host()
+	if host != null:
+		host.set_hint(text)
+
+
+## Fade the hint once the player has shown they know what to do.
+func hint_settle() -> void:
+	var host := _hint_host()
+	if host != null:
+		host.settle()
+
+
+## Fill the strip's progress bar (value of max_value) and write its label.
+func set_progress(value: int, max_value: int, label: String) -> void:
+	var strip := header()
+	if strip != null:
+		strip.set_progress(value, max_value, label)
+
+
+## Show "Soal n/m" on the strip's bar and hide the question card's own
+## StatusBadge (the bar carries the count now).
+func show_question_progress(index: int, total: int, card: Node) -> void:
+	set_progress(index, total, "Soal %d/%d" % [index + 1, total])
+	if card == null:
+		return
+	var badge := card.get_node_or_null("StatusBadge") as Control
+	if badge != null:
+		badge.hide()
+
 
 var result_subtitle: String = ""
 
 func win_game() -> void:
 	is_game_active = false
 	process_mode = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if header() != null:
+		header().set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)
@@ -543,9 +402,8 @@ func abandon_game() -> void:
 		return
 	is_game_active = false
 	process_mode = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if header() != null:
+		header().set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)
@@ -556,9 +414,8 @@ func lose_game() -> void:
 		return
 	is_game_active = false
 	process_mode = Node.PROCESS_MODE_INHERIT
-	if pause_button:
-		pause_button.disabled = true
-		pause_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if header() != null:
+		header().set_pause_enabled(false)
 	if timer:
 		timer.stop()
 	set_process_input(false)
@@ -756,7 +613,7 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 		var popup: MinigameResultPopup = result_popup_scene.instantiate()
 		add_child(popup)
 		popup.configure(is_win, stars, mg_score, mg_max_score,
-			_get_active_tutorial_title(), mg_category, stat_delta, energy_delta, mood_delta,
+			(how_to.title if how_to != null else name), mg_category, stat_delta, energy_delta, mood_delta,
 			{
 				"popup_card_texture": popup_card_texture, "popup_card_color": popup_card_color,
 				"popup_border_color": popup_border_color, "popup_dim_color": popup_dim_color,
@@ -781,34 +638,6 @@ func _show_result_overlay(is_win: bool, custom_subtitle: String = "") -> void:
 
 func _on_timer_timeout() -> void:
 	lose_game()
-
-func _on_visual_timer_draw() -> void:
-	if not is_game_active or not visual_timer:
-		return
-		
-	var center = visual_timer.size / 2
-	var radius = min(visual_timer.size.x, visual_timer.size.y) / 2 - 2
-	
-	# 1. Draw base clock face
-	visual_timer.draw_circle(center, radius, Color(0.95, 0.95, 0.95))
-	visual_timer.draw_arc(center, radius, 0, TAU, 32, Color(0.12, 0.12, 0.12), 6.0, true)
-	
-	# 2. Draw elapsed blackout slice clockwise
-	var elapsed = max_game_time - game_time_left
-	if elapsed > 0.001 and max_game_time > 0:
-		var angle_to = (elapsed / max_game_time) * 360.0
-		_draw_circle_slice(center, radius - 1, 0, angle_to, Color(0.12, 0.12, 0.12))
-
-func _draw_circle_slice(center: Vector2, radius: float, angle_from: float, angle_to: float, color: Color) -> void:
-	var nb_points = 32
-	var points = PackedVector2Array()
-	points.append(center)
-	
-	for i in range(nb_points + 1):
-		var angle_point = deg_to_rad(angle_from + i * (angle_to - angle_from) / nb_points - 90.0)
-		points.append(center + Vector2(cos(angle_point), sin(angle_point)) * radius)
-		
-	visual_timer.draw_polygon(points, PackedColorArray([color]))
 
 func _flash_box_color(node: Control, flash_color: Color, duration: float = 0.45) -> void:
 	if not node or not is_instance_valid(node):
@@ -855,22 +684,28 @@ func _play_jump_animation(node: Control) -> void:
 
 	# Force update node pivot to exact center of node size
 	node.pivot_offset = node.size / 2.0
-	
+
+	# Every pose is relative to the scale the node rests at, and the jump
+	# lands back on it: Menjodohkan's wheel rests a tall card below 1.0 to fit
+	# its slot, and a hard landing at (1, 1) popped it back out. Nodes at
+	# scale 1 animate exactly as before.
+	var rest_scale := node.scale
+
 	# Scale animation tween
 	var tween = create_tween()
-	
+
 	# Phase 1: Pre-jump squash down (flatten wide)
-	tween.tween_property(node, "scale", Vector2(1.18, 0.72), 0.08)\
+	tween.tween_property(node, "scale", Vector2(1.18, 0.72) * rest_scale, 0.08)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
+
 	# Phase 2: Stretch jump (tall & thin)
-	tween.tween_property(node, "scale", Vector2(0.82, 1.35), 0.14)\
+	tween.tween_property(node, "scale", Vector2(0.82, 1.35) * rest_scale, 0.14)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
+
 	# Phase 3: Landing bounce (squash wide again)
-	tween.tween_property(node, "scale", Vector2(1.12, 0.85), 0.10)\
+	tween.tween_property(node, "scale", Vector2(1.12, 0.85) * rest_scale, 0.10)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	
-	# Phase 4: Elastic return to standard scale (1.0, 1.0)
-	tween.tween_property(node, "scale", Vector2(1.0, 1.0), 0.12)\
+
+	# Phase 4: Elastic return to the resting scale
+	tween.tween_property(node, "scale", rest_scale, 0.12)\
 		.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)

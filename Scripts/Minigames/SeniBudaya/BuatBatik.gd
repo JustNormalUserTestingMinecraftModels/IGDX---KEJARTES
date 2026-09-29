@@ -81,20 +81,10 @@ extends BaseMinigame
 @export var tooltip_bg_texture: Texture2D = null
 ## Optional font override applied across the game. Null keeps the theme default.
 @export var font: Font = null
-## Font size for the game's title label.
-@export var title_font_size: int = 48
-## Font size for the on-screen instruction text.
-@export var instruction_font_size: int = 30
-## Font size for the "Lapisan ..." progress label.
-@export var progress_font_size: int = 30
 ## Font size for the tooltip's tool name.
 @export var tooltip_name_font_size: int = 40
 ## Font size for the tooltip's description text.
 @export var tooltip_desc_font_size: int = 30
-## Text colour for the title label.
-@export var title_font_color: Color = Color(1.0, 0.92, 0.75, 1)
-## Text colour for the instruction text.
-@export var instruction_font_color: Color = Color(0.8, 0.75, 0.6, 1)
 ## Text colour for the tooltip's tool name.
 @export var tooltip_name_color: Color = Color(1.0, 0.92, 0.75, 1)
 ## Text colour for the tooltip's description.
@@ -112,6 +102,8 @@ const WRONG_LAYER_COLOR: Color = Color(0.8, 0.1, 0.1, 0.45)
 
 # ─── Correct sequence ────────────────────────────────────────────────────────
 var correct_sequence: Array = ["Tool0", "Tool1", "Tool2", "Tool3"]
+## The hint's name for each tool, in correct_sequence order.
+const STEP_TOOL_NAMES := ["Pensil", "Canting", "Pewarna", "Kompor"]
 ## Wrong tool placements this run. The star rubric's only input -- BuatBatik
 ## has no score, so a clean sequence is what mastery means here.
 var wrong_attempts: int = 0
@@ -120,10 +112,9 @@ var has_failed: bool = false
 var auto_revealed_steps: Array = []   # Array of step indices placed by reveal_answers
 
 # ─── Scene nodes ─────────────────────────────────────────────────────────────
-@onready var canvas_rect: Control = $CanvasRect
-@onready var layers_container: Control = $CanvasRect/LayersContainer
-@onready var progress_steps_label: Label = $CanvasRect/ProgressStepsLabel
-@onready var tools_container: HBoxContainer = $ToolsContainer
+@onready var canvas_rect: Control = $Safe/Column/CanvasRect
+@onready var layers_container: Control = $Safe/Column/CanvasRect/LayersContainer
+@onready var tools_container: HBoxContainer = $Safe/Column/MinigameTray/ToolsContainer
 @onready var tooltip_panel: PanelContainer = $TooltipPanel
 @onready var tooltip_name: Label = $TooltipPanel/MarginContainer/TooltipVBox/TooltipName
 @onready var tooltip_desc: Label = $TooltipPanel/MarginContainer/TooltipVBox/TooltipDesc
@@ -204,7 +195,7 @@ func _apply_visual_exports() -> void:
 			bg_node.color = background_color
 
 	# Cloth canvas
-	var canvas_bg = get_node_or_null("CanvasRect/CanvasBackground")
+	var canvas_bg = get_node_or_null("Safe/Column/CanvasRect/CanvasBackground")
 	if canvas_bg:
 		if canvas_cloth_texture:
 			if canvas_bg is ColorRect:
@@ -244,22 +235,6 @@ func _apply_visual_exports() -> void:
 		tooltip_panel.add_theme_stylebox_override("panel", sb)
 
 	# Fonts
-	var title_lbl = get_node_or_null("TitleLabel") as Label
-	if title_lbl:
-		title_lbl.add_theme_font_size_override("font_size", title_font_size)
-		title_lbl.add_theme_color_override("font_color", title_font_color)
-		if font: title_lbl.add_theme_font_override("font", font)
-
-	var inst_lbl = get_node_or_null("InstructionLabel") as Label
-	if inst_lbl:
-		inst_lbl.add_theme_font_size_override("font_size", instruction_font_size)
-		inst_lbl.add_theme_color_override("font_color", instruction_font_color)
-		if font: inst_lbl.add_theme_font_override("font", font)
-
-	if progress_steps_label:
-		progress_steps_label.add_theme_font_size_override("font_size", progress_font_size)
-		if font: progress_steps_label.add_theme_font_override("font", font)
-
 	if tooltip_name:
 		tooltip_name.add_theme_font_size_override("font_size", tooltip_name_font_size)
 		tooltip_name.add_theme_color_override("font_color", tooltip_name_color)
@@ -346,7 +321,7 @@ func _show_tooltip(tool: Control) -> void:
 			tool_name_str = tool3_display_name
 			tool_desc_str = tool3_description
 
-	tooltip_name.text = "🔧 " + tool_name_str
+	tooltip_name.text = tool_name_str
 	tooltip_desc.text = tool_desc_str
 	
 	# Force label & container size recalculation so tooltip_panel size is up to date
@@ -435,6 +410,8 @@ func _check_tool_drop() -> void:
 		return
 
 	var dropped_on_canvas = false
+	var placed_wrong := false
+	var placed_right := false
 
 	if canvas_rect:
 		var canvas_global_rect = canvas_rect.get_global_rect()
@@ -447,17 +424,19 @@ func _check_tool_drop() -> void:
 		var expected = correct_sequence[step] if step < correct_sequence.size() else ""
 
 		if active_tool_name == expected:
-			# ✅ Correct tool — add a nice layer to the canvas
+			# Correct tool: add a nice layer to the canvas
 			player_sequence.append(active_tool_name)
+			placed_right = true
 			_add_correct_layer(step)
 			active_tool.set_meta("used", true)
 			active_tool.modulate.a = 0.35  # dim it visually
 		else:
-			# ❌ Wrong tool — add a "messed up" layer
+			# Wrong tool: add a "messed up" layer
 			has_failed = true
 			wrong_attempts += 1
 			player_sequence.append(active_tool_name)
 			_add_wrong_layer(step)
+			placed_wrong = true
 			# Force the remaining tools to be used but record failure
 			active_tool.set_meta("used", true)
 			active_tool.modulate.a = 0.35
@@ -478,6 +457,12 @@ func _check_tool_drop() -> void:
 	active_tool = null
 	active_tool_name = ""
 	_update_progress_label()
+	# After the refresh: show_hint() resets the hint to full strength, which
+	# would undo the settle and replace the wrong-order warning at once.
+	if placed_wrong:
+		show_hint("Urutan salah!")
+	elif placed_right:
+		hint_settle()
 
 func _add_correct_layer(step: int) -> void:
 	# Hide previous layers' labels to prevent overlapping text
@@ -719,16 +704,10 @@ func _on_all_steps_done(all_correct: bool) -> void:
 	else:
 		reveal_answers()
 
+## The bar counts placed tools; the hint names the next one.
 func _update_progress_label() -> void:
-	var done = player_sequence.size()
-	var total = correct_sequence.size()
-	var text = ""
-	for i in range(total):
-		if i in auto_revealed_steps:
-			text += "🟨 "
-		elif i < done:
-			var is_correct = (player_sequence[i] == correct_sequence[i])
-			text += "✅ " if is_correct else "❌ "
-		else:
-			text += "⬜ "
-	progress_steps_label.text = text.strip_edges()
+	var done := player_sequence.size()
+	var total := correct_sequence.size()
+	set_progress(done, total, "Langkah %d/%d" % [mini(done + 1, total), total])
+	if done < total:
+		show_hint("Seret %s ke kanvas" % STEP_TOOL_NAMES[done])

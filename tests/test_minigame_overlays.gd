@@ -5,8 +5,8 @@ extends McpTestSuiteCompat
 ## Both used to be built node-by-node inside BaseMinigame, so neither could be
 ## opened, seen or restyled in the editor.
 ##
-## Every @export BaseMinigame already had for them is preserved and forwarded
-## through configure(), so an artist's Inspector workflow is unchanged.
+## The countdown's @exports are still forwarded by BaseMinigame. The quit
+## dialog's are gone: its look is authored in QuitConfirmDialog.tscn.
 ##
 ## Must be @tool; no test here may be a coroutine, so nothing calls play().
 
@@ -41,19 +41,8 @@ func test_countdown_scene_carries_its_label() -> void:
 
 func test_quit_dialog_scene_carries_its_message_and_buttons() -> void:
 	var node := _make(QUIT_PATH)
-	for path in ["Backdrop", "Center/Card/Margin/Layout/MessageLabel",
-			"Center/Card/Margin/Layout/Buttons/YesButton",
-			"Center/Card/Margin/Layout/Buttons/NoButton"]:
-		assert_not_null(node.get_node_or_null(path), "missing node: %s" % path)
-
-
-func test_quit_dialog_configure_applies_the_exported_copy() -> void:
-	var node := _make(QUIT_PATH)
-	node.configure("Yakin?", "Iya", "Tidak", null, Color.BLACK, null,
-		Color.WHITE, Color.RED, null, null, null, 46, Color.WHITE)
-	assert_eq(node.get_node("Center/Card/Margin/Layout/MessageLabel").text, "Yakin?")
-	assert_eq(node.get_node("Center/Card/Margin/Layout/Buttons/YesButton").text, "Iya")
-	assert_eq(node.get_node("Center/Card/Margin/Layout/Buttons/NoButton").text, "Tidak")
+	for unique in ["%MessageLabel", "%YesButton", "%NoButton", "%Frame"]:
+		assert_not_null(node.get_node_or_null(unique), "missing node: %s" % unique)
 
 
 func test_quit_dialog_emits_confirmed_and_cancelled() -> void:
@@ -62,23 +51,34 @@ func test_quit_dialog_emits_confirmed_and_cancelled() -> void:
 	assert_true(node.has_signal("cancelled"), "QuitConfirmDialog needs a cancelled signal")
 
 
-## The backdrop is a full-rect TextureRect showing either an artist's PNG or
-## a 1x1 white fill tinted by quit_dialog_bg_color. STRETCH_KEEP draws a
-## texture at its own size, so the fill dimmed one pixel in the top-left and
-## nothing else (measured live 2026-09-15). The hand-built dialog this scene
-## replaced filled the whole screen either way, as PauseMenu's scrim does.
-func test_quit_dialog_backdrop_dims_the_whole_screen() -> void:
+## The scrim is a full-rect Panel wearing the Scrim variation, so it dims the
+## whole screen at any aspect (the old 1x1 TextureRect fill dimmed one pixel,
+## measured live 2026-09-15). PauseMenu's scrim is the same node.
+func test_quit_dialog_scrim_dims_the_whole_screen() -> void:
 	var node := _make(QUIT_PATH)
-	node.configure("Yakin?", "Iya", "Tidak", null, Color(0, 0, 0, 0.75), null,
-		Color.WHITE, Color.RED, null, null, null, 46, Color.WHITE)
-	var backdrop := node.get_node("Backdrop") as TextureRect
-	assert_eq(backdrop.stretch_mode, TextureRect.STRETCH_SCALE,
-		"the backdrop must stretch its texture over the screen, not draw it at its own size")
-	assert_eq(backdrop.expand_mode, TextureRect.EXPAND_IGNORE_SIZE,
-		"the backdrop must not take its minimum size from the texture")
-	assert_eq(Vector4(backdrop.anchor_left, backdrop.anchor_top,
-		backdrop.anchor_right, backdrop.anchor_bottom), Vector4(0, 0, 1, 1),
-		"the backdrop must be anchored to the full screen")
+	var scrim := node.get_node("Scrim") as Panel
+	assert_eq(scrim.theme_type_variation, &"Scrim", "the scrim wears the Scrim variation")
+	assert_eq(Vector4(scrim.anchor_left, scrim.anchor_top,
+		scrim.anchor_right, scrim.anchor_bottom), Vector4(0, 0, 1, 1),
+		"the scrim must be anchored to the full screen")
+
+
+func test_quit_dialog_buttons_emit_their_signals() -> void:
+	var node := _make(QUIT_PATH)
+	var fired: Array[String] = []
+	node.confirmed.connect(func() -> void: fired.append("confirmed"))
+	node.cancelled.connect(func() -> void: fired.append("cancelled"))
+	(node.get_node("%YesButton") as Button).pressed.emit()
+	(node.get_node("%NoButton") as Button).pressed.emit()
+	assert_eq(fired, ["confirmed", "cancelled"] as Array[String])
+
+
+func test_quit_dialog_has_no_configure_and_base_minigame_does_not_call_one() -> void:
+	var node := _make(QUIT_PATH)
+	assert_false(node.has_method("configure"), "configure() and its style arguments are gone")
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
+	assert_false(src.contains("dialog.configure("), "BaseMinigame must not configure the dialog")
+	assert_false(src.contains("quit_dialog_bg"), "the quit-dialog visual exports are gone")
 
 
 ## The text of one top-level function's body, from its `func name(` line up
@@ -112,14 +112,10 @@ func test_base_minigame_no_longer_builds_either_overlay() -> void:
 
 func test_every_shipped_export_survived() -> void:
 	# The refactor must not quietly drop an Inspector slot an artist uses.
+	# The quit dialog's visual exports are deliberately gone (its look is the
+	# scene's own now), so only the countdown's are pinned.
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/BaseMinigame.gd")
 	for export_name in ["countdown_font", "countdown_font_size", "countdown_font_color",
 			"countdown_outline_color", "countdown_outline_size",
-			"countdown_steps_text", "quit_dialog_message_text",
-			"quit_dialog_yes_button_text", "quit_dialog_no_button_text",
-			"quit_dialog_bg_texture", "quit_dialog_bg_color",
-			"quit_dialog_card_texture", "quit_dialog_card_color",
-			"quit_dialog_card_border_color", "quit_dialog_yes_button_texture",
-			"quit_dialog_no_button_texture", "quit_dialog_font",
-			"quit_dialog_font_size", "quit_dialog_font_color"]:
+			"countdown_steps_text"]:
 		assert_contains(src, export_name, "export %s disappeared in the refactor" % export_name)

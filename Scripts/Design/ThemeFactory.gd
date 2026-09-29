@@ -43,6 +43,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_need_signal(theme, tokens)
 	_build_picker(theme, tokens)
 	_build_school_day_liveliness(theme, tokens)
+	_build_minigame_kit(theme, tokens)
 	_build_settings(theme, tokens)
 	_build_lobby_hud(theme, tokens)
 	_build_koperasi_chrome(theme, tokens)
@@ -2144,10 +2145,14 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# luminance 0.27 and 0.21) and unoutlined over painted card art: they cap
 	# at 3.3:1 and 4.0:1 against pure white and fall toward 1.5:1 on the card
 	# they actually sit on, so neither could reach the 4.5:1 body floor on any
-	# ground. brand_primary measures 7.2:1 and cat_akademis 5.1:1 on
-	# surface_card, keeping a warm/cool split that now reads.
+	# ground. The question header sits on the wood table and takes
+	# brand_primary (7.2:1 on surface_card). The answer header rides the brown
+	# MinigameTrayPanel plank since the mobile layout (2026-09-29), where the
+	# old cat_akademis blue barely read, so it takes the cream text_on_brand
+	# that every label on that plank uses. The name keeps "Cool" because the
+	# scene and tests pin it.
 	for pair in [["MinigameWheelHeaderWarm", tokens.brand_primary],
-			["MinigameWheelHeaderCool", tokens.cat_akademis]]:
+			["MinigameWheelHeaderCool", tokens.text_on_brand]]:
 		var wheel: String = pair[0]
 		theme.add_type(wheel)
 		theme.set_type_variation(wheel, "Label")
@@ -2165,6 +2170,283 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# ink -- and a brown face would hand it white ink on that near-white box.
 	_add_button_variation(theme, tokens, "MinigameChoiceButton",
 		tokens.button_cream, tokens.button_cream_lip)
+
+
+# ------------------------------------------------------------ minigame kit
+
+## The shared minigame UI kit, "Bingkai Kayu" (2026-09-28, spec
+## docs/superpowers/specs/2026-09-28-minigame-polish-part-1-design.md, 4.1).
+## All from existing tokens -- no new tokens, so no Resource-restart hazard.
+##   MinigameCard           the wooden frame: brand fill, cream rim, lifted.
+##   MinigameCardInner      the cream face inside the frame.
+##   MinigameImagePlate     the recessed slot a picture question sits in.
+##   MinigameAnswerButton   solid brand answer button: light rim at rest, a
+##                          hard brand-dark drop shadow, gold focus rim.
+##   MinigameHudPill        the dark score pill with a cream rim,
+##   MinigameHudValue       and its gold display-face number.
+##   MinigameHudIconButton  the round, lipped pause/timer chrome. A fixed square in
+##                          MinigameHeader.tscn, so radius_pill is a circle.
+##                          Its focus state is a gold rim, like the answer
+##                          button's, not the house focus box.
+##   MinigamePlankPanel     the carved plank tab (SOAL / JAWABAN / titles)
+##   MinigamePlankLabel     and its gold display-face text.
+
+## How far the card's shadow alpha is raised over shadow_color's, so the
+## frame still pops on the bright light-orange wood backdrop.
+const MINIGAME_CARD_SHADOW_ALPHA_BOOST := 0.2
+## The answer button's hard drop shadow (spec 4.1, "brandD hard shadow"):
+## StyleBoxFlat draws no shadow at a blur of 0, so this is the least blur
+## that still draws -- a crisp edge under the full shadow_offset drop.
+const MINIGAME_HARD_SHADOW_BLUR := 1
+## How far a disabled answer button fades toward surface_sunken: its fill,
+## then its rim. The amounts _add_button_variation uses for every house
+## button, so a disabled answer reads like any other disabled button.
+const MINIGAME_DISABLED_FILL_FADE := 0.7
+const MINIGAME_DISABLED_RIM_FADE := 0.5
+
+
+static func _build_minigame_kit(theme: Theme, tokens: DesignTokens) -> void:
+	_build_minigame_card_family(theme, tokens)
+	_build_minigame_answer_button(theme, tokens)
+	_build_minigame_hud(theme, tokens)
+	_build_minigame_layout(theme, tokens)
+
+
+## MinigameCard, MinigameCardInner and MinigameImagePlate.
+static func _build_minigame_card_family(theme: Theme, tokens: DesignTokens) -> void:
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = tokens.brand_primary
+	frame.set_border_width_all(int(tokens.outline_width))
+	frame.border_color = tokens.outline_card
+	frame.set_corner_radius_all(tokens.radius_lg)
+	frame.set_content_margin_all(tokens.space_xs)
+	var lifted: Color = tokens.shadow_color
+	lifted.a = minf(1.0, tokens.shadow_color.a + MINIGAME_CARD_SHADOW_ALPHA_BOOST)
+	frame.shadow_color = lifted
+	frame.shadow_size = tokens.shadow_size
+	frame.shadow_offset = tokens.shadow_offset
+	_add_minigame_panel(theme, "MinigameCard", frame)
+
+	var inner := StyleBoxFlat.new()
+	inner.bg_color = tokens.surface_card
+	inner.set_corner_radius_all(tokens.radius_md)
+	inner.set_content_margin_all(tokens.space_md)
+	_add_minigame_panel(theme, "MinigameCardInner", inner)
+
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = tokens.preview_pill_fill
+	plate.set_corner_radius_all(tokens.radius_md)
+	plate.shadow_color = tokens.preview_pill_shadow_color
+	plate.shadow_size = tokens.preview_pill_shadow_size
+	plate.shadow_offset = tokens.preview_pill_shadow_offset
+	plate.set_content_margin_all(tokens.space_xs)
+	_add_minigame_panel(theme, "MinigameImagePlate", plate)
+
+
+## Register `name` as a Panel variation drawn by `box`. Base "Panel", like
+## every panel variation here, even where the node is a PanelContainer.
+static func _add_minigame_panel(theme: Theme, name: String, box: StyleBox) -> void:
+	theme.add_type(name)
+	theme.set_type_variation(name, "Panel")
+	theme.set_stylebox("panel", name, box)
+
+
+## MinigameAnswerButton. The spec defines rest, hover and pressed; focus and
+## disabled are derived from tokens the way _add_button_variation derives its
+## own. Only the resting state rims in the light brand tone, the "gold-lit"
+## edge; hover and pressed rim dark.
+static func _build_minigame_answer_button(theme: Theme, tokens: DesignTokens) -> void:
+	var name := "MinigameAnswerButton"
+	theme.add_type(name)
+	theme.set_type_variation(name, "Button")
+	var drop: Vector2 = tokens.shadow_offset
+	theme.set_stylebox("normal", name,
+		_minigame_answer_box(tokens, tokens.brand_primary, tokens.brand_primary_light, drop))
+	theme.set_stylebox("hover", name,
+		_minigame_answer_box(tokens, tokens.brand_primary_light, tokens.brand_primary_dark, drop))
+	# Pressed sinks: the shadow halves, as in _add_button_variation.
+	theme.set_stylebox("pressed", name,
+		_minigame_answer_box(tokens, tokens.brand_primary_dark, tokens.brand_primary_dark, drop * 0.5))
+	theme.set_stylebox("disabled", name, _minigame_answer_disabled_box(tokens))
+	theme.set_stylebox("focus", name, _minigame_answer_focus_box(tokens))
+	_set_minigame_display_text(theme, tokens, name, tokens.text_on_brand, tokens.font_title)
+	for key: String in ["font_hover_color", "font_pressed_color", "font_focus_color"]:
+		theme.set_color(key, name, tokens.text_on_brand)
+	theme.set_color("font_disabled_color", name, tokens.text_disabled)
+
+
+## One answer-button state: `fill`, the house button radius, a half-width
+## rim in `rim` with a full-width top edge, the small step's padding, and
+## the hard brand-dark shadow dropped by `drop`.
+static func _minigame_answer_box(tokens: DesignTokens, fill: Color, rim: Color,
+		drop: Vector2) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.set_corner_radius_all(tokens.radius_button)
+	box.set_border_width_all(int(tokens.outline_width / 2.0))
+	box.border_width_top = int(tokens.outline_width)
+	box.border_color = rim
+	box.content_margin_top = tokens.btn_pad_v_s
+	box.content_margin_bottom = tokens.btn_pad_v_s
+	box.content_margin_left = tokens.space_lg
+	box.content_margin_right = tokens.space_lg
+	box.shadow_color = tokens.brand_primary_dark
+	box.shadow_size = MINIGAME_HARD_SHADOW_BLUR
+	box.shadow_offset = drop
+	return box
+
+
+## Disabled: the resting box faded toward surface_sunken, lying flat.
+static func _minigame_answer_disabled_box(tokens: DesignTokens) -> StyleBoxFlat:
+	var box := _minigame_answer_box(tokens,
+		tokens.brand_primary.lerp(tokens.surface_sunken, MINIGAME_DISABLED_FILL_FADE),
+		tokens.brand_primary_dark.lerp(tokens.surface_sunken, MINIGAME_DISABLED_RIM_FADE),
+		tokens.shadow_offset)
+	box.shadow_size = 0
+	return box
+
+
+## Focus: Godot draws it OVER the current state, so it is a rim with no fill
+## and no shadow. Gold, because the house focus rim (brand_primary) is this
+## button's own fill and would vanish.
+static func _minigame_answer_focus_box(tokens: DesignTokens) -> StyleBoxFlat:
+	var box := _minigame_answer_box(tokens, tokens.brand_primary, tokens.currency_gold,
+		tokens.shadow_offset)
+	box.draw_center = false
+	box.shadow_size = 0
+	return box
+
+
+## Colour, size and -- when the slot is filled -- the display face for a
+## text-bearing kit variation. Every caller must be on DISPLAY_ROSTER.
+static func _set_minigame_display_text(theme: Theme, tokens: DesignTokens, name: String,
+		color: Color, font_size: int) -> void:
+	theme.set_color("font_color", name, color)
+	theme.set_font_size("font_size", name, font_size)
+	if tokens.font_display != null:
+		theme.set_font("font", name, tokens.font_display)
+
+
+## MinigameHudPill + MinigameHudValue, MinigamePlankPanel + MinigamePlankLabel,
+## and MinigameHudIconButton. The pill and the plank are one box that differs
+## only in its corners.
+static func _build_minigame_hud(theme: Theme, tokens: DesignTokens) -> void:
+	_add_minigame_panel(theme, "MinigameHudPill", _minigame_tab_box(tokens, tokens.radius_pill))
+	_add_minigame_gold_label(theme, tokens, "MinigameHudValue", tokens.font_title)
+	_add_minigame_panel(theme, "MinigamePlankPanel", _minigame_tab_box(tokens, tokens.radius_md))
+	_add_minigame_gold_label(theme, tokens, "MinigamePlankLabel", tokens.font_caption)
+
+	# Lipped and brown like every neutral button (2026-09-28 UI depth pass).
+	# _add_button_variation also sets the display face, so the variation is
+	# on DISPLAY_ROSTER even though it carries a picture, never text.
+	_add_button_variation(theme, tokens, "MinigameHudIconButton",
+		tokens.brand_primary_light, tokens.brand_primary_dark, tokens.radius_pill)
+	theme.set_stylebox("focus", "MinigameHudIconButton", _minigame_hud_icon_focus_box(tokens))
+
+
+## A gold display-face Label variation at `font_size`.
+static func _add_minigame_gold_label(theme: Theme, tokens: DesignTokens, name: String,
+		font_size: int) -> void:
+	theme.add_type(name)
+	theme.set_type_variation(name, "Label")
+	_set_minigame_display_text(theme, tokens, name, tokens.currency_gold, font_size)
+
+
+## A dark brand tab with a cream rim and the pill's padding, at `radius`.
+static func _minigame_tab_box(tokens: DesignTokens, radius: int) -> StyleBoxFlat:
+	var box := _minigame_rim_box(tokens, tokens.brand_primary_dark, radius)
+	box.content_margin_left = tokens.space_md
+	box.content_margin_right = tokens.space_md
+	box.content_margin_top = tokens.space_xs
+	box.content_margin_bottom = tokens.space_xs
+	return box
+
+
+## A flat `fill` box with `radius` corners and a half-width outline_card rim.
+static func _minigame_rim_box(tokens: DesignTokens, fill: Color, radius: int) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.set_corner_radius_all(radius)
+	box.set_border_width_all(int(tokens.outline_width / 2.0))
+	box.border_color = tokens.outline_card
+	return box
+
+
+## Focus rim for a HUD icon button, in the same spirit as
+## _minigame_answer_focus_box: Godot draws focus OVER the current state, so
+## this is the button's own pill rim with no fill, in gold so it reads
+## against the dark brand chrome underneath.
+static func _minigame_hud_icon_focus_box(tokens: DesignTokens) -> StyleBoxFlat:
+	var box := _minigame_rim_box(tokens, tokens.brand_primary_dark, tokens.radius_pill)
+	box.border_color = tokens.currency_gold
+	box.draw_center = false
+	return box
+
+
+# ------------------------------------------------- minigame mobile layout
+
+## The minigame mobile layout's chrome (spec
+## docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md, 3 and 5).
+##   MinigameProgressBar    the dark track + gold fill under the score pill.
+##   MinigameProgressLabel  its display-face label, at the dense rung.
+##   MinigameTrayPanel      the brown bottom plank; bleeds past its rect so
+##                          it reaches the screen edges from inside the
+##                          SafeAreaMargin.
+##   MinigameHintLabel      the one-line hint, body face, cream.
+##   MinigameHintPillPanel  the translucent pill the sports games float.
+##   MinigameHowToLabel     a CARA MAIN step line, body face, dark ink.
+
+## How far the tray plank draws past its own rect: sideways past the safe
+## area's screen margin, and down past any gesture-bar inset.
+const MINIGAME_TRAY_BLEED_SIDE := 120.0
+const MINIGAME_TRAY_BLEED_BOTTOM := 400.0
+## The hint pill's backing alpha over surface_overlay.
+const MINIGAME_HINT_PILL_ALPHA := 0.72
+
+
+static func _build_minigame_layout(theme: Theme, tokens: DesignTokens) -> void:
+	var track := _minigame_rim_box(tokens, tokens.brand_primary_dark, tokens.radius_pill)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = tokens.currency_gold
+	fill.set_corner_radius_all(tokens.radius_pill)
+	theme.add_type("MinigameProgressBar")
+	theme.set_type_variation("MinigameProgressBar", "ProgressBar")
+	theme.set_stylebox("background", "MinigameProgressBar", track)
+	theme.set_stylebox("fill", "MinigameProgressBar", fill)
+
+	theme.add_type("MinigameProgressLabel")
+	theme.set_type_variation("MinigameProgressLabel", "Label")
+	_set_minigame_display_text(theme, tokens, "MinigameProgressLabel",
+		tokens.text_on_brand, tokens.font_body_size)
+	theme.set_constant("outline_size", "MinigameProgressLabel", tokens.lipped_label_outline)
+	theme.set_color("font_outline_color", "MinigameProgressLabel", tokens.brand_primary_dark)
+
+	var plank := StyleBoxFlat.new()
+	plank.bg_color = tokens.brand_primary
+	plank.border_width_top = int(tokens.outline_width)
+	plank.border_color = tokens.brand_primary_dark
+	plank.corner_radius_top_left = tokens.radius_lg
+	plank.corner_radius_top_right = tokens.radius_lg
+	plank.expand_margin_left = MINIGAME_TRAY_BLEED_SIDE
+	plank.expand_margin_right = MINIGAME_TRAY_BLEED_SIDE
+	plank.expand_margin_bottom = MINIGAME_TRAY_BLEED_BOTTOM
+	_add_minigame_panel(theme, "MinigameTrayPanel", plank)
+
+	var pill := StyleBoxFlat.new()
+	pill.bg_color = Color(tokens.surface_overlay, MINIGAME_HINT_PILL_ALPHA)
+	pill.set_corner_radius_all(tokens.radius_pill)
+	pill.content_margin_left = tokens.space_md
+	pill.content_margin_right = tokens.space_md
+	pill.content_margin_top = tokens.space_xs
+	pill.content_margin_bottom = tokens.space_xs
+	_add_minigame_panel(theme, "MinigameHintPillPanel", pill)
+
+	for pair in [["MinigameHintLabel", tokens.text_on_brand],
+			["MinigameHowToLabel", tokens.text_primary]]:
+		theme.add_type(pair[0])
+		theme.set_type_variation(pair[0], "Label")
+		theme.set_font_size("font_size", pair[0], tokens.font_title)
+		theme.set_color("font_color", pair[0], pair[1])
 
 
 # --------------------------------------------------------------- progress

@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://dwtv8eq0kf57d"]
+
+[ext_resource type="Script" uid="uid://b7218jvmopbai" path="res://Scripts/Minigames/UI/MinigameTray.gd" id="1_tray"]
+
+[node name="MinigameTray" type="Container" unique_id=185292938]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_type_variation = &"MinigameTrayPanel"
+script = ExtResource("1_tray")
+
+[node name="HintLabel" type="Label" parent="." unique_id=1474944758]
+visible = false
+layout_mode = 2
+theme_type_variation = &"MinigameHintLabel"
+horizontal_alignment = 1
+text_overrun_behavior = 3
+metadata/minigame_tray_hint = true

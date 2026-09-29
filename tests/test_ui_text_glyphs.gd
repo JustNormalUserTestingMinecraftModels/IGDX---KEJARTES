@@ -5,9 +5,10 @@ extends McpTestSuite
 ## Phase 3, plan decision P6). A pictograph or dingbat typed into UI text
 ## renders in whatever emoji font the phone has, at the wrong weight and
 ## colour; the Icons/ set is the picture channel. Scans every .tscn and .gd
-## under Scenes/ and Scripts/ except the minigames' internals and the debug
-## overlay (both outside the design system), skipping comments. Typography
-## stays allowed: the Arrows block (12 → 9) and ×.
+## under Scenes/ and Scripts/, minigames included since their mobile layout
+## pass (2026-09-29), except the debug overlay (outside the design system),
+## skipping comments. Typography stays allowed: the Arrows block (12 → 9)
+## and ×.
 ##
 ## Must be @tool; no test here may be a coroutine.
 
@@ -18,7 +19,7 @@ extends McpTestSuite
 const BANNED := [[0x2300, 0x23FF], [0x2600, 0x27BF], [0x2B00, 0x2BFF],
 	[0x1F000, 0x1FAFF], [0xFE0F, 0xFE0F]]
 ## Folders outside the design system.
-const SKIP_DIRS := ["res://Scenes/Minigames", "res://Scripts/Minigames", "res://Scripts/Debug"]
+const SKIP_DIRS := ["res://Scripts/Debug"]
 ## Reviewed exceptions: file -> substrings a line may carry.
 const ALLOWED := {
 	# The stat glyph is the no-icon fallback StatDetailPopup shows when a
@@ -26,6 +27,9 @@ const ALLOWED := {
 	"res://Scripts/UI/StatInfo.gd": ["\"glyph\":"],
 	# The cutscene's debug-only level-select toggle.
 	"res://Scripts/CutScene/CutScene.gd": ["Debug Level Select"],
+	# The minigame test launcher's School Day button: debug-only launcher,
+	# not player-facing.
+	"res://Scenes/Minigames/UI/MinigameMenu.tscn": ["Simulasi Minggu Sekolah"],
 }
 
 

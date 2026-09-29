@@ -8,6 +8,102 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29–30 — Minigame mobile layout
+
+The eight minigames now share one screen skeleton, taken from three famous
+mobile games the owner supplied: a strip of small chips on top, a full-bleed
+play field, and every control at the bottom in thumb reach. Before, the score
+sat somewhere different in every game (and clipped in three), instructions had
+no home, the how-to popup was a code-built placeholder, nothing respected the
+notch, and emoji rode in the UI text. The pass folds into Minigame Polish
+Part 1: it mounts Part 1's `MinigameHeader`, is Part 1 Phase 2's tutorial,
+and leaves Part 2 one slot for its combo. Spec:
+`specs/2026-09-29-minigame-mobile-layout-design.md`.
+
+**The strip.** `MinigameHeader` keeps Part 1's row (a 96 px lipped pause
+button, the unchanged `MinigameScoreHUD`, a 96 px timer) and gains a
+`ProgressRow`: a 560x48 `MinigameProgressBar` with its Boohong
+`MinigameProgressLabel` laid across it, set by
+`set_progress(value, max_value, label)` and drawn as segments when
+`segmented` is on (BuatBatik's four steps). The timer is a `TimerRing` that
+drains through `set_time(left, total)` and turns `state_danger` for the last
+5 s (`danger_seconds`); it stays display-only. Root exports `show_score`,
+`show_timer` and `show_progress` hide a slot, and a hidden timer keeps its
+96 px slot so the pill stays centred. The pause and timer icons are
+placeholder SVGs, each a `TextureRect` child of its button (a lipped
+button's content margins squeeze `Button.icon`); the pause one is a
+`ButtonGlyph`, so it drops with the lip and dims when the game ends.
+
+**The tray.** `MinigameTray` is a `@tool` Container that draws the new
+`MinigameTrayPanel` wood plank, which bleeds past its rect so the wood
+reaches the screen edges from inside the safe area. The host scene drops its
+controls in as direct children and the tray stacks them, with its own
+`HintLabel` (`MinigameHintLabel`, Open Sans 36, cream) always last, as one
+ellipsised line: an autowrapping hint blew up the tray's minimum height. The
+tray sits last in the game's `Column` and is as tall as its contents; an
+expanding field node (a `Spacer`, the calculator slot, the canvas, the
+question wheel) takes the slack, so a 1080x2400 phone gives its extra 480 px
+to the field.
+
+**The hint pill.** `MinigameHintPill` is the sports games' floating
+translucent pill (`MinigameHintPillPanel`), with an optional icon and a hint
+line, bottom-centre and click-through so gestures reach the field. On both
+the tray and the pill the hint shows at full strength, settles to 60% after
+a right move (`hint_settle()`), and comes back with `show_hint(text)` for a
+step change, a wrong order or a near-loss.
+
+**The CARA MAIN card.** `MinigameTutorial.tscn` is redesigned in place as a
+`NotebookFrame` dialog: the game's name, three `HowToStepRow` templates (a
+96 px gesture icon and one line each) and a mint Mulai, which alone closes
+it. The content is data: a `MinigameHowTo` resource per game in
+`Resources/Minigames/HowTo/`, set as `BaseMinigame.how_to`. That retired the
+emoji title table, the tutorial exports and Password's "lorem ipsum", and
+the card's runtime construction. It shows once per game per session
+(`GameState.seen_minigame_how_to`, cleared by Forget Session) while the
+Settings switch is on; the 3-2-1 countdown now runs either way.
+
+**Pause and quit.** `PauseMenu` becomes the JEDA notebook dialog (mint
+Lanjutkan, brown Pengaturan, tomato Keluar) and `QuitConfirmDialog` the
+KELUAR? one (mint "Tidak, lanjut main", tomato "Ya, keluar"). All three
+dialogs, the card included, spring in a frame late, after their
+CenterContainer has sorted.
+
+**BaseMinigame.** It finds the strip, tray and pill by unique name and wires
+pause, the timer ring and progress (`set_progress`,
+`show_question_progress`). Its code-built pause button, `VisualTimer`,
+`pause_button_texture` export and legacy fallback are gone, since every
+scene mounts the strip. The `viewport_editability` ratchet fell for the
+tutorial (12 to 0), Menjodohkan (2 to 0) and BaseMinigame (4 to 1, the
+overlay CanvasLayer), and PauseMenu's allowed 1 is gone. Minigames came
+under `test_ui_text_glyphs` (only the debug launcher's School Day button is
+allowed), and every game is pinned under a `SafeAreaMargin` and filling
+1080x2400 by `test_minigame_layout` and `test_tall_screen_layout`.
+
+| Game | Score pill | Bar label | Timer | Play field | Bottom |
+|---|---|---|---|---|---|
+| PilihanGanda | correct / target | `Soal 3/10` | on | `SoalCard` under the strip; a `Spacer` takes the slack | Tray: 4 cream answers in one column + "Ketuk jawaban yang benar" |
+| Password | correct / target | `Soal 3/10` | on | `SoalCard`, then the Kalkulator in an expanding slot above the tray | Tray: brown Hapus, mint Kirim + "Ketik jawaban, lalu Kirim" |
+| Variabel | correct / target | `Soal 3/10` | on | as Password (no zero key) | Tray: as Password + "Cari nilai hurufnya, lalu Kirim" |
+| Menjodohkan | pairs / total | `Pasangan 2/4` | on | the SOAL wheel with its paging arrows | Tray: the JAWABAN wheel, brown Kunci, mint Selesai + "Pilih jawaban, lalu tekan Kunci" |
+| BuatBatik | hidden | `Langkah 2/4` (segmented) | on | the canvas | Tray: 4 tools + a hint naming the next one ("Seret Pensil ke kanvas") |
+| MainBola | goals / target | `Tendangan 4/8` | on | goal, goalie, target and ball, full-bleed | Hint pill: swipe-up icon + "Geser ke atas untuk menendang" |
+| Badminton | `2 - 3` (rival - you) | `Poin 3/5` | hidden | the whole court, now Keep Aspect Covered | Hint pill: "Geser pemukulmu" |
+| LombaMenari | score + combo chip | `Nyawa 7/10` | hidden | the fixed dancer; the runway floats over the lower field | Hint pill: "Geser searah panah", then "UPS! Sisa N" for the last 3 misses |
+
+Removed with it: BuatBatik's title, instruction and step string; Menjodohkan's
+title, progress badges, "(GESER / SWIPE)" captions and emoji buttons;
+MainBola's English `HUDLayer` ("Shots Left", "Swipe Up to Shoot"); the quiz
+cards' "Soal N/M" badge (hidden now; the bar carries the count).
+
+**Awaiting mentor sign-off (spec §9), so the PR carries `hold`:** (1) the
+overlays use `NotebookFrame`, not Part 1's Bingkai Kayu, because the style
+guide's newer popup rule wins; (2) the answer buttons stay cream, not Part 1's
+brand-filled answers with a gold edge (`c228b4ef` and the button-role rule);
+(3) BuatBatik's always-on wood title plank is dropped: the title lives on the
+CARA MAIN card and the strip has no room for it. Part 2's author still has to
+hear that Phase 8 shrinks to key feel and LCD styling, and that `ScorePill`
+becomes a ×badge inside `MinigameScoreHUD`. Follow-ons are in `DEBT.md`.
+
 ## 2026-09-30 — The daily verdict's star of the day
 
 The Bintang Hari Ini row on the daily result wore a placeholder crown
@@ -834,6 +930,41 @@ font or title fails there rather than on a phone. The test is rescued from
 a worktree stranded since 2026-09-15; `tall_screen_layout` pins the new
 position at both screen sizes.
 
+## 2026-09-28 — Minigame Polish Part 1: foundation kit
+
+- Nine new `ThemeFactory` variations for the minigame kit (`_build_minigame_kit`,
+  spec §4.1): `MinigameCard` / `MinigameCardInner` / `MinigameImagePlate` (the
+  Bingkai Kayu card family — a brand-primary frame with a cream rim, a cream
+  inner sheet, and the preview-pill image plate); `MinigameAnswerButton`
+  (brand-filled, the spec's hard `brand_primary_dark` drop shadow, with focus
+  and disabled states derived from tokens since the spec defines neither —
+  focus is a gold rim-only overlay, since the house focus rim is this
+  button's own fill, and disabled fades fill/rim toward `surface_sunken` and
+  flattens the shadow); `MinigameHudPill` / `MinigameHudValue` and
+  `MinigamePlankPanel` / `MinigamePlankLabel` (one dark-brand tab box at two
+  radii, gold display-face labels); `MinigameHudIconButton` (a round icon
+  button, no font, so off `DISPLAY_ROSTER`).
+- `MinigameHudIconButton` is radius-exempt in `tests/test_button_geometry.gd`'s
+  `RADIUS_EXEMPT`: it's a fixed `touch_target_min` square in
+  `MinigameHeader.tscn`, so `radius_pill` yields an exact circle — no
+  height-dependent-radius risk, like `CardArrowButton`.
+- `MinigameHeader` (`Scripts/Minigames/UI/MinigameHeader.gd` +
+  `Scenes/Minigames/UI/MinigameHeader.tscn`) is a shared top HUD strip
+  composed **over** `MinigameScoreHUD` rather than forking it: a pause
+  icon-button (left), an instanced `MinigameScoreHUD` (centre, so its pop,
+  burst and combo chip stay in one component), and a timer icon-button
+  (right, display-only — no signal yet). Icons arrive through root
+  `@export`s (`pause_icon`, `timer_icon`) rather than reaching into the
+  instance's children, since overrides on an instanced scene's children drop
+  on save. `@tool` so the strip previews in the editor.
+- The answer button's hard shadow, focus and disabled states are spec-driven
+  and new: the spec (§4.1) defines only rest, hover and pressed, so focus and
+  disabled were derived the way `_add_button_variation` derives its own.
+- Task 4 rebaked `Assets/Theme/kejartes_theme.tres`: stylebox ids renumbered,
+  but a content comparison showed all 241 existing theme types unchanged and
+  exactly nine added (the ones above).
+- Spec: `docs/superpowers/specs/2026-09-28-minigame-polish-part-1-design.md`.
+  Plan: `docs/superpowers/plans/2026-09-28-minigame-polish-part-1-foundation.md`.
 
 ## 2026-09-28 — Settings layout
 

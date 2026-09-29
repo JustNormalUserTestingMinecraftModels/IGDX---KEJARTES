@@ -29,7 +29,7 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [node name="AnswerCard" type="PanelContainer" unique_id=452346541]
-custom_minimum_size = Vector2(850, 960)
+custom_minimum_size = Vector2(850, 0)
 offset_right = 850.0
 offset_bottom = 430.0
 pivot_offset = Vector2(425, 215)

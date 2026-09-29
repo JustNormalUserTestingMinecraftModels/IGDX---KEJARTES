@@ -70,7 +70,7 @@ var shop_promo_percent: int = 0
 
 # Week tracking
 var minggu_ke: int = 1
-var max_minggu: int = 6
+var max_minggu: int = WEEKS_BY_GRADE[7]
 var lobby_tutorial_completed: bool = false
 ## Debug-menu master switch: true skips every tutorial in the game (lobby,
 ## atur jadwal, student card, student list, school day, minigames), not just
@@ -159,11 +159,21 @@ func all_skins_locked() -> bool:
 			return true
 	return false
 
+## How many school weeks each grade runs (2026-09-29: Kelas 7/8/9 = 4/6/8).
+## Ours, not Balance.gd's: that file is collaborator-owned and its
+## JUMLAH_MINGGU_KELAS_* (6/12/16) are no longer read by anything, so the
+## targets they were paired with (Balance.TARGET_KENAIKAN_KELAS_*) are still
+## sized for the longer grades.
+const WEEKS_BY_GRADE := {7: 4, 8: 6, 9: 8}
+
+
+## The weeks `grade` runs; a grade outside 7-9 counts as Kelas 7.
+static func weeks_for_grade(grade: int) -> int:
+	return WEEKS_BY_GRADE.get(grade, WEEKS_BY_GRADE[7])
+
+
 func get_max_weeks() -> int:
-	match current_grade:
-		8: return Balance.JUMLAH_MINGGU_KELAS_8
-		9: return Balance.JUMLAH_MINGGU_KELAS_9
-		_: return Balance.JUMLAH_MINGGU_KELAS_7
+	return weeks_for_grade(current_grade)
 
 func get_grade_from_week() -> int:
 	return current_grade

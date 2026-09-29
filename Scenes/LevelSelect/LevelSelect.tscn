@@ -486,7 +486,7 @@ expand_mode = 1
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"H2Label"
-text = "6 minggu"
+text = "4 minggu"
 horizontal_alignment = 1
 
 [node name="DiffTile" type="Panel" parent="Safe/UI/Brief/Margin/VBox/Stats" unique_id=1752382883]

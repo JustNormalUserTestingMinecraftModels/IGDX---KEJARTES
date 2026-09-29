@@ -218,11 +218,16 @@ func test_no_balance_literals_left_in_extracted_functions() -> void:
 						% [fname, m.get_string()])
 
 
-func test_grade_week_counts_come_from_balance() -> void:
+## 2026-09-29: Kelas 7/8/9 run 4/6/8 weeks. The count is GameState's own
+## (WEEKS_BY_GRADE), not Balance.JUMLAH_MINGGU_KELAS_* -- that file is
+## collaborator-owned and still says 6/12/16, which nothing reads any more.
+func test_grade_week_counts_are_4_6_8() -> void:
 	var original_grade: int = GameState.current_grade
-	for grade in [7, 8, 9]:
+	var want := {7: 4, 8: 6, 9: 8}
+	for grade in want:
 		GameState.current_grade = grade
-		var expected: int = _EXPECTED["JUMLAH_MINGGU_KELAS_%d" % grade]
-		assert_eq(GameState.get_max_weeks(), expected,
-			"Kelas %d must run for Balance.JUMLAH_MINGGU_KELAS_%d weeks" % [grade, grade])
+		assert_eq(GameState.get_max_weeks(), want[grade], "Kelas %d runs %d weeks" % [grade, want[grade]])
+		assert_eq(GameState.max_minggu, want[grade], "and max_minggu follows the grade")
+		assert_eq(GameState.weeks_for_grade(grade), want[grade], "weeks_for_grade agrees")
+	assert_eq(GameState.weeks_for_grade(3), 4, "a stray grade counts as Kelas 7")
 	GameState.current_grade = original_grade

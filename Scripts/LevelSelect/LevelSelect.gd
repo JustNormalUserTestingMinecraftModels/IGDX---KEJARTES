@@ -72,12 +72,10 @@ const BRIEF_FLAVOR := {
 }
 
 
-## Weeks a grade runs -- the player's available time. Owned by Balance.gd.
+## Weeks a grade runs -- the player's available time. Owned by
+## GameState.WEEKS_BY_GRADE.
 static func weeks_for(grade: int) -> int:
-	match grade:
-		8: return Balance.JUMLAH_MINGGU_KELAS_8
-		9: return Balance.JUMLAH_MINGGU_KELAS_9
-		_: return Balance.JUMLAH_MINGGU_KELAS_7
+	return GameState.weeks_for_grade(grade)
 
 
 ## Points each subject must gain to clear a target. Owned by Balance.gd.

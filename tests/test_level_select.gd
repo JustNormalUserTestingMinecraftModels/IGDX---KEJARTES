@@ -51,11 +51,12 @@ func _center(index: int) -> void:
 
 # ── Data ─────────────────────────────────────────────────────────────────────
 
-## Weeks and target must be read from Balance.gd, never hardcoded literals.
-func test_weeks_and_target_come_from_balance() -> void:
-	assert_eq(LS.weeks_for(7), Balance.JUMLAH_MINGGU_KELAS_7, "wk7")
-	assert_eq(LS.weeks_for(8), Balance.JUMLAH_MINGGU_KELAS_8, "wk8")
-	assert_eq(LS.weeks_for(9), Balance.JUMLAH_MINGGU_KELAS_9, "wk9")
+## Weeks come from GameState.WEEKS_BY_GRADE (4/6/8) and the target from
+## Balance.gd, never hardcoded literals.
+func test_weeks_and_target_come_from_their_owners() -> void:
+	assert_eq(LS.weeks_for(7), GameState.WEEKS_BY_GRADE[7], "wk7")
+	assert_eq(LS.weeks_for(8), GameState.WEEKS_BY_GRADE[8], "wk8")
+	assert_eq(LS.weeks_for(9), GameState.WEEKS_BY_GRADE[9], "wk9")
 	assert_eq(LS.target_for(7), int(Balance.TARGET_KENAIKAN_KELAS_7), "t7")
 	assert_eq(LS.target_for(8), int(Balance.TARGET_KENAIKAN_KELAS_8), "t8")
 	assert_eq(LS.target_for(9), int(Balance.TARGET_KENAIKAN_KELAS_9), "t9")
@@ -76,7 +77,7 @@ func test_difficulty_map_covers_all_grades() -> void:
 ## The screen must not re-type balance numbers as literals.
 func test_source_reads_balance_constants() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("Balance.JUMLAH_MINGGU_KELAS_"), "reads weeks from Balance")
+	assert_true(src.contains("GameState.weeks_for_grade"), "reads weeks from GameState")
 	assert_true(src.contains("Balance.TARGET_KENAIKAN_KELAS_"), "reads target from Balance")
 
 

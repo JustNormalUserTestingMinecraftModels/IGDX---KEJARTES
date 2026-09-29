@@ -300,8 +300,8 @@ func set_day(day_name_in: String) -> void:
 
 ## The week this day belongs to, in EventDialogue's format: "3/6".
 ##
-## max_weeks is grade-scaled (GameState.get_max_weeks() returns 6/12/16 for
-## Kelas 7/8/9), so the same call reads 3/6 in Kelas 7 and 3/16 in Kelas 9
+## max_weeks is grade-scaled (GameState.get_max_weeks() returns 4/6/8 for
+## Kelas 7/8/9), so the same call reads 3/4 in Kelas 7 and 3/8 in Kelas 9
 ## with nothing here to change.
 func set_week(week: int, max_weeks: int) -> void:
 	_week_text = "%d/%d" % [week, max_weeks]

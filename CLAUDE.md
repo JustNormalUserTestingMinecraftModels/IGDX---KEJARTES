@@ -18,9 +18,13 @@ passes.
 
 | Grade | Weeks | Target uplift | Minigame win stat | Loss penalty |
 |---|---|---|---|---|
-| 7 | 6 | +15 | 10 | −3 |
-| 8 | 12 | +34 | 8 | −4 |
-| 9 | 16 | +40 | 6 | −5 |
+| 7 | 4 | +15 | 10 | −3 |
+| 8 | 6 | +34 | 8 | −4 |
+| 9 | 8 | +40 | 6 | −5 |
+
+Weeks are `GameState.WEEKS_BY_GRADE` (ours); `Balance.JUMLAH_MINGGU_KELAS_*`
+still says 6/12/16 but nothing reads it, and the targets are still sized for
+those longer grades.
 
 **Loop:** **MainMenu (boot)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →

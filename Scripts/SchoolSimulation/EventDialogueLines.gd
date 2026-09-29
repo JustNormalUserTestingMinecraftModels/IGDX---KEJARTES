@@ -403,7 +403,7 @@ const NPC_LINES := {
 	"MainBola": [
 		"Ayo latihan adu penalti! Tendang bolanya sekuat tenaga dan jangan sampai ditangkap kiper!",
 		"Kuda-kuda yang kukuh, lalu tendang dengan keras! Kiper ini tidak akan memberi ampun.",
-		"Baris yang rapi! Satu per satu maju ke titik penalti. Yang meleset, lari satu putaran.",
+		"Baris yang rapi! Satu per satu maju ke titik penalti. Yang gagal, lari satu putaran.",
 		"Fokus! Lihat sudut gawang, bukan kipernya. Tendangan yang ragu-ragu pasti tertangkap.",
 		"Semua siap? Ambil ancang-ancang, tarik napas, lalu lepaskan tendangan terbaik kalian!",
 	],

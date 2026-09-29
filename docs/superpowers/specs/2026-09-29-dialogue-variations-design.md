@@ -290,7 +290,7 @@ word is in KBBI. After the lines are written:
 - "Hitung-hitungan bukan keahlianku" became "Berhitung bukan keahlianku" (KBBI lists hitung-hitungan only as "banyak perhitungan", not arithmetic).
 - "pewarnanya pasti bikin tangan belepotan" became "... bikin tanganku kotor" (belepotan is not a KBBI headword; only berlepotan).
 - "duluan" became "lebih dulu" in three lines (no KBBI entry).
-- Open point: one adult line (Guru Penjas, MainBola: "Yang meleset, lari satu putaran.") still uses meleset, a KBBI variant of peleset; left as is for the owner to rule on.
+- Guru Penjas 'meleset' -> 'gagal' (adults use standard forms).
 
 ### Flagged words
 

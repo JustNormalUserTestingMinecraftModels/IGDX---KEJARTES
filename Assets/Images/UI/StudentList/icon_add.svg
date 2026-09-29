@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Empty sticky-note "+" glyph (MURIDMU RosterCard Task 1 groundwork),
+       drawn to Assets/Images/UI/Icons/README.md's rules (light fill, dark
+       outline, transparent ground, >=256px, one centred subject) even
+       though it lives in UI/StudentList/ and is pinned by
+       tests/test_student_list.gd rather than tests/test_ui_icons.gd (that
+       suite's NAMES list is fixed to UI/Icons/). Matches the weight of the
+       stat-category glyphs it sits beside on an unscheduled note. -->
+  <g fill="#FFF6E8" stroke="#3B2412" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M98 48h60v50h50v60h-50v50h-60v-50h-50v-60h50z"/>
+  </g>
+</svg>

@@ -154,6 +154,27 @@ premultiplied) alpha, no drop shadow. Optional white-on-transparent redraws
 Sway shader stays deferred until separated plant/paper/curtain art exists
 for it to move.
 
+**MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Four
+hand-written SVGs in `Assets/Images/UI/StudentList/`, drop-replaceable at the
+same paths, wired into `RosterCard.tscn` as of Task 3 (`Paper/WeekHeader/Band`,
+`Paper/WeekHeader/Icon`, `Paper/PortraitFrame/Clip`, `Paper/CatatanGuru/Pencil`; the band is
+squashed to 900x64 there, so a replacement should keep its torn edges
+legible at about half height): `torn_band.svg` (900x120, the WeekHeader band, drawn
+white for `self_modulate` `surface_sunken` tinting, same recipe as
+`washi_tape.svg`), `paperclip.svg` and `pencil.svg` (decorative props at the
+photo and catatan gutter, light-fill/dark-outline like the `UI/Icons/` set
+but not scanned by `tests/test_ui_icons.gd`, whose `NAMES` list is fixed to
+that folder), and `icon_calendar.svg` (256x256, the week header's calendar
+glyph, drawn to `UI/Icons/README.md`'s rules). All four are still pinned by
+`tests/test_student_list.gd::test_part_three_art_exists_and_loads`.
+`icon_add.svg` and `sticky_empty_frame.svg` (from the same groundwork) are
+wired as of Task 2: `StickyNote.gd`'s `scheduled` export shows them on
+`Icon`/`EmptyFrame` for an unplanned day. `sticky_empty_frame.svg` is
+**not** 9-sliced -- its dashed border is fixed path geometry sized to
+StickyNote's actual 172x200 instance rect (`RosterCard.tscn`'s offsets), so
+`EmptyFrame` is a plain `TextureRect` (`STRETCH_KEEP_ASPECT_CENTERED`) that
+renders it near enough 1:1; a 9-slice would stretch or tile the dashes.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but
@@ -169,6 +190,14 @@ RosterCard therefore carries a `Sheet` Panel on the `Card` variation instead
 shadow. Prefer that for any new card; reach for `paper.png` only where the
 cut corner is the point. Measure the alpha before laying out on any
 soft-edged texture.
+
+**MURIDMU RosterCard leftovers (2026-09-29).** `paperclip.svg` and
+`pencil.svg` have no README rules. `RosterAvatar`'s overshoot is hand-rolled,
+and the one-card `NudgeLoop` gate is backed only by a source scan. Stack
+clearances are tight (8.5 / 8.5 / 10 px at 1080x1920). Flick velocity is
+untested (needs an injectable clock). GhostCard is nearly invisible at the
+mandated peek pose and `SunkenPanel` has no border. `_init_carousel_state`'s
+`stagger_in` pops card roots the deck also owns (pre-existing).
 
 **Stray layer in the day-transition sky (2026-09-10).**
 `Assets/Images/SchoolDay/transition_background.png` has a bluish night street

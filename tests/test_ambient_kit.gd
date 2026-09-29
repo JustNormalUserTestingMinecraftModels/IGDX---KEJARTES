@@ -403,6 +403,23 @@ func test_the_screen_glow_fades_with_its_node() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/bloom.gdshader")
 	assert_true(src.contains("* COLOR.rgb, COLOR.a)"), "bloom multiplies by the inherited COLOR")
 
+# ── ScreenSaturation ─────────────────────────────────────────────────────────
+
+## A colour grade over what is drawn before it: additive to nothing, it mixes
+## toward luminance, so 1.0 must leave a frame alone and 0.7 remove 30%.
+func test_the_saturation_pass_is_a_screen_read_grade() -> void:
+	var piece := (load("res://Scenes/Look/ScreenSaturation.tscn") as PackedScene).instantiate() as ScreenSaturation
+	track(piece)
+	var mat := piece.material as ShaderMaterial
+	assert_eq(mat.shader.resource_path, "res://Scripts/Shaders/screen_saturation.gdshader", "its own shader")
+	assert_true(mat.resource_local_to_scene, "each placed piece tunes its own copy")
+	assert_eq(piece.mouse_filter, Control.MOUSE_FILTER_IGNORE, "it never eats a tap")
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/screen_saturation.gdshader")
+	assert_true(src.contains("hint_screen_texture"), "it reads what is drawn so far")
+	assert_true(src.contains("mix(vec3(grey), c, saturation)"), "and mixes toward luminance")
+	assert_true(src.contains("COLOR.a);"), "it forwards the input alpha, so it fades with its node")
+
+
 # ── AmbientParticles ─────────────────────────────────────────────────────────
 
 func _emitter() -> CPUParticles2D:

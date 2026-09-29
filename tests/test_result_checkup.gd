@@ -737,15 +737,24 @@ func test_pill_number_and_caption_wear_the_navy() -> void:
 const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"
 
 
-func test_pill_scene_stacks_its_icon_above_its_value() -> void:
+func test_pill_scene_stacks_icon_value_and_caption() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
 	var column := pill.get_node_or_null("Column") as VBoxContainer
-	assert_not_null(column, "Icon and Value share one column (mockup tile)")
-	assert_not_null(pill.get_node_or_null("Column/Icon"), "Icon is authored")
-	assert_not_null(pill.get_node_or_null("Column/Value"), "Value is authored")
-	if column != null and column.get_node_or_null("Icon") and column.get_node_or_null("Value"):
-		assert_true(column.get_node("Icon").get_index() < column.get_node("Value").get_index(),
-			"the icon sits above its number, not under it")
+	assert_not_null(column, "Icon, Value and Caption share one column")
+	var icon := pill.get_node_or_null("Column/Icon")
+	var value := pill.get_node_or_null("Column/Value") as Label
+	var caption := pill.get_node_or_null("Column/Caption") as Label
+	assert_not_null(icon, "Icon is authored")
+	assert_not_null(value, "Value is authored")
+	assert_not_null(caption, "Caption is authored")
+	if icon and value and caption:
+		assert_true(icon.get_index() < value.get_index()
+			and value.get_index() < caption.get_index(),
+			"icon, then number, then what the number counts")
+		assert_eq(caption.theme_type_variation, &"RecapPillCaptionLabel",
+			"the caption takes its variation")
+		assert_eq(caption.horizontal_alignment, HORIZONTAL_ALIGNMENT_CENTER,
+			"centred under the number")
 	assert_not_null(pill.get_node_or_null("Ring"), "Ring emitter is authored")
 	pill.free()
 
@@ -758,17 +767,16 @@ func test_pill_uses_the_theme_variation_not_an_override() -> void:
 		"no stylebox override on the pill")
 
 
-func test_pill_set_pill_writes_text_and_tint() -> void:
-	# set_pill writes through @onready fields, which Godot only populates
-	# once the node enters the tree -- the same requirement
-	# DaySummaryStudentRow documents for its own setup_row/setup_week_row.
+func test_pill_set_pill_writes_text_and_caption() -> void:
 	var pill: Control = load(_PILL_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(pill)
-	pill.set_pill(null, "4.200", Color.RED)
+	pill.set_pill(null, "4.200", "UANG DIDAPAT")
 	assert_eq((pill.get_node("Column/Value") as Label).text, "4.200",
 		"the value label carries the formatted number")
-	assert_eq((pill.get_node("Column/Value") as Label).self_modulate, Color.RED,
-		"and the caller's tint")
+	assert_eq((pill.get_node("Column/Caption") as Label).text, "UANG DIDAPAT",
+		"and the caption says what it counts")
+	assert_eq((pill.get_node("Column/Value") as Label).self_modulate, Color.WHITE,
+		"no per-pill tint: the theme's white and navy do the work")
 	pill.queue_free()
 
 
@@ -787,20 +795,21 @@ func test_banner_authors_the_mockups_three_tiles_in_order() -> void:
 	banner.free()
 
 
-func test_banner_writes_its_three_totals_in_one_ink() -> void:
+func test_banner_captions_its_three_totals() -> void:
 	var banner: Control = load(_BANNER_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(banner)
 	banner.set_recap({
-		"money_earned": 4200, "net_skill_delta": 37,
-		"minigames_won": 3, "minigames_total": 5, "events_count": 2,
+		"money_earned": 4200, "minigames_won": 3, "minigames_total": 5,
+		"events_count": 2,
 	})
 	assert_eq(_pill_text(banner, "PillUang"), "4.200", "money is grouped")
 	assert_eq(_pill_text(banner, "PillMenang"), "3/5", "won over total")
 	assert_eq(_pill_text(banner, "PillEvent"), "2", "a bare event count")
-	var ink := Juice.tokens().text_primary
-	for n in ["PillUang", "PillMenang", "PillEvent"]:
-		assert_eq((banner.get_node("Pills/%s/Column/Value" % n) as Label).self_modulate,
-			ink, "%s is text_primary: gold is unreadable on a white tile" % n)
+	var want := {"PillUang": "UANG DIDAPAT", "PillMenang": "MINIGAME MENANG",
+		"PillEvent": "EVENT TERJADI"}
+	for n in want:
+		assert_eq((banner.get_node("Pills/%s/Column/Caption" % n) as Label).text,
+			want[n], "%s says what it counts" % n)
 	banner.queue_free()
 
 
@@ -813,10 +822,10 @@ func test_banner_script_drops_poin() -> void:
 		assert_false(src.contains(dead), "%s left with the Poin tile / week line" % dead)
 
 
-func test_banner_uses_the_new_tile_icons() -> void:
+func test_banner_uses_the_lobby_coin_and_the_tile_icons() -> void:
 	var banner = load(_BANNER_SCENE).instantiate()
-	assert_eq(banner.icon_uang.resource_path, "res://Assets/Images/UI/Placeholders/icon_uang.svg",
-		"money keeps its existing icon")
+	assert_eq(banner.icon_uang.resource_path, "res://Assets/Images/UI/uang.png",
+		"money wears the Lobby's coin")
 	assert_eq(banner.icon_menang.resource_path, "res://Assets/Images/ResultCheckup/icon_minigame.png",
 		"minigames wear the soccer ball")
 	assert_eq(banner.icon_event.resource_path, "res://Assets/Images/ResultCheckup/icon_event.png",

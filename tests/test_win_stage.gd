@@ -271,10 +271,8 @@ func test_the_stage_carries_both_lights_over_the_figures() -> void:
 	var names: Array[String] = []
 	for c in s.get_node("Stage").get_children():
 		names.append(String(c.name))
-	assert_eq(names, ["Backdrop", "Shadows", "Students", "LightPass", "LightFail", "Bloom"] as Array[String],
-		"the painting, its shadows and figures, the two lights, then the bloom over both")
-	assert_eq(s.get_node("Stage/Bloom").scene_file_path, "res://Scenes/Look/ScreenGlow.tscn",
-		"the bloom is a ScreenGlow")
+	assert_eq(names, ["Backdrop", "Shadows", "Students", "LightPass", "LightFail"] as Array[String],
+		"the painting, its shadows and figures, then the two lights (the hosts carry the Glow)")
 	assert_eq(s.get_node("Stage/LightPass/Light").scene_file_path, "res://Scenes/Look/LightPool.tscn",
 		"a pass has a pool")
 	assert_eq(s.get_node("Stage/LightPass/Shafts").scene_file_path, "res://Scenes/Look/SunShafts.tscn",

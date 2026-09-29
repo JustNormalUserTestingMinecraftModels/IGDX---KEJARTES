@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_soften_mul"]
 blend_mode = 3
@@ -195,5 +194,3 @@ center = Vector2(0.5, 0.2)
 pool_size = Vector2(2000, 2000)
 light_color = Color(0.7, 0.8, 1, 1)
 intensity = 0.05
-
-[node name="Bloom" parent="Stage" instance=ExtResource("look_bloom")]

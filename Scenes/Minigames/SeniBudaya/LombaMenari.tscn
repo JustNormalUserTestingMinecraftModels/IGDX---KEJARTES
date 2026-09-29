@@ -48,6 +48,7 @@ intensity = 0.15
 
 [node name="Bloom" parent="." instance=ExtResource("look_bloom")]
 threshold = 0.75
+intensity = 0.8
 
 [node name="CharacterDisplay" parent="." unique_id=878431887 instance=ExtResource("3_cwgfm")]
 layout_mode = 1

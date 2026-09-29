@@ -114,6 +114,7 @@ intensity = 0.08
 
 [node name="Bloom" parent="." instance=ExtResource("look_bloom")]
 threshold = 0.8
+intensity = 0.8
 
 [node name="TitleLabel" type="Label" parent="." unique_id=220147040]
 layout_mode = 1

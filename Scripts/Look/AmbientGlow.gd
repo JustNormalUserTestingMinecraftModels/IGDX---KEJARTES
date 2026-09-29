@@ -18,20 +18,21 @@ extends WorldEnvironment
 ## blooming. Efek Suasana off turns the glow off; it does not move, so
 ## Kurangi Gerakan leaves it.
 
-## Brightness above which a pixel blooms, 0 to 1. Keep it high; see the header.
-@export_range(0.0, 1.0, 0.01) var glow_threshold: float = 0.9:
+## Brightness above which a pixel blooms, 0 to 1. The Lobby's value by default
+## (Scenes/Lobby/lobby_environment.tres); raise it if a pale screen fogs.
+@export_range(0.0, 1.0, 0.01) var glow_threshold: float = 0.7:
 	set(value):
 		glow_threshold = value
 		_refresh()
 
 ## How strongly the bloom is added back (the Environment's glow_intensity).
-@export_range(0.0, 4.0, 0.05) var glow_intensity: float = 1.0:
+@export_range(0.0, 4.0, 0.05) var glow_intensity: float = 1.5:
 	set(value):
 		glow_intensity = value
 		_refresh()
 
 ## How far the bloom spreads (the Environment's glow_strength).
-@export_range(0.0, 2.0, 0.05) var glow_strength: float = 1.0:
+@export_range(0.0, 2.0, 0.05) var glow_strength: float = 1.2:
 	set(value):
 		glow_strength = value
 		_refresh()

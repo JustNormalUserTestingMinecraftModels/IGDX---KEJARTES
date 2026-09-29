@@ -29,7 +29,7 @@ Run `git merge origin/Textures`. Resolve conflicts like this:
 
 - `docs/superpowers/CHANGELOG.md`: keep both sides' entries, newest first.
 - `Assets/Theme/kejartes_theme.tres`: never merge it by hand. Take either
-  side, then rebake (CLAUDE.md → "Rebaking without File > Run") and check the
+  side, then rebake (authoring guide → "Rebaking without File > Run") and check the
   bake by its content.
 - `Scripts/Balance.gd`: take the collaborator's version (CLAUDE.md →
   Conventions).

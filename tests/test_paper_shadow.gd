@@ -236,6 +236,11 @@ const _OUTER_AO := {
 }
 const _OUTER_AO_ALPHA := 0.34
 const _OUTER_AO_BLUR := 1.2
+## Scenes whose outer AO keeps the zero offset but is denser and wider than the
+## shared strength, so it shows: EventDialogue's speaker, whose 0.34 / 1.2 shadow
+## was a one-pixel hairline against its photographic backdrop (2026-09-29).
+## test_event_dialogue pins its own values.
+const _OUTER_AO_OWN_STRENGTH := ["res://Scenes/SchoolSimulation/EventDialogue.tscn"]
 
 
 func test_the_contact_shadows_are_outer_ao_not_drop_shadows() -> void:
@@ -249,6 +254,8 @@ func test_the_contact_shadows_are_outer_ao_not_drop_shadows() -> void:
 				continue
 			assert_eq(shadow.get("shadow_offset"), Vector2.ZERO,
 				"%s/%s: an offset makes it a cast shadow again" % [scene_path, node_path])
+			if _OUTER_AO_OWN_STRENGTH.has(scene_path):
+				continue
 			assert_true(is_equal_approx(shadow.get("shadow_alpha"), _OUTER_AO_ALPHA),
 				"%s/%s: outer AO alpha must match the rest of the game" % [scene_path, node_path])
 			assert_true(is_equal_approx(shadow.get("blur"), _OUTER_AO_BLUR),

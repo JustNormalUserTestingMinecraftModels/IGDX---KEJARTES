@@ -8,6 +8,17 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — The event dialogue speaker's shadow is visible
+
+The speaker's shadow was outer AO at the shared strength (offset 0, scale 1,
+alpha 0.34, blur 1.2), which sits exactly behind the art and left a
+one-pixel hairline: hiding it changed 0.10% of the frame. It keeps the
+2026-09-23 rule of no drop shadow (offset stays 0) but is now denser and wider
+so it reads against the photographic backdrop: alpha 0.7, blur 4.0, scale
+1.02. That was option B of three compared at 1080x1920; the owner passed on a
+down-right drop shadow. The Lobby desks, Herman and BGHari keep the shared
+strength, and `test_paper_shadow` lets the speaker carry its own.
+
 ## 2026-09-29 — The Lobby look and 30% less colour on the event dialogue
 
 EventDialogue (the character line before every minigame and event) now wears

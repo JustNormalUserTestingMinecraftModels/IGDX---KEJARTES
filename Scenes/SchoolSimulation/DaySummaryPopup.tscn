@@ -9,7 +9,6 @@
 [ext_resource type="Texture2D" uid="uid://b1v1dy3wojhs3" path="res://Assets/Images/DaySummary/Verdict/teacher_3.png" id="v_teacher_3"]
 [ext_resource type="Texture2D" uid="uid://fmaoaxhqs7q7" path="res://Assets/Images/DaySummary/Verdict/teacher_4.png" id="v_teacher_4"]
 [ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="v_star_on"]
-[ext_resource type="Texture2D" path="res://Assets/Images/DaySummary/Verdict/crown.svg" id="v_crown"]
 [ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="nb_safe"]
 
@@ -245,12 +244,12 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 
-[node name="Crown" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay/Row"]
-custom_minimum_size = Vector2(64, 50)
+[node name="StarIcon" type="TextureRect" parent="DimOverlay/Safe/Content/Frame/Body/Reward/Rows/StarOfDay/Row"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_filter = 2
-texture = ExtResource("v_crown")
+texture = ExtResource("v_star_on")
 expand_mode = 1
 stretch_mode = 5
 

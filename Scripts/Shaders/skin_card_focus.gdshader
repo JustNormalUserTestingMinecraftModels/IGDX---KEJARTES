@@ -14,12 +14,21 @@ uniform float brightness = 1.0;
 // owner asked for Skin Select's splashes 25% brighter, so 1.25 lifts the
 // centred card and its dimmed neighbours alike.
 uniform float splash_gain = 1.25;
+// Owner request (2026-09-30): the splashes 15% less saturated and 15% less
+// contrasty. 1.0 is untouched; saturation pulls toward grey, contrast toward
+// mid-grey, both before the brightness and the gain.
+uniform float splash_saturation = 0.85;
+uniform float splash_contrast = 0.85;
+
+// Rec. 709 luma, for a saturation that does not shift hues.
+const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 
 // NO COLOUR GRADE HERE, on purpose (2026-09-30): the illustration grade that
 // every other painted plate wears made Skin Select's splashes read too dark,
 // so the cards show the art's own colours. Only the focus blur, the
-// neighbour dimming (`brightness`) and the flat `splash_gain` touch the
-// splash; tests/test_skin_card.gd pins that.
+// neighbour dimming (`brightness`), the flat `splash_gain` and the owner's
+// `splash_saturation` / `splash_contrast` touch the splash;
+// tests/test_skin_card.gd pins that.
 
 // Golden-angle spiral taps covering ~3 sigma. A 2D Gaussian truncated at
 // 2 sigma under-blurs (effective sigma ~0.83x what was asked for); 3 sigma
@@ -59,5 +68,7 @@ void fragment() {
 	// * COLOR reapplies the node's (and every inherited parent's) modulate,
 	// which canvas_item shaders otherwise discard; SkinSelect fades cards by
 	// tweening modulate.a, so dropping this stopped the splash art fading.
-	COLOR = vec4(c.rgb * brightness * splash_gain, c.a) * COLOR;
+	vec3 rgb = mix(vec3(dot(c.rgb, LUMA)), c.rgb, splash_saturation);
+	rgb = (rgb - vec3(0.5)) * splash_contrast + vec3(0.5);
+	COLOR = vec4(rgb * brightness * splash_gain, c.a) * COLOR;
 }

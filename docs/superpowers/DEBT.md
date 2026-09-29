@@ -45,8 +45,7 @@ eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`;
 `penjadwalan_card_bg.png` was part of this pass too, but Phase 2 left it
 unreferenced -- see the UI depth pass entry below),
-the 2026-09-24 SchoolDay liveliness set (the daily verdict's
-`Assets/Images/DaySummary/Verdict/crown.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
+the 2026-09-24 SchoolDay liveliness set (the sky's `Assets/Images/SchoolDay/Sky/`
 sun, moon, three clouds, star field and rain streak; the avatar rings in
 `SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
 band's `caution_tape.svg`; and `night_windows.png`, generated from
@@ -340,6 +339,10 @@ Work this as one pass per cluster, starting with Inventory, not as a
 by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
+
+**Unsimulated item boosts die on quit (moved from CLAUDE.md, 2026-09-30).**
+Item boosts land on `approved_students`, which is not persisted, so a boost applied and not simulated before quit is lost.
+It follows from the session-scoped-run rule; fixing it means persisting the roster, which needs the owner's go-ahead.
 
 **Ambient kit gaps (2026-09-27).** `hdr_2d` is the clean way to bloom only
 the lights without also blooming the near-white paper and sky; it is a

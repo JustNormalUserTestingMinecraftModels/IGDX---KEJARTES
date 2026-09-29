@@ -2540,9 +2540,6 @@ func test_pilihan_ganda_no_longer_writes_the_badge() -> void:
     first:
     `set_progress(active_questions.size(), active_questions.size(), "Soal %d/%d" % [active_questions.size(), active_questions.size()])`.
 
-  `Scripts/Minigames/AkademIs` above is a typo: the path is
-  `Scripts/Minigames/Akademis/PilihanGanda.gd`.
-
 - [ ] **Step 5: Tests.** Run the suites `minigame_layout`,
 `minigame_typography` and `minigame_score_hud`.
   - `minigame_typography` asserts `PilihanGanda.tscn` contains

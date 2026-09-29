@@ -73,9 +73,11 @@ tiles also get a thicker lip (`ThemeFactory.LOBBY_HUD_LIP`).
 - `Card` — the standard raised surface (white bg, border, shadow).
 - `SunkenPanel` — an inset/recessed surface (e.g. a text well).
 - `Scrim` — a translucent full-screen dim behind a modal/dialog.
-- `CoinPlate` / `ProgressPlate` — the Lobby header's cream 9-slice plates
-  (the wallet display and the grade/week/star strip).
-- `GradeBadge` — the header's flat "KELAS 7" chip.
+- `CoinPlate` / `ProgressPlate` — the Lobby's cream 9-slice plates: the coin
+  box (`DisplayUang`), in the book HUD's step beside JADWAL!, and the
+  grade/week/star tag (`ProgressHeader`, 232×192), centred between the two
+  back-row students' heads.
+- `GradeBadge` — the tag's flat "KELAS 7" chip.
 - `BookCoverPanel` / `BookPagePanel` — the stepped book's board and page,
   9-sliced.
 - `NotifBadge` — the icon rail and nav tiles' small red count pill

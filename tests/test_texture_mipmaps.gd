@@ -41,6 +41,12 @@ const TARGETS := {
 	"res://Assets/Images/EndGame/ujian_sekolah.png": 4.59,
 	"res://Assets/Images/EndGame/ujian_nasional.png": 3.43,
 	"res://Assets/Images/Particles/particle_star.png": 3.20,
+	# The daily verdict's four teacher faces (2026-09-30), drawn into the
+	# popup's 150 px Face slot from 626 px (teacher_1) and 512 px sources.
+	"res://Assets/Images/DaySummary/Verdict/teacher_1.png": 4.17,
+	"res://Assets/Images/DaySummary/Verdict/teacher_2.png": 3.41,
+	"res://Assets/Images/DaySummary/Verdict/teacher_3.png": 3.41,
+	"res://Assets/Images/DaySummary/Verdict/teacher_4.png": 3.41,
 	# The six Lobby faces. Lobby.gd gives each runtime rig the rect of its
 	# seat's Portrait node, measured at 365-400 px from a 1280 px source.
 	"res://Assets/Images/MuridPortrait/Andi/andi_base.png": 3.20,

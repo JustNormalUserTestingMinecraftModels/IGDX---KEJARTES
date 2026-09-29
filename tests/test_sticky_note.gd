@@ -209,6 +209,15 @@ func test_is_inviting_reflects_the_last_call() -> void:
 	assert_false(_note.is_inviting(), "is_inviting must reflect a prior set_inviting(false)")
 
 
+func test_scheduling_an_inviting_note_clears_is_inviting() -> void:
+	_note.scheduled = false
+	_note.set_inviting(true)
+	assert_true(_note.is_inviting(), "precondition: the empty note is inviting")
+	_note.scheduled = true
+	assert_false(_note.is_inviting(),
+		"a filled note is calm: is_inviting must not keep reporting a dead glow")
+
+
 # --------------------------------------------------------------- hygiene
 
 func test_no_hardcoded_color_literals() -> void:

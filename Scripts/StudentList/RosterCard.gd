@@ -22,7 +22,7 @@ extends TextureRect
 ## still addressed as a direct child. This script, too, reaches every node
 ## it touches by its %unique name.
 ##
-## MURIDMU RosterCard Task 3 (2026-09-29) dresses the card as a weekly
+## MURIDMU RosterCard (2026-09-29) dresses the card as a weekly
 ## planner (spec 3.2-3.4): a torn "JADWAL MINGGU INI" WeekHeader with a
 ## calendar glyph, a "n/5 hari" count and a five-dot DayTally (TallyDot
 ## instances, filled by `days_scheduled`); per-day authored tilts on the
@@ -140,8 +140,8 @@ const BREATH_SHADOW_PEAK := 1.0
 
 ## How many of the week's five days this student has scheduled, clamped to
 ## 0..WEEK_DAYS. Fills the first that-many DayTally dots and writes the
-## "n/5 hari" count beside them. StudentList sums the week's set days into
-## it (Task 4); the dots only pop when play_entry() lands them.
+## "n/5 hari" count beside them. apply_week() sums the week's set days into
+## it; the dots only pop when play_entry() lands them.
 @export_range(0, 5) var days_scheduled: int = 0:
 	set(value):
 		days_scheduled = clampi(value, 0, WEEK_DAYS)
@@ -639,8 +639,12 @@ func set_idle(on: bool) -> void:
 ## breathing/inviting separately. `on` also plays the entry beats, so set
 ## this student's week first (is_scheduled, apply_week()) -- play_entry()
 ## snapshots both. StudentList calls this on the card that just landed as
-## the front card (true) and the card it is leaving (false).
+## the front card (true) and the card it is leaving (false). Leaving also
+## stops any entry still running (stop_entry), so a card thrown mid-entry
+## rests instead of finishing its beats off screen.
 func set_front(on: bool) -> void:
 	if on:
 		play_entry()
+	else:
+		stop_entry()
 	set_idle(on)

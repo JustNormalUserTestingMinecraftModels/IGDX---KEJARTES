@@ -17,8 +17,8 @@ extends Node
 ## handle_pointer() and calls switch(); the deck announces picked_up,
 ## thrown, switched and settled, which StudentList wires in StudentList.tscn.
 ##
-## `busy` is the carousel's single re-entry guard (it replaced StudentList's
-## card_animating): input and switch() are refused while it is set, so a
+## `busy` is the carousel's single re-entry guard (it replaces the old
+## card_animating flag in StudentList): input and switch() are refused while it is set, so a
 ## new drag during a switch can neither leak a Tween nor double-fire.
 ##
 ## @tool so tests/test_roster_deck.gd can instance it and drive a drag

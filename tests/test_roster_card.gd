@@ -546,3 +546,20 @@ func test_initial_card_index_defaults_to_zero_when_unknown() -> void:
 	var roster: Array = [{"id": 1}, {"id": 2}, {"id": 3}]
 	assert_eq(RosterCard.initial_card_index(roster, {"id": 999}), 0,
 		"an id nobody in the roster carries defaults to the first card")
+
+
+## A card thrown mid-entry must stop its beats and rest: set_front(false)
+## calls stop_entry() (play_entry is a no-op in the editor, so the wiring is
+## scanned and the resting pose asserted behaviourally).
+func test_set_front_false_stops_the_entry_and_rests() -> void:
+	var src := FileAccess.get_file_as_string(_CARD_SCRIPT)
+	var body := src.get_slice("func set_front(on: bool) -> void:", 1).get_slice("\nfunc ", 0)
+	assert_true(body.contains("else:\n\t\tstop_entry()"),
+		"set_front(false) must stop a running entry")
+	var nama := _card.get_node("Paper/Nama") as Control
+	var rest := nama.position
+	nama.modulate.a = 0.0
+	nama.position = rest + Vector2(0.0, 30.0)
+	_card.set_front(false)
+	assert_eq(nama.modulate.a, 1.0, "a card that leaves is visible at rest")
+	assert_eq(nama.position, rest, "and back at its authored position")

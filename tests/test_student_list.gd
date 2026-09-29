@@ -1075,3 +1075,24 @@ func test_avatar_jump_throws_like_next_and_prev() -> void:
 		"jumping to a later student throws left, as Next does")
 	assert_true(src.contains("_switch_card(index, direction)"),
 		"the jump reuses the carousel's own switch")
+
+
+## The tutorial holds the front card's idle loops (breath, "tap me" glow)
+## paused: _ready pauses them once the cards exist, a landed or sprung-back
+## card stays paused while it is up, and _end_tutorial resumes them.
+func test_the_tutorial_pauses_the_front_cards_idle_loops() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var helper := src.get_slice("func _set_front_idle(on: bool) -> void:", 1).get_slice("\nfunc ", 0)
+	assert_true(helper.contains("card_nodes[current_card_index].set_idle(on)"),
+		"the helper drives the front card's idle loops")
+	var ready_body := src.get_slice("func _ready():", 1).get_slice("\nfunc ", 0)
+	assert_true(ready_body.contains("_set_front_idle(not tutorial_active)"),
+		"_ready pauses the front card's loops when the tutorial is up, after the cards exist")
+	var settled := src.get_slice("func _on_deck_settled(", 1).get_slice("\nfunc ", 0)
+	assert_true(settled.contains("front.set_idle(not tutorial_active)"),
+		"a sprung-back card must not resume its loops under the tutorial")
+	assert_true(settled.contains("if tutorial_active:\n\t\tfront.set_idle(false)"),
+		"a landed card must not run its loops under the tutorial")
+	var ending := src.get_slice("func _end_tutorial():", 1).get_slice("\nfunc ", 0)
+	assert_true(ending.contains("_set_front_idle(true)"),
+		"ending the tutorial resumes the front card's loops")

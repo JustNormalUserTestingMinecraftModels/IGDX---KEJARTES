@@ -20,9 +20,15 @@ extends Node
 ## conditions so a live reduce_motion toggle or a visibility flip takes
 ## effect immediately.
 ##
-## The parent must not sit inside a Container: the loop captures the parent's
-## rest x once in _ready(), and a Container would re-lay it out from under
-## the nudge.
+## The parent must not sit inside a Container: a Container would re-lay it
+## out from under the nudge.
+##
+## The rest x is captured from the parent's current position every time the
+## loop starts from stopped (never in _ready(), which runs before the first
+## layout pass). If the parent's rect changes while the loop runs for any
+## reason other than the nudge itself -- anchors following a resized screen,
+## say -- the loop takes the new position as the rest x and restarts, so the
+## arrow never snaps back to a stale spot.
 
 ## Nudges the parent this many px each way on x.
 @export var amplitude: float = 4.0
@@ -38,6 +44,9 @@ extends Node
 
 var _tween: Tween
 var _rest_x: float = 0.0
+## True only while this node itself is writing the parent's position, so the
+## parent's item_rect_changed can tell the nudge from a layout move.
+var _writing := false
 
 
 func _ready() -> void:
@@ -45,8 +54,8 @@ func _ready() -> void:
 	if target == null:
 		push_error("NudgeLoop: parent must be a Control")
 		return
-	_rest_x = target.position.x
 	target.visibility_changed.connect(_apply_enabled)
+	target.item_rect_changed.connect(_on_parent_rect_changed)
 	if Engine.is_editor_hint():
 		return
 	_apply_enabled()
@@ -84,19 +93,46 @@ func _start() -> void:
 	if target == null:
 		return
 	_stop()
-	target.position.x = _rest_x
+	_rest_x = target.position.x
+	# Rest -> +amplitude -> -amplitude -> rest: the tween drives an OFFSET from
+	# the rest x, applied through _apply_offset() so the parent's
+	# item_rect_changed can tell these writes from a layout move.
 	var half_period: float = period * 0.5
+	var quarter: float = half_period * 0.5
 	_tween = create_tween().set_loops()
-	_tween.tween_property(target, "position:x", _rest_x + amplitude, half_period) \
+	_tween.tween_method(_apply_offset, 0.0, amplitude, quarter) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_tween.tween_method(_apply_offset, amplitude, -amplitude, half_period) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_tween.tween_property(target, "position:x", _rest_x - amplitude, half_period) \
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_method(_apply_offset, -amplitude, 0.0, quarter) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
 
+## Stops the loop and, if it was running, puts the parent back at its rest x.
 func _stop() -> void:
+	var was_running: bool = is_running()
 	if _tween != null:
 		_tween.kill()
 	_tween = null
+	if was_running:
+		_apply_offset(0.0)
+
+
+func _apply_offset(offset: float) -> void:
 	var target := get_parent() as Control
-	if target != null:
-		target.position.x = _rest_x
+	if target == null:
+		return
+	_writing = true
+	target.position.x = _rest_x + offset
+	_writing = false
+
+
+## A rect change on the parent that this node did not write is a layout move:
+## the parent's position is the new rest x, so restart from it. Deferred so
+## the restart never runs inside the layout pass that raised the signal.
+func _on_parent_rect_changed() -> void:
+	if _writing or not is_running():
+		return
+	_tween.kill()
+	_tween = null
+	_apply_enabled.call_deferred()

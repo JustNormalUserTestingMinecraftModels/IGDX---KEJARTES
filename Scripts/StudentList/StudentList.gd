@@ -205,8 +205,16 @@ var _tutorial_arrow: Control = null
 func _ready():
 	_setup_tutorial()
 	_setup_students()
+	_set_front_idle(not tutorial_active)
 	_setup_navigation_arrows()
 	AudioDirector.play_bgm_playlist(&"lobby")
+
+## Runs or pauses the front card's idle loops (breath, "tap me" glow). The
+## tutorial holds them paused while it is up and resumes them when it ends.
+func _set_front_idle(on: bool) -> void:
+	if card_nodes.is_empty():
+		return
+	card_nodes[current_card_index].set_idle(on)
 
 func _setup_navigation_arrows():
 	if left_arrow:
@@ -505,10 +513,12 @@ func _on_deck_thrown(kind: int) -> void:
 ## loops without re-arriving (see RosterCard.set_idle).
 func _on_deck_settled(front: RosterCard, landed: bool) -> void:
 	if not landed:
-		front.set_idle(true)
+		front.set_idle(not tutorial_active)
 		return
 	_stagger_card_notes(front)
 	front.set_front(true)
+	if tutorial_active:
+		front.set_idle(false)
 	# The Navigasi Card step (index 2 since the Status Jadwal step was
 	# inserted at 1) auto-advances once the card slide it asked for lands.
 	if tutorial_active and current_step == 2:
@@ -876,6 +886,7 @@ func _end_tutorial():
 		_tutorial_panel.hide()
 	if color_rect:
 		color_rect.hide()
+	_set_front_idle(true)
 
 func _on_click_area_gui_input(event: InputEvent):
 	# Steps 0 (Muridmu) and 1 (Status Jadwal) are both spotlight-only

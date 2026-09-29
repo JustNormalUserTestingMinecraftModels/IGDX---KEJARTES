@@ -16,17 +16,17 @@ extends TextureRect
 ## it stops being legible on a phone. TINT_WASH keeps the category
 ## readable as a hue while leaving the note light enough to write on.
 ##
-## MURIDMU RosterCard Task 2 (2026-09-29) adds the note's two skins --
+## The note has two skins (MURIDMU RosterCard, 2026-09-29) --
 ## `scheduled` swaps between the filled category-tinted look and a
 ## kraft "plan me" empty state (dashed EmptyFrame, "+" icon, muted "Atur"
 ## label) -- plus a static washi Tape strip and an authored tilt
 ## (`tilt_degrees`, applied to the root's rotation; RosterCard.tscn's
 ## StickyNotesContainer is a plain Control, not a layout Container, so the
 ## rotation is never fought and reset by a parent's own layout pass).
-## `set_inviting()` drives the empty note's looped "tap me" glow; Task 3
-## (per-day tilts on the card) and Task 4 (wiring `scheduled` from the
-## week's real schedule) build on this from the outside -- neither is done
-## here.
+## `set_inviting()` drives the empty note's looped "tap me" glow. The
+## owning RosterCard sets `scheduled` from the week's real schedule
+## (RosterCard.apply_week) and starts/stops the glow through set_idle() /
+## set_front(); this file owns only the note's own look and loop.
 
 ## How far each category color is pulled toward white before it is
 ## multiplied into the paper. 0.0 is the raw token (illegible), 1.0 is
@@ -111,16 +111,18 @@ const PIN_STEP := 20.0
 ## swaps to the kraft "plan me" empty state: EmptyFrame becomes visible,
 ## Icon shows empty_icon's "+" glyph, and ActivityLabel shows
 ## EMPTY_LABEL_TEXT ("Atur") in the muted StickyNoteEmptyLabel look,
-## whatever `activity`/`icon_texture` currently hold. StudentList.gd does
-## not set this yet -- that wiring is Task 4's (day_schedules -> is_day_set
-## -> scheduled). Flipping back to true also kills any glow left running
-## from set_inviting(), since a scheduled week is calm (spec 4.2).
+## whatever `activity`/`icon_texture` currently hold. RosterCard.apply_week()
+## sets it from the student's day_schedules entry. Flipping to true also
+## kills any glow left running from set_inviting() and clears the recorded
+## inviting request (is_inviting() turns false), since a scheduled week is
+## calm (spec 4.2).
 @export var scheduled: bool = true:
 	set(value):
 		scheduled = value
 		if is_node_ready():
 			_apply_state()
 			if scheduled:
+				_inviting = false
 				_stop_glow()
 
 ## The empty-note "+" glyph (Assets/Images/UI/StudentList/icon_add.svg,
@@ -136,8 +138,8 @@ const PIN_STEP := 20.0
 
 ## The note's authored tilt in degrees, applied to the whole root's
 ## rotation about its own centre (see the file header on why rotation
-## holds under StickyNotesContainer). 0 is upright; RosterCard.tscn's five
-## per-day angles land here via Task 3, not this task.
+## holds under StickyNotesContainer). 0 is upright; RosterCard.tscn authors
+## the five per-day angles on the card's notes.
 @export_range(-15.0, 15.0, 0.1) var tilt_degrees: float = 0.0:
 	set(value):
 		tilt_degrees = value
@@ -274,8 +276,8 @@ func _stop_glow() -> void:
 
 ## Starts (on == true) or stops (on == false) the empty note's looped "tap
 ## me" glow: EmptyFrame's self_modulate breathes toward accent_sunflower and
-## back while the "+" icon pulses in sympathy (spec 4.2). Callers (Task 3's
-## per-card idle-loop policy) own WHEN this runs -- e.g. only the front
+## back while the "+" icon pulses in sympathy (spec 4.2). Callers (RosterCard.set_idle,
+## the per-card idle-loop policy) own WHEN this runs -- e.g. only the front
 ## card's empty notes, paused during a swipe or popup -- this method only
 ## owns HOW. No-op in the editor and skipped entirely under
 ## GameSettings.reduce_motion; killed in _exit_tree so nothing leaks across

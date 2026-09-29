@@ -15,7 +15,8 @@ Setelan, Prestasi, Kostum), reusing `RosterChip` and `CaptionLabel` with no
 theme change. The pills hang under their buttons, so the buttons stay the
 rail's direct children. Their right edges line up with the coin box at x 1032,
 and the rail now starts at y 810, so the last pill still ends 24 px above the
-coin box. Spec: `specs/2026-09-29-lobby-rail-labels-design.md`.
+coin box. The buttons grew to 142 tall so tapping the word presses the icon.
+Spec: `specs/2026-09-29-lobby-rail-labels-design.md`.
 
 ## 2026-09-29 — Lobby layout grid
 

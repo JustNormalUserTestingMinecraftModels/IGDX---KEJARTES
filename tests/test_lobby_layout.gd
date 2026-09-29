@@ -39,7 +39,8 @@ const NAV_TILES := ["Koperasi", "Inventory", "ReportStudent"]
 ## nudge), moved the coin box into the book's step beside JADWAL!, lifted the
 ## rail to end 24 px above it, and made the progress plate a tag in the gap
 ## between the two back-row heads. The rail labels then lifted the rail to y
-## 810 and spread its buttons 156 px apart, so each icon's word hangs under it.
+## 810 and made its buttons 142 tall, 156 px apart: the word hangs under each
+## icon inside the button, so it is part of the tap target.
 const DESIGN_RECTS := {
 	"Student": Rect2(88, 1444, 532, 144),
 	"Jadwal": Rect2(88, 1444, 532, 144),
@@ -48,11 +49,11 @@ const DESIGN_RECTS := {
 	"ReportStudent": Rect2(706, 1656, 285, 160),
 	"ChevronGrip": Rect2(214, 1352, 280, 96),
 	"DisplayUang": Rect2(684, 1444, 348, 112),
-	"IconRail": Rect2(918, 810, 96, 564),
-	"DailyLogin": Rect2(918, 810, 96, 96),
-	"SettingsButton": Rect2(918, 966, 96, 96),
-	"AchievementButton": Rect2(918, 1122, 96, 96),
-	"SkinSwitchButton": Rect2(918, 1278, 96, 96),
+	"IconRail": Rect2(918, 810, 96, 610),
+	"DailyLogin": Rect2(918, 810, 96, 142),
+	"SettingsButton": Rect2(918, 966, 96, 142),
+	"AchievementButton": Rect2(918, 1122, 96, 142),
+	"SkinSwitchButton": Rect2(918, 1278, 96, 142),
 	"ProgressHeader": Rect2(420, 48, 232, 192),
 }
 
@@ -343,9 +344,6 @@ const RAIL_LABELS := [
 	["AchievementButton", "AchievementLabel", "Prestasi"],
 	["SkinSwitchButton", "SkinSwitchLabel", "Kostum"],
 ]
-## The right edge, px, every pill lines up with: the coin box's and the
-## screen margin's (1080 - 48).
-const PILL_RIGHT_EDGE := 1032.0
 ## How far, px, the lowest pill's bottom keeps above the coin box.
 const PILL_COIN_GAP := 24.0
 
@@ -359,6 +357,12 @@ func test_the_rail_labels_name_their_icons() -> void:
 			continue
 		assert_eq(pill.get_parent(), button, "%s hangs under %s" % [entry[1], entry[0]])
 		assert_eq(pill.theme_type_variation, &"RosterChip", entry[1] + " is a RosterChip")
+		var pill_rect := _authored_rect(pill)
+		var button_rect := _authored_rect(button)
+		assert_true(pill_rect.position.y >= button_rect.position.y
+				and pill_rect.end.y <= button_rect.end.y + 0.5,
+			"%s must lie inside %s vertically, so a tap on the word presses the icon"
+				% [entry[1], entry[0]])
 		var text := pill.get_node_or_null("Text") as Label
 		assert_true(text != null, entry[1] + " needs its Text label")
 		if text != null:
@@ -368,19 +372,21 @@ func test_the_rail_labels_name_their_icons() -> void:
 
 
 ## The pills stay on the grid: their right edge is no further out than the coin
-## box's, and the lowest one ends PILL_COIN_GAP above the coin box.
+## box's (`_authored_rect(coins).end.x`), and the lowest one ends PILL_COIN_GAP
+## above the coin box.
 func test_the_rail_labels_keep_the_grid() -> void:
 	var coins := _hud("DisplayUang")
 	if coins == null:
 		return
+	var right_edge := _authored_rect(coins).end.x
 	var lowest := -INF
 	for entry: Array in RAIL_LABELS:
 		var pill := _hud(entry[1])
 		if pill == null:
 			continue
 		var r := _authored_rect(pill)
-		assert_true(r.end.x <= PILL_RIGHT_EDGE + 0.5,
-			"%s ends at x %.1f, past %.1f" % [entry[1], r.end.x, PILL_RIGHT_EDGE])
+		assert_true(r.end.x <= right_edge + 0.5,
+			"%s ends at x %.1f, past the coin box's %.1f" % [entry[1], r.end.x, right_edge])
 		lowest = maxf(lowest, r.end.y)
 	var coin_top := _authored_rect(coins).position.y
 	assert_true(lowest <= coin_top - PILL_COIN_GAP + 0.5,

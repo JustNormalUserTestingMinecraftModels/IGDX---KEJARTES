@@ -32,10 +32,13 @@ a bare icon):
 - **The rail moves** so the pills' right edges line up with the coin box and
   the 48 px margin (x 1032), and the last pill ends 24 px above the coin box:
   - `IconRail` offsets: `offset_left −114`, `offset_right −18`,
-    `offset_top −1062`, `offset_bottom −498`, which gives the rect
-    918, 810, 96, 564 on the design screen.
-  - `separation` goes from 24 to 60 (2 px gap, 44 px pill, 14 px to the next
-    icon), a layout constant, which the rules allow.
+    `offset_top −1062`, `offset_bottom −452`, which gives the rect
+    918, 810, 96, 610 on the design screen.
+  - `separation` goes from 24 to 14, a layout constant, which the rules allow.
+- **The word is part of the tap target.** Each button is 96x142
+  (`custom_minimum_size`) with `STRETCH_KEEP_ASPECT`, so the square icon sits
+  in the top 96x96 and the pill (y 98...142) lies inside the button's rect.
+  Tapping the word presses the icon. The rail is 4x142 + 3x14 = 610 tall.
   - The buttons sit at y 810, 966, 1122 and 1278. The pills sit at y 908, 1064,
     1220 and 1376–1420, all at x 900–1032.
 - The swipe is unchanged: the rail slides 180 px right, which carries every pill
@@ -43,9 +46,9 @@ a bare icon):
 
 ## Tests
 
-- `test_lobby_layout` `DESIGN_RECTS`: `IconRail` becomes 918,810,96,564, and
-  the four buttons become x 918 at y 810, 966, 1122 and 1278.
-- `test_tall_screen_layout`: `DailyLogin` becomes 918,1290,96,96 at 1080×2400.
+- `test_lobby_layout` `DESIGN_RECTS`: `IconRail` becomes 918,810,96,610, and
+  the four buttons become 96x142 at x 918, y 810, 966, 1122 and 1278.
+- `test_tall_screen_layout`: `DailyLogin` becomes 918,1290,96,142 at 1080×2400.
 - New:
   - Each pill is a child of its button and uses `RosterChip` / `CaptionLabel`
     with its word.

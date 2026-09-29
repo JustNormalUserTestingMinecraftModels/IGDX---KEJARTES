@@ -25,6 +25,14 @@ func _ready() -> void:
 		mulai.pressed.connect(_on_mulai)
 	if Engine.is_editor_hint():
 		return
+	_spring_in.call_deferred()
+
+
+## Springs the frame in once its CenterContainer's first layout pass has run:
+## that pass resets scale and rotation and only then gives the frame a size
+## for the pivot. Deferred from _ready(); a node freed in its opening frame
+## just drops the call (same approach as ItemDetailSheet).
+func _spring_in() -> void:
 	var frame := get_node_or_null("%Frame") as Control
 	if frame != null:
 		AnimUtils.popup_spring_in(frame)

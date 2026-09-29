@@ -230,13 +230,25 @@ func test_mulai_is_the_mint_main_action() -> void:
 
 
 func test_jeda_and_keluar_wear_their_roles() -> void:
-	var pause := FileAccess.get_file_as_string("res://Scenes/Minigames/UI/PauseMenu.tscn")
-	assert_contains(pause, "title_text = \"JEDA\"")
-	for pair in [["Lanjutkan", "PrimaryButtonM"], ["Pengaturan", "SecondaryButtonM"],
-			["Keluar", "DangerButtonM"]]:
-		assert_contains(pause, "text = \"%s\"" % pair[0])
-	var quit := FileAccess.get_file_as_string("res://Scenes/Minigames/UI/QuitConfirmDialog.tscn")
-	assert_contains(quit, "title_text = \"KELUAR?\"")
-	assert_contains(quit, "text = \"Tidak, lanjut main\"")
-	assert_contains(quit, "text = \"Ya, keluar\"")
-	assert_false(pause.contains("Game diberhentikan"), "no error-sounding title")
+	var pause_scene := "res://Scenes/Minigames/UI/PauseMenu.tscn"
+	var quit_scene := "res://Scenes/Minigames/UI/QuitConfirmDialog.tscn"
+	var pause_src := FileAccess.get_file_as_string(pause_scene)
+	assert_contains(pause_src, "title_text = \"JEDA\"")
+	assert_false(pause_src.contains("Game diberhentikan"), "no error-sounding title")
+	var quit_src := FileAccess.get_file_as_string(quit_scene)
+	assert_contains(quit_src, "title_text = \"KELUAR?\"")
+	# scene, unique node, its text, its role variation.
+	for row in [
+			[pause_scene, "%BtnResume", "Lanjutkan", &"PrimaryButtonM"],
+			[pause_scene, "%BtnSettings", "Pengaturan", &"SecondaryButtonM"],
+			[pause_scene, "%BtnQuit", "Keluar", &"DangerButtonM"],
+			[quit_scene, "%NoButton", "Tidak, lanjut main", &"PrimaryButtonM"],
+			[quit_scene, "%YesButton", "Ya, keluar", &"DangerButtonM"]]:
+		var root := (load(row[0]) as PackedScene).instantiate()
+		track(root)
+		var button := root.get_node_or_null(row[1]) as Button
+		assert_true(button != null, "%s has %s" % [row[0], row[1]])
+		if button == null:
+			continue
+		assert_eq(button.text, row[2], "%s text" % row[1])
+		assert_eq(button.theme_type_variation, row[3], "%s wears its role" % row[1])

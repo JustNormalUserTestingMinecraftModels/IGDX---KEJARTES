@@ -23,10 +23,20 @@ func _ready() -> void:
 	_wire(%BtnQuit as Button, quit_pressed)
 	if Engine.is_editor_hint():
 		return
-	AnimUtils.popup_spring_in(%Frame as Control)
+	_spring_in.call_deferred()
 
 
 ## Pure signal wiring, ungated so tests can press the buttons.
 func _wire(button: Button, relay: Signal) -> void:
 	if not button.pressed.is_connected(relay.emit):
 		button.pressed.connect(relay.emit)
+
+
+## Springs the frame in once its CenterContainer's first layout pass has run:
+## that pass resets scale and rotation and only then gives the frame a size
+## for the pivot. Deferred from _ready(); a node freed in its opening frame
+## just drops the call (same approach as ItemDetailSheet).
+func _spring_in() -> void:
+	var frame := get_node_or_null("%Frame") as Control
+	if frame != null:
+		AnimUtils.popup_spring_in(frame)

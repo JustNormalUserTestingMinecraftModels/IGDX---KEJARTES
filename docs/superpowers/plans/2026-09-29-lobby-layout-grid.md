@@ -17,7 +17,7 @@
 - No visual is built at runtime. Every new node is a `[node]` block in `Lobby.tscn`.
 - Every script keeps its `##` file header, and every `@export` and new `const` has a `##` line (`tests/test_script_documentation.gd`).
 - No test may be a coroutine (no `await`). Suites stay `@tool`.
-- Never edit `Scripts/Balance.gd`. No rebake: this plan adds no theme variation.
+- Never edit `Scripts/Balance.gd`. Exactly one theme change: the `GradeBadge` variation's padding, `space_sm` → `space_xs` (Task 3), followed by a rebake.
 - Commits: Conventional Commits with a scope, written to a file and committed with `git commit -F <file>`. The message ends with a blank line, then `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
 - Git runs as plain single commands (no `cd … &&`, no heredocs).
 - Before every commit: `git branch --show-current` must print `feat/lobby-layout-grid`.
@@ -26,7 +26,7 @@
 
 | Node | Rect (x, y, w, h) |
 |---|---|
-| `ProgressHeader` (the tag) | 420, 48, 232, 184 |
+| `ProgressHeader` (the tag) | 420, 48, 232, 192 |
 | `DisplayUang` (coin box) | 684, 1444, 348, 112 |
 | `IconRail` | 936, 964, 96, 456 (buttons at y 964, 1084, 1204, 1324) |
 | `ChevronGrip` | 214, 1352, 280, 96 |
@@ -92,7 +92,7 @@ const DESIGN_RECTS := {
 	"SettingsButton": Rect2(936, 1084, 96, 96),
 	"AchievementButton": Rect2(936, 1204, 96, 96),
 	"SkinSwitchButton": Rect2(936, 1324, 96, 96),
-	"ProgressHeader": Rect2(420, 48, 232, 184),
+	"ProgressHeader": Rect2(420, 48, 232, 192),
 }
 ```
 
@@ -182,7 +182,7 @@ func test_the_hud_sits_inside_the_screen_margin() -> void:
 
 ## `c`'s minimum size fits its authored rect. A Control whose minimum size
 ## outgrows its rect draws past it: the old 88x84 grade badge really drew
-## 106 wide.
+## 121 wide.
 func _assert_fits_rect(c: Control) -> void:
 	if c == null:
 		return
@@ -347,6 +347,8 @@ func test_only_the_progress_tag_idles_to_a_fade() -> void:
 			"the tag fades; the coins leave with the book")
 ```
 
+(f) Delete `test_idle_fade_targets_the_header_and_coin_plate` (and nothing else around it): it asserts two idle-fade targets, the coin plate included, which this pass retires. `test_only_the_progress_tag_idles_to_a_fade` replaces it. Keep the `_idle_fade()` helper and the tests after it (`Review M3` …).
+
 - [ ] **Step 5: Update `tests/test_tall_screen_layout.gd`**
 
 Replace the doc comment and body of `test_lobby_on_a_tall_phone` (lines 188-207, from `## On a 1080x2400 phone` through the `DailyReward` assertion) with:
@@ -371,7 +373,7 @@ func test_lobby_on_a_tall_phone() -> void:
 	_assert_placed((lobby.get_node("%DisplayUang") as Control),
 		Rect2(684, 1924, 348, 112), "DisplayUang")
 	_assert_placed((lobby.get_node("%ProgressHeader") as Control),
-		Rect2(420, 48, 232, 184), "ProgressHeader")
+		Rect2(420, 48, 232, 192), "ProgressHeader")
 	_assert_placed((lobby.get_node("DailyReward") as Control),
 		Rect2(80, 798, 942, 418), "DailyReward")
 ```
@@ -456,9 +458,9 @@ theme_type_variation = &"CoinPlate"
 
 [node name="CoinIcon" type="TextureRect" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=1731951124]
 layout_mode = 0
-offset_left = 20.0
+offset_left = 12.0
 offset_top = 24.0
-offset_right = 76.0
+offset_right = 64.0
 offset_bottom = 84.0
 mouse_filter = 2
 texture = ExtResource("14_dyk4g")
@@ -467,7 +469,7 @@ stretch_mode = 5
 
 [node name="Label" type="Label" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=664496077]
 layout_mode = 0
-offset_left = 80.0
+offset_left = 68.0
 offset_top = 24.0
 offset_right = 236.0
 offset_bottom = 84.0
@@ -516,7 +518,7 @@ anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -120.0
 offset_right = 112.0
-offset_bottom = 184.0
+offset_bottom = 192.0
 grow_horizontal = 2
 mouse_filter = 2
 theme_type_variation = &"ProgressPlate"
@@ -524,10 +526,10 @@ script = ExtResource("38_ayldy")
 
 [node name="GradeBadge" type="PanelContainer" parent="Safe/UI/ProgressHeader" unique_id=1892516588]
 layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 116.0
-offset_bottom = 129.0
+offset_left = 6.0
+offset_top = 8.0
+offset_right = 111.0
+offset_bottom = 127.0
 mouse_filter = 2
 theme_type_variation = &"GradeBadge"
 
@@ -553,10 +555,10 @@ horizontal_alignment = 1
 [node name="WeekCaption" type="Label" parent="Safe/UI/ProgressHeader" unique_id=1447350126]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 124.0
+offset_left = 118.0
 offset_top = 24.0
-offset_right = 222.0
-offset_bottom = 54.0
+offset_right = 226.0
+offset_bottom = 63.0
 theme_type_variation = &"CaptionLabel"
 text = "Minggu"
 horizontal_alignment = 1
@@ -565,10 +567,10 @@ vertical_alignment = 1
 [node name="WeekLabel" type="Label" parent="Safe/UI/ProgressHeader" unique_id=1839783328]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 124.0
-offset_top = 58.0
-offset_right = 222.0
-offset_bottom = 108.0
+offset_left = 118.0
+offset_top = 67.0
+offset_right = 226.0
+offset_bottom = 111.0
 theme_type_variation = &"WeekLabel"
 text = "1 / 6"
 horizontal_alignment = 1
@@ -577,10 +579,10 @@ vertical_alignment = 1
 [node name="StarBar" type="ProgressBar" parent="Safe/UI/ProgressHeader" unique_id=555781510]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 10.0
-offset_top = 143.0
-offset_right = 83.0
-offset_bottom = 167.0
+offset_left = 6.0
+offset_top = 139.0
+offset_right = 71.0
+offset_bottom = 163.0
 mouse_filter = 2
 theme_type_variation = &"StarProgressBar"
 max_value = 3.0
@@ -604,10 +606,10 @@ scale_amount_max = 0.6
 
 [node name="StarIcon" type="TextureRect" parent="Safe/UI/ProgressHeader" unique_id=1236434420]
 layout_mode = 0
-offset_left = 89.0
-offset_top = 139.0
-offset_right = 119.0
-offset_bottom = 169.0
+offset_left = 77.0
+offset_top = 136.0
+offset_right = 107.0
+offset_bottom = 166.0
 mouse_filter = 2
 texture = ExtResource("40_2xndu")
 expand_mode = 1
@@ -616,10 +618,10 @@ stretch_mode = 5
 [node name="StarNum" type="Label" parent="Safe/UI/ProgressHeader" unique_id=865703870]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 123.0
-offset_top = 137.0
-offset_right = 222.0
-offset_bottom = 173.0
+offset_left = 113.0
+offset_top = 135.0
+offset_right = 226.0
+offset_bottom = 166.0
 theme_type_variation = &"StarNumLabel"
 text = "0.0 / 3.0"
 vertical_alignment = 1
@@ -674,6 +676,8 @@ Do not commit yet: Task 3's scripts must land before the suites pass.
 - Modify: `Scripts/Lobby/LobbyProgressHeader.gd:5-13`
 - Modify: `Scripts/Lobby/LobbyHud.gd` (the `@onready` block around line 81-96, and `_set_book_live` around line 268-277)
 - Modify: `Scripts/UI/IdleFade.gd:5-13` (doc comments only)
+- Modify: `Scripts/Design/ThemeFactory.gd:2826-2829` (the `GradeBadge` padding)
+- Regenerate: `Assets/Theme/kejartes_theme.tres` (rebake)
 
 **Interfaces:**
 - Consumes: Task 2's `%DisplayUang` under `%BookHud` and `%WeekCaption`.
@@ -772,9 +776,35 @@ and `## What fades: the Lobby wires its header and coin plate here.` with:
 
 Read lines 1-15 first and keep the paragraph's line breaks tidy.
 
+- [ ] **Step 3b: Slim the grade badge's padding (`ThemeFactory.gd`)**
+
+In `_build_lobby_hud`'s `GradeBadge` block, change the four content margins from `tokens.space_sm` to `tokens.space_xs`, and extend the block's comment:
+
+```gdscript
+	# -- GradeBadge: flat, the Olahraga accent (Q3). space_xs padding, not
+	# space_sm: at 16 px the badge measures 121x135 and cannot sit beside the
+	# week inside the tag between the back-row heads (2026-09-29 layout grid). --
+	theme.add_type("GradeBadge")
+	theme.set_type_variation("GradeBadge", "PanelContainer")
+	var grade_badge := StyleBoxFlat.new()
+	grade_badge.bg_color = tokens.cat_olahraga_on_dark
+	grade_badge.set_corner_radius_all(tokens.radius_md)
+	grade_badge.content_margin_left = tokens.space_xs
+	grade_badge.content_margin_right = tokens.space_xs
+	grade_badge.content_margin_top = tokens.space_xs
+	grade_badge.content_margin_bottom = tokens.space_xs
+	theme.set_stylebox("panel", "GradeBadge", grade_badge)
+```
+
+`GradeBadge` is used only by the Lobby tag (grep confirmed: RunResult's `GradeBadge` is a node name, not this variation).
+
 - [ ] **Step 4: Relaunch the worktree editor**
 
 Run Task 1 Step 1's `Invoke-CimMethod` line again (the cache is already seeded). Poll `session_manage(op="list")` for the new `lobby-layout-grid` session id (it changes on every launch). A fresh launch loads every script from disk, so no no-op `script_patch` is needed. Read `logs_read(source="editor", session_id=<wt>)` once and confirm there are no parse errors and no "Node not found" errors for `Lobby.tscn`.
+
+- [ ] **Step 4b: Rebake, then restart**
+
+`test_run(suite="theme_rebake", session_id=<wt>)` rebakes `Assets/Theme/kejartes_theme.tres` in-process. Then `git diff --stat -- Assets/Theme/kejartes_theme.tres` and `git diff -- Assets/Theme/kejartes_theme.tres | grep '^[-+]content_margin'`: only the `GradeBadge` stylebox's four `content_margin_*` lines may change (16 → 8). Stylebox ids can renumber; if the diff shows anything beyond the margins and id churn, stop and report. Then quit and relaunch the worktree editor (the cached theme merges stale props until a restart), and re-list its session id.
 
 - [ ] **Step 5: Run the Lobby suites**
 
@@ -783,8 +813,8 @@ Run Task 1 Step 1's `Invoke-CimMethod` line again (the cache is already seeded).
 Expected: all PASS. If `test_run` returns a `scene_warning` asking for a scene, open `Scenes/MainMenu/MainMenu.tscn` (`scene_open`, `session_id=<wt>`) and re-run.
 
 If a check fails:
-- **`test_the_progress_tag_fits_its_longest_lines`**: the message names the child and its real minimum size. Enlarge that child's rect within the tag and shift its neighbours, keeping the tag at 232×184. If it cannot fit, **stop and report** the measured sizes. Do not widen the tag: its width is set by the hair gap.
-- **`test_the_largest_balance_fits_the_coin_box`**: move `CoinIcon` to `offset_left = 12.0`, `offset_right = 64.0` and `Label` to `offset_left = 68.0` (editor closed, then relaunch), and re-run.
+- **`test_the_progress_tag_fits_its_longest_lines`**: the message names the child and its real minimum size. Enlarge that child's rect within the tag and shift its neighbours, keeping the tag at 232×192. If it cannot fit, **stop and report** the measured sizes. Do not widen the tag: its width is set by the hair gap.
+- **`test_the_largest_balance_fits_the_coin_box`**: `999999G` measured 166×58 against the 168×60 label rect. If it still fails, **stop and report** the measured size.
 - **`test_the_progress_tag_clears_every_back_row_head`**: **stop and report** the hit point. The spec's Python measurement put the closest hair 1.3 px outside the keep-out, so a hit means the fit maths or the rects differ from the spec.
 
 Any scene fix follows the same routine: quit the editor, edit, relaunch.
@@ -803,7 +833,7 @@ Expected changes: `Scenes/Lobby/Lobby.tscn`, `Scripts/Lobby/LobbyProgressHeader.
 ```text
 feat(lobby): fit the progress tag between the heads, coins beside JADWAL
 
-The grade/week/star plate becomes a 232x184 tag in the gap between the
+The grade/week/star plate becomes a 232x192 tag in the gap between the
 back-row heads, clear of every student's hair and face. The coin box
 moves into the book's step and rides the HUD swipe, the rail ends 24 px
 above it, and the book returns to the 48 px grid (undoing 60d6d7d7).
@@ -812,7 +842,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ```
 
 ```powershell
-git add Scenes/Lobby/Lobby.tscn Scripts/Lobby/LobbyProgressHeader.gd Scripts/Lobby/LobbyHud.gd Scripts/UI/IdleFade.gd
+git add Scenes/Lobby/Lobby.tscn Scripts/Lobby/LobbyProgressHeader.gd Scripts/Lobby/LobbyHud.gd Scripts/UI/IdleFade.gd Scripts/Design/ThemeFactory.gd Assets/Theme/kejartes_theme.tres
 git commit -F <message file>
 ```
 
@@ -861,7 +891,7 @@ Insert above the first `## 2026-09-29 —` heading:
 ## 2026-09-29 — Lobby layout grid
 
 The owner asked for spacing and for the Minggu plate off the students' faces.
-The progress plate is now a 232x184 tag in the gap between the two back-row
+The progress plate is now a 232x192 tag in the gap between the two back-row
 heads. It clears every student's hair and face, in every skin, breathing and at
 full parallax tilt; the art was measured, and `test_lobby_layout` checks it
 pixel by pixel. `Minggu` moved to its own caption (`WEEK_FORMAT` is `"%d / %d"`),

@@ -70,7 +70,7 @@ margin, and neighbouring HUD pieces are at least **24 px** apart.
 
 | Element | Rect (x, y, w, h) on the design screen | Anchored to |
 |---|---|---|
-| `ProgressHeader` (the tag) | 420, 48, 232, 184 | top-centre of `Safe/UI` (offsets −120 … +112) |
+| `ProgressHeader` (the tag) | 420, 48, 232, 192 | top-centre of `Safe/UI` (offsets −120 … +112) |
 | `IconRail` | 936, 964, 96, 456 | bottom-right, inside `%Hud` |
 | `ChevronGrip` | 214, 1352, 280, 96 | inside `%BookHud` (unchanged local offsets) |
 | `RaisedBlock` | 48, 1400, 612, 216 | inside `%BookHud` (unchanged) |
@@ -91,25 +91,29 @@ margin, and neighbouring HUD pieces are at least **24 px** apart.
 
 `ProgressHeader` stays a `LobbyProgressHeader` `Panel` on the `ProgressPlate`
 nine-patch. Its children keep absolute offsets (layout mode 0), as today, in
-two rows. Local coordinates are within the 232×184 tag:
+two rows. Local coordinates are within the 232×192 tag, sized from the real
+minimum sizes measured in the editor under the baked theme (2026-09-29):
 
-| Node | Local rect | Variation | Shows |
-|---|---|---|---|
-| `GradeBadge` (stacked, unchanged) | 10, 10, 106, 119 | `GradeBadge` | `KELAS` over `7` |
-| `WeekCaption` (**new** Label) | 124, 24, 98, 30 | `CaptionLabel` | `Minggu` (static) |
-| `WeekLabel` | 124, 58, 98, 50 | `WeekLabel` | `1 / 6` |
-| `StarBar` | 10, 143, 73, 24 | `StarProgressBar` | the run's stars |
-| `StarIcon` | 89, 139, 30, 30 | — | ★ |
-| `StarNum` | 123, 137, 99, 36 | `StarNumLabel` | `0.0 / 3.0` |
+| Node | Local rect | Variation | Shows | Real minimum |
+|---|---|---|---|---|
+| `GradeBadge` (stacked) | 6, 8, 105, 119 | `GradeBadge` | `KELAS` over `7` | 105×119 at 8 px padding |
+| `WeekCaption` (**new** Label) | 118, 24, 108, 39 | `CaptionLabel` | `Minggu` (static) | 93×39 |
+| `WeekLabel` | 118, 67, 108, 44 | `WeekLabel` | `1 / 6` | `8 / 8`: 108×44 |
+| `StarBar` | 6, 139, 65, 24 | `StarProgressBar` | the run's stars | — |
+| `StarIcon` | 77, 136, 30, 30 | — | ★ | — |
+| `StarNum` | 113, 135, 113, 31 | `StarNumLabel` | `0.0 / 3.0` | `3.0 / 3.0`: 111×31 |
 
-- The badge rect is its **real** minimum size: `KELAS` at 22 px (74 wide) and
-  the grade at 64 px, stacked, plus `space_sm` (16) margins. The old 88×84
-  authored rect was smaller than that, so the badge always drew at its
-  minimum size.
+- **The badge's padding drops from `space_sm` (16) to `space_xs` (8)**, a
+  `ThemeFactory` change to the `GradeBadge` variation (used only here) and a
+  rebake (owner's pick, 2026-09-29). At 16 px the badge measures 121×135
+  (`KELAS` is 89×31 and the grade 55×72 at 64 px), and a badge that wide
+  beside the week cannot fit the gap. The old 88×84 authored rect was
+  smaller than even that, so the badge always drew at its minimum size.
+- The bottom 26 px of the tag is the `ProgressPlate` nine-patch's bottom
+  content margin (its lip); nothing sits there.
 - `LobbyProgressHeader.WEEK_FORMAT` becomes `"%d / %d"`. The word `Minggu`
-  moves to the static `WeekCaption` node, because `Minggu 1 / 6` at the
-  `WeekLabel` size (36 px, 264 px wide) cannot fit a tag this narrow.
-- No new theme variation and no rebake: `CaptionLabel` already exists.
+  moves to the static `WeekCaption` node, because `Minggu 8 / 8` at the
+  `WeekLabel` size measures 266 px wide and cannot fit a tag this narrow.
 - `StarBar/TipSparkle` stays a child of `StarBar` and follows it.
 
 ### The coin box
@@ -117,9 +121,10 @@ two rows. Local coordinates are within the 232×184 tag:
 - `DisplayUang` (with `CoinIcon`, `Label`, `PlusUang`) is **reparented under
   `%BookHud`**. It rides the book's slide with no new tween code. It keeps
   `unique_name_in_owner`.
-- Width drops from 360 to 348, the step's width less the 24 px gap. `999999`
-  (the playtest seed's balance) must still fit. If it does not, the coin icon's
-  inset gives up the difference, not the `+`.
+- Width drops from 360 to 348, the step's width less the 24 px gap.
+  `999999G` (the playtest seed's balance) measures 166×58, so the coin icon's
+  inset gives up the difference, not the `+`: `CoinIcon` 12–64, `Label` 68–236
+  (168 wide), `PlusUang` 240–336.
 - `PlusUang` stays mint (2026-09-27 spec § 3.2; `test_scrapbook_plus_and_hero_are_green`).
 
 ## 5. Behaviour changes
@@ -146,14 +151,17 @@ stagger, the badges, the chat bubble, the classroom art.
 - This work lives in the worktree `feat/lobby-layout-grid`. Verify it in a
   second editor on that worktree (memory: verify worktree changes in a second
   editor).
-- No `Balance.gd` change, no rebake, no new art.
+- No `Balance.gd` change, no new art. One rebake, for the `GradeBadge` padding
+  (§ 4): run the `theme_rebake` suite in the worktree editor, then restart the
+  editor before anything saves (memory: rebake, then restart before saving),
+  and diff `kejartes_theme.tres` to confirm only the badge's margins moved.
 
 ## 7. Tests
 
 Update:
 
 - `tests/test_lobby_layout.gd`: remove `HUD_NUDGE`. Set `DESIGN_RECTS` to § 4:
-  `ProgressHeader` 420,48,232,184; `DisplayUang` 684,1444,348,112; `IconRail`
+  `ProgressHeader` 420,48,232,192; `DisplayUang` 684,1444,348,112; `IconRail`
   and its four buttons from y 964; the book's controls at their un-nudged rects.
 - `tests/test_lobby_hud.gd`:
   - `DisplayUang` is a descendant of `%BookHud`.
@@ -162,7 +170,7 @@ Update:
   - Hiding the HUD disables `DisplayUang`'s mouse behaviour.
   - The week line reads `WEEK_FORMAT`, and `%WeekCaption` reads `Minggu`.
 - `tests/test_tall_screen_layout.gd`: the 20:9 rects move by the un-nudge. The
-  tag is 420,48,232,184, and the coin box is 684,1924,348,112.
+  tag is 420,48,232,192, and the coin box is 684,1924,348,112.
 
 Add (in `test_lobby_layout.gd`):
 

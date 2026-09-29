@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Skin Select: the warm grade, and a lighter room
+
+The carousel's character cards were the one painted art in the game without
+the illustration grade. A card needs `skin_card_focus.gdshader` for its focus
+blur and can wear only one material, so the grade's colour half (saturation,
+contrast, exposure, tint, amount; same maths, same order) now lives in that
+shader too, and `test_skin_card` compares its defaults with
+`illustration_grade_material.tres` so a retune cannot leave the cards behind.
+The blurred room behind them read too dark: it is 25% lighter
+(1 - darkness 0.45 -> 0.5625) in its own `skin_select_backdrop_material.tres`,
+so ShopHub, CosmeticShop and the achievement popup keep the shared 0.55.
+
 ## 2026-09-29 — RunResult: four rows, and the beaten-game crash
 
 The end-of-grade report drops "Total poin minigame" and "Barang dipakai" and

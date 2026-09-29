@@ -318,6 +318,12 @@ func _assert_only_the_grip_peeks(hud: LobbyHud, where: String) -> void:
 	assert_true(is_zero_approx(chip.modulate.a)
 		or _drawn_rect(chip).position.y >= screen_bottom,
 		"%s: the roster chip does not peek cut in half beside the grip" % where)
+	var screen_right: float = hud.get_viewport_rect().end.x
+	for pill_name: String in ["DailyLoginLabel", "SettingsLabel", "AchievementLabel", "SkinSwitchLabel"]:
+		var pill: Rect2 = _drawn_rect(hud.get_node("%" + pill_name) as Control)
+		assert_true(pill.position.x >= screen_right - 0.5,
+			"%s: %s (left %.1f) rides off with the rail, past the right edge %.1f"
+			% [where, pill_name, pill.position.x, screen_right])
 
 
 ## A Control's on-screen bounds. get_global_rect() ignores rotation, and the

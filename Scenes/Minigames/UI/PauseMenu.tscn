@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://jljfq30m2mse"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/UI/PauseMenu.gd" id="1_pause"]
-[ext_resource type="Script" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
-[ext_resource type="PackedScene" path="res://Scenes/UI/NotebookFrame.tscn" id="3_frame"]
+[ext_resource type="Script" uid="uid://dg1kkcboybek2" path="res://Scripts/Minigames/UI/PauseMenu.gd" id="1_pause"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="3_frame"]
 
-[node name="PauseMenu" type="Control"]
+[node name="PauseMenu" type="Control" unique_id=1361012458]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,7 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_pause")
 
-[node name="Scrim" type="Panel" parent="."]
+[node name="Scrim" type="Panel" parent="." unique_id=315217118]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,7 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"Scrim"
 
-[node name="Safe" type="MarginContainer" parent="."]
+[node name="Safe" type="MarginContainer" parent="." unique_id=279168183]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,13 +30,17 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 script = ExtResource("2_safe")
 
-[node name="Center" type="CenterContainer" parent="Safe"]
+[node name="Center" type="CenterContainer" parent="Safe" unique_id=171270223]
 layout_mode = 2
 mouse_filter = 2
 
-[node name="Frame" parent="Safe/Center" instance=ExtResource("3_frame")]
+[node name="Frame" parent="Safe/Center" unique_id=443262639 instance=ExtResource("3_frame")]
 unique_name_in_owner = true
 layout_mode = 2
 title_text = "JEDA"
@@ -44,24 +48,24 @@ ring_count = 4
 show_well = false
 show_close = false
 
-[node name="Buttons" type="VBoxContainer" parent="Safe/Center/Frame"]
+[node name="Buttons" type="VBoxContainer" parent="Safe/Center/Frame" unique_id=1485345242]
 custom_minimum_size = Vector2(620, 0)
 layout_mode = 2
 theme_override_constants/separation = 28
 
-[node name="BtnResume" type="Button" parent="Safe/Center/Frame/Buttons"]
+[node name="BtnResume" type="Button" parent="Safe/Center/Frame/Buttons" unique_id=1580054496]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"PrimaryButtonM"
 text = "Lanjutkan"
 
-[node name="BtnSettings" type="Button" parent="Safe/Center/Frame/Buttons"]
+[node name="BtnSettings" type="Button" parent="Safe/Center/Frame/Buttons" unique_id=453501049]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SecondaryButtonM"
 text = "Pengaturan"
 
-[node name="BtnQuit" type="Button" parent="Safe/Center/Frame/Buttons"]
+[node name="BtnQuit" type="Button" parent="Safe/Center/Frame/Buttons" unique_id=1035588315]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"DangerButtonM"

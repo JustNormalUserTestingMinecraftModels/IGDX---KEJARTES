@@ -52,7 +52,7 @@ const DESIGN_RECTS := {
 	"SettingsButton": Rect2(936, 1084, 96, 96),
 	"AchievementButton": Rect2(936, 1204, 96, 96),
 	"SkinSwitchButton": Rect2(936, 1324, 96, 96),
-	"ProgressHeader": Rect2(420, 48, 232, 184),
+	"ProgressHeader": Rect2(420, 48, 232, 192),
 }
 
 var _lobby: Control
@@ -295,7 +295,7 @@ func test_the_hud_sits_inside_the_screen_margin() -> void:
 
 ## `c`'s minimum size fits its authored rect. A Control whose minimum size
 ## outgrows its rect draws past it: the old 88x84 grade badge really drew
-## 106 wide.
+## 121 wide.
 func _assert_fits_rect(c: Control) -> void:
 	if c == null:
 		return

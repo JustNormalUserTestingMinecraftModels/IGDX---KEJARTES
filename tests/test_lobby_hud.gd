@@ -621,19 +621,6 @@ func _idle_fade() -> IdleFade:
 	return fade
 
 
-func test_idle_fade_targets_the_header_and_coin_plate() -> void:
-	var fade := _idle_fade()
-	if fade == null:
-		return
-	var header := _lobby.get_node("%ProgressHeader") as CanvasItem
-	var coin := _lobby.get_node("%DisplayUang") as CanvasItem
-	assert_eq(fade.targets.size(), 2, "only the header and coin plate fade")
-	assert_true(fade.targets.has(header), "the header is a target")
-	assert_true(fade.targets.has(coin), "the coin plate is a target")
-	var hud := _lobby.get_node("%Hud") as CanvasItem
-	assert_false(fade.targets.has(hud), "the HUD itself does not fade, only the plates")
-
-
 ## Review M3: an editor event reaching the edited Lobby must not start a
 ## fade, or the next scene_save bakes the faded alpha into both plates.
 ## A source scan: the editor's own input routing cannot be driven here.

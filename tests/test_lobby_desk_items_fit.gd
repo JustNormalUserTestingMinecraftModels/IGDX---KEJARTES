@@ -2,7 +2,7 @@
 extends McpTestSuite
 
 ## Every Lobby desk item (the Hand_<Name> nodes) stays inside its desk's
-## width. An item wider than its desk hangs off both edges and reads as
+## width, in every skin's table art. An item wider than its desk hangs off both edges and reads as
 ## floating, which is how the 1.1-1.26x hand-tuned scales looked before
 ## 2026-09-29.
 ##
@@ -58,10 +58,12 @@ static func read_scene_props(scene: PackedScene) -> Dictionary:
 	return out
 
 
-## The x-range, in classroom pixels, a Hand_* node draws its texture over.
-## Slots are unanchored children of full-rect containers at the origin.
-static func hand_span(slot: Dictionary, hand: Dictionary) -> Vector2:
-	var slot_left: float = slot.get("offset_left", 0.0)
+## The x-range, in classroom pixels, a Hand_* node draws a texture
+## `tex_width` px wide over. Slots are unanchored children of full-rect
+## containers, whose own left offset is added in.
+static func hand_span(container: Dictionary, slot: Dictionary, hand: Dictionary,
+		tex_width: float) -> Vector2:
+	var slot_left: float = float(container.get("offset_left", 0.0)) + float(slot.get("offset_left", 0.0))
 	var slot_width: float = float(slot.get("offset_right", 0.0)) - slot_left
 	var box_offset: float = hand.get("offset_left", 0.0)
 	var box_left: float = slot_left + float(hand.get("anchor_left", 0.0)) * slot_width + box_offset
@@ -69,8 +71,18 @@ static func hand_span(slot: Dictionary, hand: Dictionary) -> Vector2:
 	var sx: float = (hand.get("scale", Vector2.ONE) as Vector2).x
 	var px: float = (hand.get("pivot_offset", Vector2.ZERO) as Vector2).x
 	var centre: float = box_left + px + (box_width / 2.0 - px) * sx
-	var half: float = (hand["texture"] as Texture2D).get_width() * absf(sx) / 2.0
+	var half: float = tex_width * absf(sx) / 2.0
 	return Vector2(centre - half, centre + half)
+
+
+## The widest desk art `student` can wear: the Lobby swaps each skin's
+## table image onto the same node, at the same transform.
+static func widest_hand_art(student: String) -> float:
+	var widest := 0.0
+	for id: String in StudentSkins.SKINS[student]:
+		var tex := load(StudentSkins.layer_path(student, id, "hand")) as Texture2D
+		widest = maxf(widest, tex.get_width())
+	return widest
 
 
 ## The x-range of a desk plate's opaque pixels, through its scale and
@@ -94,11 +106,13 @@ func test_every_desk_item_fits_its_desk() -> void:
 	var checked := 0
 	for slot_path: String in SLOT_DESK:
 		var desk: Vector2 = desk_span(_node(SLOT_DESK[slot_path]))
+		var container: Dictionary = _node(slot_path.get_base_dir())
 		var prefix := "%s/%s/Hand_" % [CLASSROOM, slot_path]
 		for path: String in _props:
 			if not path.begins_with(prefix):
 				continue
-			var span: Vector2 = hand_span(_node(slot_path), _props[path])
+			var art: float = widest_hand_art(path.trim_prefix(prefix))
+			var span: Vector2 = hand_span(container, _node(slot_path), _props[path], art)
 			assert_true(span.x >= desk.x - TOLERANCE and span.y <= desk.y + TOLERANCE,
 				"%s draws x %.0f..%.0f, past its desk's %.0f..%.0f"
 					% [path.get_file(), span.x, span.y, desk.x, desk.y])
@@ -112,6 +126,7 @@ func test_the_measure_catches_an_overscaled_item() -> void:
 	var slot_path := "StudentHandsContainer_Back/Slot1"
 	var hand: Dictionary = _node(slot_path + "/Hand_Citra").duplicate()
 	hand["scale"] = Vector2(1.1007, 1.1007)
-	var span: Vector2 = hand_span(_node(slot_path), hand)
+	var span: Vector2 = hand_span(_node(slot_path.get_base_dir()), _node(slot_path), hand,
+		(hand["texture"] as Texture2D).get_width())
 	var desk: Vector2 = desk_span(_node(SLOT_DESK[slot_path]))
 	assert_gt(span.y - span.x, desk.y - desk.x, "the old Citra is wider than the desk")

@@ -42,19 +42,19 @@ var cg_data = [
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg1.jpg"),
-		"text": "Formulir pengajuan yang diterima dan ditandatangani resmi dari guru yang akan menjadi karakter kita ini"
+		"text": "Dengan hati berdebar, aku membuka amplop itu perlahan..."
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg2.jpg"),
-		"text": "Karakter kita ini senang atau bangga besar."
+		"text": "Formulir pengajuan yang diterima dan ditandatangani resmi dari guru yang akan menjadi karakter kita ini"
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg3.jpg"),
-		"text": "Lokasi halaman depan Akademi, yang akan menjadi latar kita nanti untuk mengajar."
+		"text": "Karakter kita ini senang atau bangga besar."
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg4.jpg"),
-		"text": "Pemandangan kelas dari pojok kanan atas, memperlihatkan seluruh isi kelas yang kosong dan yang akan diajar oleh sang guru."
+		"text": "Lokasi halaman depan Akademi, yang akan menjadi latar kita nanti untuk mengajar."
 	}
 ]
 

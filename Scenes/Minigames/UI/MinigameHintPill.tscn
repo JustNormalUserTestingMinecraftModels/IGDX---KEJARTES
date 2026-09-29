@@ -1,8 +1,8 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cverw04dh1ddm"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameHintPill.gd" id="1_pill"]
+[ext_resource type="Script" uid="uid://do5youfl0rm45" path="res://Scripts/Minigames/UI/MinigameHintPill.gd" id="1_pill"]
 
-[node name="MinigameHintPill" type="PanelContainer"]
+[node name="MinigameHintPill" type="PanelContainer" unique_id=236411206]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -15,13 +15,13 @@ mouse_filter = 2
 theme_type_variation = &"MinigameHintPillPanel"
 script = ExtResource("1_pill")
 
-[node name="Row" type="HBoxContainer" parent="."]
+[node name="Row" type="HBoxContainer" parent="." unique_id=1477518089]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="Row"]
+[node name="Icon" type="TextureRect" parent="Row" unique_id=66473742]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(56, 56)
@@ -30,7 +30,7 @@ mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="HintLabel" type="Label" parent="Row"]
+[node name="HintLabel" type="Label" parent="Row" unique_id=769082702]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"MinigameHintLabel"

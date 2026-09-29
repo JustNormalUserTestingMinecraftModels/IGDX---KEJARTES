@@ -8,6 +8,17 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — The daily verdict's final faces
+
+The four placeholder teacher faces on the daily result
+(`Assets/Images/DaySummary/Verdict/teacher_1..4.svg`) are replaced by the
+owner's PNG emoji: sad (1 star, "Hari yang berat"), neutral, smiling and
+laughing (4 stars, "Luar biasa!"). They keep the tier-indexed names, now
+`.png`, so `DaySummaryPopup.tscn`'s `teacher_faces` order is unchanged. The
+sources are 512 px (626 px for the sad face) drawn into the 150 px `Face`
+slot, so each import generates mipmaps and joins `test_texture_mipmaps.gd`'s
+`TARGETS` (57 of the 57 allowed).
+
 ## 2026-09-30 — Skin Select's splashes 25% brighter
 
 Every card in the Skin Select carousel (opened from the Lobby) draws its

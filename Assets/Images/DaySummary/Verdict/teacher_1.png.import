@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cb0j6f6mbwktt"
-path="res://.godot/imported/teacher_4.svg-f814061c3e89710d83fb574b185e6871.ctex"
+uid="uid://dya7tm7n5g81s"
+path="res://.godot/imported/teacher_1.png-fdad34716583d4f45de547c0865cc9be.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/DaySummary/Verdict/teacher_4.svg"
-dest_files=["res://.godot/imported/teacher_4.svg-f814061c3e89710d83fb574b185e6871.ctex"]
+source_file="res://Assets/Images/DaySummary/Verdict/teacher_1.png"
+dest_files=["res://.godot/imported/teacher_1.png-fdad34716583d4f45de547c0865cc9be.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=false
+mipmaps/generate=true
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

@@ -104,6 +104,69 @@ CARA MAIN card and the strip has no room for it. Part 2's author still has to
 hear that Phase 8 shrinks to key feel and LCD styling, and that `ScorePill`
 becomes a ×badge inside `MinigameScoreHUD`. Follow-ons are in `DEBT.md`.
 
+## 2026-09-30 — The daily verdict's final faces
+
+The four placeholder teacher faces on the daily result
+(`Assets/Images/DaySummary/Verdict/teacher_1..4.svg`) are replaced by the
+owner's PNG emoji: sad (1 star, "Hari yang berat"), neutral, smiling and
+laughing (4 stars, "Luar biasa!"). They keep the tier-indexed names, now
+`.png`, so `DaySummaryPopup.tscn`'s `teacher_faces` order is unchanged. The
+sources are 512 px (626 px for the sad face) drawn into the 150 px `Face`
+slot, so each import generates mipmaps and joins `test_texture_mipmaps.gd`'s
+`TARGETS` (57 of the 57 allowed).
+
+## 2026-09-30 — Skin Select's splashes 25% brighter
+
+Every card in the Skin Select carousel (opened from the Lobby) draws its
+splash 25% brighter: `skin_card_focus.gdshader` gains a flat `splash_gain`
+of 1.25, applied on top of the neighbour dimming, so the centred card still
+leads. `test_skin_card` pins the value.
+
+## 2026-09-30 — Skin Select's splashes lose the colour grade
+
+The warm illustration grade copied into `skin_card_focus.gdshader` on
+2026-09-29 made the carousel's splashes read too dark, so it is gone from Skin
+Select only: the cards show the art's own colours, touched only by the focus
+blur and the neighbour dimming. Every other plate keeps the grade, and the
+25%-lighter room behind the cards stays. `test_skin_card` now pins "no grade"
+instead of parity with `illustration_grade_material.tres`.
+
+## 2026-09-30 — A lighter book under the Lobby
+
+The owner found the Lobby heavy at the bottom. Moving the icon rail up to the
+top-right was tried and dropped: measured against the face-rig art (every
+student and skin, breathing, bob and parallax), the right-hand students leave
+only 24-126 px of free edge above y 780, too narrow for a labelled 96 px icon.
+Instead `Assets/Images/UI/LobbyHud/book_cover.png` is recoloured from dark
+brown (#6B4423) to a light wood (#D9AA83): value x2.03, saturation x0.59, hue
+and alpha kept, so the lip band stays darker and the 9-slice margins hold. The
+chevron grip stays dark brown on purpose, as a clasp: its glyph is the shared
+gold `icon_chevron_up.png`, which would vanish on light wood.
+
+## 2026-09-29 — Lobby desk items fit their desks
+
+The owner saw the students' desk items (the `Hand_<Name>` nodes) hanging off
+the desks, so they looked like they were floating. Each item draws its art at
+native size and then a hand-tuned scale, up to 1.26x; 15 of the 24 were wider
+than their desk (Citra 575 px on a 455 px desk, 630 px on the front row). Every
+item now fits inside its desk's opaque width, inset 4 px and clipped to the
+screen for the front desks, which run off its sides. An item that was too wide
+was scaled down uniformly, keeping its vertical centre and its authored aspect.
+One that overhung was slid sideways just enough. Items that already fit kept
+their size. Citra lands at 0.86x (it was 1.10x), close to the 0.88x the owner
+earlier found too small, but no larger size fits the desk.
+`test_lobby_desk_items_fit` measures all 24 from the packed scene.
+
+## 2026-09-29 — Lobby rail labels
+
+Each icon on the Lobby's rail now carries its word on the cream chip (Hadiah,
+Setelan, Prestasi, Kostum), reusing `RosterChip` and `CaptionLabel` with no
+theme change. The pills hang under their buttons, so the buttons stay the
+rail's direct children. Their right edges line up with the coin box at x 1032,
+and the rail now starts at y 810, so the last pill still ends 24 px above the
+coin box. The buttons grew to 142 tall so tapping the word presses the icon.
+Spec: `specs/2026-09-29-lobby-rail-labels-design.md`.
+
 ## 2026-09-29 — Lobby layout grid
 
 The owner asked for spacing and for the Minggu plate off the students' faces.

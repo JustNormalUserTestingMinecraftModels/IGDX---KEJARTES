@@ -33,7 +33,9 @@ func test_every_delivered_icon_is_in_place() -> void:
 
 
 ## The new calendar is 322x359; drawn with stretch_mode 0 it squashed into the
-## 96x96 box. Its three siblings already keep aspect.
+## button. All four rail buttons keep aspect with STRETCH_KEEP_ASPECT (not
+## centred): each is 142 tall, so the square icon sits at the top 96x96 and the
+## lower part is the word's tap area.
 func test_the_daily_login_button_keeps_its_aspect() -> void:
 	var lobby := (load(_LOBBY) as PackedScene).instantiate()
 	track(lobby)
@@ -42,5 +44,5 @@ func test_the_daily_login_button_keeps_its_aspect() -> void:
 		var btn := lobby.get_node_or_null(path) as TextureButton
 		assert_true(btn != null, path + " must exist")
 		if btn != null:
-			assert_eq(btn.stretch_mode, TextureButton.STRETCH_KEEP_ASPECT_CENTERED,
-				path + " must keep its icon's aspect")
+			assert_eq(btn.stretch_mode, TextureButton.STRETCH_KEEP_ASPECT,
+				path + " must keep its icon's aspect at the top of its 142-tall button")

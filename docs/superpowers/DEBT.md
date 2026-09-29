@@ -45,8 +45,8 @@ eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 (`Assets/Images/UI/BarFill/track_ghost.png`, `icon_ghost_koin.png`, `icon_ghost_sabit.png`;
 `penjadwalan_card_bg.png` was part of this pass too, but Phase 2 left it
 unreferenced -- see the UI depth pass entry below),
-the 2026-09-24 SchoolDay liveliness set (the daily verdict's four teacher
-faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
+the 2026-09-24 SchoolDay liveliness set (the daily verdict's
+`Assets/Images/DaySummary/Verdict/crown.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
 sun, moon, three clouds, star field and rain streak; the avatar rings in
 `SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
 band's `caution_tape.svg`; and `night_windows.png`, generated from
@@ -103,7 +103,10 @@ margins are whole pixels: `book_cover.png` 96x96, margins L24 R24 T24 B40
 R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
 `progress_plate.png` 160x64, margins L20 R20 T18 B26; `chevron_grip.png`
 96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
-a small buffer, not the cap radius). Since the 2026-09-29 layout grid pass
+a small buffer, not the cap radius). Since 2026-09-30 `book_cover.png` is a
+light wood (#D9AA83) while `chevron_grip.png` stays dark brown, because the
+grip's glyph is the shared gold chevron; real grip art must keep the gold
+chevron readable. Since the 2026-09-29 layout grid pass
 the progress tag's contents sit 6 px from `progress_plate`'s left and right
 edges and 8 px from its top, and the coin box's icon and `+` sit 12 px from
 `coin_plate`'s sides, so a replacement plate's visible rim must stay inside

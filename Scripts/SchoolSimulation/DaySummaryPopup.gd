@@ -25,7 +25,7 @@ signal summary_dismissed
 ## rows_container -- normally DaySummaryStudentRow.tscn.
 @export var student_row_scene: PackedScene
 ## The teacher's four expressions, rough (1 star) to outstanding (4 stars).
-## Placeholder art, drop-in replaceable (docs/superpowers/DEBT.md).
+## Final art since 2026-09-30: sad, neutral, smiling, laughing faces.
 @export var teacher_faces: Array[Texture2D] = []
 ## A lit rating star.
 @export var star_on_texture: Texture2D

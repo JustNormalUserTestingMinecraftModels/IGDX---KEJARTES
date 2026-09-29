@@ -55,7 +55,8 @@ func test_setup_students_wires_both() -> void:
 ## The 2026-09-27 scrapbook pass moved the button into IconRail (a
 ## Container), whose children's offsets are only computed once settled, so
 ## sibling order stands in for "beside AchievementButton" and
-## custom_minimum_size for its fixed 96x96 slot.
+## custom_minimum_size for its fixed 96x142 slot: the icon sits in the top
+## 96 px and the lower part is the tap area of the word under it.
 func test_lobby_has_the_skin_switch_button() -> void:
 	var scene := (load("res://Scenes/Lobby/Lobby.tscn") as PackedScene).instantiate()
 	track(scene)
@@ -67,7 +68,8 @@ func test_lobby_has_the_skin_switch_button() -> void:
 	assert_eq(btn.get_parent(), achievement.get_parent(), "both ride in IconRail")
 	assert_eq(btn.get_index(), achievement.get_index() + 1,
 		"SkinSwitchButton follows AchievementButton in the rail")
-	assert_eq(btn.custom_minimum_size, Vector2(96, 96))
+	assert_eq(btn.custom_minimum_size, Vector2(96, 142),
+		"96 px of icon plus the word's tap area under it")
 
 
 ## SkinSelect.open() takes the roster's names since 2026-09-29: the rail

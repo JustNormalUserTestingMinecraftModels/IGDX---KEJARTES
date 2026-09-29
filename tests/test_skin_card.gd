@@ -65,30 +65,30 @@ func test_focus_shader_preserves_modulate_for_the_fade() -> void:
 		"must multiply by the incoming COLOR or SkinSelect's modulate fade breaks")
 
 
-## The cards wear the same warm grade as every other painted plate. The focus
-## shader carries its own copy of the grade (a card can wear only one
-## material), so its defaults are compared with the game's grade material:
-## retune one without the other and this fails.
-func test_the_cards_wear_the_games_illustration_grade() -> void:
-	var grade := load("res://Scripts/Shaders/illustration_grade_material.tres") as ShaderMaterial
+## Skin Select's splashes show the art's own colours (2026-09-30): the
+## illustration grade that every other painted plate wears made them read too
+## dark, so the focus shader carries no grade. Only the blur and the neighbour
+## dimming (`brightness`) may change a card's colour.
+func test_the_cards_show_the_art_ungraded() -> void:
 	var src := FileAccess.get_file_as_string(SHADER)
-	assert_true(grade != null and src != "", "both load")
-	if grade == null or src == "":
-		return
+	assert_true(src != "", "the focus shader loads")
 	for param in ["saturation", "contrast", "exposure", "tint", "amount"]:
-		var want: Variant = grade.get_shader_parameter(param)
-		# The uniform's default, read from source: "uniform <type> <param> ... = <value>;".
-		var m := RegEx.create_from_string(
-			"uniform \\w+ %s\\b[^=]*=\\s*([^;]+);" % param).search(src)
-		assert_true(m != null, "the card shader declares %s" % param)
-		if m == null:
-			continue
-		var got: Variant = str_to_var(m.get_string(1).replace("vec4(", "Color("))
-		var same: bool = (got is Color and (got as Color).is_equal_approx(want)) if want is Color \
-			else absf(float(got) - float(want)) < 0.00001
-		assert_true(same, "card %s matches the illustration grade: %s vs %s" % [param, got, want])
-	assert_true(src.contains("rgb *= tint.rgb * exposure;"),
-		"the grade is applied in the illustration shader's order")
+		var m := RegEx.create_from_string("uniform \\w+ %s\\b" % param).search(src)
+		assert_true(m == null, "the card shader must not grade the splash: found uniform %s" % param)
+	assert_true(src.contains("COLOR = vec4(c.rgb * brightness * splash_gain, c.a) * COLOR;"),
+		"the splash's own rgb, scaled only by brightness and the splash gain")
+
+
+## Skin Select's splashes read 25% brighter (2026-09-30): a flat gain on every
+## card, applied on top of the neighbour dimming so the centred card still
+## stands out.
+func test_the_splashes_are_a_quarter_brighter() -> void:
+	var src := FileAccess.get_file_as_string(SHADER)
+	var m := RegEx.create_from_string("uniform float splash_gain\\s*=\\s*([0-9.]+);").search(src)
+	assert_true(m != null, "the card shader declares splash_gain")
+	if m == null:
+		return
+	assert_eq(float(m.get_string(1)), 1.25, "splash_gain is 25% brighter")
 
 
 func test_the_screen_blur_material_is_gone() -> void:

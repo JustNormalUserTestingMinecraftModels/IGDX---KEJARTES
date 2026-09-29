@@ -152,3 +152,21 @@ func test_batik_names_the_next_step_in_the_hint() -> void:
 	assert_contains(src, "\"Langkah %d/%d\"")
 	for glyph: String in ["🔧", "🟨", "✅", "❌", "⬜"]:
 		assert_false(src.contains(glyph), glyph + " is gone")
+
+
+const BOLA := "res://Scenes/Minigames/Olahraga/MainBola.tscn"
+const BOLA_GD := "res://Scripts/Minigames/Olahraga/MainBola.gd"
+
+
+func test_main_bola_has_the_strip_and_the_hint_pill() -> void:
+	var root := _scene(BOLA)
+	assert_true(_under_safe(root.get_node_or_null("%MinigameHeader")))
+	assert_true(_under_safe(root.get_node_or_null("%MinigameHintPill")))
+	assert_true(root.get_node_or_null("HUDLayer") == null, "the bespoke HUD layer is gone")
+
+
+func test_main_bola_speaks_indonesian() -> void:
+	var src := FileAccess.get_file_as_string(BOLA_GD) + FileAccess.get_file_as_string(BOLA)
+	for english: String in ["Shots Left", "Swipe Up to Shoot"]:
+		assert_false(src.contains(english), english + " is gone")
+	assert_contains(src, "\"Tendangan %d/%d\"")

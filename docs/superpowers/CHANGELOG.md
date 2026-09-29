@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — A lighter book under the Lobby
+
+The owner found the Lobby heavy at the bottom. Moving the icon rail up to the
+top-right was tried and dropped: measured against the face-rig art (every
+student and skin, breathing, bob and parallax), the right-hand students leave
+only 24-126 px of free edge above y 780, too narrow for a labelled 96 px icon.
+Instead `Assets/Images/UI/LobbyHud/book_cover.png` is recoloured from dark
+brown (#6B4423) to a light wood (#D9AA83): value x2.03, saturation x0.59, hue
+and alpha kept, so the lip band stays darker and the 9-slice margins hold. The
+chevron grip stays dark brown on purpose, as a clasp: its glyph is the shared
+gold `icon_chevron_up.png`, which would vanish on light wood.
+
 ## 2026-09-29 — Lobby desk items fit their desks
 
 The owner saw the students' desk items (the `Hand_<Name>` nodes) hanging off

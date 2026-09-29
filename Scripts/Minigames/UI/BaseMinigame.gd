@@ -521,9 +521,10 @@ func activate_minigame() -> void:
 	if active_title != "" and GameSettings.minigame_tutorial_enabled:
 		var tut_scene = load("res://Scenes/Minigames/UI/MinigameTutorial.tscn")
 		var tutorial = tut_scene.instantiate() if tut_scene else preload("res://Scripts/Minigames/UI/MinigameTutorial.gd").new()
-		tutorial.setup(how_to)
 		_get_or_create_ui_layer().add_child(tutorial)
+		tutorial.setup(how_to)
 		await tutorial.tutorial_finished
+		tutorial.queue_free()
 		await _play_countdown()
 	is_game_active = true
 

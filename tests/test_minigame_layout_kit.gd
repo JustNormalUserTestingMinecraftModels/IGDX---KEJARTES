@@ -83,7 +83,6 @@ func test_the_hud_icon_button_is_lipped() -> void:
 	assert_true(LippedBox.is_lipped(box), "the pause/timer chrome is a lipped face")
 
 
-const LayoutFrame := preload("res://tests/layout_frame.gd")
 const TRAY := "res://Scenes/Minigames/UI/MinigameTray.tscn"
 const PILL := "res://Scenes/Minigames/UI/MinigameHintPill.tscn"
 

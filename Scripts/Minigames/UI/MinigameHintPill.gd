@@ -24,6 +24,10 @@ const SETTLED_ALPHA := 0.6
 		_apply_exports()
 
 
+## The running settle fade, killed by the next settle() or set_hint().
+var _settle_tween: Tween
+
+
 func _ready() -> void:
 	_apply_exports()
 
@@ -31,6 +35,7 @@ func _ready() -> void:
 ## Show `text` at full strength.
 func set_hint(text: String) -> void:
 	hint_text = text
+	_kill_settle_tween()
 	var label := get_node_or_null("%HintLabel") as Label
 	if label != null:
 		label.modulate.a = 1.0
@@ -44,8 +49,16 @@ func settle() -> void:
 	if Engine.is_editor_hint():
 		label.modulate.a = SETTLED_ALPHA
 	else:
-		label.create_tween().tween_property(label, "modulate:a", SETTLED_ALPHA,
+		_kill_settle_tween()
+		_settle_tween = label.create_tween()
+		_settle_tween.tween_property(label, "modulate:a", SETTLED_ALPHA,
 			Juice.tokens().dur_normal)
+
+
+func _kill_settle_tween() -> void:
+	if _settle_tween != null and _settle_tween.is_valid():
+		_settle_tween.kill()
+	_settle_tween = null
 
 
 func _apply_exports() -> void:

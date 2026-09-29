@@ -35,6 +35,10 @@ const PADDING := Vector4i(28, 28, 28, 24)
 		queue_sort()
 
 
+## The running settle fade, killed by the next settle() or set_hint().
+var _settle_tween: Tween
+
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_SORT_CHILDREN:
 		sort_now()
@@ -93,6 +97,7 @@ func sort_now() -> void:
 ## Show `text` as the hint, at full strength.
 func set_hint(text: String) -> void:
 	hint_text = text
+	_kill_settle_tween()
 	var hint := _hint()
 	if hint != null:
 		hint.modulate.a = 1.0
@@ -106,8 +111,16 @@ func settle() -> void:
 	if Engine.is_editor_hint():
 		hint.modulate.a = SETTLED_ALPHA
 	else:
-		hint.create_tween().tween_property(hint, "modulate:a", SETTLED_ALPHA,
+		_kill_settle_tween()
+		_settle_tween = hint.create_tween()
+		_settle_tween.tween_property(hint, "modulate:a", SETTLED_ALPHA,
 			Juice.tokens().dur_normal)
+
+
+func _kill_settle_tween() -> void:
+	if _settle_tween != null and _settle_tween.is_valid():
+		_settle_tween.kill()
+	_settle_tween = null
 
 
 func _apply_hint() -> void:

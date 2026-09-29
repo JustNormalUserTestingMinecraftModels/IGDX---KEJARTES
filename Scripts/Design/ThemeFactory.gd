@@ -1302,9 +1302,10 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	_add_lobby_button(theme, tokens, "SecondaryButton")
 	_add_button_variation(theme, tokens, "DangerButton", tokens.accent_tomato, tokens.accent_tomato_lip)
 
-	# StudentCard keeps its cream secondary look...
-	_add_button_variation(theme, tokens, "StudentCardSecondaryButton",
-		tokens.button_cream, tokens.button_cream_lip)
+	# StudentCard's secondary buttons are brown, like every neutral button:
+	# the cream face they wore until 2026-09-29 all but vanished on the
+	# cream card and paper around them...
+	_add_lobby_button(theme, tokens, "StudentCardSecondaryButton")
 
 	# ...and StudentList's BELUM/SUDAH badges keep their colour, which is the
 	# information they carry.
@@ -1397,16 +1398,16 @@ static func _build_buttons(theme: Theme, tokens: DesignTokens) -> void:
 	# Inventory's category filter row: a quiet pill at rest; the toggled-on
 	# chip renders with the pressed stylebox _add_button_variation already
 	# builds, so no extra "selected" styling is needed.
-	_add_button_variation(theme, tokens, "FilterChipButton",
-		tokens.button_cream, tokens.button_cream_lip)
+	_add_lobby_button(theme, tokens, "FilterChipButton")
 	# Its category icons are white placeholder glyphs, and a Button draws its
-	# icon untinted unless its variation names an icon colour: white on this
-	# cream pill measured 1.02:1 at rest and 1.30:1 selected, so on a phone
-	# only the selected chip showed an icon (2026-09-15). Ink them like the
-	# label -- which is why a replacement icon has to stay a white glyph.
+	# icon untinted unless its variation names an icon colour. The chip was a
+	# cream pill until 2026-09-29, where white measured 1.02:1 at rest
+	# (2026-09-15) and the icons had to be inked brand_primary; on the brown
+	# face they are inked like the label, light -- which is why a replacement
+	# icon has to stay a white glyph.
 	for slot in ["icon_normal_color", "icon_hover_color", "icon_pressed_color",
 			"icon_hover_pressed_color", "icon_focus_color"]:
-		theme.set_color(slot, "FilterChipButton", tokens.brand_primary)
+		theme.set_color(slot, "FilterChipButton", tokens.text_on_brand)
 	theme.set_color("icon_disabled_color", "FilterChipButton", tokens.text_disabled)
 
 	# The student card's page arrows. Fixed 120x120, so radius_pill yields a
@@ -2157,6 +2158,9 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# five-state set at radius_button, plus font_title and the display face,
 	# which is the whole rung -- a hand-rolled block here shipped with a 0
 	# radius and tests/test_button_geometry.gd caught it.
+	# Stays cream on purpose (2026-09-29): PilihanGanda's scene authors a
+	# near-white box over this variation, so the variation only supplies the
+	# ink -- and a brown face would hand it white ink on that near-white box.
 	_add_button_variation(theme, tokens, "MinigameChoiceButton",
 		tokens.button_cream, tokens.button_cream_lip)
 

@@ -40,6 +40,9 @@
 // tests/test_look_layer.gd pins the two as ceilings. On 2026-09-24 contrast
 // lost another 30% of its distance from neutral, 1.01125 -> 1.007875, and
 // the same day took 10% of that back, 1.007875 -> 1.0086625.
+// On 2026-09-29 saturation went the other way, 15% under where it stood:
+// 1.0175 -> 0.865 (x0.85). It is now below neutral on purpose -- the art reads
+// a touch calmer than it was painted. The ceiling above still holds.
 //
 // KEEP IT SUBTLE. Characters are graded separately from the backgrounds they
 // stand in front of -- they are separate nodes -- so a strong grade would pull
@@ -47,7 +50,7 @@
 shader_type canvas_item;
 
 // Pull towards or away from grey. 1.0 is untouched.
-uniform float saturation : hint_range(0.0, 2.0) = 1.0175;
+uniform float saturation : hint_range(0.0, 2.0) = 0.865;
 // Contrast about mid-grey. 1.0 is untouched.
 uniform float contrast : hint_range(0.5, 2.0) = 1.0086625;
 // Overall gain, applied last. Slightly under 1 keeps the added contrast from

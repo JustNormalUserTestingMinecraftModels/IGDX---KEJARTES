@@ -57,7 +57,8 @@ func test_hints_and_how_to_lines_use_the_body_face_at_36() -> void:
 	var tokens := DesignTokens.load_default()
 	for name: String in ["MinigameHintLabel", "MinigameHowToLabel"]:
 		assert_eq(theme.get_font_size("font_size", name), tokens.font_title, name + " is 36")
-		assert_false(theme.has_font("font", name), name + " keeps the body face")
+		# get_font_list, not has_font: has_font is also true with a default font.
+		assert_false(theme.get_font_list(name).has("font"), name + " keeps the body face")
 
 
 func test_the_progress_label_is_display_face_at_the_dense_rung() -> void:

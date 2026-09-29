@@ -73,6 +73,7 @@ text = "Mulai Kelas 7?"
 
 [node name="Body" type="Label" parent="Letter/VBox" unique_id=1554763597]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 0)
 layout_mode = 2
 theme_type_variation = &"EventBodyLabel"
 text = "2 murid, 6 minggu, tingkat santai. Target paling ringan, cocok untuk memulai."

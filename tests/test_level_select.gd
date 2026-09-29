@@ -339,6 +339,20 @@ func test_the_letter_is_the_notebook_dialog() -> void:
 		"_letter.close_pressed.connect(_on_close_pressed)")
 
 
+## The confirm starts hidden, and a hidden Container never lays out its
+## children, so the wrapping Body sat 1px wide and asked for ~3500px of
+## height. NotebookFrame grows to its content's minimum and never shrinks
+## back, so the first amplop opened onto a blank, screen-tall page with the
+## letter off the top. A minimum width keeps Body's wrap sane before its
+## first layout.
+func test_the_letter_body_has_a_wrap_width_before_its_first_layout() -> void:
+	var confirm := (load("res://Scenes/LevelSelect/OpenAmplopConfirm.tscn") as PackedScene).instantiate()
+	track(confirm)
+	var body := confirm.get_node("Letter/VBox/Body") as Label
+	assert_true(body.custom_minimum_size.x >= 600.0,
+		"Body needs a minimum width, or the hidden letter grows off screen")
+
+
 ## present() shows the grade, its pupils and the letter over a scrim that
 ## takes every tap; dismiss() reseals and hides.
 func test_confirm_presents_and_dismisses() -> void:

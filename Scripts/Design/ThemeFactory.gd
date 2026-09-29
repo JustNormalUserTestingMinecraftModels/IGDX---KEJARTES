@@ -24,6 +24,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_achievement_tile_bar(theme, tokens)
 	_build_day_summary(theme, tokens)
 	_build_student_card(theme, tokens)
+	_build_student_list_week(theme, tokens)
 	_build_week_recap(theme, tokens)
 	_build_id_card(theme, tokens)
 	_build_minigame_result(theme, tokens)
@@ -2627,6 +2628,65 @@ static func _build_student_card(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "PlateNameLabel", tokens.text_on_brand)
 	if tokens.font_display != null:
 		theme.set_font("font", "PlateNameLabel", tokens.font_display)
+
+
+# ------------------------------------------------- student list week planner
+
+## MURIDMU RosterCard "Schooly & Alive" week planner (2026-09-29 muridmu
+## plan, Task 1 groundwork -- these variations exist for later tasks to
+## consume; nothing in StudentList.tscn/StickyNote.tscn wires to them yet).
+##
+##   StickyNoteEmptyLabel  the "Atur" placeholder text on an unscheduled
+##                          note (task-1-brief's "empty-note label"), muted
+##                          so an empty day invites a tap rather than
+##                          demanding one, paired with icon_add.svg.
+##   WeekTallyLabel         the tally's leading "n/5 hari" count. Same
+##                          muted-caption recipe as _build_school_day_
+##                          liveliness's TallyCaptionLabel, kept as its own
+##                          type so a future change to that unrelated
+##                          day-result caption never silently reskins this
+##                          week-planner label.
+##   TallyDotFilled         a scheduled day's dot: solid accent_mint, the
+##                          depth pass's affirm color (constraints.md's
+##                          revision overrides the original spec draft's
+##                          state_success/category-tone dot).
+##   TallyDotEmpty          an unscheduled day's dot: a thin text_secondary
+##                          ring on surface_sunken, half the outline width.
+##                          The ring is the brown ink, not outline_card: the
+##                          dot sits on the kraft WeekHeader band, where a
+##                          kraft dot with a near-white ring all but vanished.
+##
+## The week header band's own label reuses CardSectionLabel as-is rather
+## than adding a WeekBandLabel (see task-1-report.md): torn_band.svg is
+## drawn white for self_modulate surface_sunken tinting -- the same warm
+## cream tone StudentCard's card_bg.png resolves to, which is exactly the
+## paper CardSectionLabel was built to sit on (dark text_primary ink, a
+## light text_outline_color rim, the display face).
+static func _build_student_list_week(theme: Theme, tokens: DesignTokens) -> void:
+	theme.add_type("StickyNoteEmptyLabel")
+	theme.set_type_variation("StickyNoteEmptyLabel", "Label")
+	theme.set_color("font_color", "StickyNoteEmptyLabel", tokens.text_secondary)
+
+	theme.add_type("WeekTallyLabel")
+	theme.set_type_variation("WeekTallyLabel", "Label")
+	theme.set_font_size("font_size", "WeekTallyLabel", tokens.font_caption)
+	theme.set_color("font_color", "WeekTallyLabel", tokens.text_secondary)
+
+	theme.add_type("TallyDotFilled")
+	theme.set_type_variation("TallyDotFilled", "Panel")
+	var dot_filled := StyleBoxFlat.new()
+	dot_filled.bg_color = tokens.accent_mint
+	dot_filled.set_corner_radius_all(tokens.radius_pill)
+	theme.set_stylebox("panel", "TallyDotFilled", dot_filled)
+
+	theme.add_type("TallyDotEmpty")
+	theme.set_type_variation("TallyDotEmpty", "Panel")
+	var dot_empty := StyleBoxFlat.new()
+	dot_empty.bg_color = tokens.surface_sunken
+	dot_empty.border_color = tokens.text_secondary
+	dot_empty.set_border_width_all(int(tokens.outline_width / 2.0))
+	dot_empty.set_corner_radius_all(tokens.radius_pill)
+	theme.set_stylebox("panel", "TallyDotEmpty", dot_empty)
 
 
 # ---------------------------------------------------- lobby scrapbook hud

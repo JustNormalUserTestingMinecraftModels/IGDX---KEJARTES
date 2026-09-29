@@ -170,18 +170,18 @@ func test_header_and_status_badges_use_theme_variations() -> void:
 	assert_eq(header.theme_type_variation, &"H1Label", "HeaderLabel variation")
 
 	for i in range(1, 5):
-		var belum := _list.get_node_or_null("CardContainer/Murid%d/Belum" % i) as Button
+		var belum := _list.get_node_or_null("CardContainer/Murid%d/Paper/Belum" % i) as Button
 		assert_true(belum != null, "missing Murid%d/Belum" % i)
 		# Their own styles since the 2026-09-14 lobby-style-buttons pass, which
 		# turned DangerButton/SuccessButton Lobby brown: the red and green are
 		# the information these badges carry.
 		assert_eq(belum.theme_type_variation, &"RosterStatusBelum", "Murid%d/Belum variation" % i)
 
-		var sudah := _list.get_node_or_null("CardContainer/Murid%d/Sudah" % i) as Button
+		var sudah := _list.get_node_or_null("CardContainer/Murid%d/Paper/Sudah" % i) as Button
 		assert_true(sudah != null, "missing Murid%d/Sudah" % i)
 		assert_eq(sudah.theme_type_variation, &"RosterStatusSudah", "Murid%d/Sudah variation" % i)
 
-		var nama := _list.get_node_or_null("CardContainer/Murid%d/Nama" % i) as Label
+		var nama := _list.get_node_or_null("CardContainer/Murid%d/Paper/Nama" % i) as Label
 		assert_true(nama != null, "missing Murid%d/Nama" % i)
 		assert_eq(nama.theme_type_variation, &"H2Label", "Murid%d/Nama variation" % i)
 
@@ -199,7 +199,7 @@ func test_sticky_notes_are_stickynote_instances_wired_per_day() -> void:
 	var required_days = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 	for i in range(1, 5):
 		var container := _list.get_node_or_null(
-			"CardContainer/Murid%d/StickyNotesContainer" % i)
+			"CardContainer/Murid%d/Paper/StickyNotesContainer" % i)
 		assert_true(container != null, "missing StickyNotesContainer on Murid%d" % i)
 		for day in required_days:
 			var note := container.get_node_or_null(day)
@@ -243,6 +243,16 @@ func test_part_three_art_exists_and_loads() -> void:
 		"res://Assets/Images/UI/StudentList/photo_corner.png",
 		"res://Assets/Images/UI/StudentList/roster_avatar_frame.png",
 		"res://Assets/Images/UI/StudentList/catatan_rule.png",
+		# 2026-09-29 MURIDMU RosterCard Task 1 groundwork: six hand-written
+		# placeholders for the week header band, the photo paperclip, the
+		# catatan pencil, the empty-note "+" and calendar glyphs, and the
+		# empty note's dashed frame. Nothing wires to them yet.
+		"res://Assets/Images/UI/StudentList/torn_band.svg",
+		"res://Assets/Images/UI/StudentList/paperclip.svg",
+		"res://Assets/Images/UI/StudentList/pencil.svg",
+		"res://Assets/Images/UI/StudentList/icon_add.svg",
+		"res://Assets/Images/UI/StudentList/icon_calendar.svg",
+		"res://Assets/Images/UI/StudentList/sticky_empty_frame.svg",
 	]
 	for p in paths:
 		assert_true(ResourceLoader.exists(p), "missing asset: " + p)
@@ -285,6 +295,184 @@ func test_roster_avatar_uses_ghost_button_and_clears_touch_minimum() -> void:
 		"avatar must clear the touch minimum, got %s" % m)
 
 
+## Grow/lift/ring read for the current avatar (2026-09-29 avatar bounce
+## pass). Both this and the inactive test below run entirely in the
+## editor, where RosterAvatar's own is_editor_hint() guard makes every
+## is_current change land instantly on its target values -- exactly what
+## a real bounce settles on, just without waiting out the Tween.
+func test_roster_avatar_current_state_grows_lifts_and_rings() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	a.is_current = true
+	var tokens := DesignTokens.load_default()
+	assert_eq(a.scale, Vector2(RosterAvatar.ACTIVE_SCALE, RosterAvatar.ACTIVE_SCALE),
+		"the current avatar grows to ACTIVE_SCALE")
+	assert_eq(a.position.y, -RosterAvatar.ACTIVE_LIFT_PX, "and lifts ACTIVE_LIFT_PX up")
+	assert_eq(a.modulate.a, 1.0, "and reads at full opacity")
+	assert_eq(a.get_node("Highlight").modulate.a, 1.0, "the sunflower glow ring shows")
+	assert_eq(a.get_node("Highlight").self_modulate, tokens.accent_sunflower, "tinted accent_sunflower")
+	assert_eq(a.get_node("Border").modulate.a, 1.0, "the brand border shows")
+	assert_eq(a.get_node("Border").self_modulate, tokens.brand_primary, "tinted brand_primary")
+
+
+func test_roster_avatar_inactive_state_shrinks_and_dims() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	a.is_current = true
+	a.is_current = false
+	assert_eq(a.scale, Vector2(RosterAvatar.INACTIVE_SCALE, RosterAvatar.INACTIVE_SCALE),
+		"an inactive avatar shrinks to INACTIVE_SCALE")
+	assert_eq(a.position.y, 0.0, "and drops back to rest")
+	# modulate.a lives in a 32-bit Color; inactive_alpha is a plain (64-bit)
+	# exported float that never round-trips through one, so 0.55 reads
+	# back as 0.5500000119 -- same gotcha IdleFade's own suite documents.
+	assert_true(is_equal_approx(a.modulate.a, a.inactive_alpha), "and dims to inactive_alpha")
+	assert_eq(a.get_node("Highlight").modulate.a, 0.0, "the glow ring hides")
+	assert_eq(a.get_node("Border").modulate.a, 0.0, "the brand border hides")
+
+
+## The small state is still a legal tap target. Control.scale is part of
+## the transform Godot hit-tests against, so it DOES shrink the real tap
+## region along with the visual -- get_combined_minimum_size() alone (the
+## sibling test above) proves nothing about that, since it never reads
+## `scale`. So this multiplies the two together: get_combined_minimum_size()
+## is timing-safe here (this suite's header note on why raw `.size` is
+## not, without an awaited frame), and `scale` is exactly what
+## _apply_current_state() just set. 150px * INACTIVE_SCALE (0.82) = 123px,
+## still above touch_target_min (96px).
+func test_roster_avatar_clears_touch_minimum_at_the_small_scale() -> void:
+	var packed: PackedScene = load("res://Scenes/StudentList/RosterAvatar.tscn")
+	var a: RosterAvatar = packed.instantiate()
+	Engine.get_main_loop().root.add_child(a)
+	track(a)
+	a.is_current = false
+	var tokens := DesignTokens.load_default()
+	var effective := a.get_combined_minimum_size() * a.scale
+	assert_true(minf(effective.x, effective.y) >= float(tokens.touch_target_min),
+		"INACTIVE_SCALE=%s must still clear the effective touch target, got %s"
+			% [RosterAvatar.INACTIVE_SCALE, effective])
+
+
+## Source scan: the bounce cannot be watched running live in the editor
+## (RosterCard's established finding for its own overshoots), so this
+## pins the two guards and the cleanup by name instead.
+func test_roster_avatar_bounce_is_guarded_and_cleaned_up() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentList/RosterAvatar.gd")
+	var applying := src.get_slice("func _apply_current_state(animate: bool) -> void:", 1)
+	assert_true(applying.contains("Engine.is_editor_hint()") and applying.contains("GameSettings.reduce_motion"),
+		"the bounce must skip both the editor and reduce_motion")
+	var exiting := src.get_slice("func _exit_tree() -> void:", 1).get_slice("func _apply_schedule_tint() -> void:", 0)
+	assert_true(exiting.contains("_bounce_tween.kill()"), "_exit_tree must kill the bounce tween")
+
+
+## Review 2026-09-29 (round 2 -- "solve the whole vertical stack"): at the
+## original ACTIVE_SCALE/padding, the active avatar's Highlight ring
+## scaled past HeaderLabel's bottom and past CardContainer's top (a live
+## capture caught the gold ring drawn over "MURIDMU" and clipped by the
+## card's edge); moving CardContainer down to fix that then pushed the
+## card's bottom past the nav arrows on a 1080x1920 phone. Pins all three
+## boundaries at once, at both screen sizes tests/test_tall_screen_-
+## layout.gd covers.
+##
+## Round 3 review: this test used to re-derive the ring's centre from the
+## RESTING avatar's get_global_rect() -- wrong, because that Control sits
+## at INACTIVE_SCALE with pivot_offset (75,75), and get_global_rect()'s
+## `.position` is the pivot-scaled transform origin (shifted by
+## pivot*(1-scale) = 13.5px at rest) while its `.size` ignores scale
+## entirely, a mismatched pair that biased the derived centre. Ground
+## truth instead: snap the avatar to is_current = true (the instant path
+## fires here since Engine.is_editor_hint() is true in this suite) and
+## read Highlight's REAL transformed rect via the avatar's own
+## get_global_transform() -- Godot's own math, not a hand re-derivation.
+const _MIN_CLEARANCE_PX := 8.0
+
+
+func _assert_stack_clears(screen: Vector2) -> void:
+	var frame := track(LayoutFrame.stand_up(_SCENE_PATH, screen)) as Control
+	var list := frame.get_child(0) as Control
+	var title_bottom: float = (list.get_node("%HeaderLabel") as Control).get_global_rect().end.y
+	var card_rect := (list.get_node("CardContainer") as Control).get_global_rect()
+	var arrow_top: float = (list.get_node("%LeftArrow") as Control).get_global_rect().position.y
+
+	var avatar := list.get_node("%RosterStrip/Avatar1") as RosterAvatar
+	avatar.is_current = true
+	var highlight := avatar.get_node("Highlight") as Control
+	var highlight_local := Rect2(highlight.offset_left, highlight.offset_top,
+		highlight.offset_right - highlight.offset_left, highlight.offset_bottom - highlight.offset_top)
+	var ring_rect: Rect2 = avatar.get_global_transform() * highlight_local
+
+	assert_true(ring_rect.position.y - title_bottom >= _MIN_CLEARANCE_PX,
+		"%s: active ring top %.1f must clear the title's bottom %.1f by %.0fpx"
+			% [screen, ring_rect.position.y, title_bottom, _MIN_CLEARANCE_PX])
+	assert_true(card_rect.position.y - ring_rect.end.y >= _MIN_CLEARANCE_PX,
+		"%s: active ring bottom %.1f must clear the card's top %.1f by %.0fpx"
+			% [screen, ring_rect.end.y, card_rect.position.y, _MIN_CLEARANCE_PX])
+	assert_true(arrow_top - card_rect.end.y >= _MIN_CLEARANCE_PX,
+		"%s: the card's bottom %.1f must clear the nav arrows' top %.1f by %.0fpx"
+			% [screen, card_rect.end.y, arrow_top, _MIN_CLEARANCE_PX])
+
+
+func test_active_avatar_ring_clears_the_title_and_the_card() -> void:
+	_assert_stack_clears(Vector2(1080, 1920))
+
+
+func test_active_avatar_ring_clears_the_title_and_the_card_on_a_tall_phone() -> void:
+	_assert_stack_clears(Vector2(1080, 2400))
+
+
+## Nav arrow idle hint (2026-09-29 avatar bounce pass): a ±4px nudge while
+## there is more than one card to swipe between. StudentList sets
+## `enabled` once at setup; the per-card-count gate instead rides on the
+## arrow's own `visible`, which StudentList was already toggling from
+## card count -- NudgeLoop only runs while enabled AND
+## parent.is_visible_in_tree(), so the dynamic per-page toggling needs no
+## StudentList line of its own.
+func _nudge_loop(path: String) -> NudgeLoop:
+	var nudge := _list.get_node_or_null(path) as NudgeLoop
+	assert_true(nudge != null, "missing NudgeLoop at %s" % path)
+	return nudge
+
+
+func test_both_nav_arrows_carry_a_nudge_loop() -> void:
+	var left := _nudge_loop("%LeftArrow/NudgeLoop")
+	var right := _nudge_loop("%RightArrow/NudgeLoop")
+	if left == null or right == null:
+		return
+	assert_false(left.enabled, "authored default is off; StudentList turns it on once at setup")
+	assert_false(right.enabled, "authored default is off; StudentList turns it on once at setup")
+
+
+func test_nudge_loop_never_runs_in_the_editor_even_when_enabled() -> void:
+	var parent := Control.new()
+	Engine.get_main_loop().root.add_child(parent)
+	track(parent)
+	var nudge := NudgeLoop.new()
+	parent.add_child(nudge)
+	track(nudge)
+	nudge.enabled = true
+	assert_false(nudge.is_running(), "the editor must never see a spinning nudge Tween")
+	assert_eq(parent.position.x, 0.0, "and the arrow must not have moved")
+
+
+## Source scan mirrors the RosterAvatar bounce test above: the loop
+## cannot be watched running live in the editor either.
+func test_nudge_loop_is_guarded_and_cleaned_up() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/NudgeLoop.gd")
+	var applying := src.get_slice("func _apply_enabled() -> void:", 1).get_slice("func _start() -> void:", 0)
+	assert_true(applying.contains("Engine.is_editor_hint()") and applying.contains("GameSettings.reduce_motion"),
+		"starting the loop must skip both the editor and reduce_motion")
+	assert_true(applying.contains("is_visible_in_tree()"),
+		"the loop must gate on the parent's own visibility, not just `enabled`")
+	assert_true(src.contains("visibility_changed.connect(_apply_enabled)"),
+		"a visibility flip must re-evaluate the loop without StudentList touching `enabled` again")
+	var exiting := src.get_slice("func _exit_tree() -> void:", 1).get_slice("func is_running() -> bool:", 0)
+	assert_true(exiting.contains("_stop()"), "_exit_tree must stop the loop")
+
+
 ## The four cards are one template instanced four times now. The instance
 ## NAMES stay Murid1..4 because test_scene_instantiates resolves
 ## CardContainer/Murid%d and the tutorial's first step targets
@@ -314,7 +502,7 @@ func test_the_week_strip_is_one_row_of_five() -> void:
 	var days := ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
 	for i in range(1, 5):
 		var container := _list.get_node_or_null(
-			"CardContainer/Murid%d/StickyNotesContainer" % i)
+			"CardContainer/Murid%d/Paper/StickyNotesContainer" % i)
 		assert_true(container != null, "missing StickyNotesContainer on Murid%d" % i)
 		var last_x := -1.0
 		var first_y := -1.0
@@ -348,13 +536,13 @@ func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
 	}
 	for i in range(1, 5):
 		var row := _list.get_node_or_null(
-			"CardContainer/Murid%d/TraitRow" % i) as Control
+			"CardContainer/Murid%d/Paper/TraitRow" % i) as Control
 		assert_true(row != null, "missing TraitRow on Murid%d" % i)
 		assert_eq(row.mouse_filter, Control.MOUSE_FILTER_IGNORE,
 			"TraitRow on Murid%d must not swallow card taps" % i)
 		for chip_name in expected:
 			var chip := _list.get_node_or_null(
-				"CardContainer/Murid%d/TraitRow/%s" % [i, chip_name]) as Button
+				"CardContainer/Murid%d/Paper/TraitRow/%s" % [i, chip_name]) as Button
 			assert_true(chip != null, "missing %s on Murid%d" % [chip_name, i])
 			assert_eq(chip.theme_type_variation, expected[chip_name],
 				"%s must use the M size step on Murid%d" % [chip_name, i])
@@ -366,7 +554,7 @@ func test_trait_row_holds_three_compact_chips_that_do_not_eat_taps() -> void:
 func test_catatan_strip_is_populated_per_student() -> void:
 	for i in range(1, 5):
 		var label := _list.get_node_or_null(
-			"CardContainer/Murid%d/CatatanGuru/CatatanLabel" % i) as Label
+			"CardContainer/Murid%d/Paper/CatatanGuru/CatatanLabel" % i) as Label
 		assert_true(label != null, "missing CatatanLabel on Murid%d" % i)
 		assert_true(label.text.length() > 0,
 			"catatan must never be blank on Murid%d" % i)
@@ -374,7 +562,7 @@ func test_catatan_strip_is_populated_per_student() -> void:
 
 func test_sticky_notes_carry_a_category_icon() -> void:
 	var note := _list.get_node_or_null(
-		"CardContainer/Murid1/StickyNotesContainer/Senin") as StickyNote
+		"CardContainer/Murid1/Paper/StickyNotesContainer/Senin") as StickyNote
 	assert_true(note != null, "missing Senin note")
 	assert_true("icon_texture" in note,
 		"StickyNote must expose an icon_texture export")
@@ -510,10 +698,11 @@ func test_each_card_fills_its_container() -> void:
 func test_the_card_bands_do_not_overlap() -> void:
 	var card := _list.get_node_or_null("CardContainer/Murid1") as Control
 	assert_true(card != null, "missing Murid1")
-	var bands := ["PortraitFrame", "TraitRow", "StickyNotesContainer", "CatatanGuru"]
+	# WeekHeader (MURIDMU Task 3) sits between the chips and the notes.
+	var bands := ["PortraitFrame", "TraitRow", "WeekHeader", "StickyNotesContainer", "CatatanGuru"]
 	var prev_bottom := 0.0
 	for name in bands:
-		var band := card.get_node_or_null(name) as Control
+		var band := card.get_node_or_null("Paper/" + name) as Control
 		assert_true(band != null, "missing band " + name)
 		assert_true(band.offset_top >= prev_bottom,
 			"%s starts at %f, above the previous band's bottom %f"
@@ -566,7 +755,7 @@ func test_sticky_notes_hang_at_three_contained_pin_heights() -> void:
 	var deepest: float = 2.0 * note.PIN_STEP + note_h
 	note.free()
 	var card := _list.get_node_or_null("CardContainer/Murid1")
-	var strip := card.get_node_or_null("StickyNotesContainer") as Control
+	var strip := card.get_node_or_null("Paper/StickyNotesContainer") as Control
 	assert_true(strip != null, "missing StickyNotesContainer")
 	var band: float = strip.offset_bottom - strip.offset_top
 	assert_true(deepest <= band,
@@ -631,6 +820,20 @@ func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 		"the tutorial must have exactly four steps")
 
 
+## RosterCard's bands live under its inner Paper (MURIDMU Task 3), so
+## StudentList must reach them by %unique name, never by a card-relative
+## path that a restructure would silently break (get_node_or_null just
+## returns null and the card shows its authored defaults).
+func test_student_list_reads_the_card_by_unique_names() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for unique in ["%Portrait", "%Nama", "%Belum", "%Sudah", "%StickyNotesContainer"]:
+		assert_true(src.contains('get_node_or_null("%s")' % unique),
+			"StudentList must read the card's %s by unique name" % unique)
+	for old in ['"PortraitFrame/Portrait"', 'get_node_or_null("Nama")',
+			'get_node_or_null("Belum")', 'get_node_or_null("StickyNotesContainer")']:
+		assert_false(src.contains(old), "stale card path: " + old)
+
+
 ## The card's surface is an opaque themed Panel filling its whole rect,
 ## not a paper TEXTURE on the root.
 ##
@@ -640,15 +843,29 @@ func test_the_tutorial_has_exactly_four_steps_in_order() -> void:
 ## separate sibling node, so every card animation left it behind. The
 ## Card variation's stylebox carries its own shadow, which means the
 ## shadow is part of the card and cannot be left behind by anything.
+##
+## Since MURIDMU Task 3 the whole visible card sits inside its inner Paper
+## node, so the idle breath can scale the paper and every band printed on
+## it without touching the card root the carousel moves. The Sheet sits
+## just above the breath's LiftShadow, behind every band.
 func test_each_card_surface_is_an_opaque_themed_panel() -> void:
 	for i in range(1, 5):
+		var paper := _list.get_node_or_null(
+			"CardContainer/Murid%d/Paper" % i) as Control
+		assert_true(paper != null, "missing Paper on Murid%d" % i)
+		if paper != null:
+			assert_eq(paper.get_index(), 0,
+				"Murid%d's Paper must draw behind every other band" % i)
 		var sheet := _list.get_node_or_null(
-			"CardContainer/Murid%d/Sheet" % i) as Panel
-		assert_true(sheet != null, "missing Sheet panel on Murid%d" % i)
+			"CardContainer/Murid%d/Paper/Sheet" % i) as Panel
+		assert_true(sheet != null, "missing Paper/Sheet panel on Murid%d" % i)
 		assert_eq(sheet.theme_type_variation, &"Card",
 			"Murid%d's Sheet must use the Card variation" % i)
-		assert_eq(sheet.get_index(), 0,
-			"Murid%d's Sheet must draw behind every other band" % i)
+		assert_eq(sheet.get_index(), 1,
+			"Murid%d's Sheet must draw over its lift shadow and behind every band" % i)
+		var lift := paper.get_node_or_null("LiftShadow") if paper != null else null
+		assert_true(lift != null and lift.get_index() == 0,
+			"Murid%d's LiftShadow must be Paper's first child, under the Sheet" % i)
 		assert_eq(sheet.anchor_right, 1.0,
 			"Murid%d's Sheet must span the full card width" % i)
 		assert_eq(sheet.anchor_bottom, 1.0,
@@ -687,12 +904,12 @@ func test_page_dot_uses_a_filled_texture() -> void:
 func test_each_portrait_has_a_rounded_backdrop_behind_it() -> void:
 	for i in range(1, 5):
 		var backdrop := _list.get_node_or_null(
-			"CardContainer/Murid%d/PortraitFrame/Backdrop" % i) as Panel
+			"CardContainer/Murid%d/Paper/PortraitFrame/Backdrop" % i) as Panel
 		assert_true(backdrop != null, "missing portrait Backdrop on Murid%d" % i)
 		assert_eq(backdrop.theme_type_variation, &"SunkenPanel",
 			"portrait Backdrop on Murid%d must use SunkenPanel" % i)
 		var portrait := _list.get_node_or_null(
-			"CardContainer/Murid%d/PortraitFrame/Portrait" % i) as Control
+			"CardContainer/Murid%d/Paper/PortraitFrame/Portrait" % i) as Control
 		assert_true(portrait != null, "missing Portrait on Murid%d" % i)
 		assert_true(backdrop.get_index() < portrait.get_index(),
 			"Backdrop must draw behind the portrait on Murid%d" % i)
@@ -710,3 +927,177 @@ func test_sticky_note_tint_is_washed_before_it_is_applied() -> void:
 		"the category color must be washed toward white before tinting")
 	assert_false(src.contains("self_modulate = DesignTokens.load_default()"),
 		"no call site may apply a raw category color to self_modulate")
+
+
+# ---------------------------------------------- Task 4: week wiring / reopen
+#
+# StudentList is not @tool: in the editor it is a placeholder instance, so
+# NEITHER its methods NOR its @onready vars are reachable from a test, full
+# stop (confirmed the hard way -- calling _setup_students() on the shared
+# `_list` fixture threw "Attempt to call a method on a placeholder
+# instance"). So the behaviour Task 4 actually needs to prove lives on
+# RosterCard instead (@tool, real instances, already proven callable/
+# testable -- see tests/test_roster_card.gd's apply_week/set_front/
+# initial_card_index tests) and StudentList.gd only calls it. What's left
+# here is a source-text pin on the call sites, per this suite's established
+# scan pattern for anything StudentList-only that can't be driven live.
+
+func test_setup_students_delegates_the_week_to_roster_card() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("card.apply_week(day_schedules_for_student)"),
+		"_apply_card_week must hand the week off to RosterCard.apply_week()")
+
+
+func test_init_carousel_state_reopens_via_roster_card() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains(
+			"RosterCard.initial_card_index(active_students, GameState.selected_student)"),
+		"_init_carousel_state must resolve the starting card through RosterCard's static helper")
+
+
+# ------------------------------------------ Task 6: the RosterDeck carousel
+#
+# The swipe/drag/switch moved out of StudentList.gd into RosterDeck
+# (Scripts/StudentList/RosterDeck.gd, @tool), whose behaviour
+# tests/test_roster_deck.gd drives directly. What StudentList still owns is
+# the wiring, pinned here: the authored GhostCard and RosterDeck nodes, the
+# scene connections, and the call sites -- by source, since StudentList is
+# a placeholder instance in the editor (see the Task 4 note above).
+
+## The body of StudentList.gd's `name` function, up to the next func.
+func _function_body(name: String) -> String:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	return src.get_slice("func %s(" % name, 1).get_slice("
+func ", 0)
+
+
+## The switch is one overlapped timeline on the deck now: _switch_card no
+## longer awaits a slide-out before the slide-in, and the front-card
+## handoff rides the deck's signals -- off as the card leaves, on (entry
+## replayed) when the deck says the new card LANDED.
+func test_switch_card_wires_front_card_activation() -> void:
+	var switch_body := _function_body("_switch_card")
+	assert_false(switch_body.contains("await "),
+		"_switch_card must not await: the deck overlaps out and in")
+	assert_false(FileAccess.get_file_as_string(_SCRIPT_PATH).contains("tween_out.finished"),
+		"the sequential slide-out gate is gone")
+	assert_true(switch_body.contains("old_card.set_front(false)"),
+		"_switch_card must turn off the card it is leaving")
+	assert_true(switch_body.contains("deck.switch(old_card, new_card, direction)"),
+		"_switch_card must hand the swap to the RosterDeck")
+	var settled_body := _function_body("_on_deck_settled")
+	assert_true(settled_body.contains("front.set_front(true)"),
+		"a card that lands must be turned on (its entry replays)")
+	var sprang_back: String = settled_body.get_slice("front.set_front(true)", 0)
+	assert_true(sprang_back.contains("front.set_idle(not tutorial_active)"),
+		"a card that only sprang back resumes its idle loops (paused while the tutorial is up)")
+	assert_false(sprang_back.contains("set_front(") or sprang_back.contains("play_entry"),
+		"a spring-back resumes the loops without re-arriving (no set_front, no entry replay)")
+	assert_true(settled_body.get_slice("front.set_front(true)", 1).contains("front.set_idle(false)"),
+		"the tutorial keeps a landed card's idle loops paused")
+	assert_true(settled_body.contains("_stagger_card_notes(front)"),
+		"the landed card's week re-drops on arrival")
+
+
+func test_the_tutorial_still_advances_when_the_slide_lands() -> void:
+	assert_true(_function_body("_on_deck_settled").contains(
+			"if tutorial_active and current_step == 2:"),
+		"the Navigasi Card step auto-advances once the deck lands a card")
+
+
+func test_the_swipe_is_delegated_to_the_roster_deck() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("@onready var deck: RosterDeck = %RosterDeck"),
+		"StudentList reaches the deck by its unique name")
+	assert_true(_function_body("_on_card_gui_input").contains(
+			"deck.handle_pointer(event, card_node)"),
+		"every pointer event on the front card goes to the deck")
+	assert_false(src.contains("card_animating"),
+		"card_animating is the deck's busy now")
+	assert_false(src.contains("min_swipe_distance"),
+		"the swipe threshold lives on RosterDeck")
+	for fn in ["_next_card", "_prev_card", "_on_avatar_pressed", "_switch_card"]:
+		assert_true(_function_body(fn).contains("deck.busy"),
+			"%s must respect the deck's busy guard" % fn)
+
+
+## A drag's release reaches the deck before the card's Button emits
+## `pressed`, so the tap gate is what keeps a drag from routing to
+## AturJadwal; the tutorial lock (only step 3 may pick) stays behind it.
+func test_a_tap_still_routes_and_a_drag_does_not() -> void:
+	var pressed_body := _function_body("_on_card_pressed")
+	assert_true(pressed_body.contains("if not deck.accepts_tap():"),
+		"a drag or a busy deck must not route the card")
+	assert_true(pressed_body.contains("if current_step == 3:"),
+		"the tutorial still locks the pick to its final step")
+	assert_true(_function_body("_on_student_selected").contains(
+			"Transition.change_scene(\"res://Scenes/AturJadwal/AturJadwal.tscn\")"),
+		"picking a card still routes to AturJadwal")
+
+
+func test_the_deck_signals_are_wired_in_the_scene() -> void:
+	var scene := FileAccess.get_file_as_string(_SCENE_PATH)
+	for pair in [["picked_up", "_on_deck_picked_up"], ["thrown", "_on_deck_thrown"],
+			["switched", "_on_deck_switched"], ["settled", "_on_deck_settled"]]:
+		assert_true(scene.contains(
+				"[connection signal=\"%s\" from=\"RosterDeck\" to=\".\" method=\"%s\"]" % pair),
+			"RosterDeck.%s must be wired to %s" % pair)
+		assert_true(FileAccess.get_file_as_string(_SCRIPT_PATH).contains("func %s(" % pair[1]),
+			"StudentList must define %s" % pair[1])
+
+
+func test_the_roster_deck_is_an_authored_node() -> void:
+	var deck := _list.get_node_or_null("RosterDeck")
+	assert_true(deck is RosterDeck, "StudentList must carry a RosterDeck node")
+	assert_true(deck != null and deck.unique_name_in_owner, "reached as %RosterDeck")
+
+
+## The next file peeking out behind the front one: an authored,
+## surface_sunken paper panel at the peek pose, drawn behind every card,
+## and inert to touch so the card above it keeps every tap.
+func test_the_ghost_card_is_an_authored_inert_peek() -> void:
+	var ghost := _list.get_node_or_null("CardContainer/GhostCard") as Panel
+	assert_true(ghost != null, "CardContainer must carry a GhostCard Panel")
+	if ghost == null:
+		return
+	assert_eq(ghost.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the ghost ignores the mouse")
+	assert_eq(ghost.get_index(), 0, "the ghost draws behind every card")
+	assert_eq(ghost.theme_type_variation, &"SunkenPanel", "surface_sunken paper, from the theme")
+	assert_true(ghost.modulate.a > 0.0 and ghost.modulate.a < 1.0, "half-seen, behind the stack")
+	assert_true(absf(ghost.rotation_degrees - 4.0) < 0.01, "tilted 4 degrees")
+	assert_eq(ghost.scale, Vector2(0.9, 0.9), "set back at 0.9")
+	assert_eq(ghost.offset_left, 34.0, "shifted 34px, peeking out on the right")
+	var deck := _list.get_node_or_null("RosterDeck") as RosterDeck
+	assert_true(deck != null and deck.ghost == ghost,
+		"the deck resolves %GhostCard as the card its drag trails")
+
+
+## Jumping via an avatar throws like the paging arrows: a later student
+## comes off the stack leftward (-1, as Next), an earlier one rightward.
+func test_avatar_jump_throws_like_next_and_prev() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("var direction := -1 if index > current_card_index else 1"),
+		"jumping to a later student throws left, as Next does")
+	assert_true(src.contains("_switch_card(index, direction)"),
+		"the jump reuses the carousel's own switch")
+
+
+## The tutorial holds the front card's idle loops (breath, "tap me" glow)
+## paused: _ready pauses them once the cards exist, a landed or sprung-back
+## card stays paused while it is up, and _end_tutorial resumes them.
+func test_the_tutorial_pauses_the_front_cards_idle_loops() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var helper := src.get_slice("func _set_front_idle(on: bool) -> void:", 1).get_slice("\nfunc ", 0)
+	assert_true(helper.contains("card_nodes[current_card_index].set_idle(on)"),
+		"the helper drives the front card's idle loops")
+	var ready_body := src.get_slice("func _ready():", 1).get_slice("\nfunc ", 0)
+	assert_true(ready_body.contains("_set_front_idle(not tutorial_active)"),
+		"_ready pauses the front card's loops when the tutorial is up, after the cards exist")
+	var settled := src.get_slice("func _on_deck_settled(", 1).get_slice("\nfunc ", 0)
+	assert_true(settled.contains("front.set_idle(not tutorial_active)"),
+		"a sprung-back card must not resume its loops under the tutorial")
+	assert_true(settled.contains("if tutorial_active:\n\t\tfront.set_idle(false)"),
+		"a landed card must not run its loops under the tutorial")
+	var ending := src.get_slice("func _end_tutorial():", 1).get_slice("\nfunc ", 0)
+	assert_true(ending.contains("_set_front_idle(true)"),
+		"ending the tutorial resumes the front card's loops")

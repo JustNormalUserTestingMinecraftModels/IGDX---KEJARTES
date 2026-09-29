@@ -420,13 +420,17 @@ func test_student_list_backdrop_fills() -> void:
 
 
 ## The roster cards are one Center-anchored piece at their 980x1410 rect.
+## Moved down 42px from its original -650/760 offsets (2026-09-29 avatar
+## bounce review round 2, "solve the whole vertical stack") to clear both
+## the active RosterAvatar's scaled ring above and the nav arrows below;
+## the rect's SIZE is unchanged.
 func test_student_list_cards_are_centred() -> void:
 	var cards := _scene(STUDENT_LIST).get_node_or_null("CardContainer") as Control
 	assert_true(cards != null, "missing CardContainer")
 	if cards == null:
 		return
 	assert_eq(_anchors(cards), Vector4(0.5, 0.5, 0.5, 0.5), "CardContainer is Center-anchored")
-	assert_eq(_offsets(cards), Vector4(-490, -650, 490, 760), "CardContainer keeps its rect")
+	assert_eq(_offsets(cards), Vector4(-490, -608, 490, 802), "CardContainer keeps its rect")
 
 
 ## The header and avatar strip on the top edge; the arrows and page dots in a
@@ -455,22 +459,23 @@ func test_student_list_ui_is_pinned_inside_the_safe_area() -> void:
 func test_student_list_on_a_tall_phone() -> void:
 	var list := _stood_up(STUDENT_LIST, TALL)
 	_assert_placed((list.get_node("CardContainer") as Control),
-		Rect2(50, 550, 980, 1410), "CardContainer")
+		Rect2(50, 592, 980, 1410), "CardContainer")
 	_assert_placed((list.get_node("%RightArrow") as Control),
 		Rect2(850, 2252, 160, 128), "RightArrow")
 	assert_eq(_authored_rect(list.get_node("%HeaderLabel") as Control).position,
 		Vector2(190, 24), "the header stays at the top")
 
 
-## At 1080x1920 the StudentList is where it was.
+## At 1080x1920 the StudentList is where it was, except CardContainer and
+## RosterStrip, both moved for the active-avatar-ring clearance fix above.
 func test_student_list_at_the_design_size_is_unchanged() -> void:
 	var list := _stood_up(STUDENT_LIST, DESIGN)
 	_assert_placed((list.get_node("CardContainer") as Control),
-		Rect2(50, 310, 980, 1410), "CardContainer")
+		Rect2(50, 352, 980, 1410), "CardContainer")
 	_assert_placed((list.get_node("%LeftArrow") as Control),
 		Rect2(70, 1772, 160, 128), "LeftArrow")
 	_assert_placed((list.get_node("%RosterStrip") as Control),
-		Rect2(70, 128, 940, 150), "RosterStrip")
+		Rect2(70, 175, 940, 150), "RosterStrip")
 	assert_eq(_authored_rect(list.get_node("%PageIndicator") as Control).position,
 		Vector2(400, 1794), "PageIndicator")
 

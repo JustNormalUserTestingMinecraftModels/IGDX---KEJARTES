@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- Week header glyph, "JADWAL MINGGU INI" (MURIDMU RosterCard Task 1
+       groundwork). Same calendar motif and recipe as the nav_jadwal.svg
+       icon (Assets/Images/UI/Icons/), redrawn at its own path in
+       UI/StudentList/ with a three-cell week strip instead of nav_jadwal's
+       two, so the two glyphs read as related but are not pixel duplicates.
+       Follows Assets/Images/UI/Icons/README.md's rules; pinned by
+       tests/test_student_list.gd, not tests/test_ui_icons.gd (that suite's
+       NAMES list is fixed to UI/Icons/). -->
+  <g fill="#FFF6E8" stroke="#3B2412" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="36" y="52" width="184" height="168" rx="28"/>
+  </g>
+  <path d="M36 108h184" stroke="#3B2412" stroke-width="14" fill="none"/>
+  <path d="M80 30v44M176 30v44" stroke="#3B2412" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <rect x="68" y="140" width="30" height="28" rx="6" fill="#3B2412" stroke="none"/>
+  <rect x="113" y="140" width="30" height="28" rx="6" fill="#3B2412" stroke="none"/>
+  <rect x="158" y="140" width="30" height="28" rx="6" fill="#3B2412" stroke="none"/>
+</svg>

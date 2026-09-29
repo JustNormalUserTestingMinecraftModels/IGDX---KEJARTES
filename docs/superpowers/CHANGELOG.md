@@ -8,6 +8,29 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — MURIDMU: the RosterCard week planner
+
+Spec: `.superpowers/sdd/2026-09-29-muridmu-rostercard/`. Also covers
+StudentList's share of depth-pass Phase 3.
+
+The StudentList card is now a week planner on a desk.
+
+- **Card.** Plan-me sticky notes with tape and tilt, and a sunflower glow on
+  the day being planned; a torn week band with a mint tally; a paperclip on
+  the photo, a pencil on the catatan.
+- **Motion.** The whole card breathes on its Paper (roots stay free for the
+  deck), entry beats play on landing, and the screen reopens on the last
+  student. The roster ring is animated and the nav arrows nudge (`NudgeLoop`,
+  which follows the arrow's visibility, so a lone card never nudges).
+- **RosterDeck.** A stack-of-files swipe: the front card follows the finger
+  with a capped tilt, the authored GhostCard trails at parallax, and a switch
+  is one overlapped timeline.
+- **Behaviour change.** An avatar jump now throws like Next (later student)
+  or Prev, instead of an unanimated cut.
+- **Lesson.** StudentList is not `@tool` (the editor runner gets a
+  placeholder), so its logic moved onto `@tool` `RosterCard` / `RosterDeck`,
+  which tests can instance; StudentList itself is covered by source scans.
+
 ## 2026-09-29 — UI depth pass, Phase 3: icons, roles and the glyph rule
 
 Plan: `docs/superpowers/plans/2026-09-29-ui-depth-pass-phase3.md`.

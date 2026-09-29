@@ -8,6 +8,17 @@ custom_minimum_size = Vector2(150, 150)
 theme_type_variation = &"GhostButton"
 script = ExtResource("1_ec2i0")
 
+[node name="Highlight" type="TextureRect" parent="." unique_id=812345679]
+layout_mode = 0
+offset_left = -3.0
+offset_top = -3.0
+offset_right = 153.0
+offset_bottom = 153.0
+mouse_filter = 2
+texture = ExtResource("2_4c6ve")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="Portrait" type="TextureRect" parent="." unique_id=1424415727]
 layout_mode = 0
 anchor_right = 1.0
@@ -24,6 +35,17 @@ stretch_mode = 6
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_4c6ve")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Border" type="TextureRect" parent="." unique_id=1345678902]
+layout_mode = 0
+offset_left = -1.0
+offset_top = -1.0
+offset_right = 151.0
+offset_bottom = 151.0
 mouse_filter = 2
 texture = ExtResource("2_4c6ve")
 expand_mode = 1

@@ -73,16 +73,12 @@ const SKILL_KEYS := [
 ]
 
 
-## The target every skill is measured against for `grade`. Duplicates
-## GameState.initialize_grade_targets()'s uplift table rather than calling
-## it, because that function works in place on GameState.approved_students
-## and this one must stay pure.
+## The target every skill is measured against for `grade`. Reads the same
+## uplift table as GameState.initialize_grade_targets() but does not call it,
+## because that function works in place on GameState.approved_students and
+## this one must stay pure.
 static func target_for_grade(grade: int) -> float:
-	var uplift := Balance.TARGET_KENAIKAN_KELAS_7
-	match grade:
-		8: uplift = Balance.TARGET_KENAIKAN_KELAS_8
-		9: uplift = Balance.TARGET_KENAIKAN_KELAS_9
-	return clampf(BASE_SKILL + uplift, 0.0, 100.0)
+	return clampf(BASE_SKILL + GameState.target_uplift_for_grade(grade), 0.0, 100.0)
 
 
 ## Builds a rehearsal roster in approved_students' dictionary format.

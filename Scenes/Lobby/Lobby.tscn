@@ -909,78 +909,26 @@ script = ExtResource("20_yhuud")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="DisplayUang" type="Panel" parent="Safe/UI" unique_id=259983175]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -360.0
-offset_bottom = 112.0
-grow_horizontal = 0
-mouse_filter = 2
-theme_type_variation = &"CoinPlate"
-
-[node name="CoinIcon" type="TextureRect" parent="Safe/UI/DisplayUang" unique_id=1731951124]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 24.0
-offset_right = 76.0
-offset_bottom = 84.0
-mouse_filter = 2
-texture = ExtResource("14_dyk4g")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="Label" type="Label" parent="Safe/UI/DisplayUang" unique_id=664496077]
-layout_mode = 0
-offset_left = 80.0
-offset_top = 24.0
-offset_right = 248.0
-offset_bottom = 84.0
-theme_type_variation = &"CoinLabel"
-text = "50"
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="PlusUang" type="Button" parent="Safe/UI/DisplayUang" unique_id=1462804132]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 96)
-layout_mode = 0
-offset_left = 252.0
-offset_top = 8.0
-offset_right = 348.0
-offset_bottom = 104.0
-theme_type_variation = &"PlusButton"
-icon_alignment = 1
-expand_icon = true
-
-[node name="PlusIcon" type="TextureRect" parent="Safe/UI/DisplayUang/PlusUang" unique_id=2008619712]
-layout_mode = 0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = 72.0
-offset_bottom = 68.0
-mouse_filter = 2
-texture = ExtResource("37_ty8k5")
-expand_mode = 1
-stretch_mode = 5
-
 [node name="ProgressHeader" type="Panel" parent="Safe/UI" unique_id=923979542]
 unique_name_in_owner = true
 layout_mode = 1
-offset_right = 516.0
-offset_bottom = 168.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -120.0
+offset_right = 112.0
+offset_bottom = 192.0
+grow_horizontal = 2
 mouse_filter = 2
 theme_type_variation = &"ProgressPlate"
 script = ExtResource("38_ayldy")
 
 [node name="GradeBadge" type="PanelContainer" parent="Safe/UI/ProgressHeader" unique_id=1892516588]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 20.0
-offset_right = 112.0
-offset_bottom = 104.0
+offset_left = 6.0
+offset_top = 8.0
+offset_right = 111.0
+offset_bottom = 127.0
 mouse_filter = 2
 theme_type_variation = &"GradeBadge"
 
@@ -1003,24 +951,37 @@ theme_type_variation = &"GradeBadgeNumber"
 text = "7"
 horizontal_alignment = 1
 
+[node name="WeekCaption" type="Label" parent="Safe/UI/ProgressHeader" unique_id=1447350126]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 118.0
+offset_top = 24.0
+offset_right = 226.0
+offset_bottom = 63.0
+theme_type_variation = &"CaptionLabel"
+text = "Minggu"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="WeekLabel" type="Label" parent="Safe/UI/ProgressHeader" unique_id=1839783328]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 128.0
-offset_top = 24.0
-offset_right = 496.0
-offset_bottom = 100.0
+offset_left = 118.0
+offset_top = 67.0
+offset_right = 226.0
+offset_bottom = 111.0
 theme_type_variation = &"WeekLabel"
-text = "Minggu 1 / 6"
+text = "1 / 6"
+horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="StarBar" type="ProgressBar" parent="Safe/UI/ProgressHeader" unique_id=555781510]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 140.0
-offset_top = 118.0
-offset_right = 330.0
-offset_bottom = 142.0
+offset_left = 6.0
+offset_top = 139.0
+offset_right = 71.0
+offset_bottom = 163.0
 mouse_filter = 2
 theme_type_variation = &"StarProgressBar"
 max_value = 3.0
@@ -1044,10 +1005,10 @@ scale_amount_max = 0.6
 
 [node name="StarIcon" type="TextureRect" parent="Safe/UI/ProgressHeader" unique_id=1236434420]
 layout_mode = 0
-offset_left = 334.0
-offset_top = 110.0
-offset_right = 374.0
-offset_bottom = 150.0
+offset_left = 77.0
+offset_top = 136.0
+offset_right = 107.0
+offset_bottom = 166.0
 mouse_filter = 2
 texture = ExtResource("40_2xndu")
 expand_mode = 1
@@ -1056,10 +1017,10 @@ stretch_mode = 5
 [node name="StarNum" type="Label" parent="Safe/UI/ProgressHeader" unique_id=865703870]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 380.0
-offset_top = 106.0
-offset_right = 500.0
-offset_bottom = 154.0
+offset_left = 113.0
+offset_top = 135.0
+offset_right = 226.0
+offset_bottom = 166.0
 theme_type_variation = &"StarNumLabel"
 text = "0.0 / 3.0"
 vertical_alignment = 1
@@ -1070,10 +1031,6 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -41.0
-offset_top = 112.0
-offset_right = -41.0
-offset_bottom = 112.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -1254,6 +1211,61 @@ texture = ExtResource("37_ayldy")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="DisplayUang" type="Panel" parent="Safe/UI/Hud/BookHud" unique_id=259983175]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 636.0
+offset_top = 52.0
+offset_right = 984.0
+offset_bottom = 164.0
+mouse_filter = 2
+theme_type_variation = &"CoinPlate"
+
+[node name="CoinIcon" type="TextureRect" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=1731951124]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 24.0
+offset_right = 64.0
+offset_bottom = 84.0
+mouse_filter = 2
+texture = ExtResource("14_dyk4g")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Label" type="Label" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=664496077]
+layout_mode = 0
+offset_left = 68.0
+offset_top = 24.0
+offset_right = 236.0
+offset_bottom = 84.0
+theme_type_variation = &"CoinLabel"
+text = "50"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="PlusUang" type="Button" parent="Safe/UI/Hud/BookHud/DisplayUang" unique_id=1462804132]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 0
+offset_left = 240.0
+offset_top = 8.0
+offset_right = 336.0
+offset_bottom = 104.0
+theme_type_variation = &"PlusButton"
+icon_alignment = 1
+expand_icon = true
+
+[node name="PlusIcon" type="TextureRect" parent="Safe/UI/Hud/BookHud/DisplayUang/PlusUang" unique_id=2008619712]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 72.0
+offset_bottom = 68.0
+mouse_filter = 2
+texture = ExtResource("37_ty8k5")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="IconRail" type="VBoxContainer" parent="Safe/UI/Hud" unique_id=1064107887]
 unique_name_in_owner = true
 layout_mode = 1
@@ -1263,8 +1275,8 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = -96.0
-offset_top = -832.0
-offset_bottom = -376.0
+offset_top = -908.0
+offset_bottom = -452.0
 grow_horizontal = 0
 grow_vertical = 0
 mouse_filter = 2
@@ -1348,7 +1360,7 @@ grow_vertical = 0
 texture = ExtResource("16_dyk4g")
 expand_mode = 1
 script = ExtResource("39_2isbc")
-wallet_anchor = NodePath("../Safe/UI/DisplayUang")
+wallet_anchor = NodePath("../Safe/UI/Hud/BookHud/DisplayUang")
 
 [node name="DailyLoginFrame" parent="DailyReward" unique_id=1525468241 instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
@@ -1499,7 +1511,7 @@ environment = ExtResource("41_7qlaa")
 
 [node name="IdleFade" type="Node" parent="." unique_id=880756292 node_paths=PackedStringArray("targets")]
 script = ExtResource("52_rsfel")
-targets = [NodePath("../Safe/UI/ProgressHeader"), NodePath("../Safe/UI/DisplayUang")]
+targets = [NodePath("../Safe/UI/ProgressHeader")]
 
 [node name="IdleTimer" type="Timer" parent="IdleFade" unique_id=664759917]
 one_shot = true

@@ -2817,16 +2817,18 @@ static func _build_lobby_hud(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_stylebox("panel", "ProgressPlate",
 		_lobby_hud_nine_patch("progress_plate.png", _PROGRESS_PLATE_MARGIN))
 
-	# -- GradeBadge: flat, the Olahraga accent (Q3). --
+	# -- GradeBadge: flat, the Olahraga accent (Q3). space_xs padding, not
+	# space_sm: at 16 px the badge measures 121x135 and cannot sit beside the
+	# week inside the tag between the back-row heads (2026-09-29 layout grid). --
 	theme.add_type("GradeBadge")
 	theme.set_type_variation("GradeBadge", "PanelContainer")
 	var grade_badge := StyleBoxFlat.new()
 	grade_badge.bg_color = tokens.cat_olahraga_on_dark
 	grade_badge.set_corner_radius_all(tokens.radius_md)
-	grade_badge.content_margin_left = tokens.space_sm
-	grade_badge.content_margin_right = tokens.space_sm
-	grade_badge.content_margin_top = tokens.space_sm
-	grade_badge.content_margin_bottom = tokens.space_sm
+	grade_badge.content_margin_left = tokens.space_xs
+	grade_badge.content_margin_right = tokens.space_xs
+	grade_badge.content_margin_top = tokens.space_xs
+	grade_badge.content_margin_bottom = tokens.space_xs
 	theme.set_stylebox("panel", "GradeBadge", grade_badge)
 
 	# -- GradeBadgeLabel / GradeBadgeNumber: "KELAS" over "7", cream on the

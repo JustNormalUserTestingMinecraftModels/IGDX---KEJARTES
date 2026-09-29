@@ -3,12 +3,12 @@ class_name LobbyHud
 extends Control
 
 ## The Lobby's bottom HUD (2026-09-27 scrapbook HUD spec §4): the stepped
-## book (JADWAL on the raised block, three tiles on the shelf) and the icon
-## rail. It swipes away as a whole: the book slides down to its chevron
-## peek and the rail slides off the right edge in the same tween (Q5); the
-## chevron, a vertical drag on the book, or a double tap anywhere brings
-## it back. Hidden, only the grip peeks above the screen's bottom edge,
-## and the book's buttons ignore input all the same, so a tap during the
+## book (JADWAL on the raised block, three tiles on the shelf, the coin box
+## beside JADWAL) and the icon rail. It swipes away as a whole: the book
+## slides down to its chevron peek and the rail slides off the right edge
+## in the same tween (Q5); the chevron, a vertical drag on the book, or a
+## double tap anywhere brings it back. Hidden, only the grip peeks above
+## the screen's bottom edge, and the book's buttons ignore input all the same, so a tap during the
 ## slide or a reopening tap cannot press one. It also plays the
 ## entrance, JADWAL's breathe and the roster-count chip. It stays
 ## inactive until the Lobby calls activate(), so the tutorial's spotlight
@@ -85,6 +85,7 @@ var _hint_timer: Tween
 @onready var koperasi: Control = %Koperasi
 @onready var inventory: Control = %Inventory
 @onready var report_student: Control = %ReportStudent
+@onready var coin_box: Control = %DisplayUang
 @onready var icon_rail: Control = %IconRail
 @onready var chevron_grip: Button = %ChevronGrip
 @onready var chevron_glyph: Control = %ChevronGlyph
@@ -267,13 +268,14 @@ func _on_chevron_pressed() -> void:
 
 
 ## Hidden, the book's buttons ignore input, so nothing under a reopening
-## tap or a mid-slide press opens a screen; the chevron, a sibling of the
-## book's pages, stays live to bring it back.
+## tap or a mid-slide press opens a screen; the coin box's + rides in the
+## book's step (2026-09-29) and goes quiet with it. The chevron, a sibling of
+## the book's pages, stays live to bring it back.
 func _set_book_live(live: bool) -> void:
 	var behavior: Control.MouseBehaviorRecursive = Control.MOUSE_BEHAVIOR_INHERITED
 	if not live:
 		behavior = Control.MOUSE_BEHAVIOR_DISABLED
-	for part: Control in [raised_page, koperasi, inventory, report_student]:
+	for part: Control in [raised_page, koperasi, inventory, report_student, coin_box]:
 		part.mouse_behavior_recursive = behavior
 
 

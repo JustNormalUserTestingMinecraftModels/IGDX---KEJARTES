@@ -3,22 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dcxlnynwmm8bo"
-path.bptc="res://.godot/imported/splash_doni.png-30f4c6e4d8abcdcfdb62a49b824bec46.bptc.ctex"
-path.astc="res://.godot/imported/splash_doni.png-30f4c6e4d8abcdcfdb62a49b824bec46.astc.ctex"
+path="res://.godot/imported/splash_doni.png-30f4c6e4d8abcdcfdb62a49b824bec46.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/splash_doni.png"
-dest_files=["res://.godot/imported/splash_doni.png-30f4c6e4d8abcdcfdb62a49b824bec46.bptc.ctex", "res://.godot/imported/splash_doni.png-30f4c6e4d8abcdcfdb62a49b824bec46.astc.ctex"]
+dest_files=["res://.godot/imported/splash_doni.png-30f4c6e4d8abcdcfdb62a49b824bec46.ctex"]
 
 [params]
 
-compress/mode=2
-compress/high_quality=true
+compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

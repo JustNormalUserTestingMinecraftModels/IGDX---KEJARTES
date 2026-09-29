@@ -3,22 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://do1ve6fxgittq"
-path.bptc="res://.godot/imported/Shinta.png-243dcdbfb420f7a7e1d6d13b2136ac12.bptc.ctex"
-path.astc="res://.godot/imported/Shinta.png-243dcdbfb420f7a7e1d6d13b2136ac12.astc.ctex"
+path="res://.godot/imported/Shinta.png-243dcdbfb420f7a7e1d6d13b2136ac12.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/MuridPortrait/Shinta.png"
-dest_files=["res://.godot/imported/Shinta.png-243dcdbfb420f7a7e1d6d13b2136ac12.bptc.ctex", "res://.godot/imported/Shinta.png-243dcdbfb420f7a7e1d6d13b2136ac12.astc.ctex"]
+dest_files=["res://.godot/imported/Shinta.png-243dcdbfb420f7a7e1d6d13b2136ac12.ctex"]
 
 [params]
 
-compress/mode=2
-compress/high_quality=true
+compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

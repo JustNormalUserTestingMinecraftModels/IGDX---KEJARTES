@@ -9,11 +9,13 @@
 [ext_resource type="Texture2D" uid="uid://ckkwq8tubxn64" path="res://Assets/Images/MuridPortrait/Andi.png" id="8_de1xv"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="8_hlb7e"]
 [ext_resource type="Texture2D" uid="uid://ca46604g10808" path="res://Assets/Images/MuridPortrait/Citra.png" id="9_y2vk7"]
-[ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="11_y2vk7"]
 [ext_resource type="PackedScene" uid="uid://c50fsdshij16h" path="res://Scenes/StudentList/RosterAvatar.tscn" id="13_35ggc"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
 [ext_resource type="Script" uid="uid://clanrs0mbexi3" path="res://Scripts/UI/NudgeLoop.gd" id="20_nudge"]
 [ext_resource type="Script" uid="uid://cwcnucohtx4pl" path="res://Scripts/StudentList/RosterDeck.gd" id="21_deck"]
+[ext_resource type="Texture2D" uid="uid://b7uie5ch7i7os" path="res://Assets/Images/UI/Icons/chevron_left.svg" id="14_chevl"]
+[ext_resource type="Texture2D" uid="uid://bge3qhtji6lh4" path="res://Assets/Images/UI/Icons/chevron_right.svg" id="15_chevr"]
+[ext_resource type="Script" path="res://Scripts/UI/ButtonGlyph.gd" id="glyph_follow"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]
 shader = ExtResource("3_ovxc5")
@@ -162,19 +164,21 @@ offset_bottom = 128.0
 theme_type_variation = &"SecondaryButtonL"
 
 [node name="Arrow" type="TextureRect" parent="Safe/UI/BottomBar/LeftArrow" unique_id=878613917]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 28.0
-offset_right = -40.0
-offset_bottom = -28.0
-rotation = 1.5708
-pivot_offset = Vector2(40, 36)
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("11_y2vk7")
+texture = ExtResource("14_chevl")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="NudgeLoop" type="Node" parent="Safe/UI/BottomBar/LeftArrow" unique_id=720001001]
 script = ExtResource("20_nudge")
@@ -189,19 +193,21 @@ offset_bottom = 128.0
 theme_type_variation = &"SecondaryButtonL"
 
 [node name="Arrow" type="TextureRect" parent="Safe/UI/BottomBar/RightArrow" unique_id=231399703]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 40.0
-offset_top = 28.0
-offset_right = -40.0
-offset_bottom = -28.0
-rotation = -1.5708
-pivot_offset = Vector2(40, 36)
+offset_left = 24.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("11_y2vk7")
+texture = ExtResource("15_chevr")
 expand_mode = 1
-stretch_mode = 6
+stretch_mode = 5
+script = ExtResource("glyph_follow")
 
 [node name="NudgeLoop" type="Node" parent="Safe/UI/BottomBar/RightArrow" unique_id=720001002]
 script = ExtResource("20_nudge")

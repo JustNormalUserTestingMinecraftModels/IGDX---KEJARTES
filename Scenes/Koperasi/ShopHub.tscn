@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 [ext_resource type="Script" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [node name="ShopHub" type="Control" unique_id=1253771003]
 layout_mode = 3
@@ -53,6 +54,8 @@ pool_size = Vector2(1600, 1600)
 intensity = 0.1
 
 [node name="Shafts" parent="World/Room" instance=ExtResource("look_shafts")]
+
+[node name="Bloom" parent="World/Room" instance=ExtResource("look_bloom")]
 
 [node name="Parallax" type="Control" parent="World/Room"]
 layout_mode = 1

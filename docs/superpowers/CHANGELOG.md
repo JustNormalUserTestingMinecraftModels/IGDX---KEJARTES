@@ -8,6 +8,151 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — UI depth pass, Phase 3: icons, roles and the glyph rule
+
+Plan: `docs/superpowers/plans/2026-09-29-ui-depth-pass-phase3.md`.
+
+The screen pass. Every screen's tiles, arrows, exit and category pictures
+now come from `Assets/Images/UI/Icons/`, so the owner's chunky set drops in
+at those paths with no scene change; two buttons got their right role; and
+typed emoji and dingbats left the UI text, with a suite that keeps them out
+(style guide, "Icons"; the folder README's "Where each icon is used").
+
+- **Lobby and MainMenu.** The five nav tiles wear `nav_students`,
+  `nav_jadwal`, `nav_koperasi`, `nav_inventory` and `nav_rapor`; MainMenu's
+  Quit wears `exit.svg`. The four rail icons are finished art and stayed.
+- **Paging arrows** (LevelSelect, StudentCard, StudentList, ReportCard)
+  wear `chevron_left` / `chevron_right`.
+- **Istirahat and Wirausaha** wear `cat_istirahat` / `cat_wirausaha` in
+  `RosterCard.SPECIALTY_ICONS`, `DayStickyNote.category_icons` and Dapatkan
+  Uang's tip, replacing the energy glyph, the coin and the generated
+  placeholder PNGs. `StudentList.CATEGORY_ICONS` (the card's day-note
+  preview) moved too, so a card's chip and its day notes agree; one shared
+  table in `test_student_list` pins both maps.
+- **Roles.** ReportCard's Back is brown (`SecondaryButton`), a return like
+  Inventory's and ShopHub's. Password/Variabel's Hapus, which only clears the
+  unsent answer, is brown beside the mint Kirim.
+- **Glyphs.** SchoolDay's tutorial, click-to-continue and skip, AturJadwal's
+  holiday line, DaySummaryBadge, DailyDecayOverview and CutScene's skip lost
+  their emoji. DayStickyNote's padlock is a `TextureRect` wearing
+  `icon_lock.svg`, not a "lock" emoji in a `Label`.
+
+Seven decisions taken while planning (the plan's table has the full
+rationale):
+
+- **P1** — The canonical back arrow stays: every Back keeps
+  `UI/Nav/return_button.png`; `chevron_left` is for paging, not Back.
+- **P2** — SchoolDay's end-of-week "Kembali ke Menu" stays mint: it is the
+  only way forward, that screen's main action, like RunResult's single CTA.
+- **P3** — Hapus is brown, not tomato: clearing an unsent answer is routine
+  and reversible, and `DangerButton` would tick the motor on every clear.
+- **P4** — StudentCard's page arrows keep `StudentCardSecondaryButtonL`
+  (cream, quiet); only the picture changed, so no pinned geometry moved.
+- **P5** — *Revised in Task 2.* The plan had each arrow draw its chevron as
+  the Button's own `icon` so it would sink with the face. The render showed
+  the lipped buttons' content margins squeezing the icon to about 15 px, so
+  each arrow instead draws its chevron as a child `Arrow` `TextureRect`: full
+  rect minus a 24 px inset, unrotated, `expand_mode` 1, `stretch_mode` 5, taps
+  ignored, and the Button's `icon` cleared. The chevrons now read at about
+  70 px. The local review caught that a child does not sink or dim like an
+  icon, so `Scripts/UI/ButtonGlyph.gd` on each `Arrow` drops it by the
+  button's own label drop while held and dims it while disabled.
+- **P6** — The glyph rule bans pictographs and dingbats (U+2300–23FF,
+  U+2600–27BF, U+2B00–2BFF, U+1F000–1FAFF, U+FE0F), not typography: the
+  Arrows block (`12 → 9`), `×` and code comments stay allowed. Two
+  reviewed exceptions: `StatInfo.gd`'s glyph fallback and CutScene's
+  debug-only level-select toggle.
+- **P7** — Phase 3 ran in the Phase 2 worktree on a new branch.
+
+Also decided along the way:
+
+- **Hapus wears `SecondaryButtonM`**, not the base `SecondaryButton` the plan
+  named: the base step's 36 px label looked lost beside Kirim's 64 px, and
+  the L step (166 px) overflows `AksiRow`'s 156 px band.
+- **The tutorial's cycle line was reworded**, not just stripped: with its
+  heavy arrows gone it reads "Atur Jadwal, Simulasi Hari Sekolah, lalu
+  Evaluasi Mingguan".
+- **The trait chips' gloss: checked, 14 px reads as a highlight on a 96 px
+  pill.** StudentList's trait row rendered at 1080x1920 and cropped 2x; no
+  crescent, so no code change and no `CHIP_GLOSS_WIDTH`.
+
+New suites: `lobby_tile_icons`, `paging_arrows`, `category_icons`,
+`button_roles_phase3` and `ui_text_glyphs` (the ratchet; its `ALLOWED` dict
+is the reviewed exception list). Suites that pinned an old path or variation
+(`main_menu`, `student_list`, `kalkulator`, `report_card`,
+`day_sticky_note`) were updated, not deleted.
+
+One hazard met again, no new rule: an editor `scene_save` of ReportCard, an
+`@tool`-scripted scene, baked `SafeAreaMargin`'s 48 px margin overrides into
+the file. The save was reverted and the one-line variation change made as
+text (the editor-save hazard CLAUDE.md 4b already covers).
+
+## 2026-09-29 — Bloom on the shops, end game and minigames
+
+The Lobby's bloom is a Canvas-mode `WorldEnvironment`, which reaches only
+layers at -1 or below; on the shops and end-game screens it measured as no
+bloom at all, and the minigames and Koperasi draw on layer 0 where it cannot
+reach. A new kit piece, `ScreenGlow` (`Scenes/Look/ScreenGlow.tscn`), runs
+the Efek Visual layer's `bloom.gdshader` per screen instead: a node named
+`Bloom`, placed right after each screen's last light piece, reads what is
+drawn so far and adds its bright parts back, so the UI drawn after it never
+blooms. It follows Efek Suasana and its screen's fades. Placed on ShopHub,
+CosmeticShop, Koperasi, TesNotice, StatCheck, ExamProgress, WinStage (so
+EndCutscene and RunResult bloom alike) and all eight lit minigames.
+
+Thresholds come from a full-size sweep (0.3-0.9) with each screen rendered
+bloom-off and -on: the highest that visibly blooms the light while the
+backdrop's median pixel moves by under +0.01. Pale wood (the four
+Akademis boards, BuatBatik) fogs below 0.8; MainBola, Badminton and
+LombaMenari take 0.75; the shops and WinStage 0.7; Koperasi 0.8, since its
+cream wall shows above its fixed 1920px Stage on a tall phone and a lower
+threshold leaves a step at the Stage's edge; ExamProgress
+0.5 at intensity 0.6; TesNotice and StatCheck, under their scrim, 0.4 at
+0.8 with a cool tint. `bloom.gdshader` now multiplies by its input `COLOR`,
+so the look layer's bloom fades with its modulate too.
+
+## 2026-09-29 — Skin select polish: class-only rail, scrapbook look
+
+Plan: `docs/superpowers/plans/2026-09-29-skin-select-polish.md`. The
+collaborator's own handoff spec
+(`docs/superpowers/specs/2026-09-28-skin-select-polish-design.md`) was
+revised before building, for the clean-code standard and the UI depth pass
+(both landed after it was written) -- see the plan's "Revision" section.
+
+The skin picker's rail now shows only the approved roster's names, 2-4 by
+grade, instead of always all six characters -- `Lobby.gd` calls down with
+`SkinSelect.roster_names(GameState.approved_students)`, and `SkinSelect`
+never reads `GameState` itself, so tests drive `open()` with plain arrays.
+An empty roster still falls back to every `StudentSkins.NAMES`, the
+pre-existing safety net. The screen also moved onto the UI depth pass's
+lipped look: TERAPKAN is a mint lipped `SkinApplyButton` with a "PAKAI!"
+sticker on its corner and the main-action haptic tick, in place of the
+2026-09-23 mockup's flat red/black rim; the rail's tiles are lipped photo
+cards, cream at rest and sunflower (the palette's highlight) when open,
+each with a washi-tape tab and a name caption; and the tray itself is ruled
+notebook paper (`paper_rule.png`, tiled) with two corner tape pieces, a
+centred "Kelasmu - N murid" header and "ketuk untuk pilih" hint above the
+rail, and paper-divider dots either side of the skin name. Three new SFX
+cues: `&"select"` on a rail tap, `&"swipe"` when the carousel settles on a
+new skin, `&"apply"` on TERAPKAN, each gated on an actual index change so a
+re-tap or a flick that snaps back home stays silent.
+
+Review pass, same day (whole-branch review, fix round 2): the header's
+"Kelasmu · N murid" used a "·" middle dot Boohong, the display face it
+renders in, does not carry (verified with fontTools) -- the same defect
+`ObjectiveHint.title` had already hit and fixed with a plain hyphen: the
+header is now "Kelasmu - N murid", pinned alongside the rest of the tray's
+display-face text by a glyph-coverage test mirroring
+`test_objective_hint.gd`'s. TERAPKAN now ticks the phone's motor on press
+-- `PressFeel.MAIN_ACTION_ROLES` had gained every other main action but
+missed `SkinApplyButton`. `SkinSelect.open()` now trims `_names` to the
+rail's own six authored tiles with a `push_warning`, so a 7+ name roster
+(reachable if the class-size cap ever moves) can no longer index past
+`%Rail`'s last child. A misnamed test
+(`test_open_takes_no_argument_and_first_student_is_open`, which no longer
+describes what it checks now that `open()` takes a roster) was renamed to
+`test_default_open_shows_the_first_students_tile_as_open`.
+
 ## 2026-09-28 — UI depth pass, Phase 2: popups into the notebook
 
 Plan: `docs/superpowers/plans/2026-09-28-ui-depth-pass-phase2.md`.

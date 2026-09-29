@@ -154,17 +154,18 @@ const BREATH_SHADOW_PEAK := 1.0
 ## "Akademis", and both must resolve.
 ##
 ## The team's authored art, matching the same categories on the day
-## notes -- see CATEGORY_ICONS in StudentList.gd. Both maps point at
-## the StudentCard stat_* set so a student's specialty chip, their day
-## notes and their stat rows all carry the one symbol per subject.
+## notes -- see CATEGORY_ICONS in StudentList.gd. Akademis / SeniBudaya /
+## Olahraga / Libur point at the same StudentCard stat_* set as CATEGORY_ICONS
+## so those subjects carry one symbol everywhere; Istirahat / Wirausaha have
+## no stat of their own, so both maps wear their dedicated cat_*.svg icons.
 const SPECIALTY_ICONS := {
 	"Akademis": "res://Assets/Images/StudentCard/stat_akademis.png",
 	"Akademik": "res://Assets/Images/StudentCard/stat_akademis.png",
 	"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
 	"Seni Budaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
 	"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
-	"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
-	"Wirausaha": "res://Assets/Images/UI/uang.png",
+	"Istirahat": "res://Assets/Images/UI/Icons/cat_istirahat.svg",
+	"Wirausaha": "res://Assets/Images/UI/Icons/cat_wirausaha.svg",
 	"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
 }
 

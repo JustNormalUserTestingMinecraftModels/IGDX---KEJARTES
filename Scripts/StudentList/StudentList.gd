@@ -178,10 +178,11 @@ const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
 ## These are the team's own authored art, not the generated placeholder
 ## set: the four skill/needs icons are the same 128x128 StudentCard
 ## stat_* icons the stat rows use, so a day's note and that student's
-## stat row carry the identical symbol. Istirahat borrows stat_energy
-## (rest is what restores it) and Libur borrows stat_mood; Wirausaha
-## takes UI/uang.png, since Shop/Koin.png is only 33px and goes soft at
-## note size.
+## stat row carry the identical symbol. Libur borrows stat_mood.
+## Istirahat and Wirausaha have no stat of their own, so they wear their
+## dedicated UI/Icons/cat_*.svg category icons -- the same ones as the
+## roster card's trait chip (RosterCard.SPECIALTY_ICONS) and AturJadwal's
+## sticky notes.
 ##
 ## A category absent from this map draws no glyph at all -- see the
 ## lookup in _setup_students().
@@ -191,8 +192,8 @@ const CATEGORY_ICONS := {
 	"SeniBudaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
 	"Seni Budaya": "res://Assets/Images/StudentCard/stat_senibudaya.png",
 	"Olahraga": "res://Assets/Images/StudentCard/stat_olahraga.png",
-	"Istirahat": "res://Assets/Images/StudentCard/stat_energy.png",
-	"Wirausaha": "res://Assets/Images/UI/uang.png",
+	"Istirahat": "res://Assets/Images/UI/Icons/cat_istirahat.svg",
+	"Wirausaha": "res://Assets/Images/UI/Icons/cat_wirausaha.svg",
 	"Libur": "res://Assets/Images/StudentCard/stat_mood.png",
 }
 var current_step := 0

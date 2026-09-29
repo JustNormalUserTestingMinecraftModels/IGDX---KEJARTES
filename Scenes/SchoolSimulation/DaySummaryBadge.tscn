@@ -6,7 +6,7 @@ theme_type_variation = &"SunkenPanel"
 [node name="Text" type="Label" parent="."]
 layout_mode = 2
 theme_type_variation = &"BarLabel"
-text = "✨ BONUS EVENT +15"
+text = "BONUS EVENT +15"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 0

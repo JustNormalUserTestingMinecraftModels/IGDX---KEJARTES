@@ -802,9 +802,10 @@ func _on_skin_switch_pressed() -> void:
 	add_child(screen)
 	screen.closed.connect(func(): _skin_select_open = false)
 	screen.closed.connect(_setup_students)
-	# No argument: SkinSelect reads StudentSkins.NAMES, not the roster --
-	# equipped_skins is keyed by name, so all six characters are dressable.
-	screen.open()
+	# Calls down with the roster's names -- SkinSelect never reads GameState
+	# itself, so the rail shows this class, not every character.
+	var names: Array[String] = SkinSelect.roster_names(GameState.approved_students)
+	screen.open(names)
 
 
 ## LobbyChatter's gate: nobody talks over the tutorial, the daily reward,

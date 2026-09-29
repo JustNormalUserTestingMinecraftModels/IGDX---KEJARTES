@@ -367,6 +367,11 @@ const DISPLAY_ROSTER := [
 	# 2026-09-23 skin-select-slide Task 3: the TERAPKAN button and the
 	# character title over the carousel.
 	"SkinNameLabel", "SkinWornChipLabel", "SkinApplyButton", "SkinTitleLabel",
+	# 2026-09-29 skin-select-polish Task 2: the taped photo tiles (now
+	# lipped Buttons, via _add_button_variation), the roster header, each
+	# tile's caption and the TERAPKAN "PAKAI!" sticker.
+	"SkinStudentTile", "SkinStudentTileActive", "SkinRosterHeaderLabel",
+	"SkinTileCaptionLabel", "SkinApplyTag",
 	# 2026-09-18 achievements-polish Task 4: the header status pill's two
 	# state labels.
 	"AchievementStatusPillIdleLabel", "AchievementStatusPillWaitingLabel",

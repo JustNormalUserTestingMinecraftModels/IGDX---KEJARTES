@@ -6,6 +6,7 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nav_btn"]
 bg_color = Color(0.12, 0.15, 0.22, 0.9)
@@ -43,6 +44,9 @@ intensity = 0.1
 
 [node name="Shafts" parent="." instance=ExtResource("look_shafts")]
 intensity = 0.12
+
+[node name="Bloom" parent="." instance=ExtResource("look_bloom")]
+threshold = 0.8
 
 [node name="HeaderVBox" type="VBoxContainer" parent="." unique_id=1252094437]
 layout_mode = 1

@@ -16,3 +16,28 @@ A replacement must:
 
 `tests/test_ui_icons.gd` checks the size, the transparent corner and the
 light-fill-plus-dark-outline rule.
+
+## Where each icon is used
+
+Checked 2026-09-29 (UI depth pass, Phase 3). A new caller adds its row.
+
+| File | Job | Used by | Pinned by |
+|---|---|---|---|
+| `nav_students.svg` | Roster | Lobby's `Student` tile (`RaisedPage`) | `test_lobby_tile_icons` |
+| `nav_jadwal.svg` | Schedule | Lobby's `Jadwal` tile (`RaisedPage`) | `test_lobby_tile_icons` |
+| `nav_koperasi.svg` | Shop | Lobby's `Koperasi` tile (`ShelfPage`) | `test_lobby_tile_icons` |
+| `nav_inventory.svg` | Inventory | Lobby's `Inventory` tile (`ShelfPage`) | `test_lobby_tile_icons` |
+| `nav_rapor.svg` | Report card | Lobby's `ReportStudent` tile (`ShelfPage`) | `test_lobby_tile_icons` |
+| `chevron_left.svg` | Previous page | the `Arrow` child of LevelSelect's `PrevArrow`, StudentCard's `NextButtonKiri`, StudentList's `LeftArrow`, ReportCard's `NextButtonKiri` | `test_paging_arrows` |
+| `chevron_right.svg` | Next page | the `Arrow` child of LevelSelect's `NextArrow`, StudentCard's `NextButtonKanan`, StudentList's `RightArrow`, ReportCard's `NextButtonKanan` | `test_paging_arrows` |
+| `exit.svg` | Quit the game | MainMenu's `QuitButton` | `test_main_menu` |
+| `close.svg` | Close a popup | `NotebookFrame`'s `Chrome/Close` | — |
+| `cat_istirahat.svg` | Istirahat (rest) | `RosterCard.SPECIALTY_ICONS`, `StudentList.CATEGORY_ICONS`, `DayStickyNote.category_icons` | `test_category_icons`, `test_student_list` |
+| `cat_wirausaha.svg` | Wirausaha (earning) | the same three maps, and Dapatkan Uang's `TipIcon` | `test_category_icons`, `test_student_list` |
+| `home.svg`, `info.svg`, `music.svg`, `sound.svg`, `vibrate.svg` | — | nothing yet | `test_ui_icons` only |
+
+Not here on purpose: Back keeps `UI/Nav/return_button.png` (one arrow for
+every Back, `test_back_controls`), and the four Lobby rail icons
+(`setting.png`, `achievement_button.png`, `icon_daily_login.png`,
+`skin_switch.png`) are finished art. `setting.png` (MainMenu's and the
+Lobby's gear) has no `Icons/` counterpart yet.

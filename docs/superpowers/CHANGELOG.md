@@ -21,9 +21,10 @@ depths (0.15, 0.5, 1.0); `Stage/Parallax` is gone. `Glow` (an
 with their price tags and pips, the boards, the bubble, the back button and
 the tray stay on `Stage`, so no UI blooms. The goods used to draw under
 Herman and the counter; neither plate has an opaque pixel over any shelf
-slot, so drawing them above changes nothing. Measured live before Herman
-moved: the lit corner +0.019 mean (peak +0.15), the back button and the
-goods +0.000. Reparenting the
+slot, so drawing them above changes nothing. Measured live, glow on vs
+off: Herman +0.023 mean (peak +0.45, a soft warm halo), the counter +0.012,
+the lit corner +0.018; the price tags and goods +0.000, the boards' text
+and the tray about +0.0002. Reparenting the
 `LightPool` in the editor wrote its internal `Pool`/`Rays` into Koperasi
 as authored nodes, and saving baked copies of the local-to-scene materials
 and Environment, so the scene was cleaned by hand; `test_lobby_look` now

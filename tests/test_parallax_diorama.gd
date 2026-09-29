@@ -3,7 +3,7 @@ extends McpTestSuite
 
 ## Parallax on the two dioramas (2026-09-22, premium-look PR 3).
 ##
-## The Lobby's Classroom and Koperasi's Stage were authored as separate depth
+## The Lobby's Classroom and Koperasi's World/Room were authored as separate depth
 ## bands and drawn flat. Scripts/UI/ParallaxDiorama.gd slides them against
 ## each other under device tilt. This suite pins the three things that would
 ## be expensive to find by eye:
@@ -151,12 +151,16 @@ func test_each_lobby_row_sits_on_one_depth_plane() -> void:
 			% [wall, back, front])
 
 
-## Koperasi's Stage holds the shop UI as well as the picture. Anything the
-## player aims at must stay put, or on the desktop pointer path the button
-## slides away from the cursor reaching for it.
+## Koperasi's shop UI and goods sit on Stage, the picture in World/Room.
+## Anything the player aims at must stay put, or on the desktop pointer path
+## the button slides away from the cursor reaching for it: no driver may
+## reach Stage, and the picture's driver names no UI.
 func test_koperasi_ui_is_left_out_of_the_parallax() -> void:
 	var root := (load(KOPERASI) as PackedScene).instantiate()
 	track(root)
+	for n in root.get_node("Stage").get_children():
+		assert_false(n.get_script() == load("res://Scripts/UI/ParallaxDiorama.gd"),
+			"Stage/%s is a parallax driver, and Stage holds the tap targets" % n.name)
 	var driver := _driver(root, "World/Room")
 	assert_true(driver != null, "no driver")
 	if driver == null:

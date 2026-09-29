@@ -264,6 +264,12 @@ func test_koperasi_blooms_its_room_under_the_goods() -> void:
 		assert_eq(Census.prop(room, key, 0.0), Census.prop(stage, key, 0.0),
 			"Room matches Stage's %s, so the picture stays under the goods" % key)
 	assert_eq(Census.prop(room, "mouse_filter"), Control.MOUSE_FILTER_IGNORE, "Room never eats a tap")
+	assert_eq(Census.prop(room, "unique_name_in_owner"), true, "%Room, for a future root fade")
+	# A CanvasLayer ignores its parent's modulate: a root fade must fade %Room too.
+	var src := FileAccess.get_file_as_string("res://Scripts/Koperasi/Koperasi.gd")
+	if src.contains("tween_property(self, \"modulate"):
+		assert_true(src.contains("tween_property(room, \"modulate"),
+			"Koperasi's root fade must also fade %Room")
 	for e in c:
 		if (e["path"] as String).begins_with("World/"):
 			assert_false(BUTTON_TYPES.has(e["type"]), e["path"] + " is tappable and must stay on layer 0")

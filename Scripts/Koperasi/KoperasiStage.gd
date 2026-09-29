@@ -1,9 +1,11 @@
 extends Control  # script Stage
 
-## The koperasi Stage (Koperasi.tscn:Stage): Pak Herman's counter as one
-## 1080x1920 piece -- the art layers, this week's six items on the shelf,
-## each with a coin-pill price tag and a little life, the chat bubble, the
-## back button and the basket tray.
+## The koperasi Stage (Koperasi.tscn:Stage): the shop's tappable layer as one
+## 1080x1920 piece -- this week's six items on the shelf, each with a
+## coin-pill price tag and a little life, the boards, the chat bubble, the
+## back button and the basket tray. The painted plates (backdrop, Pak Herman,
+## the counter) sit in World/Room, a CanvasLayer at -1 whose rect mirrors this
+## one, so the Lobby's bloom reaches them and never this UI (2026-09-29).
 ##
 ## The shelf is rolled once a week (GameState.shop_stock_for_week()) and can
 ## hold up to SHOP_MAX_COPIES (3) copies of an item. Each slot

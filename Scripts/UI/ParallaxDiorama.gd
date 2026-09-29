@@ -6,14 +6,14 @@ extends Control
 ##
 ## Two screens in this game are dioramas that were authored as separate depth
 ## bands and then drawn perfectly flat: the Lobby's Classroom (wall, back row,
-## front row) and Koperasi's Stage (backdrop and goods, shopkeeper, counter).
+## front row) and Koperasi's World/Room (backdrop, shopkeeper, counter).
 ## The art already has the layers; nothing here adds a visual, it only moves
 ## what is there.
 ##
 ## A DRIVER, NOT A BAND. This node hangs off the diorama as an extra child and
 ## drives its SIBLINGS, named relative to `bands_root`. It works that way
-## because the obvious host is often taken -- Koperasi's Stage already runs
-## KoperasiStage.gd, and a node has only one script -- and because a driver that
+## because the obvious host is often taken -- a screen's Stage often runs a
+## script of its own, and a node has only one -- and because a driver that
 ## owns no pixels cannot be mistaken for part of the picture.
 ##
 ## WHAT DRIVES IT. On a phone, the accelerometer: tilt the handset and the

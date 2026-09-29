@@ -133,6 +133,7 @@ expand_mode = 1
 stretch_mode = 6
 
 [node name="Room" type="Control" parent="World" unique_id=806146181]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0

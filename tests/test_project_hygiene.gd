@@ -186,6 +186,21 @@ func test_both_vram_variants_are_imported_so_the_import_files_stay_stable() -> v
 		"without this, the committed .import files and an Android build disagree")
 
 
+## A const typed `Dictionary[K, Packed*Array]` and built from Array literals
+## comes out corrupted in Godot 4.6.2: iterating it yields empty strings and then
+## segfaults. RunResult.TUTORIAL_FLAGS did that, and the crash only showed when a
+## beaten game pressed Selesai. Type the values as plain Arrays instead.
+func test_no_typed_dictionary_const_holds_packed_arrays() -> void:
+	var pattern := RegEx.create_from_string(
+		"(const|var)\\s+\\w+\\s*:\\s*Dictionary\\[[^\\]]*Packed\\w+Array[^\\]]*\\]")
+	var offenders: Array[String] = []
+	for script_path in _all_files_under("res://Scripts", ".gd"):
+		var text := FileAccess.get_file_as_string(script_path)
+		if pattern.search(text) != null:
+			offenders.append(script_path)
+	assert_eq(offenders, [], "no script types a Dictionary with Packed*Array values")
+
+
 func test_the_run_result_icons_all_exist_and_load_as_textures() -> void:
 	var icons := [
 		"icon_minigame_menang", "icon_minigame_kalah", "icon_poin",

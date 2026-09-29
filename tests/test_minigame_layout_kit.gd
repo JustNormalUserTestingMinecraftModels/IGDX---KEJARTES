@@ -94,6 +94,8 @@ func _tray_with(children: int) -> MinigameTray:
 		var c := Control.new()
 		c.custom_minimum_size = Vector2(0, 100)
 		tray.add_child(c)
+	tray.hint_text = "Ketuk jawaban yang benar"
+	tray.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	var frame := Control.new()
 	frame.size = Vector2(984, 1000)
 	frame.theme = load(THEME_PATH)

@@ -84,7 +84,7 @@ func sort_now() -> void:
 		fit_child_in_rect(row, Rect2(PADDING.x, y, inner_w, h))
 		y += h + separation
 	var hint := _hint()
-	if hint != null:
+	if hint != null and hint.visible:
 		var hh := hint.get_combined_minimum_size().y
 		fit_child_in_rect(hint, Rect2(PADDING.x, size.y - PADDING.w - hh, inner_w, hh))
 	queue_redraw()

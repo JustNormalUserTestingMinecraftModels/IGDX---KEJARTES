@@ -25,12 +25,13 @@ No code changes are required. The whole game re-renders in the new face.
 - `OpenSans-Medium.ttf` — the **body** face. Everything else, including every
   untagged Label. Wired as `DesignTokens.font_body`, which `ThemeFactory` sets
   as the theme's `default_font`.
-- `Brocats.otf`, `Catfiles.otf`, `Catcut.otf`, `Milker.otf`,
-  `Baloo2-Variable.ttf`, `Nunito-Variable.ttf` — no longer referenced by the
-  theme. Kept in the repo, unused.
+- `OpenSans-Bold.ttf` — the body face's bold weight. Wired as
+  `DesignTokens.font_body_bold`.
+- `Milker.otf` — no longer referenced by the theme. Kept in the repo, unused.
 
-The other 43 Open Sans weights are imported but unused. Reach for one only
-through a new `DesignTokens` slot, never a `theme_override_fonts/` entry.
+The other Open Sans weights and the old Baloo 2, Nunito and Cat* faces were
+deleted as unused (2026-09-29). A new weight reaches the game only through a
+new `DesignTokens` slot, never a `theme_override_fonts/` entry.
 
 Which variations take which face is pinned by `DISPLAY_ROSTER` in
 `tests/test_theme_factory.gd`. Change the roster and the factory together.

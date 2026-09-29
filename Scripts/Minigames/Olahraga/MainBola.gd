@@ -249,7 +249,7 @@ func _ready() -> void:
 	_setup_target_box()
 
 	# Note: start_minigame() and activate_minigame() are called externally
-	# by MinigameMenu after the scene is instantiated and faded in.
+	# by SchoolDay (or the debug launcher) after the scene is instantiated.
 
 
 ## Re-lay out whenever the root is resized, in the editor as well as in

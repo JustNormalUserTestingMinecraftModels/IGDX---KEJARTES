@@ -170,3 +170,16 @@ func test_main_bola_speaks_indonesian() -> void:
 	for english: String in ["Shots Left", "Swipe Up to Shoot"]:
 		assert_false(src.contains(english), english + " is gone")
 	assert_contains(src, "\"Tendangan %d/%d\"")
+
+
+const BADMINTON := "res://Scenes/Minigames/Olahraga/Badminton.tscn"
+
+
+func test_badminton_has_the_strip_the_pill_and_a_covering_court() -> void:
+	var root := _scene(BADMINTON)
+	assert_true(_under_safe(root.get_node_or_null("%MinigameHeader")))
+	assert_true(_under_safe(root.get_node_or_null("%MinigameHintPill")))
+	assert_eq((root.get_node("Background") as TextureRect).stretch_mode,
+		TextureRect.STRETCH_KEEP_ASPECT_COVERED, "the court covers, never stretches")
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd"),
+		"\"Poin %d/%d\"")

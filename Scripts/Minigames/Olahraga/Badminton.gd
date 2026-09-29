@@ -54,6 +54,9 @@ extends BaseMinigame
 @export var puck_radius_frac: float = 0.08
 
 var player_score: int = 0
+## True once the player's racket has made its first clean return; the hint
+## pill settles to its resting alpha then and never again.
+var _hint_settled := false
 var enemy_score: int = 0
 var target_score: int = 5
 ## Mirror of player_score under the name BaseMinigame's result card reads.
@@ -70,7 +73,7 @@ var max_score: int = 0
 
 @onready var player_goal: Area2D         = $PlayerGoal
 @onready var enemy_goal: Area2D          = $EnemyGoal
-@onready var score_hud: MinigameScoreHUD = $ScoreHUD
+@onready var score_hud: MinigameHeader = %MinigameHeader
 
 var is_dragging_player: bool = false
 var player_target_pos: Vector2 = Vector2.ZERO
@@ -257,6 +260,9 @@ func _on_puck_body_entered(body: Node) -> void:
 		return
 	if (body == player_paddle or body == enemy_paddle) and _puck_hit_cooldown <= 0.0:
 		_puck_hit_cooldown = 0.22 # Prevent multi-hit trigger jitter
+		if body == player_paddle and not _hint_settled:
+			_hint_settled = true
+			hint_settle()
 		# Three racket samples picked at random: a rally is the same action
 		# a dozen times in ten seconds, and one sample reads as a metronome.
 		# Inside the cooldown branch so the jitter guard covers the cue too.
@@ -586,6 +592,7 @@ func _reset_puck(receiver_side: String = "player") -> void:
 func _update_score_ui() -> void:
 	if score_hud:
 		score_hud.set_label_text("%d - %d" % [enemy_score, player_score])
+	set_progress(player_score, target_score, "Poin %d/%d" % [player_score, target_score])
 
 func _check_win_condition() -> void:
 	if player_score >= target_score:

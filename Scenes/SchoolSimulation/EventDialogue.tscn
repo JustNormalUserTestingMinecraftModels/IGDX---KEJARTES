@@ -65,11 +65,11 @@ stretch_mode = 5
 layout_mode = 0
 shadow_texture = ExtResource("4_5xvqv")
 shadow_offset = Vector2(0, 0)
-shadow_scale = 1.0
-shadow_alpha = 0.34
+shadow_scale = 1.02
+shadow_alpha = 0.7
 follow_parent_rect = true
 shadow_stretch_mode = 5
-blur = 1.2
+blur = 4.0
 
 [node name="GradeCopy" type="BackBufferCopy" parent="."]
 copy_mode = 2

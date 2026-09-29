@@ -22,6 +22,9 @@ const MIN_SIDE := 256
 const LIGHT := 0.85
 ## Luminance an opaque pixel must stay under to count as the dark outline.
 const DARK := 0.25
+## The owner's finished art (PNG): painted in its own palette, so it is held
+## to size and transparency only, not the placeholders' outline rule.
+const FINISHED := ["nav_koperasi", "nav_inventory", "nav_rapor"]
 
 
 func suite_name() -> String:
@@ -29,7 +32,8 @@ func suite_name() -> String:
 
 
 func _image(name: String) -> Image:
-	var tex := load(DIR + name + ".svg") as Texture2D
+	var ext := ".png" if name in FINISHED else ".svg"
+	var tex := load(DIR + name + ext) as Texture2D
 	if tex == null:
 		return null
 	var img := tex.get_image()
@@ -41,7 +45,7 @@ func _image(name: String) -> Image:
 func test_every_icon_exists_and_is_big_enough() -> void:
 	for name in NAMES:
 		var img := _image(name)
-		assert_true(img != null, name + ".svg exists and imports")
+		assert_true(img != null, name + " exists and imports")
 		if img == null:
 			continue
 		assert_true(img.get_width() >= MIN_SIDE and img.get_height() >= MIN_SIDE,
@@ -58,6 +62,8 @@ func test_every_icon_has_a_transparent_ground() -> void:
 
 func test_every_icon_reads_on_cream_and_on_brown() -> void:
 	for name in NAMES:
+		if name in FINISHED:
+			continue
 		var img := _image(name)
 		if img == null:
 			continue

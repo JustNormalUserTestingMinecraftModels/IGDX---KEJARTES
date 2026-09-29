@@ -25,9 +25,9 @@ Checked 2026-09-29 (UI depth pass, Phase 3). A new caller adds its row.
 |---|---|---|---|
 | `nav_students.svg` | Roster | Lobby's `Student` tile (`RaisedPage`) | `test_lobby_tile_icons` |
 | `nav_jadwal.svg` | Schedule | Lobby's `Jadwal` tile (`RaisedPage`) | `test_lobby_tile_icons` |
-| `nav_koperasi.svg` | Shop | Lobby's `Koperasi` tile (`ShelfPage`) | `test_lobby_tile_icons` |
-| `nav_inventory.svg` | Inventory | Lobby's `Inventory` tile (`ShelfPage`) | `test_lobby_tile_icons` |
-| `nav_rapor.svg` | Report card | Lobby's `ReportStudent` tile (`ShelfPage`) | `test_lobby_tile_icons` |
+| `nav_koperasi.png` (owner art) | Shop | Lobby's `Koperasi` tile (`ShelfPage`) | `test_lobby_tile_icons` |
+| `nav_inventory.png` (owner art) | Inventory | Lobby's `Inventory` tile (`ShelfPage`) | `test_lobby_tile_icons` |
+| `nav_rapor.png` (owner art) | Report card | Lobby's `ReportStudent` tile (`ShelfPage`) | `test_lobby_tile_icons` |
 | `chevron_left.svg` | Previous page | the `Arrow` child of LevelSelect's `PrevArrow`, StudentCard's `NextButtonKiri`, StudentList's `LeftArrow`, ReportCard's `NextButtonKiri` | `test_paging_arrows` |
 | `chevron_right.svg` | Next page | the `Arrow` child of LevelSelect's `NextArrow`, StudentCard's `NextButtonKanan`, StudentList's `RightArrow`, ReportCard's `NextButtonKanan` | `test_paging_arrows` |
 | `exit.svg` | Quit the game | MainMenu's `QuitButton` | `test_main_menu` |

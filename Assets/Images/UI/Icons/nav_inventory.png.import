@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c3gqcuvkc5py8"
-path="res://.godot/imported/nav_koperasi.svg-d8a0993203bef4e8740858c6170a0f94.ctex"
+uid="uid://bgg56erre5vo8"
+path="res://.godot/imported/nav_inventory.png-087251a16e6b24a6bb7a3725180af1b5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/UI/Icons/nav_koperasi.svg"
-dest_files=["res://.godot/imported/nav_koperasi.svg-d8a0993203bef4e8740858c6170a0f94.ctex"]
+source_file="res://Assets/Images/UI/Icons/nav_inventory.png"
+dest_files=["res://.godot/imported/nav_inventory.png-087251a16e6b24a6bb7a3725180af1b5.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

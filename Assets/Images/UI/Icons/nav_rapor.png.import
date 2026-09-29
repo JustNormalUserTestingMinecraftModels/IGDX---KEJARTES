@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkytvr1blm7n"
-path="res://.godot/imported/nav_inventory.svg-e14f633e2bb96d16c232844f13b60ad6.ctex"
+uid="uid://ddragqf6lf0ns"
+path="res://.godot/imported/nav_rapor.png-7f1ba655840ee46b49170e8e47f6d25c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/UI/Icons/nav_inventory.svg"
-dest_files=["res://.godot/imported/nav_inventory.svg-e14f633e2bb96d16c232844f13b60ad6.ctex"]
+source_file="res://Assets/Images/UI/Icons/nav_rapor.png"
+dest_files=["res://.godot/imported/nav_rapor.png-7f1ba655840ee46b49170e8e47f6d25c.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

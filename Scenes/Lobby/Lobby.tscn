@@ -11,14 +11,9 @@
 [ext_resource type="Texture2D" uid="uid://w2eebv4y4ue0" path="res://Assets/Images/MuridPortrait/TanganItems/Citra_Table.png" id="7_ek62u"]
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/TheaFace.tscn" id="8_gbno3"]
 [ext_resource type="Texture2D" uid="uid://ckls11l3yiniv" path="res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png" id="9_bfy74"]
-[ext_resource type="Texture2D" uid="uid://bjccxqjbt3wyo" path="res://Assets/Images/UI/Icons/nav_students.svg" id="ic_nav_students"]
 [ext_resource type="Texture2D" uid="uid://vwe02tlwbjjg" path="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Table.png" id="9_q4xuc"]
 [ext_resource type="Texture2D" uid="uid://cowgvm1mr8ibi" path="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Table.png" id="10_3lohg"]
-[ext_resource type="Texture2D" uid="uid://c3gqcuvkc5py8" path="res://Assets/Images/UI/Icons/nav_koperasi.svg" id="ic_nav_koperasi"]
 [ext_resource type="Texture2D" uid="uid://ce1kfh8jybbhh" path="res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png" id="11_4d6wl"]
-[ext_resource type="Texture2D" uid="uid://do8lxs3cf333x" path="res://Assets/Images/UI/Icons/nav_rapor.svg" id="ic_nav_rapor"]
-[ext_resource type="Texture2D" uid="uid://dkytvr1blm7n" path="res://Assets/Images/UI/Icons/nav_inventory.svg" id="ic_nav_inventory"]
-[ext_resource type="Texture2D" uid="uid://c20481fiqs6vb" path="res://Assets/Images/UI/Icons/nav_jadwal.svg" id="ic_nav_jadwal"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
@@ -30,9 +25,11 @@
 [ext_resource type="Texture2D" uid="uid://clvbh8fwua8hm" path="res://Assets/Images/UI/skin_switch.png" id="30_62a4m"]
 [ext_resource type="Script" uid="uid://p40qndw5jabq" path="res://Scripts/Lobby/LobbyHud.gd" id="32_nese6"]
 [ext_resource type="Script" uid="uid://dyd6by4nfs70p" path="res://Scripts/Lobby/LobbyChatter.gd" id="34_f2e4j"]
+[ext_resource type="Texture2D" uid="uid://bwl14abulhve8" path="res://Assets/Images/UI/Icons/nav_koperasi.png" id="35_p3ppw"]
+[ext_resource type="Texture2D" uid="uid://bgg56erre5vo8" path="res://Assets/Images/UI/Icons/nav_inventory.png" id="36_kens3"]
 [ext_resource type="PackedScene" uid="uid://jdjll060xj8e" path="res://Scenes/Lobby/NotifBadge.tscn" id="37_2xndu"]
-[ext_resource type="Texture2D" uid="uid://dp8qurmtbcol6" path="res://Assets/Images/DaySummary/icon_chevron_up.png" id="37_ayldy"]
 [ext_resource type="Texture2D" uid="uid://4t4pb40qap88" path="res://Assets/Images/UI/LobbyHud/icon_plus.svg" id="37_ty8k5"]
+[ext_resource type="Texture2D" uid="uid://ddragqf6lf0ns" path="res://Assets/Images/UI/Icons/nav_rapor.png" id="38_5imbd"]
 [ext_resource type="Script" uid="uid://c7na1rk10q6kb" path="res://Scripts/Lobby/LobbyProgressHeader.gd" id="38_ayldy"]
 [ext_resource type="Script" uid="uid://c47bgh5lvg6qi" path="res://Scripts/Lobby/DailyLoginPanel.gd" id="39_2isbc"]
 [ext_resource type="Texture2D" uid="uid://cuneeafckgqsk" path="res://Assets/Images/Particles/particle_star.png" id="39_nese6"]
@@ -41,16 +38,18 @@
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
 [ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
 [ext_resource type="PackedScene" uid="uid://ckv3ev7addti4" path="res://Scenes/Lobby/DapatkanUang.tscn" id="49_7sr8a"]
-[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="Script" uid="uid://b7vwvw12t4yux" path="res://Scripts/UI/IdleFade.gd" id="52_rsfel"]
 [ext_resource type="Texture2D" uid="uid://1144px7cgmdw" path="res://Assets/Images/UI/lobby_no_tables.png" id="bg_tex"]
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
+[ext_resource type="Texture2D" uid="uid://c20481fiqs6vb" path="res://Assets/Images/UI/Icons/nav_jadwal.svg" id="ic_nav_jadwal"]
+[ext_resource type="Texture2D" uid="uid://bjccxqjbt3wyo" path="res://Assets/Images/UI/Icons/nav_students.svg" id="ic_nav_students"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout_lobby.tres" id="illus_grade_cut"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPortrait/Meja/kiri_atas.png" id="meja_ka_tex"]
 [ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPortrait/Meja/kiri_bawah.png" id="meja_kb_tex"]
 [ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPortrait/Meja/kanan_atas.png" id="meja_kna_tex"]
 [ext_resource type="Texture2D" uid="uid://dovev5ixqlwou" path="res://Assets/Images/MuridPortrait/Meja/kanan_bawah.png" id="meja_knb_tex"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
@@ -1181,7 +1180,7 @@ rotation = -0.02618
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileKoperasi"
 text = "Koperasi"
-icon = ExtResource("ic_nav_koperasi")
+icon = ExtResource("35_p3ppw")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1189,15 +1188,15 @@ expand_icon = true
 [node name="Inventory" type="Button" parent="Safe/UI/Hud/BookHud/Shelf/ShelfPage" unique_id=1524317152]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 325.0
-offset_top = 32.0
-offset_right = 610.0
-offset_bottom = 192.0
+offset_left = 314.00003
+offset_top = 29.0
+offset_right = 620.0
+offset_bottom = 189.0
 rotation = 0.017453
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileInventory"
 text = "INVENTORY"
-icon = ExtResource("ic_nav_inventory")
+icon = ExtResource("36_kens3")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1218,7 +1217,7 @@ rotation = -0.017453
 pivot_offset = Vector2(142.5, 80)
 theme_type_variation = &"NavTileRapor"
 text = "RAPOR"
-icon = ExtResource("ic_nav_rapor")
+icon = ExtResource("38_5imbd")
 icon_alignment = 1
 vertical_icon_alignment = 0
 expand_icon = true
@@ -1232,19 +1231,6 @@ offset_top = -40.0
 offset_right = 446.0
 offset_bottom = 56.0
 theme_type_variation = &"ChevronGripButton"
-
-[node name="ChevronGlyph" type="TextureRect" parent="Safe/UI/Hud/BookHud/ChevronGrip" unique_id=198550015]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 116.0
-offset_top = 36.0
-offset_right = 164.0
-offset_bottom = 84.0
-pivot_offset = Vector2(24, 24)
-mouse_filter = 2
-texture = ExtResource("37_ayldy")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="IconRail" type="VBoxContainer" parent="Safe/UI/Hud" unique_id=1064107887]
 unique_name_in_owner = true
@@ -1342,7 +1328,7 @@ expand_mode = 1
 script = ExtResource("39_2isbc")
 wallet_anchor = NodePath("../Safe/UI/DisplayUang")
 
-[node name="DailyLoginFrame" parent="DailyReward" instance=ExtResource("nb_frame")]
+[node name="DailyLoginFrame" parent="DailyReward" unique_id=1525468241 instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
 show_behind_parent = true
 layout_mode = 1
@@ -1353,6 +1339,8 @@ offset_left = -40.0
 offset_top = -290.0
 offset_right = 0.0
 offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
 title_text = "DAILY LOGIN"
 ring_count = 0
 show_well = false

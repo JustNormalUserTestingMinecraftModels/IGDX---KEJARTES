@@ -13,9 +13,9 @@ const LOBBY := "res://Scenes/Lobby/Lobby.tscn"
 const TILES := {
 	"Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Student": "res://Assets/Images/UI/Icons/nav_students.svg",
 	"Safe/UI/Hud/BookHud/RaisedBlock/RaisedPage/Jadwal": "res://Assets/Images/UI/Icons/nav_jadwal.svg",
-	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/Koperasi": "res://Assets/Images/UI/Icons/nav_koperasi.svg",
-	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/Inventory": "res://Assets/Images/UI/Icons/nav_inventory.svg",
-	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/ReportStudent": "res://Assets/Images/UI/Icons/nav_rapor.svg",
+	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/Koperasi": "res://Assets/Images/UI/Icons/nav_koperasi.png",
+	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/Inventory": "res://Assets/Images/UI/Icons/nav_inventory.png",
+	"Safe/UI/Hud/BookHud/Shelf/ShelfPage/ReportStudent": "res://Assets/Images/UI/Icons/nav_rapor.png",
 }
 ## The retired Nav art no scene may point at any more.
 const RETIRED := ["icon_cta_student.png", "icon_cta_jadwal.png", "icon_nav_koperasi.png",

@@ -1,5 +1,12 @@
 # Week-length rebalance — proposal for Balance.gd's owner
 
+**Update 2026-09-29:** the owner asked for Kelas 7/8/9 = 4/6/8 weeks instead
+(not the 6/9/12 below). That is applied as `GameState.WEEKS_BY_GRADE`, with
+`Balance.gd` untouched. The targets moved with them, to 15 / 22 / 26
+(`GameState.TARGET_UPLIFT_BY_GRADE`): at the old 34 / 40 a well-played roster
+never cleared Kelas 8 or 9 in 6 or 8 weeks. The proposal below is kept for its
+method.
+
 **Status:** Proposal only. Not applied. `Scripts/Balance.gd` is
 collaborator-owned (`CLAUDE.md`, "Conventions") — this document is the
 handoff artifact for that collaborator to review and, if they agree, apply

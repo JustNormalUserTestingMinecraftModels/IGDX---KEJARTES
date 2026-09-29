@@ -218,11 +218,25 @@ func test_no_balance_literals_left_in_extracted_functions() -> void:
 						% [fname, m.get_string()])
 
 
-func test_grade_week_counts_come_from_balance() -> void:
+## 2026-09-29: Kelas 7/8/9 run 4/6/8 weeks. The count is GameState's own
+## (WEEKS_BY_GRADE), not Balance.JUMLAH_MINGGU_KELAS_* -- that file is
+## collaborator-owned and still says 6/12/16, which nothing reads any more.
+## The targets moved with them: Kelas 8 and 9 were unwinnable at 34 / 40 on
+## 6 / 8 weeks, so GameState.TARGET_UPLIFT_BY_GRADE is 15 / 22 / 26.
+func test_grade_targets_are_15_22_26() -> void:
+	var want := {7: 15.0, 8: 22.0, 9: 26.0}
+	for grade in want:
+		assert_eq(GameState.target_uplift_for_grade(grade), want[grade], "Kelas %d uplift" % grade)
+	assert_eq(GameState.target_uplift_for_grade(3), 15.0, "a stray grade counts as Kelas 7")
+
+
+func test_grade_week_counts_are_4_6_8() -> void:
 	var original_grade: int = GameState.current_grade
-	for grade in [7, 8, 9]:
+	var want := {7: 4, 8: 6, 9: 8}
+	for grade in want:
 		GameState.current_grade = grade
-		var expected: int = _EXPECTED["JUMLAH_MINGGU_KELAS_%d" % grade]
-		assert_eq(GameState.get_max_weeks(), expected,
-			"Kelas %d must run for Balance.JUMLAH_MINGGU_KELAS_%d weeks" % [grade, grade])
+		assert_eq(GameState.get_max_weeks(), want[grade], "Kelas %d runs %d weeks" % [grade, want[grade]])
+		assert_eq(GameState.max_minggu, want[grade], "and max_minggu follows the grade")
+		assert_eq(GameState.weeks_for_grade(grade), want[grade], "weeks_for_grade agrees")
+	assert_eq(GameState.weeks_for_grade(3), 4, "a stray grade counts as Kelas 7")
 	GameState.current_grade = original_grade

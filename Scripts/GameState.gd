@@ -70,7 +70,7 @@ var shop_promo_percent: int = 0
 
 # Week tracking
 var minggu_ke: int = 1
-var max_minggu: int = 6
+var max_minggu: int = WEEKS_BY_GRADE[7]
 var lobby_tutorial_completed: bool = false
 ## Debug-menu master switch: true skips every tutorial in the game (lobby,
 ## atur jadwal, student card, student list, school day, minigames), not just
@@ -159,11 +159,35 @@ func all_skins_locked() -> bool:
 			return true
 	return false
 
+## How many school weeks each grade runs (2026-09-29: Kelas 7/8/9 = 4/6/8).
+## Ours, not Balance.gd's: that file is collaborator-owned. Its
+## JUMLAH_MINGGU_KELAS_* (6/12/16) and TARGET_KENAIKAN_KELAS_* (15/34/40) are
+## no longer read by anything -- the weeks and the targets they were paired
+## with move together, so both live here.
+const WEEKS_BY_GRADE := {7: 4, 8: 6, 9: 8}
+
+## Points every skill must gain over its base to clear each grade, sized for
+## WEEKS_BY_GRADE. Kelas 8 and 9 were 34 and 40 for 12 and 16 weeks; on 6 and
+## 8 weeks those were unwinnable (a well-played roster never cleared), and
+## 22 / 26 put the clear at week 5 of 6 and week 7 of 8, as tight as before.
+## Kelas 7 keeps 15 and clears at week 2 of 4. tests/test_balance_pacing.gd
+## simulates it.
+const TARGET_UPLIFT_BY_GRADE := {7: 15.0, 8: 22.0, 9: 26.0}
+
+
+## The weeks `grade` runs; a grade outside 7-9 counts as Kelas 7.
+static func weeks_for_grade(grade: int) -> int:
+	return WEEKS_BY_GRADE.get(grade, WEEKS_BY_GRADE[7])
+
+
+## The points every skill must gain to clear `grade`; a grade outside 7-9
+## counts as Kelas 7.
+static func target_uplift_for_grade(grade: int) -> float:
+	return TARGET_UPLIFT_BY_GRADE.get(grade, TARGET_UPLIFT_BY_GRADE[7])
+
+
 func get_max_weeks() -> int:
-	match current_grade:
-		8: return Balance.JUMLAH_MINGGU_KELAS_8
-		9: return Balance.JUMLAH_MINGGU_KELAS_9
-		_: return Balance.JUMLAH_MINGGU_KELAS_7
+	return weeks_for_grade(current_grade)
 
 func get_grade_from_week() -> int:
 	return current_grade
@@ -226,10 +250,7 @@ func initialize_grade_targets() -> void:
 		var base_seni_budaya = student["base_seni_budaya"]
 		var base_olahraga = student["base_olahraga"]
 		
-		var uplift := Balance.TARGET_KENAIKAN_KELAS_7
-		match current_grade:
-			8: uplift = Balance.TARGET_KENAIKAN_KELAS_8
-			9: uplift = Balance.TARGET_KENAIKAN_KELAS_9
+		var uplift := target_uplift_for_grade(current_grade)
 		student["target_akademis"] = clampf(base_akademis + uplift, 0.0, 100.0)
 		student["target_seni_budaya"] = clampf(base_seni_budaya + uplift, 0.0, 100.0)
 		student["target_olahraga"] = clampf(base_olahraga + uplift, 0.0, 100.0)

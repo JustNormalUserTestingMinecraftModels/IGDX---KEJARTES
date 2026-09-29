@@ -406,12 +406,16 @@ static func load_default() -> DesignTokens:
 
 ## Weekly Results banner fill: the mockup's butter yellow (2026-09-19).
 @export var recap_banner_fill: Color = Color("FFE17D")
-## Weekly Results tile fill: near-white, so the icons read on it.
-@export var recap_tile_fill: Color = Color("F6F4F2")
-## Weekly Results' Logs button face: the ribbon's red (C00000), lightened.
-@export var result_logs_fill: Color = Color("E0574B")
-## The Logs button's bevel, under result_logs_fill.
-@export var result_logs_dark: Color = Color("A8342A")
+## Weekly Results tile fill: the card cream (surface_card), so the tiles sit
+## on the butter banner the way the student cards sit on the page. It was a
+## cool grey-white (F6F4F2) until 2026-09-29, which read dirty on the yellow.
+@export var recap_tile_fill: Color = Color("FFFDF8")
+## Weekly Results' Logs button face: the neutral brown (brand_primary_light).
+## Logs only opens the week's history, so it is not a danger action; it was
+## the ribbon's red until 2026-09-29, when tomato went back to meaning danger.
+@export var result_logs_fill: Color = Color("9C6440")
+## The Logs button's bevel, under result_logs_fill (brand_primary_dark).
+@export var result_logs_dark: Color = Color("56321B")
 
 ## Geometry measured off the mockup, in game pixels (mockup is 1:1).
 ## Corner radius of the avatar frame.

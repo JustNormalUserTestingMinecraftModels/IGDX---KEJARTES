@@ -46,8 +46,7 @@ eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 `penjadwalan_card_bg.png` was part of this pass too, but Phase 2 left it
 unreferenced -- see the UI depth pass entry below),
 the 2026-09-24 SchoolDay liveliness set (the daily verdict's four teacher
-faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`,
-`star_on.svg`, `star_off.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
+faces `Assets/Images/DaySummary/Verdict/teacher_1..4.svg`, `crown.svg`; the sky's `Assets/Images/SchoolDay/Sky/`
 sun, moon, three clouds, star field and rain streak; the avatar rings in
 `SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
 band's `caution_tape.svg`; and `night_windows.png`, generated from

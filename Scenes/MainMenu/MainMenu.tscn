@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://cqafwo6ks0sbf" path="res://Assets/Images/UI/titlescreen_background.png" id="3_bg"]
 [ext_resource type="Texture2D" uid="uid://c72nldobl75au" path="res://Assets/Images/UI/logo.png" id="4_logo"]
 [ext_resource type="Texture2D" uid="uid://djg4leclqek4m" path="res://Assets/Images/UI/setting.png" id="5_0l8wx"]
-[ext_resource type="Texture2D" uid="uid://qxcnmfiy6hpl" path="res://Assets/Images/UI/Icons/exit.svg" id="ic_exit"]
+[ext_resource type="Texture2D" uid="uid://cvycveck61e4a" path="res://Assets/Images/UI/Icons/exit.png" id="ic_exit"]
 [ext_resource type="Material" uid="uid://dv5bscxw2v678" path="res://Scripts/Shaders/soft_shadow_material.tres" id="soft_shadow_mat"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="amb_tint"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
@@ -158,7 +158,7 @@ alignment = 1
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 tooltip_text = "Pengaturan"
-theme_type_variation = &"MainMenuButton"
+theme_type_variation = &"MainMenuIconButton"
 icon = ExtResource("5_0l8wx")
 expand_icon = true
 
@@ -166,6 +166,6 @@ expand_icon = true
 custom_minimum_size = Vector2(128, 128)
 layout_mode = 2
 tooltip_text = "Keluar"
-theme_type_variation = &"MainMenuButton"
+theme_type_variation = &"MainMenuIconButton"
 icon = ExtResource("ic_exit")
 expand_icon = true

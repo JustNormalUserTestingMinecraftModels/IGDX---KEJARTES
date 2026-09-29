@@ -24,7 +24,7 @@ const LIGHT := 0.85
 const DARK := 0.25
 ## The owner's finished art (PNG): painted in its own palette, so it is held
 ## to size and transparency only, not the placeholders' outline rule.
-const FINISHED := ["nav_koperasi", "nav_inventory", "nav_rapor"]
+const FINISHED := ["nav_koperasi", "nav_inventory", "nav_rapor", "exit"]
 
 
 func suite_name() -> String:

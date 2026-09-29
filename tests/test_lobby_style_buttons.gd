@@ -42,7 +42,7 @@ func _roles() -> Dictionary:
 		"NavTileRapor": [t.accent_sunflower, t.accent_sunflower_lip],
 		"DangerButton": tomato, "DangerButtonM": tomato, "DangerButtonL": tomato,
 		"SecondaryButton": brown, "SecondaryButtonM": brown, "SecondaryButtonL": brown,
-		"LobbyNavTile": brown, "MainMenuButton": brown, "ShopShelfButton": brown,
+		"LobbyNavTile": brown, "ShopShelfButton": brown,
 		"QuirkBadge": brown, "CardArrowButton": [t.brand_primary, t.brand_primary_dark],
 		"StudentCardSecondaryButton": cream, "StudentCardSecondaryButtonL": cream,
 		"FilterChipButton": cream, "MinigameChoiceButton": cream,
@@ -125,13 +125,9 @@ func test_the_event_select_card_stays_flat() -> void:
 		"EventSelectCard keeps its flat selectable card")
 
 
-## The icon-only main menu buttons and Weekly Results' half-row buttons
-## keep the fit they were laid out for; only the surface changed.
-func test_main_menu_and_weekly_results_keep_their_fit() -> void:
-	var mm := _theme.get_stylebox("normal", "MainMenuButton")
-	assert_true(mm != null and mm.content_margin_left == 20.0 and mm.content_margin_top == 0.0,
-		"MainMenuButton keeps its tight icon margins")
-	assert_eq(_theme.get_font_size("font_size", "MainMenuButton"), 80, "MainMenuButton text size")
+## Weekly Results' half-row buttons keep the fit they were laid out for; only
+## the surface changed. (The title screen's icons lost their box on 2026-09-29.)
+func test_weekly_results_keeps_its_fit() -> void:
 	var rb := _theme.get_stylebox("normal", "ResultButton")
 	assert_true(rb != null and rb.content_margin_left == 24.0,
 		"ResultButton keeps its 24 px sides so SELANJUTNYA fits")

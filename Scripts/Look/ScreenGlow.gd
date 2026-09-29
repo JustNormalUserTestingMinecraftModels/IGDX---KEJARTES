@@ -31,7 +31,7 @@ extends ColorRect
 		_refresh()
 
 ## How much of the bloom is added back; 0 for none.
-@export_range(0.0, 2.0, 0.01) var intensity: float = 0.3:
+@export_range(0.0, 2.0, 0.01) var intensity: float = 0.6:
 	set(value):
 		intensity = value
 		_refresh()

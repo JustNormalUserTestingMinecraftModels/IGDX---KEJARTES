@@ -55,7 +55,7 @@ intensity = 0.15
 
 [node name="Bloom" parent="World/Room" instance=ExtResource("look_bloom")]
 threshold = 0.5
-intensity = 0.6
+intensity = 1.0
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=591100110]
 layout_mode = 1

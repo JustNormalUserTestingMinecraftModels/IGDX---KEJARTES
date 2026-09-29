@@ -335,9 +335,7 @@ and ready for when `hdr_2d` lands. Measured at the same time, the desk lamp
 `LightPool` is capped at 0.12 (its measured knee) and still only adds
 +0.011 mean brightness; `hdr_2d` would also let it go brighter. Also
 outstanding: light wrap on the shared cutout illustration materials; the
-kit not yet extended to Inventory or Achievements; and the Debug overlay's
-Look page stays Lobby-only because `DebugManager.gd` is at its clean-code
-size ceiling (1,880 lines, `LARGE_SCRIPTS`). Kalkulator has no backdrop of
+kit not yet extended to Inventory or Achievements. Kalkulator has no backdrop of
 its own (it draws over SchoolDay's), so it takes no light and no bloom.
 Each `ScreenGlow` costs a full-screen copy and its mip chain every frame,
 on by default with Efek Suasana (the Efek Visual layer keeps the same

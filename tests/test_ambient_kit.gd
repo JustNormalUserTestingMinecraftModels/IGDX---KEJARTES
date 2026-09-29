@@ -378,7 +378,7 @@ func test_the_screen_glow_knobs_reach_the_shader() -> void:
 	assert_true(is_equal_approx(float(mat.get_shader_parameter("spread")), 3.0), "spread reaches it")
 	assert_eq(mat.get_shader_parameter("bloom_tint"), Color(0.8, 0.9, 1.0), "the tint reaches it")
 	_screen_glow.threshold = 0.7
-	_screen_glow.intensity = 0.3
+	_screen_glow.intensity = 0.6
 	_screen_glow.spread = 2.0
 	_screen_glow.bloom_tint = Color(1.0, 0.96, 0.88)
 

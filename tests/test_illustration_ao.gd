@@ -225,7 +225,7 @@ func test_the_lobby_cutout_differs_only_in_its_light() -> void:
 ## A cutout has an alpha edge to find; a backdrop is full-bleed and would pay
 ## five taps per pixel for nothing. Percentages are transparent pixels.
 const CUTOUTS := {
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Herman", "Stage/Foreground"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman", "World/Room/Foreground"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 	# 2026-09-25: the minigame win screen's speaker, the same splash art.
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
@@ -248,7 +248,7 @@ const CUTOUTS := {
 ## Full-bleed. These keep the material they have always worn.
 const BACKDROPS := {
 	"res://Scenes/Lobby/Lobby.tscn": ["World/Classroom/BGLayer"],
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Background"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Background"],
 	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
 	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
 	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background"],

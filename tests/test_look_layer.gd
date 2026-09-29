@@ -26,7 +26,7 @@ const GRADED := {
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
 	"res://Scenes/Koperasi/Koperasi.tscn": [
-		"Stage/Background", "Stage/Herman", "Stage/Foreground",
+		"World/Room/Background", "World/Room/Herman", "World/Room/Foreground",
 	],
 	# The Lobby look on the shops (2026-09-28): their blurred backdrops.
 	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],

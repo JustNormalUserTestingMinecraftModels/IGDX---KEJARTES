@@ -327,11 +327,11 @@ Environment glow's threshold 0.6-0.9, intensity 1-4 and strength 1-1.5
 either bloomed nothing visible or bloomed the background as much as the
 light (+0.04 to +0.11 at the strong end, fog). So MainMenu, LevelSelect,
 StudentCard, StudentList and ReportCard ship without bloom. The shops' hub,
-the cosmetic shop and the end-game screens carry the Lobby's own bloom since
+the cosmetic shop, Koperasi and the end-game screens carry the Lobby's own bloom since
 2026-09-29 (an `AmbientGlow` at `lobby_environment.tres`'s values); the
 earlier "+0.0000 at every threshold" readings on them were an artefact: an
 Environment glow does not render in an offscreen `SubViewport` at all, so
-measure it in the running game. Koperasi and the minigames keep the
+measure it in the running game. The minigames keep the
 art-only `ScreenGlow` (style guide, "Bloom off the Lobby"). Measured at the same time, the desk lamp
 `LightPool` is capped at 0.12 (its measured knee) and still only adds
 +0.011 mean brightness; `hdr_2d` would also let it go brighter. Also

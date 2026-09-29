@@ -18,11 +18,11 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
 [ext_resource type="Theme" uid="uid://bo3dwau466faa" path="res://Assets/Theme/kejartes_theme.tres" id="kejartes_theme"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wall"]
 atlas = ExtResource("2_bg")
@@ -118,8 +118,10 @@ grow_vertical = 2
 theme = ExtResource("kejartes_theme")
 script = ExtResource("1_ap2qe")
 
-[node name="WallFill" type="TextureRect" parent="." unique_id=946961831]
-layout_mode = 1
+[node name="World" type="CanvasLayer" parent="." unique_id=1999567991]
+layer = -1
+
+[node name="WallFill" type="TextureRect" parent="World" unique_id=946961831]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -130,8 +132,8 @@ texture = SubResource("AtlasTexture_wall")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Stage" type="Control" parent="." unique_id=358025086]
-layout_mode = 1
+[node name="Room" type="Control" parent="World" unique_id=806146181]
+layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -139,9 +141,8 @@ offset_top = -1920.0
 offset_right = 1080.0
 grow_vertical = 0
 mouse_filter = 2
-script = ExtResource("5_jfwhh")
 
-[node name="Background" type="TextureRect" parent="Stage" unique_id=1368498906]
+[node name="Background" type="TextureRect" parent="World/Room" unique_id=1368498906]
 material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
@@ -153,17 +154,76 @@ mouse_filter = 2
 texture = ExtResource("2_bg")
 expand_mode = 1
 
-[node name="Light" parent="Stage" instance=ExtResource("look_pool")]
+[node name="Light" parent="World/Room" unique_id=2119122875 instance=ExtResource("look_pool")]
 center = Vector2(0.15, 0.1)
 pool_size = Vector2(1600, 1600)
 intensity = 0.1
 
-[node name="Shafts" parent="Stage" instance=ExtResource("look_shafts")]
+[node name="Shafts" parent="World/Room" unique_id=1360315041 instance=ExtResource("look_shafts")]
 intensity = 0.15
 
-[node name="Bloom" parent="Stage" instance=ExtResource("look_bloom")]
-threshold = 0.8
-intensity = 0.8
+[node name="Herman" type="TextureRect" parent="World/Room" unique_id=2135616178]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(540, 1920)
+mouse_filter = 2
+texture = ExtResource("3_herman")
+expand_mode = 1
+
+[node name="Shadow" parent="World/Room/Herman" unique_id=451507075 instance=ExtResource("paper_shadow")]
+layout_mode = 0
+shadow_texture = ExtResource("3_herman")
+shadow_offset = Vector2(0, 0)
+shadow_scale = 1.0
+shadow_alpha = 0.34
+blur = 1.2
+
+[node name="HermanAP" type="AnimationPlayer" parent="World/Room/Herman" unique_id=784512396]
+libraries/ = SubResource("AnimationLibrary_herman")
+autoplay = &"idle"
+
+[node name="Foreground" type="TextureRect" parent="World/Room" unique_id=1358581353]
+material = ExtResource("illus_grade_cut")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_fg")
+expand_mode = 1
+
+[node name="Parallax" type="Control" parent="World/Room" unique_id=388275784]
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("parallax_diorama")
+depth_by_child = {
+"Background": 0.15,
+"Foreground": 1.0,
+"Herman": 0.5,
+"Light": 0.15,
+"Shafts": 0.15
+}
+overscan_children = Array[StringName]([&"Background", &"Foreground"])
+
+[node name="Glow" parent="." unique_id=1891873362 instance=ExtResource("look_glow")]
+
+[node name="Stage" type="Control" parent="." unique_id=358025086]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -1920.0
+offset_right = 1080.0
+grow_vertical = 0
+mouse_filter = 2
+script = ExtResource("5_jfwhh")
 
 [node name="Barang1" type="TextureButton" parent="Stage" unique_id=2025160246]
 layout_mode = 0
@@ -783,43 +843,6 @@ texture = ExtResource("17_pipfilled")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Herman" type="TextureRect" parent="Stage" unique_id=2135616178]
-material = ExtResource("illus_grade_cut")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-pivot_offset = Vector2(540, 1920)
-mouse_filter = 2
-texture = ExtResource("3_herman")
-expand_mode = 1
-
-[node name="Shadow" parent="Stage/Herman" unique_id=451507075 instance=ExtResource("paper_shadow")]
-layout_mode = 0
-shadow_texture = ExtResource("3_herman")
-shadow_offset = Vector2(0, 0)
-shadow_scale = 1.0
-shadow_alpha = 0.34
-blur = 1.2
-
-[node name="HermanAP" type="AnimationPlayer" parent="Stage/Herman" unique_id=784512396]
-libraries/ = SubResource("AnimationLibrary_herman")
-autoplay = &"idle"
-
-[node name="Foreground" type="TextureRect" parent="Stage" unique_id=1358581353]
-material = ExtResource("illus_grade_cut")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-texture = ExtResource("4_fg")
-expand_mode = 1
-
 [node name="Signboard" type="Panel" parent="Stage" unique_id=-1151388084]
 layout_mode = 0
 offset_left = 36.0
@@ -965,20 +988,6 @@ mouse_filter = 2
 
 [node name="BasketTray" parent="Stage/TrayDock" unique_id=560263619 instance=ExtResource("11_rr7aj")]
 layout_mode = 0
-
-[node name="Parallax" type="Control" parent="Stage" unique_id=490057061]
-layout_mode = 1
-anchors_preset = 0
-mouse_filter = 2
-script = ExtResource("parallax_diorama")
-depth_by_child = {
-"Background": 0.15,
-"Foreground": 1.0,
-"Herman": 0.5,
-"Light": 0.15,
-"Shafts": 0.15
-}
-overscan_children = Array[StringName]([&"Background", &"Foreground"])
 
 [node name="Safe" type="MarginContainer" parent="." unique_id=259420622]
 layout_mode = 1

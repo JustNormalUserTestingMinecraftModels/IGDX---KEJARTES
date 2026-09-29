@@ -8,6 +8,27 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Koperasi takes the Lobby's bloom
+
+The owner asked for the Lobby's WorldEnvironment on the shop, and Koperasi
+was the one shop without it. The copied glow had washed its text out
+because its art and UI shared layer 0, so the picture moved instead: a
+`World` CanvasLayer at −1 now holds `WallFill` and a `Room` that mirrors
+`Stage`'s bottom-pinned 1080×1920 rect, with the backdrop, light, shafts,
+Pak Herman and the counter on the Room's parallax driver at their old
+depths (0.15, 0.5, 1.0); `Stage/Parallax` is gone. `Glow` (an
+`AmbientGlow`) sits second in the root; `Stage/Bloom` is gone. The goods
+with their price tags and pips, the boards, the bubble, the back button and
+the tray stay on `Stage`, so no UI blooms. The goods used to draw under
+Herman and the counter; neither plate has an opaque pixel over any shelf
+slot, so drawing them above changes nothing. Measured live before Herman
+moved: the lit corner +0.019 mean (peak +0.15), the back button and the
+goods +0.000. Reparenting the
+`LightPool` in the editor wrote its internal `Pool`/`Rays` into Koperasi
+as authored nodes, and saving baked copies of the local-to-scene materials
+and Environment, so the scene was cleaned by hand; `test_lobby_look` now
+fails if `World/Room/Light` has authored children.
+
 ## 2026-09-29 — The Lobby's bloom on the shops and the end game
 
 The bloom still did not read in play, so the owner asked for the Lobby's own

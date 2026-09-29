@@ -137,14 +137,18 @@ Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 backdrop and its light move into a `World` CanvasLayer at −1 holding one
 `Room` Control; the light is a `LightPool` plus a full-screen `SunShafts`
 (`Scenes/Look/SunShafts.tscn`); the blurred shops (and, in later passes, the
-exam notices) add a flat `ParallaxDiorama`. Minigames and Koperasi keep their
-backdrop on layer 0. **Bloom off the Lobby.** A screen with a `World` layer (ShopHub,
-CosmeticShop, the end-game screens) carries the Lobby's own bloom: an
+exam notices) add a flat `ParallaxDiorama`. Koperasi's `World` holds its wall
+strip and a `Room` that mirrors `Stage`'s bottom-pinned 1080x1920 rect: the
+backdrop, light, Pak Herman and the counter bloom there, while the goods and
+every piece of shop UI stay on `Stage`; minigames keep their backdrop on
+layer 0.
+**Bloom off the Lobby.** A screen with a `World` layer (ShopHub, CosmeticShop,
+Koperasi, the end-game screens) carries the Lobby's own bloom: an
 `AmbientGlow` named `Glow`, second in the root, whose defaults are
 `lobby_environment.tres`'s values. It blooms layer −1 only, so the UI stays
-crisp. A screen whose art shares layer 0 with its UI (Koperasi, every
-minigame) cannot take it: it blooms whole layers, and measured, it washed
-Koperasi's text out. Those carry a `ScreenGlow` named `Bloom` right after
+crisp. A screen whose art shares layer 0 with its UI (every minigame) cannot
+take it: it blooms whole layers, and measured, it washed Koperasi's text out
+before Koperasi's room moved to `World`. Those carry a `ScreenGlow` named `Bloom` right after
 their light, which reads only the art drawn before it; thresholds and its 0.8
 intensity are pinned in `tests/test_lobby_look.gd`. Measure an Environment
 glow in the running game, never in an offscreen `SubViewport`, where it does

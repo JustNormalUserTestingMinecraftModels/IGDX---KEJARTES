@@ -136,7 +136,7 @@ func test_chat_bubble_draws_over_the_top_band() -> void:
 func test_herman_animation_player_has_idle_talk_and_reset() -> void:
 	var raw := FileAccess.get_file_as_string(_SCENE_PATH)
 	assert_true(raw.contains("name=\"HermanAP\""),
-		"Stage/Herman must carry a HermanAP AnimationPlayer")
+		"World/Room/Herman must carry a HermanAP AnimationPlayer")
 	assert_true(raw.contains("\"idle\": SubResource") or raw.contains("&\"idle\": SubResource"),
 		"HermanAP's library must register an idle animation")
 	assert_true(raw.contains("\"talk\": SubResource") or raw.contains("&\"talk\": SubResource"),

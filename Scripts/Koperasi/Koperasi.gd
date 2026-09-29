@@ -15,7 +15,7 @@ extends Control
 ## Beli, THANKS on a successful one, OUT_OF_STOCK on the Stage's
 ## shelf_dead_tap (a tap landing on a slot that just sold or emptied).
 ## Lines come from DialogueCatalog. The bubble also drives
-## Stage/Herman/HermanAP's idle/talk animation and an idle-chatter timer --
+## World/Room/Herman/HermanAP's idle/talk animation and an idle-chatter timer --
 ## Cart.cart_changed resets that timer so any cart activity pushes the next
 ## ambient line back out.
 
@@ -23,7 +23,7 @@ extends Control
 @onready var back_button: TextureButton = $Stage/BackButton
 @onready var message_label: Label = $MessageLabel
 @onready var bubble: ChatBubble = $Stage/ChatBubble
-@onready var herman_ap: AnimationPlayer = get_node_or_null("Stage/Herman/HermanAP") as AnimationPlayer
+@onready var herman_ap: AnimationPlayer = get_node_or_null("World/Room/Herman/HermanAP") as AnimationPlayer
 @onready var tray: BasketTray = get_node_or_null("Stage/TrayDock/BasketTray") as BasketTray
 # PromoBoard is a Stage child too, so its own _ready() (which reads
 # GameState.shop_promo_item/percent) runs BEFORE Stage's -- children ready

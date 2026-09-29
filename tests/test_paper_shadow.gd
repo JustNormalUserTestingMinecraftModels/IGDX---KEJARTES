@@ -183,7 +183,7 @@ const _CONTACT_SHADOWS := {
 		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Herman"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman"],
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 }
@@ -230,7 +230,7 @@ const _OUTER_AO := {
 		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
 	],
-	"res://Scenes/Koperasi/Koperasi.tscn": ["Stage/Herman"],
+	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman"],
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
 	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
 }

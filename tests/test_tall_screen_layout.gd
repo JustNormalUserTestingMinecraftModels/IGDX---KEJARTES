@@ -226,7 +226,7 @@ const KOPERASI := "res://Scenes/Koperasi/Koperasi.tscn"
 ## A flat wall strip fills the screen and covers; it only shows above the
 ## counter on a phone taller than 9:16.
 func test_koperasi_wall_fills() -> void:
-	_assert_background_fills(_scene(KOPERASI).get_node_or_null("WallFill") as TextureRect,
+	_assert_background_fills(_scene(KOPERASI).get_node_or_null("World/WallFill") as TextureRect,
 		"Koperasi wall strip (WallFill)")
 
 
@@ -240,9 +240,18 @@ func test_koperasi_stage_is_one_piece_pinned_bottom() -> void:
 		return
 	assert_eq(_anchors(stage), Vector4(0, 1, 0, 1), "Stage pins to the bottom edge")
 	assert_eq(_offsets(stage), Vector4(0, -1920, 1080, 0), "and keeps its 1080x1920 rect")
-	for n in ["Background", "Barang1", "Barang6", "Herman", "Foreground", "ChatBubble",
-			"BackButton", "TrayDock/BasketTray"]:
+	for n in ["Barang1", "Barang6", "ChatBubble", "BackButton", "TrayDock/BasketTray"]:
 		assert_true(stage.get_node_or_null(n) != null, n + " moves with the stage")
+	# The picture moved under the bloom (World/Room, 2026-09-29); its Room
+	# keeps Stage's pin and rect, so the picture and the goods still line up.
+	var room := _scene(KOPERASI).get_node_or_null("World/Room") as Control
+	assert_true(room != null, "missing World/Room")
+	if room == null:
+		return
+	assert_eq(_anchors(room), _anchors(stage), "Room pins where Stage does")
+	assert_eq(_offsets(room), _offsets(stage), "and keeps the same rect")
+	for n in ["Background", "Herman", "Foreground"]:
+		assert_true(room.get_node_or_null(n) != null, n + " lives in Room")
 
 
 ## The signboard and promo board (the top band) stand on the counter ledge,
@@ -260,7 +269,7 @@ func test_koperasi_top_band_rides_the_stage() -> void:
 		var c := shop.get_node_or_null("Stage/%s" % n) as Control
 		assert_true(c != null and c.get_parent() == stage,
 			"%s is a child of the Stage" % n)
-	for p in ["Safe", "Safe/UI", "WallFill", "Stage", "Stage/TrayDock"]:
+	for p in ["Safe", "Safe/UI", "World/WallFill", "World/Room", "Stage", "Stage/TrayDock"]:
 		var c := shop.get_node_or_null(p) as Control
 		assert_true(c != null and c.mouse_filter == Control.MOUSE_FILTER_IGNORE,
 			p + " must let taps through to the shelf")
@@ -282,7 +291,8 @@ func test_koperasi_kas_pill_rides_the_tray() -> void:
 ## rides with it.
 func test_koperasi_on_a_tall_phone() -> void:
 	var shop := _stood_up(KOPERASI, TALL)
-	_assert_placed((shop.get_node("WallFill") as Control), Rect2(0, 0, 1080, 2400), "wall strip")
+	_assert_placed((shop.get_node("World/WallFill") as Control), Rect2(0, 0, 1080, 2400), "wall strip")
+	_assert_placed((shop.get_node("World/Room") as Control), Rect2(0, 480, 1080, 1920), "room, under the stage")
 	_assert_placed((shop.get_node("Stage") as Control), Rect2(0, 480, 1080, 1920), "stage")
 	_assert_placed((shop.get_node("Stage/TrayDock/BasketTray/Body") as Control),
 		Rect2(24, 1840, 1032, 560), "basket tray")

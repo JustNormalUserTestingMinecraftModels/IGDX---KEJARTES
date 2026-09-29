@@ -28,7 +28,7 @@ const KOPERASI := "res://Scenes/Koperasi/Koperasi.tscn"
 ## scene -> the diorama holding the bands, and its driver's path.
 const DIORAMAS := {
 	LOBBY: "World/Classroom",
-	KOPERASI: "Stage",
+	KOPERASI: "World/Room",
 }
 
 
@@ -100,8 +100,10 @@ func test_both_dioramas_have_a_driver_over_real_bands() -> void:
 
 
 ## The driver is a child of the diorama rather than its script, because the
-## obvious host is sometimes taken: Koperasi's Stage already runs
-## KoperasiStage.gd and a node has only one script.
+## obvious host is sometimes taken: Koperasi's Stage runs KoperasiStage.gd and
+## a node has only one script. Since 2026-09-29 Koperasi's picture bands live
+## in World/Room, under the Lobby's bloom, so Stage holds only the shop UI and
+## the goods and carries no driver at all.
 func test_the_driver_never_displaces_an_existing_script() -> void:
 	var root := (load(KOPERASI) as PackedScene).instantiate()
 	track(root)
@@ -109,9 +111,9 @@ func test_the_driver_never_displaces_an_existing_script() -> void:
 	assert_true(stage != null, "Stage is gone")
 	if stage == null:
 		return
-	assert_true(stage.get_script() != null,
-		"Stage still needs its own script -- this is why the driver is a child")
-	assert_true(_driver(root, "Stage") != null, "the driver must still be there")
+	assert_true(stage.get_script() != null, "Stage keeps KoperasiStage.gd")
+	assert_true(_driver(root, "Stage") == null, "Stage holds no picture band, so no driver")
+	assert_true(_driver(root, "World/Room") != null, "the driver moved with the picture")
 
 
 ## A desk, the students sitting at it and their hands resting on it must move
@@ -155,7 +157,7 @@ func test_each_lobby_row_sits_on_one_depth_plane() -> void:
 func test_koperasi_ui_is_left_out_of_the_parallax() -> void:
 	var root := (load(KOPERASI) as PackedScene).instantiate()
 	track(root)
-	var driver := _driver(root, "Stage")
+	var driver := _driver(root, "World/Room")
 	assert_true(driver != null, "no driver")
 	if driver == null:
 		return
@@ -169,6 +171,22 @@ func test_koperasi_ui_is_left_out_of_the_parallax() -> void:
 	for i in range(1, 7):
 		assert_false(depths.has("Barang%d" % i),
 			"Barang%d is a bobbing shelf button and must not be a band" % i)
+
+
+## Koperasi's picture moved to World/Room (2026-09-29) so the Lobby's bloom
+## reaches it and not the shop UI. Its bands keep their depths: the light rides
+## the backdrop, Herman sits midway, the counter is nearest.
+func test_koperasi_room_keeps_its_depths() -> void:
+	var root := (load(KOPERASI) as PackedScene).instantiate()
+	track(root)
+	var driver := _driver(root, "World/Room")
+	assert_true(driver != null, "World/Room has no driver")
+	if driver == null:
+		return
+	var depths: Dictionary = driver.get("depth_by_child")
+	var want := {"Background": 0.15, "Light": 0.15, "Shafts": 0.15, "Herman": 0.5, "Foreground": 1.0}
+	for band in want:
+		assert_eq(float(depths.get(band, 0.0)), want[band], "depth of " + band)
 
 
 ## A capture that fails because one band has no layout yet must leave every
@@ -259,7 +277,7 @@ func test_the_driver_leaves_scale_and_pivot_to_their_owners() -> void:
 
 	var root := (load(KOPERASI) as PackedScene).instantiate()
 	track(root)
-	var herman := root.get_node_or_null("Stage/Herman") as Control
+	var herman := root.get_node_or_null("World/Room/Herman") as Control
 	assert_true(herman != null, "Herman is gone")
 	if herman == null:
 		return

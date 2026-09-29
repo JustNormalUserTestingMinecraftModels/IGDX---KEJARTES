@@ -188,7 +188,7 @@ func test_the_screen_is_authored_and_themed() -> void:
 	assert_eq(s.splash.material.resource_path, "res://Scripts/Shaders/illustration_grade_cutout.tres")
 	var tail := s.get_node("Root/Bubble/Tail") as TextureRect
 	assert_eq(tail.texture.resource_path, "res://Assets/Images/Shop/UI/chat_bubble_tail.svg")
-	assert_true(tail.flip_h and tail.flip_v, "the tail points up-left at the speaker")
+	assert_true(not tail.flip_h and tail.flip_v, "the tail points up-right at the speaker")
 	assert_eq(s.star_row.get_child_count(), 3)
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameWinScreen.gd")
 	assert_false(src.contains(".new("), "the screen is fully authored")
@@ -203,13 +203,31 @@ func test_every_piece_hangs_off_the_bottom_edge() -> void:
 	var s := _screen()
 	var want := {
 		"Root/Splash": Vector4(20, -1933, -72, -176),
-		"Root/Bubble": Vector4(50, -1022, -50, -878),
+		"Root/Bubble": Vector4(50, -1038, -50, -878),
 		"Root/Card": Vector4(0, -828, 0, 0),
 	}
 	for path in want:
 		var c := s.get_node(path) as Control
 		assert_eq(Vector4(c.anchor_left, c.anchor_top, c.anchor_right, c.anchor_bottom), Vector4(0, 1, 1, 1), path)
 		assert_eq(Vector4(c.offset_left, c.offset_top, c.offset_right, c.offset_bottom), want[path], path)
+
+
+## Two uppercase lines of MinigameWinLine plus the bubble's vertical margins
+## fit (2026-09-29 dialogue-variations spec). The bubble grows upward: its
+## bottom stays 50 px above the card and the Tail rides its top edge.
+func test_the_bubble_holds_two_wrapped_lines() -> void:
+	var theme := _baked()
+	var font := theme.get_font("font", "MinigameWinLine")
+	var size := theme.get_font_size("font_size", "MinigameWinLine")
+	var box := theme.get_stylebox("panel", "MinigameWinBubble")
+	var need := font.get_height(size) * 2.0 + box.content_margin_top + box.content_margin_bottom
+	var s := _screen()
+	var line := s.get_node("Root/Bubble/Panel/Line") as Label
+	assert_eq(line.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART, "the line wraps")
+	assert_eq(s.bubble.offset_bottom, -878.0, "the bottom stays put")
+	var have := s.bubble.offset_bottom - s.bubble.offset_top
+	assert_true(have >= need, "bubble is %d px tall, two lines need %d" % [have, need])
+	assert_eq(line.text, "Terima kasih, Pak!", "the authored default matches WIN_LINE_STUDENT")
 
 
 ## On a 20:9 phone the whole composition keeps its distance from the bottom

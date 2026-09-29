@@ -71,10 +71,8 @@ depth pass Phase 3), `UI/Placeholders/stamp_sudah.svg` /
 drawn white so `self_modulate` tints them from tokens), and
 `UI/StudentList/page_dot.png` (a filled dot -- tinting the hollow ring above
 it reads as invisible on a phone), and the 2026-09-14 EventDialogue set in
-`Assets/Images/EventDialogue/`: `splash_gurusenibudaya.png` (a flat
-silhouette for the Seni Budaya teacher, on the same 1080x1920 frame as every
-splash), `hujan_background.png` (the school tinted dusk-blue with seeded rain
-streaks) and `calendar_badge.png`, and the weekly report's title, now a themed brown plate reading HASIL
+`Assets/Images/EventDialogue/`: `hujan_background.png` (the school tinted
+dusk-blue with seeded rain streaks) and `calendar_badge.png`, and the weekly report's title, now a themed brown plate reading HASIL
 MINGGUAN (`ResultCheckup.tscn` `TitlePlate`, 2026-09-29); an artist's brown
 ribbon with those words can replace the plate node, and the 2026-09-18 Koperasi stock-pip set:
 `Assets/Images/Shop/UI/pip_filled.svg` / `pip_hollow.svg` (a plain filled

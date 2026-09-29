@@ -790,16 +790,24 @@ func _on_goal_scored() -> void:
 	_update_hud()
 	print("GOAL! %d / %d" % [score, target_score])
 
+	# A winning goal is decided here, before the pause below: the clock would
+	# otherwise run on through it, and a buzzer there turned the win into a
+	# loss. Clearing is_game_active stops the clock, swipes and JEDA.
+	var won := score >= target_score and not is_game_over
+	if won:
+		is_game_over = true
+		is_game_active = false
+
 	# The HUD's own pop+burst on set_score() already gives this moment its
 	# feedback; this pause is just pacing before the shot resets.
 	await get_tree().create_timer(0.35).timeout
+	if won:
+		win_game()
+		return
 	_respawn_target()
 
 	_reset_shot()
-
-	if score >= target_score and not is_game_over:
-		is_game_over = true
-		win_game()
+	_end_if_out_of_shots()
 
 
 ## Move the target box to a new spot in the target band, at least one box
@@ -851,10 +859,14 @@ func _on_shot_missed(was_blocked: bool) -> void:
 
 	await get_tree().create_timer(0.45).timeout
 	_reset_shot()
+	_end_if_out_of_shots()
 
+
+## The last shot is gone and the target was not met: the run ends as a loss,
+## through lose_game() so the clock, swipes and JEDA stop behind the card.
+func _end_if_out_of_shots() -> void:
 	if attempts_left <= 0 and not is_game_over:
-		is_game_over = true
-		_show_result_overlay(false, "Skor: %d / %d" % [score, target_score])
+		lose_game()
 
 
 # ─── Reset between shots ─────────────────────────────────────────────────────

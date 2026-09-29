@@ -212,7 +212,10 @@ func test_the_white_confetti_rain_is_gone() -> void:
 func test_the_score_counts_up_rather_than_appearing_finished() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameResultPopup.gd")
 	assert_true(src.contains("Juice.count_up"), "the score tallies")
-	assert_true(src.contains("result_fanfare"), "the card arrives with a sting")
+	assert_true(src.contains("AudioDirector.play_sfx(&\"fail\")"),
+		"a lost card arrives with the fail cue")
+	assert_false(src.contains("play_sfx(&\"result_fanfare\")"),
+		"the win sting never scores a loss")
 
 
 func test_configure_remembers_the_star_count_for_play() -> void:

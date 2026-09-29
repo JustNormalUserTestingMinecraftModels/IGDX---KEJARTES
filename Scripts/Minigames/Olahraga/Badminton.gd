@@ -629,19 +629,33 @@ func get_star_ratio() -> float:
 
 func win_game() -> void:
 	sync_score_alias()
-	if puck:
-		puck.set_deferred("freeze", true)
-		puck.set_deferred("linear_velocity", Vector2.ZERO)
-		puck.set_deferred("angular_velocity", 0.0)
+	_freeze_puck()
 	super.win_game()
 
+## Ends the match as a loss. Replaces BaseMinigame.lose_game(), whose
+## score-versus-get_target_win_score() shortcut (a target of 1 to 3) would
+## promote a 1-5 rally loss to a win. Mirrors LombaMenari's and MainBola's.
 func lose_game() -> void:
 	sync_score_alias()
+	_freeze_puck()
+	if not is_game_active:
+		return
+	is_game_active = false
+	process_mode = Node.PROCESS_MODE_INHERIT
+	var strip := header()
+	if strip != null:
+		strip.set_pause_enabled(false)
+	if timer:
+		timer.stop()
+	set_process_input(false)
+	_show_result_overlay(false, result_subtitle)
+
+## Stops the puck dead, deferred because it may be mid physics callback.
+func _freeze_puck() -> void:
 	if puck:
 		puck.set_deferred("freeze", true)
 		puck.set_deferred("linear_velocity", Vector2.ZERO)
 		puck.set_deferred("angular_velocity", 0.0)
-	super.lose_game()
 
 func _update_trail_and_particles() -> void:
 	if show_trail and trail_line:

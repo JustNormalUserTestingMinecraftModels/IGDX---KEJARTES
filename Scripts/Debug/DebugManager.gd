@@ -21,11 +21,8 @@ var log_scroll: ScrollContainer
 # --- Active Standalone Minigame ---
 var active_minigame: Node = null
 var minigame_canvas: CanvasLayer = null
-## What a standalone launch hid of the scene underneath, for
-## _restore_scene_under_minigame(): [node, was_visible] pairs, and
-## [environment, parent, index] triples for the WorldEnvironments it lifted out.
-var _stashed_visibility: Array = []
-var _stashed_environments: Array = []
+## Clears the open scene out of a standalone minigame's way.
+var _scene_stash := preload("res://Scripts/Debug/SceneStash.gd").new()
 
 # --- Tab Panels ---
 var panels: Dictionary = {}
@@ -131,23 +128,21 @@ func _ready() -> void:
 	log_message("Debug System Initialized. Press '~' or F1, or tap top-right 5x to toggle.")
 
 ## Runs once per launch, before the overlay UI exists. Every playtest should
-## start the same way: no tutorials in the way and the window filling the
-## screen. Music is left to the Settings screen's Musik slider: a BGM mute
-## here (2026-08-31 to 2026-09-30) was saved as "Musik 0" on every quit, so the
-## setting never held.
+## start the same way: the screen tutorials bypassed (the session-only
+## GameState.tutorials_bypassed) and the window filling the screen. Music and
+## the minigame CARA MAIN card are left to the Settings screen: a BGM mute here
+## (2026-08-31 to 2026-09-30) was saved as "Musik 0" on every quit, and a forced
+## minigame_tutorial_enabled = false would be saved by the next save_settings()
+## the same way. (That one never ran: it sat behind `"GameSettings" in root`,
+## which is always false, since `in` tests properties, not child nodes.)
 ##
 ## Guarded to debug builds only: a real player's release export must never
-## boot muted, fullscreen, and with every tutorial silently disabled.
+## boot fullscreen with every tutorial silently bypassed.
 func _apply_playtest_defaults() -> void:
 	if not OS.is_debug_build():
 		return
 	GameState.tutorials_bypassed = true
 	GameState.lobby_tutorial_completed = true
-	if "GameSettings" in get_node_or_null("/root"):
-		var settings = get_node("/root/GameSettings")
-		if "minigame_tutorial_enabled" in settings:
-			settings.minigame_tutorial_enabled = false
-
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 func _input(event: InputEvent) -> void:
@@ -735,7 +730,7 @@ func _set_time_scale(scale: float) -> void:
 func _toggle_lobby_tutorial() -> void:
 	GameState.tutorials_bypassed = not GameState.tutorials_bypassed
 	GameState.lobby_tutorial_completed = GameState.tutorials_bypassed
-	if "GameSettings" in get_node_or_null("/root"):
+	if has_node("/root/GameSettings"):
 		var settings = get_node("/root/GameSettings")
 		if "minigame_tutorial_enabled" in settings:
 			settings.minigame_tutorial_enabled = not GameState.tutorials_bypassed
@@ -745,7 +740,7 @@ func _toggle_lobby_tutorial() -> void:
 	_refresh_ui_fields()
 
 func _toggle_minigames_tutorial() -> void:
-	if "GameSettings" in get_node_or_null("/root"):
+	if has_node("/root/GameSettings"):
 		var settings = get_node("/root/GameSettings")
 		if "minigame_tutorial_enabled" in settings:
 			settings.minigame_tutorial_enabled = not settings.minigame_tutorial_enabled
@@ -770,7 +765,7 @@ func _refresh_ui_fields() -> void:
 		_btn_tutorial_lobby.text = "Bypass ALL Tutorials: " + ("ON (Bypassed)" if GameState.tutorials_bypassed else "OFF (Normal)")
 	if _btn_tutorial_minigames:
 		var active = true
-		if "GameSettings" in get_node_or_null("/root"):
+		if has_node("/root/GameSettings"):
 			active = get_node("/root/GameSettings").minigame_tutorial_enabled
 		_btn_tutorial_minigames.text = "Tutorial Minigames: " + ("ON" if active else "OFF (Skipped)")
 		
@@ -1215,7 +1210,7 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 		minigame_canvas = null
 		return
 		
-	_hide_scene_under_minigame()
+	_scene_stash.hide(get_tree().current_scene)
 	active_minigame = m_scene.instantiate()
 	minigame_canvas.add_child(active_minigame)
 	active_minigame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -1242,48 +1237,9 @@ func _on_standalone_minigame_finished(won: bool) -> void:
 	if minigame_canvas:
 		minigame_canvas.queue_free()
 		minigame_canvas = null
-	_restore_scene_under_minigame()
+	_scene_stash.restore()
 
 	toggle_overlay()
-
-
-## A minigame lit the Lobby way keeps its art on a `World` CanvasLayer at -1
-## under its own WorldEnvironment. Launched over a scene, that art would sit
-## below the scene's layer-0 picture, and the scene's own WorldEnvironment
-## (first in the tree) would win over the minigame's. So while a standalone
-## minigame runs, the scene's canvas is hidden and its environments lifted out.
-func _hide_scene_under_minigame() -> void:
-	var scene := get_tree().current_scene
-	if scene == null:
-		return
-	var items: Array[Node] = [scene]
-	items.append_array(scene.find_children("*", "CanvasLayer", true, false))
-	for item in items:
-		if item is CanvasItem or item is CanvasLayer:
-			_stashed_visibility.append([item, item.get("visible")])
-			item.set("visible", false)
-	for env in scene.find_children("*", "WorldEnvironment", true, false):
-		var parent := env.get_parent()
-		_stashed_environments.append([env, parent, env.get_index()])
-		parent.remove_child(env)
-
-
-## Undoes _hide_scene_under_minigame(). An environment whose scene went away
-## meanwhile is freed rather than leaked.
-func _restore_scene_under_minigame() -> void:
-	for entry in _stashed_environments:
-		var env: Node = entry[0]
-		var parent: Node = entry[1]
-		if is_instance_valid(parent):
-			parent.add_child(env)
-			parent.move_child(env, mini(entry[2], parent.get_child_count() - 1))
-		else:
-			env.free()
-	for entry in _stashed_visibility:
-		if is_instance_valid(entry[0]):
-			(entry[0] as Node).set("visible", entry[1])
-	_stashed_environments.clear()
-	_stashed_visibility.clear()
 
 
 func _trigger_simulation_event(event_id: int) -> void:
@@ -1422,7 +1378,8 @@ func _teleport_to_scene(path: String) -> void:
 	if minigame_canvas:
 		minigame_canvas.queue_free()
 		minigame_canvas = null
-		
+	_scene_stash.restore()
+
 	_set_time_scale(1.0)
 	toggle_overlay()
 	

@@ -30,8 +30,8 @@ const VOLUME_SAVE_FORMAT := 2
 @export var sfx_cancel: AudioStream
 ## `play_sfx(&"success")`: DaySummaryPopup's win state.
 @export var sfx_success: AudioStream
-## `play_sfx(&"fail")`: AturJadwal validation failure and
-## DaySummaryPopup's loss state.
+## `play_sfx(&"fail")`: AturJadwal validation failure,
+## DaySummaryPopup's loss state and the minigame loss card.
 @export var sfx_fail: AudioStream
 ## `play_sfx(&"coin")`: a purchase completes (koperasi) or money is
 ## earned (lobby, SchoolDay's Wirausaha payout).

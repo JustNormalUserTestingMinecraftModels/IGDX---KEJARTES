@@ -106,8 +106,8 @@ and `DayOff`→`Istirahat`. Student art goes through `StudentSkins`
 event screens and result portraits dress for the day via `splash_for_day`.
 
 Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
-disk (`user://inventory.cfg`, flushed at the top of every
-`Transition.change_scene`, loaded in `GameState._ready`), plus achievement
+disk (`user://inventory.cfg`, flushed on every
+`Transition.change_scene`, quit and pause, loaded in `GameState._ready`), plus achievement
 progress (`user://achievements.cfg`, saved by `Achievements` on every change;
 the debug `RESET_ON_LAUNCH` wipe is in DEBT.md). Roster, money, week,
 grade and schedules are session-scoped by design. **Do not add further

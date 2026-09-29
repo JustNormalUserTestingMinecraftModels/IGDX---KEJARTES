@@ -763,6 +763,10 @@ func _animate_button_click_bounce(btn: Control):
 ## Opens Settings (volumes, the minigame tutorial and "Lewati Dialog
 ## Minigame", which used to be the Shorten button), returning here.
 func _on_settings_pressed() -> void:
+	# A press Transition would drop must not leave Settings' return_scene
+	# pointing at the Lobby for a later visit from the title (bug sweep 2026-09-30).
+	if Transition.is_busy():
+		return
 	AudioDirector.play_sfx(&"tap")
 	SettingsScript.return_scene = "res://Scenes/Lobby/Lobby.tscn"
 	Transition.change_scene("res://Scenes/UI/Settings.tscn", Transition.Style.WIPE)

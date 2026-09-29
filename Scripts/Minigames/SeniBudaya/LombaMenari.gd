@@ -355,7 +355,9 @@ func _breath_sway(t: float, rate: float, radians: float) -> float:
 func _process(delta: float) -> void:
 	super._process(delta)
 	
-	if not is_game_active:
+	# is_paused stays true through the resume countdown, while swipes are
+	# off: the notes hold still until it ends, or each would count a miss.
+	if not is_game_active or is_paused:
 		return
 		
 	time_elapsed += delta

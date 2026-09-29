@@ -105,23 +105,14 @@ signal _summary_closed
 @onready var back_button: Button          = $DayScreen/BackButton
 @onready var skip_button: Button          = $DayScreen/SkipButton
 @onready var game_container: Control      = $GameContainer
-## Each DAY_PICTURE node's own alpha while a hosted screen covers the day,
-## put back by _uncover_day(). Empty while the day is showing.
-var _day_picture_alpha: Dictionary = {}
+## Fades the day's own picture out under a hosted lit screen.
+var _day_cover := DayPictureCover.new(self)
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
-
-# -- Hosting a lit screen (2026-09-30 minigame lobby-light pass) --------------
-## The day's own picture on layer 0: the sky, the book clock, the weather and
-## the day's stamp and fireworks. A hosted screen lit the Lobby way (its art on
-## a `World` CanvasLayer at -1 under its own WorldEnvironment: EventDialogue,
-## MainBola, Badminton, LombaMenari) draws BELOW this layer, so the day fades
-## these out while such a screen is up and back in when it closes.
-const DAY_PICTURE: Array[NodePath] = [^"Background", ^"BookClockWidget", ^"Rain",
-	^"Motes", ^"DayStamp", ^"WeekFireworks"]
-## Seconds the day's picture takes to fade around a minigame, matching the
-## minigame's own 0.4 s fade so the two cross.
-const DAY_PICTURE_FADE := 0.4
+## The Normal / Minigame / Event day-roll and its ROLL_WEIGHT_* tuning.
+const DayRoll := preload("res://Scripts/SchoolSimulation/DayRoll.gd")
+## The day's picture, faded under a hosted lit screen (2026-09-30).
+const DayPictureCover := preload("res://Scripts/SchoolSimulation/DayPictureCover.gd")
 ## Fallback seconds to fill a day's progress bar, used only when the
 ## BookClock widget is absent. Normally the pacing comes from the
 ## widget's own transition_duration -- see _phase_duration() -- so the
@@ -149,20 +140,10 @@ const STAMP_SLAM_FROM := 1.7
 ## and before the next dawn. Short, so it never stalls a fast player.
 const NIGHT_HOLD := 0.5
 
-# Day-roll weights. Each school day rolls Normal / Minigame / Event in
-# proportion to these -- shares of the day's total, not percentages -- and
-# day_roll_weights() is their only reader. Biang Onar's extra event weight,
-# in the same units, is Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT.
-
-## Normal-day weight every day starts with.
-const ROLL_WEIGHT_NORMAL_BASE := 20
-## Extra normal-day weight for each student resting (Istirahat) that day.
-const ROLL_WEIGHT_NORMAL_PER_RESTING := 10
-## Minigame weight for each student studying Akademis, Olahraga or
-## SeniBudaya that day, while the week's minigame cap has room.
-const ROLL_WEIGHT_MINIGAME_PER_STUDYING := 15
-## Event weight a day starts with while the week's event cap has room.
-const ROLL_WEIGHT_EVENT_BASE := 25
+## The week log's name for a minigame or event that skip_to_results() resolved.
+const SKIP_RESULT_NAME := "Simulasi Cepat"
+## The week log's detail line for a random event the skip resolved unplayed.
+const SKIP_EVENT_DETAILS := "Kejadian acak dilewati"
 # National Holidays definition
 const HOLIDAYS = {
 	3: { "Rabu": "Hari Kemerdekaan RI" },
@@ -202,6 +183,9 @@ var _tutorial_panel: TutorialPanel = null
 var _blink_tween: Tween = null
 var _is_tutorial_active: bool = false
 var _is_summary_active: bool = false
+## True once the week-end back press has started leaving, so a second tap or
+## a device back during the fade cannot advance minggu_ke twice.
+var _leaving: bool = false
 
 # ─────────────────────────────────────────────────────────────────────────────
 ## Category accent per weekday, used both for the page tint and for the
@@ -760,33 +744,8 @@ func _phase_duration() -> float:
 static func day_roll_weights(counts: Dictionary, roster: Array, schedules: Dictionary,
 		day_name: String, minigames_played: int, max_minigames: int,
 		events_triggered: int, max_events: int) -> Dictionary:
-	var active_studying: int = (counts.get("Akademis", 0) + counts.get("Olahraga", 0)
-		+ counts.get("SeniBudaya", 0))
-	var resting_count: int = counts.get("Istirahat", 0)
-
-	var w_minigame := 0
-	if minigames_played < max_minigames:
-		w_minigame = active_studying * ROLL_WEIGHT_MINIGAME_PER_STUDYING
-
-	var w_event := 0
-	if events_triggered < max_events:
-		w_event = ROLL_WEIGHT_EVENT_BASE
-
-		# ── Quirk: Biang Onar — extra event weight per one who isn't resting ──
-		for s in roster:
-			if s.quirk == "Biang Onar":
-				var sid = s.id
-				if sid != 0 and schedules.has(sid):
-					var cat = schedules[sid].get(day_name, {}).get("category", "")
-					# Anything but rest counts, Wirausaha included
-					if cat != "" and cat != "DayOff" and cat != "Istirahat":
-						w_event += Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT
-
-	return {
-		"normal": ROLL_WEIGHT_NORMAL_BASE + resting_count * ROLL_WEIGHT_NORMAL_PER_RESTING,
-		"minigame": w_minigame,
-		"event": w_event,
-	}
+	return DayRoll.weights(counts, roster, schedules, day_name, minigames_played,
+		max_minigames, events_triggered, max_events)
 
 
 ## day_roll_weights() for `day_name`, fed from this screen's live state --
@@ -963,12 +922,9 @@ func _run_event(event_id: int, day_name: String) -> void:
 			# Biang Onar: global positive events are stronger
 			var energy_bonus := Balance.EVENT_NASI_KOTAK_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_bonus := Balance.EVENT_NASI_KOTAK_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var names: Array[String] = []
-			for s in student_manager.students:
-				# Route through apply_event_effects so quirks like Penyendiri apply correctly
-				s.apply_event_effects("", 0.0, energy_bonus, mood_bonus)
-				names.append(s.student_name)
-			student_manager.record_event_result(day_name, "Nasi Kotak Berbagi", names, "Semua siswa mendapat Energy +%d dan Mood +%d" % [int(energy_bonus), int(mood_bonus)])
+			student_manager.apply_event(day_name, "Nasi Kotak Berbagi",
+				"Semua siswa mendapat Energy +%d dan Mood +%d" % [int(energy_bonus), int(mood_bonus)],
+				student_manager.students, "", 0.0, energy_bonus, mood_bonus)
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 		4:
@@ -980,12 +936,9 @@ func _run_event(event_id: int, day_name: String) -> void:
 			# Biang Onar: global negative events are worse
 			var energy_penalty := Balance.EVENT_HUJAN_ENERGI * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
 			var mood_penalty := Balance.EVENT_HUJAN_MOOD * (1.0 + biang_onar_scale if biang_onar_active else 1.0)
-			var names: Array[String] = []
-			for s in student_manager.students:
-				# Route through apply_event_effects so quirks like Penyendiri apply correctly
-				s.apply_event_effects("", 0.0, energy_penalty, mood_penalty)
-				names.append(s.student_name)
-			student_manager.record_event_result(day_name, "Kehujanan & Terpeleset", names, "Semua siswa mendapat Energy %d dan Mood %d" % [int(energy_penalty), int(mood_penalty)])
+			student_manager.apply_event(day_name, "Kehujanan & Terpeleset",
+				"Semua siswa mendapat Energy %d dan Mood %d" % [int(energy_penalty), int(mood_penalty)],
+				student_manager.students, "", 0.0, energy_penalty, mood_penalty)
 			await _animate_embedded_stat_updates(0.6)
 			await get_tree().create_timer(0.8).timeout
 
@@ -1032,12 +985,8 @@ func _handle_interactive_event(
 	dialog_instance.queue_free()
 	
 	if accepted and not selected_students.is_empty():
-		var affected_names: Array[String] = []
-		for s in selected_students:
-			s.apply_event_effects(category, stat_boost, energy_cost, mood_boost)
-			affected_names.append(s.student_name)
-
-		student_manager.record_event_result(day_name, title, affected_names, "%d siswa diikutsertakan" % selected_students.size())
+		student_manager.apply_event(day_name, title, "%d siswa diikutsertakan" % selected_students.size(),
+			selected_students, category, stat_boost, energy_cost, mood_boost)
 		await _animate_embedded_stat_updates(0.6)
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1045,16 +994,14 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	if game_scene == null:
 		return
 
-	# --- Debug Cheat Interception ---
-	if "DebugManager" in get_node_or_null("/root") and get_node("/root/DebugManager").cheat_force_outcome != "":
-		var forced_won = (get_node("/root/DebugManager").cheat_force_outcome == "win")
+	# Debug overlay's auto-win / auto-lose: the minigame is skipped and booked.
+	# (It read `"DebugManager" in get_node_or_null("/root")`, always false.)
+	var cheat: String = get_node("/root/DebugManager").cheat_force_outcome if has_node("/root/DebugManager") else ""
+	if cheat != "":
 		minigames_played_this_week += 1
-		var game_name = _scene_name(game_scene)
-		var day_name = DAYS[current_day]
 		if student_manager:
-			student_manager.record_minigame_result(day_name, category, game_name + " (Bypass Cheat)", forced_won, 10, 10)
+			student_manager.record_minigame_result(DAYS[current_day], category, _scene_name(game_scene) + " (Bypass Cheat)", cheat == "win", 10, 10)
 		await _animate_embedded_stat_updates(0.6)
-		get_node("/root/DebugManager").log_message("Skipped minigame: %s, forced outcome: %s" % [game_name, "Win" if forced_won else "Lose"])
 		return
 
 	# Hide the day screen
@@ -1098,10 +1045,9 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		var diff_level = clampi(GameState.current_grade - 6, 1, 3)
 		current_minigame.start_minigame(diff_level, duration)
 
-
 	var tween_in = create_tween().set_parallel(true)
 	tween_in.tween_property(current_minigame, "modulate:a", 1.0, 0.4)
-	_cover_day(tween_in)
+	_day_cover.cover(tween_in)
 	await tween_in.finished
 
 	if current_minigame.has_method("activate_minigame"):
@@ -1137,7 +1083,7 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 	AudioDirector.stop_minigame_bgm()
 	var tween_close = create_tween().set_parallel(true)
 	tween_close.tween_property(current_minigame, "modulate:a", 0.0, 0.4)
-	_uncover_day(tween_close)
+	_day_cover.uncover(tween_close)
 	await tween_close.finished
 	current_minigame.queue_free()
 	current_minigame = null
@@ -1264,26 +1210,20 @@ func skip_to_results() -> void:
 			else:
 				outcome = "Event"
 
-		if outcome != "Normal":
-			var category = "Akademis"
-			if outcome == "Minigame":
-				minigames_played_this_week += 1
-				category = _pick_minigame_category(w_akademis, w_olahraga, w_seni)
-			else:
-				category = "Event"
-				events_triggered_this_week += 1
-				_record_event_participation()
-
-			var skip_lose_chance := Balance.SKIP_PELUANG_KALAH_KELAS_7
-			match GameState.current_grade:
-				8: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_8
-				9: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_9
-			var won = randf() > skip_lose_chance
-			if student_manager:
-				student_manager.record_minigame_result(day_name, category, "Simulasi Cepat", won)
+		if outcome == "Minigame":
+			minigames_played_this_week += 1
+			_skip_minigame(day_name, _pick_minigame_category(w_akademis, w_olahraga, w_seni))
+		elif outcome == "Event":
+			_skip_event(day_name)
 		current_day += 1
 		
 	if current_minigame:
+		# Skipped mid-minigame (key O): _play_minigame never reaches its own
+		# close, so its music, the paused day music and the faded day picture
+		# are put right here.
+		AudioDirector.stop_minigame_bgm()
+		AudioDirector.resume_bgm()
+		_day_cover.uncover(null)
 		current_minigame.queue_free()
 		current_minigame = null
 		
@@ -1292,20 +1232,61 @@ func skip_to_results() -> void:
 		
 	_on_week_complete()
 
+
+## A skipped day's minigame: won or lost at the grade's skip odds and recorded
+## like a played one, so the report and the run tally count it.
+func _skip_minigame(day_name: String, category: String) -> void:
+	var skip_lose_chance := Balance.SKIP_PELUANG_KALAH_KELAS_7
+	match GameState.current_grade:
+		8: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_8
+		9: skip_lose_chance = Balance.SKIP_PELUANG_KALAH_KELAS_9
+	var won: bool = randf() > skip_lose_chance
+	if student_manager:
+		student_manager.record_minigame_result(day_name, category, SKIP_RESULT_NAME, won)
+
+
+## A skipped day's random event: it counts toward the week's events and the
+## report's event log, but it is not a minigame -- nothing was played, won or
+## lost, so run_stats' minigame tally and every stat stay untouched.
+func _skip_event(day_name: String) -> void:
+	events_triggered_this_week += 1
+	_record_event_participation()
+	if student_manager:
+		student_manager.record_event_result(day_name, SKIP_RESULT_NAME,
+			student_manager.student_names(), SKIP_EVENT_DETAILS)
+
+
+## Leaving by any route -- a debug teleport or Forget Session included -- must
+## not leave the classroom bed or a minigame's music playing, nor the day's
+## music paused, under the next screen. The week-end paths already see to all
+## three, so this is a safety net (each call is a no-op when not needed).
+func _exit_tree() -> void:
+	if Engine.is_editor_hint():
+		return
+	AudioDirector.stop_ambience()
+	AudioDirector.stop_minigame_bgm()
+	AudioDirector.resume_bgm()
+
 ## Android delivers the hardware/gesture back press as a notification, not as
 ## ui_cancel, so an _input handler never sees it. Routed to the same function
-## the on-screen continue button calls, so both do exactly the same thing --
-## which here means advancing the week, not abandoning it.
+## the on-screen continue button calls, and only while that button is up --
+## which here means advancing the week, not abandoning it. Mid-week (a
+## minigame's pause menu owns back then) and during the tutorial it is ignored.
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST and back_button.visible and not _is_tutorial_active:
 		_on_back_pressed()
 
 
 func _on_back_pressed() -> void:
+	if _leaving:
+		return
+	_leaving = true
+	back_button.disabled = true
 	# Belt and braces: _on_week_complete() already stops the bed on both the
 	# normal and the skipped path, but leaving the screen by any route must
-	# not leave a classroom murmuring under the lobby.
+	# not leave a classroom murmuring, or a minigame's music, under the lobby.
 	AudioDirector.stop_ambience()
+	AudioDirector.stop_minigame_bgm()
 	AudioDirector.play_sfx(&"cancel")
 	if student_manager:
 		student_manager.write_back_to_gamestate()
@@ -1594,44 +1575,12 @@ func _show_event_dialogue(key: String) -> bool:
 	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
 	var dialogue = dialogue_scene.instantiate()
 	add_child(dialogue)
-	_cover_day(null)
+	_day_cover.cover(null)
 	dialogue.open(e, featured, GameState.minggu_ke, GameState.get_max_weeks(), day_name)
 	var accepted: bool = await dialogue.closed
 	dialogue.queue_free()
-	_uncover_day(null)
+	_day_cover.uncover(null)
 	return accepted
-
-
-## Fades the day's own picture (DAY_PICTURE) out so a hosted screen's World
-## layer at -1 shows through it, remembering each node's alpha. With a
-## `tween` the fade runs alongside the caller's own; with null it is instant.
-## A second call while covered does nothing.
-func _cover_day(tween: Tween) -> void:
-	if not _day_picture_alpha.is_empty():
-		return
-	for path in DAY_PICTURE:
-		var item := get_node_or_null(path) as CanvasItem
-		if item == null:
-			continue
-		_day_picture_alpha[item] = item.modulate.a
-		if tween == null:
-			item.modulate.a = 0.0
-		else:
-			tween.tween_property(item, "modulate:a", 0.0, DAY_PICTURE_FADE)
-
-
-## Brings the day's picture back to the alphas _cover_day() saved, the same
-## way: alongside `tween`, or at once for null.
-func _uncover_day(tween: Tween) -> void:
-	for item in _day_picture_alpha:
-		if not is_instance_valid(item):
-			continue
-		var alpha: float = _day_picture_alpha[item]
-		if tween == null:
-			(item as CanvasItem).modulate.a = alpha
-		else:
-			tween.tween_property(item, "modulate:a", alpha, DAY_PICTURE_FADE)
-	_day_picture_alpha.clear()
 
 
 ## The minigame's result_reporter (2026-09-25 win-screen spec): applies the

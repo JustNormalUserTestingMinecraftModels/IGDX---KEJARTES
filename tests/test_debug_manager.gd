@@ -76,18 +76,20 @@ func test_ready_applies_playtest_defaults() -> void:
 		"_ready must apply the playtest defaults on every launch")
 
 
-func test_playtest_defaults_bypass_tutorial_fullscreen_and_mute_music() -> void:
+func test_playtest_defaults_bypass_tutorials_and_fill_the_screen_but_leave_settings() -> void:
 	var body := _function_body(_source(), "_apply_playtest_defaults")
 	assert_true(body.contains("GameState.tutorials_bypassed = true"),
 		"playtest must always bypass every tutorial in the game")
 	assert_true(body.contains("GameState.lobby_tutorial_completed = true"),
 		"playtest must always skip the lobby tutorial")
-	assert_true(body.contains("settings.minigame_tutorial_enabled = false"),
-		"playtest must always skip the minigame tutorial")
+	assert_false(body.contains("minigame_tutorial_enabled"),
+		"a forced value in the saved Tutorial Minigame switch reaches " +
+		"settings.cfg on the next save_settings(), as the player's own choice")
 	assert_true(body.contains("DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)"),
 		"playtest must always launch fullscreen")
-	assert_true(body.contains("AudioServer.set_bus_mute(bgm_idx, true)"),
-		"playtest must always start with music off")
+	assert_false(body.contains("set_bus_mute"),
+		"a boot-time BGM mute was saved as Musik 0 on every quit, so the " +
+		"Settings music slider never held")
 
 
 func test_function_body_slicer_stops_at_the_next_function() -> void:

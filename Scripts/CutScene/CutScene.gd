@@ -139,7 +139,7 @@ func _on_debug_toggle_pressed() -> void:
 	GameSettings.save_settings()
 	_update_debug_button_text()
 	print("Debug Level Select toggled: ", GameState.debug_level_select_enabled)
-	if GameState.debug_level_select_enabled and not _exiting:
+	if GameState.debug_level_select_enabled and not _exiting and not Transition.is_busy():
 		_exiting = true
 		is_transitioning = true
 		Transition.change_scene(_LEVEL_SELECT_SCENE, Transition.Style.WIPE)
@@ -165,7 +165,11 @@ func _on_skip_pressed() -> void:
 	# No _fade_to_black() here: Transition's wipe is the transition now,
 	# and fading to black first just stacked a second one in front of it.
 	# is_transitioning is still raised by hand because _fade_to_black()
-	# used to do it, and _input() reads it to ignore taps mid-exit.
+	# used to do it, and _input() reads it to ignore taps mid-exit. Not while
+	# the arrival wipe is still out: Transition would refuse the change after
+	# the flags latched, and Skip would be dead (bug sweep 2026-09-30).
+	if Transition.is_busy():
+		return
 	is_transitioning = true
 	_exiting = true
 	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)

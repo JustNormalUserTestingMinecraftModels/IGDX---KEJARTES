@@ -61,12 +61,25 @@ func _exit_tree() -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		if is_instance_valid(_open_claim_popup) and not _open_claim_popup._closing:
-			_open_claim_popup.close()
+			_close_claim_popup_only()
 			return
 		if detail_sheet.visible:
 			detail_sheet.close()
 			return
 		_on_back_pressed()
+
+
+## Closes the claim popup and keeps the detail sheet under it. The sheet hears
+## the same back press after this screen does (a notification reaches every
+## node, parent first) and closes itself, so it is re-opened on the same
+## achievement once the dispatch is over, before the frame draws: one back
+## press peels off one layer. Re-opening an already-claimed achievement only
+## refreshes the sheet; it cannot claim twice.
+func _close_claim_popup_only() -> void:
+	var sheet_was_open := detail_sheet.visible
+	_open_claim_popup.close()
+	if sheet_was_open:
+		detail_sheet.call_deferred("open_for", detail_sheet.achievement_id)
 
 
 func _on_tile_pressed(id: String) -> void:

@@ -357,17 +357,30 @@ the cosmetic shop, Koperasi and the end-game screens carry the Lobby's own bloom
 2026-09-29 (an `AmbientGlow` at `lobby_environment.tres`'s values); the
 earlier "+0.0000 at every threshold" readings on them were an artefact: an
 Environment glow does not render in an offscreen `SubViewport` at all, so
-measure it in the running game. The minigames keep the
-art-only `ScreenGlow` (style guide, "Bloom off the Lobby"). Measured at the same time, the desk lamp
+measure it in the running game. The minigames and EventDialogue took the
+same `AmbientGlow` on 2026-09-30, once their art moved into a `World` room
+(style guide, "Bloom off the Lobby"). Measured at the same time, the desk lamp
 `LightPool` is capped at 0.12 (its measured knee) and still only adds
 +0.011 mean brightness; `hdr_2d` would also let it go brighter. Also
 outstanding: light wrap on the shared cutout illustration materials; the
 kit not yet extended to Inventory or Achievements. Kalkulator has no backdrop of
 its own (it draws over SchoolDay's), so it takes no light and no bloom.
-Each `ScreenGlow` costs a full-screen copy and its mip chain every frame,
-on by default with Efek Suasana (the Efek Visual layer keeps the same
-shader opt-in for an unknown performance floor); nobody has measured frame
-time on a low-end phone yet, the timed minigames first.
+Each minigame's `Calm` grade costs a full-screen copy every frame, and its
+`Glow` the Environment's own glow pass (the Efek Visual layer keeps the
+bloom shader opt-in for an unknown performance floor); nobody has measured
+frame time on a low-end phone yet, the timed minigames first.
+
+**Bug-sweep leftovers (2026-09-30).** Found by the 2026-09-30 scan and left
+on purpose: (1) "Ulangi Kelas 8/9" keeps the failed attempt's skill gains,
+mood and energy (RunResult's retry branch resets week, schedules and shop but
+not the roster), so a retry starts part-way to its targets; a design call for
+the owner, not a bug fix. (2) `DebugManager._teleport_to_scene`'s
+`"Transition" in get_node_or_null("/root")` is always false, so debug
+teleports skip the wipe and the inventory flush; every recipe relies on the
+instant change today. (3) `Scenes/Minigames/UI/MinigameMenu.tscn` is an
+unrouted dev harness that hosts a minigame over its own layer-0 menu, which
+now covers the minigame's `World` room; adapt it (hide its backdrop while a
+game runs) before routing anything to it.
 
 **Mood and Energy wear two different tints (found 2026-09-27).** The
 student card's own Mood/Energy bars use the `Mood`/`Energy` categories

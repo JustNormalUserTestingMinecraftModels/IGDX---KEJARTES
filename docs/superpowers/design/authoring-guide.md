@@ -34,13 +34,14 @@ lbl.add_theme_font_size_override("font_size", 48)
 add_child(lbl)
 
 # After
-@onready var score_label: Label = $HUDLayer/ScoreLabel
+@onready var strip: MinigameHeader = %MinigameHeader
 ```
 
-`Scenes/Minigames/Olahraga/MainBola.tscn`'s `HUDLayer` — with `ScoreLabel`,
-`AttemptsLabel` and `SwipeHint` as real nodes, styled through
-`theme_override_font_sizes` in the scene — is the in-tree example of the good
-form.
+`Scenes/Minigames/UI/MinigameHeader.tscn` — the strip every minigame mounts
+under its `SafeAreaMargin`, with `PauseButton`, `ScoreHud`, `TimerButton` and
+the progress row as real nodes styled by theme variations — is the in-tree
+example of the good form. A game reaches it by unique name
+(`%MinigameHeader`) and calls its API; it builds none of it.
 
 ## Pattern B — repeated items are a `PackedScene` template
 
@@ -344,17 +345,16 @@ entries, as candidates for a future pass:
 - `Scripts/CutScene/CutScene.gd` (4) — the top bar's Skip and Debug
   buttons; its 11-node grade-picker modal moved to the Level Select scene
   (2026-09-25).
-- `Scripts/Minigames/UI/MinigameTutorial.gd` (12) — builds a full popup by
-  hand; a likely Pattern B candidate.
-- `Scripts/Minigames/UI/BaseMinigame.gd` (4) — `ui_layer`, `pause_button`
-  (with its procedural fallback-draw `Control`), and `visual_timer` are
-  built once per game session; a real extraction here needs to account for
-  the procedural drawing fallback, not just move nodes into a scene.
-- The remaining minigames (`Menjodohkan.gd`, `Password.gd`, `Variabel.gd`,
-  `Badminton.gd`, `MainBola.gd`, `BuatBatik.gd`, `LombaMenari.gd`, each
-  2-8) and screens (`Lobby.gd`, `Inventory.gd`, `KoperasiStage.gd`,
-  `StudentList.gd`, `StudentCardView.gd`, `DailyDecayOverview.gd`,
-  `SchoolDay.gd`, `StudentCard.gd`,
+- `Scripts/Minigames/UI/BaseMinigame.gd` (1) — only `ui_layer`, the
+  CanvasLayer the CARA MAIN card, JEDA and Pengaturan open on. The
+  2026-09-29 minigame mobile layout retired its code-built pause button and
+  `VisualTimer` (every game scene mounts `MinigameHeader` now) and moved
+  `MinigameTutorial.gd`'s hand-built popup onto `HowToStepRow` templates.
+- The remaining minigames (`Badminton.gd` and `BuatBatik.gd` 7 each,
+  `MainBola.gd` 2, `Variabel.gd` and `LombaMenari.gd` 1 each; `Menjodohkan.gd`
+  reached 0 in the same pass) and screens (`Lobby.gd`, `Inventory.gd`,
+  `KoperasiStage.gd`, `StudentList.gd`, `StudentCardView.gd`,
+  `DailyDecayOverview.gd`, `SchoolDay.gd`, `StudentCard.gd`,
   `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
   (a background swap, a fallback drawer) not yet surveyed for whether a
   scene conversion is worthwhile. The 2026-09-04 reward pass converted the

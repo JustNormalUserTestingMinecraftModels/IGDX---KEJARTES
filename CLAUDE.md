@@ -195,10 +195,10 @@ alpha before laying out on any soft-edged texture.
   `coin_pulse`, `create_floating_text`, …). It is a plain
   static-function script, **not** an autoload.
 
-Minigames (`Scenes/Minigames/**`) and the debug overlay
-(`Scripts/Debug/DebugManager.gd`) are explicitly **out of scope** for the
-design system — minigames inherit the Theme but had no polish pass, and the
-overlay is a programmatic developer tool that styles itself directly.
+Minigames share one layout (strip · field · tray/hint pill, CARA MAIN card;
+spec `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
+and follow the glyph and popup rules; their inner play art still had no
+polish pass. The debug overlay is out of scope for the design system.
 
 ## Testing
 

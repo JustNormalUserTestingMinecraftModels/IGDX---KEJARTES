@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cmidwqkgsud8g" path="res://Scripts/Minigames/UI/MinigameScoreHUD.gd" id="1_so0nq"]
 [ext_resource type="Texture2D" uid="uid://c6m7obsoagq7e" path="res://Assets/Images/UI/Placeholders/icon_kombo.svg" id="2_hanf1"]
+[ext_resource type="Script" uid="uid://rswrtc2lg4er" path="res://Scripts/Minigames/UI/ProgressTicks.gd" id="3_ticks"]
 
 [node name="MinigameScoreHUD" type="Control" unique_id=584836618]
 layout_mode = 3
@@ -10,52 +11,90 @@ mouse_filter = 2
 script = ExtResource("1_so0nq")
 
 [node name="Panel" type="PanelContainer" parent="." unique_id=1140813042]
+custom_minimum_size = Vector2(440, 0)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_type_variation = &"ScoreHudPanel"
+theme_type_variation = &"MinigameHudPill"
 
-[node name="Row" type="HBoxContainer" parent="Panel" unique_id=699360933]
+[node name="Stack" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Row" type="HBoxContainer" parent="Panel/Stack" unique_id=699360933]
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="Icon" type="TextureRect" parent="Panel/Row" unique_id=697988741]
+[node name="Icon" type="TextureRect" parent="Panel/Stack/Row" unique_id=697988741]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
+size_flags_vertical = 4
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ValueLabel" type="Label" parent="Panel/Row" unique_id=683731547]
+[node name="ValueLabel" type="Label" parent="Panel/Stack/Row" unique_id=683731547]
 layout_mode = 2
-theme_type_variation = &"ScoreHudValueLabel"
+theme_type_variation = &"MinigameHudValue"
 
-[node name="TargetLabel" type="Label" parent="Panel/Row" unique_id=1141669053]
+[node name="TargetLabel" type="Label" parent="Panel/Stack/Row" unique_id=1141669053]
 layout_mode = 2
-theme_type_variation = &"ResultBodyLabel"
+theme_type_variation = &"MinigameTargetLabel"
 
-[node name="ComboChip" type="PanelContainer" parent="Panel/Row" unique_id=462822397]
+[node name="ComboChip" type="PanelContainer" parent="Panel/Stack/Row" unique_id=462822397]
 visible = false
 layout_mode = 2
+size_flags_vertical = 4
 theme_type_variation = &"ResultBadgePanel"
 
-[node name="ComboRow" type="HBoxContainer" parent="Panel/Row/ComboChip" unique_id=596603241]
+[node name="ComboRow" type="HBoxContainer" parent="Panel/Stack/Row/ComboChip" unique_id=596603241]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="ComboIcon" type="TextureRect" parent="Panel/Row/ComboChip/ComboRow" unique_id=546548495]
+[node name="ComboIcon" type="TextureRect" parent="Panel/Stack/Row/ComboChip/ComboRow" unique_id=546548495]
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 texture = ExtResource("2_hanf1")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ComboLabel" type="Label" parent="Panel/Row/ComboChip/ComboRow" unique_id=2104137978]
+[node name="ComboLabel" type="Label" parent="Panel/Stack/Row/ComboChip/ComboRow" unique_id=2104137978]
 layout_mode = 2
 theme_type_variation = &"ScoreHudComboLabel"
+
+[node name="ProgressLine" type="HBoxContainer" parent="Panel/Stack"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="ProgressBar" type="ProgressBar" parent="Panel/Stack/ProgressLine"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_type_variation = &"MinigameProgressBar"
+max_value = 1.0
+show_percentage = false
+
+[node name="Ticks" type="Control" parent="Panel/Stack/ProgressLine/ProgressBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_ticks")
+
+[node name="ProgressLabel" type="Label" parent="Panel/Stack/ProgressLine"]
+layout_mode = 2
+theme_type_variation = &"MinigameProgressLabel"
+vertical_alignment = 1
 
 [node name="BurstSlot" type="Control" parent="." unique_id=138100622]
 anchors_preset = 0

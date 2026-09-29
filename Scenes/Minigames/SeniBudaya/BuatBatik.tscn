@@ -170,7 +170,6 @@ theme_override_constants/separation = 24
 unique_name_in_owner = true
 layout_mode = 2
 show_score = false
-segmented = true
 
 [node name="CanvasRect" type="Control" parent="Safe/Column" unique_id=1499067070]
 layout_mode = 2

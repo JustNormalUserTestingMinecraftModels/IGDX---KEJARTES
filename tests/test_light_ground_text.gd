@@ -132,22 +132,24 @@ func test_the_category_name_reads_on_its_badge() -> void:
 
 func test_the_combo_count_reads_on_its_chip() -> void:
 	var hud := _hud()
-	var label: Label = hud.get_node("Panel/Row/ComboChip/ComboRow/ComboLabel")
-	var ground := _flat_fill(hud.get_node("Panel/Row/ComboChip"))
+	var label: Label = hud.get_node("Panel/Stack/Row/ComboChip/ComboRow/ComboLabel")
+	var ground := _flat_fill(hud.get_node("Panel/Stack/Row/ComboChip"))
 	var ratio := _contrast(label.get_theme_color("font_color"), ground)
 	assert_true(ratio >= _AA_BODY_TEXT,
 		"the combo count is %.2f:1 on its chip; body text needs %.1f:1"
 		% [ratio, _AA_BODY_TEXT])
 
 
-## The one label that keeps the cream. TargetLabel ("/ 5") sits on
+## The one label that keeps the cream. TargetLabel ("/ 5") sat on
 ## ScoreHudPanel, a dark pill at 0.55 alpha over whatever the minigame paints
 ## -- a football pitch, a batik cloth. Over the two extremes that art can
 ## take, black and white, cream holds 3.4:1 at its worst and a dark ink falls
 ## to 1.3:1 -- which is why ResultBodyLabel was not recoloured to fix the rest.
+## Since 2026-09-30 it is MinigameTargetLabel on the plaque's opaque
+## MinigameHudPill; the same both-extremes check still holds it.
 func test_the_hud_target_keeps_reading_on_its_dark_pill() -> void:
 	var hud := _hud()
-	var ink: Color = (hud.get_node("Panel/Row/TargetLabel") as Label) \
+	var ink: Color = (hud.get_node("Panel/Stack/Row/TargetLabel") as Label) \
 		.get_theme_color("font_color")
 	var pill := (hud.get_node("Panel") as Control).get_theme_stylebox("panel") \
 		as StyleBoxFlat
@@ -244,8 +246,8 @@ func test_every_label_here_wears_a_variation_the_bake_declares() -> void:
 	var labels: Array = [
 		popup.get_node("Dim/Center/Card/Layout/NameLabel"),
 		popup.get_node("Dim/Center/Card/Layout/ScorePanel/ScoreRow/ScorePrefixLabel"),
-		hud.get_node("Panel/Row/ComboChip/ComboRow/ComboLabel"),
-		hud.get_node("Panel/Row/TargetLabel"),
+		hud.get_node("Panel/Stack/Row/ComboChip/ComboRow/ComboLabel"),
+		hud.get_node("Panel/Stack/Row/TargetLabel"),
 		_item_sheet().get_node("Safe/Center/Sheet/VBox/EfekList/RowAkademis/Card/Inner/ValueLabel"),
 		_apply_row().get_node("Card/StatRow1/Value")]
 	for direction in [1.0, -1.0]:

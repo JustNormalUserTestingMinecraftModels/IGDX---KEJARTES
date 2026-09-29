@@ -143,7 +143,6 @@ func test_batik_tools_live_in_the_tray_and_the_title_is_gone() -> void:
 		assert_true(root.get_node_or_null(gone) == null, gone + " is gone")
 	var header := root.get_node("%MinigameHeader") as MinigameHeader
 	assert_false(header.show_score, "Batik has no score pill")
-	assert_true(header.segmented, "the bar reads as four steps")
 
 
 func test_batik_names_the_next_step_in_the_hint() -> void:

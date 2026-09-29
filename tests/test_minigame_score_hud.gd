@@ -26,8 +26,9 @@ func _make() -> Node:
 
 func test_the_scene_carries_every_node_the_script_binds() -> void:
 	var hud := _make()
-	for path in ["Panel/Row/Icon", "Panel/Row/ValueLabel", "Panel/Row/TargetLabel",
-			"Panel/Row/ComboChip", "BurstSlot"]:
+	for path in ["Panel/Stack/Row/Icon", "Panel/Stack/Row/ValueLabel",
+			"Panel/Stack/Row/TargetLabel", "Panel/Stack/Row/ComboChip",
+			"Panel/Stack/ProgressLine/ProgressBar", "BurstSlot"]:
 		assert_true(hud.has_node(path), "%s is an authored node" % path)
 
 

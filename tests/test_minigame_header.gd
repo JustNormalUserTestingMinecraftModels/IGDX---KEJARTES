@@ -14,7 +14,7 @@ const SCRIPT_PATH := "res://Scripts/Minigames/UI/MinigameHeader.gd"
 const SCORE_HUD_PATH := "res://Scenes/Minigames/UI/MinigameScoreHUD.tscn"
 const ICON_SKOR := "res://Assets/Images/UI/Placeholders/icon_skor.svg"
 ## The unique names the script binds.
-const BOUND_NODES: Array[String] = ["%PauseButton", "%TimerButton", "%ScoreHud"]
+const BOUND_NODES: Array[String] = ["%PauseButton", "%TimerButton", "%ScoreHud", "%TimerLabel"]
 ## A sample round: 2 of 3.
 const SAMPLE_TARGET := 3
 const SAMPLE_SCORE := 2
@@ -113,20 +113,20 @@ func test_the_header_adds_no_theme_overrides() -> void:
 func test_set_progress_fills_the_bar_and_writes_the_label() -> void:
 	var header: MinigameHeader = _make()
 	header.set_progress(3, 10, "Soal 3/10")
-	var bar: ProgressBar = header.get_node("%ProgressBar")
-	assert_eq(bar.max_value, 10.0, "max follows the round length")
-	assert_eq(bar.value, 3.0, "value is written straight through in the editor")
-	assert_eq((header.get_node("%ProgressLabel") as Label).text, "Soal 3/10")
+	var hud := header.get_node("%ScoreHud") as MinigameScoreHUD
+	assert_eq(hud.progress_bar.max_value, 10.0, "max follows the round length")
+	assert_eq(hud.progress_bar.value, 3.0, "value is written straight through in the editor")
+	assert_eq(hud.progress_label.text, "Soal 3/10")
 
 
-func test_segmented_draws_one_tick_per_step() -> void:
+## Since 2026-09-30 every short count is drawn in cells, not only Batik's.
+func test_short_counts_draw_one_cell_per_step() -> void:
 	var header: MinigameHeader = _make()
-	header.segmented = true
+	var hud := header.get_node("%ScoreHud") as MinigameScoreHUD
 	header.set_progress(1, 4, "Langkah 1/4")
-	assert_eq((header.get_node("%Ticks") as ProgressTicks).segments, 4)
-	header.segmented = false
-	header.set_progress(1, 4, "Langkah 1/4")
-	assert_eq((header.get_node("%Ticks") as ProgressTicks).segments, 0)
+	assert_eq(hud.ticks.segments, 4)
+	header.set_progress(1, MinigameScoreHUD.SEGMENT_MAX + 1, "Soal 2/11")
+	assert_eq(hud.ticks.segments, 0)
 
 
 func test_set_time_drains_the_ring_and_turns_danger_late() -> void:
@@ -144,23 +144,24 @@ func test_hidden_score_and_progress_hide_their_nodes() -> void:
 	header.show_score = false
 	header.show_progress = false
 	assert_false((header.get_node("%ScoreHud") as Control).visible)
-	assert_false((header.get_node("%ProgressBar") as Control).is_visible_in_tree())
+	var hud := header.get_node("%ScoreHud") as MinigameScoreHUD
+	assert_false(hud.progress_bar.is_visible_in_tree())
 
 
 func test_hidden_timer_keeps_its_slot_so_the_pill_stays_centred() -> void:
 	var header: MinigameHeader = _make()
 	header.show_timer = false
-	var slot := header.get_node("Stack/Row/TimerSlot") as Control
+	var slot := header.get_node("Row/TimerSlot") as Control
 	assert_true(slot.visible, "the slot stays, only the button hides")
 	assert_eq(slot.custom_minimum_size, Vector2(96, 96))
 
 
+## The timer shows its seconds as text (MinigameTimerLabel) since 2026-09-30,
+## so only pause carries a picture.
 func test_icons_are_glyph_children_not_button_icons() -> void:
 	var header: MinigameHeader = _make()
 	assert_eq((header.get_node("%PauseGlyph") as TextureRect).texture.resource_path,
 		"res://Assets/Images/UI/Icons/pause.svg")
-	assert_eq((header.get_node("%TimerGlyph") as TextureRect).texture.resource_path,
-		"res://Assets/Images/UI/Icons/timer.svg")
 	assert_true((header.get_node("%PauseButton") as Button).icon == null,
 		"a lipped button squeezes an icon; the glyph is a child")
 

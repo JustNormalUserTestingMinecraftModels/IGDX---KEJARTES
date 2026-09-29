@@ -25,6 +25,7 @@ student_row_scene = ExtResource("2_row_scene")
 teacher_faces = Array[Texture2D]([ExtResource("v_teacher_1"), ExtResource("v_teacher_2"), ExtResource("v_teacher_3"), ExtResource("v_teacher_4")])
 star_on_texture = ExtResource("v_star_on")
 star_off_texture = ExtResource("v_star_on")
+star_off_tint = Color(0.28, 0.28, 0.32, 1)
 
 [node name="Backdrop" type="TextureRect" parent="." unique_id=1837002046]
 layout_mode = 0

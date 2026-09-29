@@ -32,8 +32,9 @@ signal summary_dismissed
 ## An unlit rating star. Since 2026-09-29 this is the same star.png as the lit
 ## one, dimmed by `star_off_tint`.
 @export var star_off_texture: Texture2D
-## Multiplied onto an unlit rating star, turning star.png into a dark silhouette.
-@export var star_off_tint: Color = Color(0.28, 0.28, 0.32)
+## Multiplied onto an unlit rating star, turning star.png into a dark
+## silhouette. The scene sets it; white leaves the star lit.
+@export var star_off_tint: Color = Color.WHITE
 
 @onready var dim_overlay: Panel = $DimOverlay
 @onready var content: VBoxContainer = $DimOverlay/Safe/Content

@@ -2145,10 +2145,14 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# luminance 0.27 and 0.21) and unoutlined over painted card art: they cap
 	# at 3.3:1 and 4.0:1 against pure white and fall toward 1.5:1 on the card
 	# they actually sit on, so neither could reach the 4.5:1 body floor on any
-	# ground. brand_primary measures 7.2:1 and cat_akademis 5.1:1 on
-	# surface_card, keeping a warm/cool split that now reads.
+	# ground. The question header sits on the wood table and takes
+	# brand_primary (7.2:1 on surface_card). The answer header rides the brown
+	# MinigameTrayPanel plank since the mobile layout (2026-09-29), where the
+	# old cat_akademis blue barely read, so it takes the cream text_on_brand
+	# that every label on that plank uses. The name keeps "Cool" because the
+	# scene and tests pin it.
 	for pair in [["MinigameWheelHeaderWarm", tokens.brand_primary],
-			["MinigameWheelHeaderCool", tokens.cat_akademis]]:
+			["MinigameWheelHeaderCool", tokens.text_on_brand]]:
 		var wheel: String = pair[0]
 		theme.add_type(wheel)
 		theme.set_type_variation(wheel, "Label")

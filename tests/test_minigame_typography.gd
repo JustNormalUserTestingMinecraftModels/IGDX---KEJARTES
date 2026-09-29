@@ -67,9 +67,10 @@ const BOTH_CARDS := [CARD, ANSWER_CARD]
 ## The two mid-tone inks this pass retires, with their relative luminances.
 ## The orange (0.27) caps at 3.3:1 against pure white and the blue (0.21) at
 ## 4.0:1 -- both under the 4.5:1 body floor even in the best case, and both
-## fall toward 1.5:1 on the cards they actually sit on. They are replaced by
-## brand_primary (7.2:1) and cat_akademis (5.1:1) on surface_card, which
-## keeps the warm/cool split between the question and answer cards.
+## fall toward 1.5:1 on the cards they actually sit on. The question header
+## took brand_primary (7.2:1 on surface_card). The answer header took
+## cat_akademis until it moved onto the brown tray plank (2026-09-29), and now
+## wears the plank's cream text_on_brand.
 const DEAD_INKS := ["Color(0.85, 0.45, 0.1, 1)", "Color(0.2, 0.5, 0.85, 1)"]
 
 

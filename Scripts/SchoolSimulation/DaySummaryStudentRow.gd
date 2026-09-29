@@ -26,13 +26,10 @@ const TARGET_FOR := {
 ## it is a property of the card's three-row rhythm, not of one row.
 const GAIN_STEP := 0.08
 
-## Which needs-bar variation each look wears. The weekly report uses the
-## game-wide energy yellow and mood pink (2026-09-29 weekly colours spec);
-## every other screen keeps the popup's own purple and orange.
-const NEEDS_VARIATION := {
-	true: {"energy": &"WeekEnergyBar", "mood": &"WeekMoodBar"},
-	false: {"energy": &"DaySummaryEnergyBar", "mood": &"DaySummaryMoodBar"},
-}
+## The needs bars' variations: the nightly colours, on every screen since
+## the weekly report took the daily look (2026-09-29).
+const ENERGY_VARIATION := &"DaySummaryEnergyBar"
+const MOOD_VARIATION := &"DaySummaryMoodBar"
 
 @onready var avatar: DaySummaryAvatar = $Avatar
 @onready var name_label: Label = $NameLabel
@@ -85,23 +82,18 @@ static func format_needs_delta(delta: float) -> String:
 	return "%s%d" % [sign_str, d]
 
 
-## Dress the card for the weekly report (`week` true) or for every other
-## screen: the needs bars' colours and the stat rows' chip readout. Every
-## entry point calls it first, so a reused card never carries one screen's
-## look into another. The needs arrows go dark on the weekly card so they
-## read on the yellow energy bar, and stay the art's gold everywhere else.
-func _apply_look(week: bool) -> void:
-	energy_bar.theme_type_variation = NEEDS_VARIATION[week]["energy"]
-	mood_bar.theme_type_variation = NEEDS_VARIATION[week]["mood"]
-	for row in stat_rows:
-		row.set_chip_mode(week)
-	var arrow_tint := Juice.tokens().text_primary if week else Color.WHITE
-	energy_delta_chevron.self_modulate = arrow_tint
-	mood_delta_chevron.self_modulate = arrow_tint
+## Dress the card: the nightly needs colours and the arrows' gold. Every
+## entry point calls it first, so a card re-armed from another screen
+## never carries a stale look.
+func _apply_look() -> void:
+	energy_bar.theme_type_variation = ENERGY_VARIATION
+	mood_bar.theme_type_variation = MOOD_VARIATION
+	energy_delta_chevron.self_modulate = Color.WHITE
+	mood_delta_chevron.self_modulate = Color.WHITE
 
 
 func setup_row(student_name: String, changes: Array, student: StudentData, day_name: String = "") -> void:
-	_apply_look(false)
+	_apply_look()
 	name_label.text = student_name
 	avatar.set_student(student, day_name)
 
@@ -111,9 +103,10 @@ func setup_row(student_name: String, changes: Array, student: StudentData, day_n
 	# matching the avatar, which already clears its texture on null.
 	energy_bar.set_need("energy", student.energy if student != null else 0.0)
 	mood_bar.set_need("mood", student.mood if student != null else 0.0)
-	# The needs numbers belong to ResultCheckup's weekly card; the mockup
-	# has none. Hidden explicitly rather than relying on the scene's
-	# default, so a card re-armed from the weekly path is still correct.
+	# The labels and chevrons are hidden because only the item/event
+	# preview path (preview_need) shows a chevron, and a re-armed card must
+	# not keep one. Hidden explicitly rather than relying on the scene's
+	# default.
 	energy_delta_label.hide()
 	mood_delta_label.hide()
 	energy_delta_chevron.hide()
@@ -186,7 +179,7 @@ func gained_ground() -> bool:
 ## daily card: nightly look, no needs numbers, and play_gain replays it --
 ## the openings cached here are Monday's, so the replay covers the week.
 func setup_week_row(student: StudentData, day_name: String = "") -> void:
-	_apply_look(false)
+	_apply_look()
 	name_label.text = student.student_name if student != null else ""
 	avatar.set_student(student, day_name)
 	for n in [energy_delta_label, mood_delta_label,
@@ -272,7 +265,7 @@ func _play_needs_travel(bar: ProgressBar, from_value: float, delay: float) -> vo
 ## event-cards spec, 1.1). Both needs bars at their current values with no
 ## chevron; every stat row at current/target via set_standing().
 func setup_current_row(student: StudentData, day_name: String = "") -> void:
-	_apply_look(false)
+	_apply_look()
 	name_label.text = student.student_name if student != null else ""
 	avatar.set_student(student, day_name)
 	_standing.clear()

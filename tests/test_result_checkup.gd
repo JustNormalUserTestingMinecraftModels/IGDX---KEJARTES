@@ -71,11 +71,11 @@ func _student_with_week(start: Dictionary, finish: Dictionary) -> StudentData:
 
 # ------------------------------------------------ the needs-delta labels
 
-## The two numbers the week card adds. They live INSIDE their bars -- the
-## card is fixed art and there are 37 free pixels between the bars' right
-## edge (579) and the stat rows' left edge (616), which is not a label.
-## They start hidden because the daily card must not grow a readout the
-## mockup does not have.
+## The hidden data labels the item/event preview path writes. They live
+## INSIDE their bars -- the card is fixed art and there are 37 free pixels
+## between the bars' right edge (579) and the stat rows' left edge (616),
+## which is not a label. They start hidden because the card only shows a
+## needs number while a preview is armed.
 func test_the_card_carries_a_hidden_delta_label_on_each_needs_bar() -> void:
 	var inst := _card()
 	var e := inst.get_node_or_null("EnergyBar/DeltaLabel") as Label
@@ -153,31 +153,17 @@ func test_the_week_card_pairs_each_stat_with_its_own_target() -> void:
 
 # ------------------------------------------- the 2026-09-29 weekly colours
 
-## The chip's text, its target and its colour, without a scene.
-func test_the_chip_reads_the_change_and_its_colour() -> void:
-	assert_eq(DaySummaryStatRow.chip_text(12.0), "+12", "a gain carries its plus")
-	assert_eq(DaySummaryStatRow.chip_text(-3.0), "-3", "a loss reads '-3', never '+-3'")
-	assert_eq(DaySummaryStatRow.chip_text(2.6), "+3", "rounded, not truncated")
-	assert_eq(DaySummaryStatRow.chip_text(0.0), "+0", "a count starts at +0")
-	assert_eq(DaySummaryStatRow.target_text(52.0), "/52", "the run target after a slash")
-	assert_eq(DaySummaryStatRow.chip_variation(5.0), &"DeltaChipGain", "a gain is green")
-	assert_eq(DaySummaryStatRow.chip_variation(-5.0), &"DeltaChipLoss", "a loss is red")
-	assert_true(DaySummaryStatRow.shows_chip(true, -3.0), "a loss in chip mode shows a chip")
-	assert_false(DaySummaryStatRow.shows_chip(true, 0.4), "a change that rounds to zero shows none")
-	assert_false(DaySummaryStatRow.shows_chip(false, 12.0), "no chip outside chip mode")
-
-
 ## The weekly report plays its cards through play_gain, which keys the
-## reward (pop, burst, gain cue, card sparkle) off the row's gain marker. In
-## chip mode that marker is the gain chip, so a weekly gain still rewards
-## and a loss still does not; the nightly card keeps the chevron.
+## reward (pop, burst, gain cue, card sparkle) off the row's gain marker. That
+## marker is the gold chevron, so a weekly gain rewards from its chevron, like
+## the nightly one, and a loss (no chevron) still does not.
 func test_a_weekly_gain_keeps_its_reward_marker() -> void:
 	var inst := _card()
 	var s := _student_with_week(
 		{"akademis": 40.0, "olahraga": 55.0},
 		{"akademis": 58.0, "olahraga": 49.0})
 	inst.setup_week_row(s)
-	assert_true(inst.stat_rows[0].shows_gain_marker(), "a weekly gain rewards from its chip")
+	assert_true(inst.stat_rows[0].shows_gain_marker(), "a weekly gain rewards from its chevron")
 	assert_false(inst.stat_rows[2].shows_gain_marker(), "a weekly loss does not")
 	inst.setup_row("Marcel", [{"stat_key": "akademis", "delta": 6.0}], s)
 	assert_true(inst.stat_rows[0].shows_gain_marker(), "the nightly gain rewards from its chevron")
@@ -302,6 +288,22 @@ func test_the_card_has_no_weekly_only_replay() -> void:
 	var src := FileAccess.get_file_as_string(_ROW_SCRIPT)
 	for dead in ["func play_week_gain", "func rewind_week", "func play_needs_week",
 			"func land_week", "var _needs_tweens", "var _energy_to", "var _energy_delta"]:
+		assert_false(src.contains(dead), "%s left with the weekly reveal" % dead)
+
+
+## The chip readout and the week needs colours left with the weekly look
+## (2026-09-29 clarity spec): nothing in the theme or the row keeps them.
+func test_the_weekly_only_look_is_retired() -> void:
+	var types := (load(_THEME_PATH) as Theme).get_type_list()
+	for dead in ["DeltaChipGain", "DeltaChipLoss", "DeltaChipLabel",
+			"WeekEnergyBar", "WeekMoodBar"]:
+		assert_false(types.has(dead), "%s is no longer baked" % dead)
+	var row: Node = load("res://Scenes/SchoolSimulation/DaySummaryStatRow.tscn").instantiate()
+	assert_true(row.get_node_or_null("ChipRow") == null, "the stat row has no chip")
+	row.free()
+	var src := FileAccess.get_file_as_string(
+		"res://Scripts/SchoolSimulation/DaySummaryStatRow.gd")
+	for dead in ["set_chip_mode", "func rewind", "func play_count", "func land"]:
 		assert_false(src.contains(dead), "%s left with the weekly reveal" % dead)
 
 
@@ -1162,9 +1164,8 @@ func test_recap_theme_is_brown_and_cream() -> void:
 	assert_false("recap_banner_fill" in tokens, "the butter-yellow token is gone")
 
 
-## The weekly report's own variations (2026-09-29 weekly colours spec):
-## the brown title plate, the green and red change chips, and the needs
-## bars in the game-wide energy yellow and mood pink.
+## The weekly report's own variation (2026-09-29 weekly colours spec):
+## the brown title plate.
 func test_the_week_report_variations_are_built() -> void:
 	var tokens := DesignTokens.load_default()
 	var theme := ThemeFactory.build(tokens)
@@ -1175,24 +1176,6 @@ func test_the_week_report_variations_are_built() -> void:
 		"cream letters")
 	assert_eq(theme.get_font_size("font_size", "ResultTitleLabel"), tokens.font_h1,
 		"at H1 size")
-	var gain := theme.get_stylebox("panel", "DeltaChipGain") as StyleBoxFlat
-	var loss := theme.get_stylebox("panel", "DeltaChipLoss") as StyleBoxFlat
-	assert_eq(gain.bg_color, tokens.state_success, "a gain chip is success green")
-	assert_eq(loss.bg_color, tokens.state_danger, "a loss chip is danger red")
-	assert_eq(gain.corner_radius_top_left, tokens.radius_pill, "chips are pills")
-	assert_eq(loss.corner_radius_top_left, tokens.radius_pill, "both of them")
-	assert_eq(theme.get_color("font_color", "DeltaChipLabel"), Color.WHITE,
-		"white on both chips")
-	assert_eq(theme.get_font_size("font_size", "DeltaChipLabel"),
-		tokens.day_needs_label_size, "one step under the stat number")
-	var energy := theme.get_stylebox("fill", "WeekEnergyBar") as StyleBoxTexture
-	var mood := theme.get_stylebox("fill", "WeekMoodBar") as StyleBoxTexture
-	assert_eq(energy.modulate_color, tokens.cat_energy_on_dark, "week energy is the game-wide yellow")
-	assert_eq(mood.modulate_color, tokens.cat_mood_on_dark, "week mood is the game-wide pink")
-	var day_track := theme.get_stylebox("background", "DaySummaryEnergyBar") as StyleBoxFlat
-	var week_track := theme.get_stylebox("background", "WeekEnergyBar") as StyleBoxFlat
-	assert_eq(week_track.bg_color, day_track.bg_color, "the same dark track as the nightly bar")
-	assert_eq(week_track.border_color, day_track.border_color, "and the same rim")
 
 
 ## Logs is the neutral brown (it is not a danger action, so no tomato);

@@ -705,11 +705,33 @@ func test_theme_carries_the_recap_variations() -> void:
 	assert_not_null(theme, "the baked theme loads")
 	var types: PackedStringArray = theme.get_type_list()
 	for variation in ["RecapBannerPanel", "RecapPillPanel",
-			"RecapPillValueLabel"]:
+			"RecapPillValueLabel", "RecapPillCaptionLabel"]:
 		assert_true(types.has(variation),
 			"%s is baked into the theme" % variation)
 	assert_false(types.has("WeekTabButton"),
 		"the tab variation was retired with the SISWA/RIWAYAT tabs")
+
+
+## The pill number is white with the event warning's navy rim, and the
+## caption under it is the display face in the same navy (2026-09-29
+## clarity spec).
+func test_pill_number_and_caption_wear_the_navy() -> void:
+	var tokens := DesignTokens.load_default()
+	var theme := ThemeFactory.build(tokens)
+	assert_eq(theme.get_color("font_color", "RecapPillValueLabel"), Color.WHITE,
+		"the pill number is white")
+	assert_eq(theme.get_color("font_outline_color", "RecapPillValueLabel"),
+		tokens.event_warning_ink, "with a navy rim")
+	assert_eq(theme.get_constant("outline_size", "RecapPillValueLabel"),
+		tokens.text_outline_size, "at the usual rim width")
+	assert_true(theme.get_type_list().has("RecapPillCaptionLabel"),
+		"the caption variation is built")
+	assert_eq(theme.get_font("font", "RecapPillCaptionLabel"), tokens.font_display,
+		"the caption is the heading face")
+	assert_eq(theme.get_font_size("font_size", "RecapPillCaptionLabel"),
+		tokens.font_body_size, "at body size")
+	assert_eq(theme.get_color("font_color", "RecapPillCaptionLabel"),
+		tokens.event_warning_ink, "in navy")
 
 
 const _PILL_SCENE := "res://Scenes/SchoolSimulation/WeekRecapPill.tscn"

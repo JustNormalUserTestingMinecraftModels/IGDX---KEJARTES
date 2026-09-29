@@ -3285,16 +3285,24 @@ static func _build_week_recap(theme: Theme, tokens: DesignTokens) -> void:
 	recap_pill.set_content_margin_all(tokens.space_sm)
 	theme.set_stylebox("panel", "RecapPillPanel", recap_pill)
 
-	# The pill's number. Tinted per-pill via self_modulate, so the
-	# variation itself stays neutral.
+	# The pill's number: white on a navy rim, the event warning's own ink,
+	# so it reads on the near-white tile (2026-09-29 clarity spec).
 	theme.add_type("RecapPillValueLabel")
 	theme.set_type_variation("RecapPillValueLabel", "Label")
 	theme.set_font_size("font_size", "RecapPillValueLabel", tokens.font_h2)
-	theme.set_color("font_color", "RecapPillValueLabel", tokens.text_primary)
+	theme.set_color("font_color", "RecapPillValueLabel", Color.WHITE)
 	theme.set_constant("outline_size", "RecapPillValueLabel", tokens.text_outline_size)
-	theme.set_color("font_outline_color", "RecapPillValueLabel", tokens.text_outline_color)
+	theme.set_color("font_outline_color", "RecapPillValueLabel", tokens.event_warning_ink)
 	if tokens.font_display != null:
 		theme.set_font("font", "RecapPillValueLabel", tokens.font_display)
+
+	# What the number counts, under it: the heading face in the same navy.
+	theme.add_type("RecapPillCaptionLabel")
+	theme.set_type_variation("RecapPillCaptionLabel", "Label")
+	theme.set_font_size("font_size", "RecapPillCaptionLabel", tokens.font_body_size)
+	theme.set_color("font_color", "RecapPillCaptionLabel", tokens.event_warning_ink)
+	if tokens.font_display != null:
+		theme.set_font("font", "RecapPillCaptionLabel", tokens.font_display)
 
 
 ## The weekly report's own chrome (2026-09-29 weekly colours spec): the brown

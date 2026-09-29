@@ -316,7 +316,7 @@ const DISPLAY_ROSTER := [
 	"DayStampLabel", "VerdictHeadlineLabel",
 	"TallyValueGain", "TallyValueTarget", "TallyValueCoin",
 	"DaySummaryName", "DaySummaryStat", "DaySummaryNeedsLabel",
-	"RecapPillValueLabel", "ScoreHudValueLabel",
+	"RecapPillValueLabel", "RecapPillCaptionLabel", "ScoreHudValueLabel",
 	# 2026-09-14 Weekly Results: the cream Logs / Selanjutnya buttons.
 	"ResultButton",
 	# 2026-09-19 weekly results mockup: the Logs button (brown since 2026-09-29).

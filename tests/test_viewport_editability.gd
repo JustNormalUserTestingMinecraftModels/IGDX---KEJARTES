@@ -55,6 +55,7 @@ const VISUAL_TYPES: Array[String] = [
 ## per CLAUDE.md.
 const EXEMPT: Array[String] = [
 	"res://Scripts/Debug/DebugManager.gd",
+	"res://Scripts/Debug/DebugLookPanel.gd",
 ]
 
 ## Per-file count of runtime visual construction still owed a conversion,

@@ -185,8 +185,8 @@ static func load_default() -> DesignTokens:
 @export var accent_tangerine: Color = Color("F58A3C")
 ## Lip under accent_tangerine faces.
 @export var accent_tangerine_lip: Color = Color("BD561A")
-## Face of the cream roles -- StudentCardSecondaryButton, FilterChipButton,
-## MinigameChoiceButton.
+## Face of the cream roles -- MinigameChoiceButton and the skin tiles. (The
+## StudentCard secondary buttons and the filter chips went brown, 2026-09-29.)
 @export var button_cream: Color = Color("FFF1DC")
 ## Lip under button_cream faces.
 @export var button_cream_lip: Color = Color("C9A57E")

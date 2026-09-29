@@ -2156,7 +2156,11 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# five-state set at radius_button, plus font_title and the display face,
 	# which is the whole rung -- a hand-rolled block here shipped with a 0
 	# radius and tests/test_button_geometry.gd caught it.
-	_add_lobby_button(theme, tokens, "MinigameChoiceButton")
+	# Stays cream on purpose (2026-09-29): PilihanGanda's scene authors a
+	# near-white box over this variation, so the variation only supplies the
+	# ink -- and a brown face would hand it white ink on that near-white box.
+	_add_button_variation(theme, tokens, "MinigameChoiceButton",
+		tokens.button_cream, tokens.button_cream_lip)
 
 
 # --------------------------------------------------------------- progress

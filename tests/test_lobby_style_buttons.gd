@@ -6,10 +6,10 @@ extends McpTestSuite
 ## look). Every framed button is now a lipped box (LippedBox): a face on a
 ## darker lip, sinking onto the lip when held. Its colours say its role --
 ## mint is the main action and affirm on every screen, tomato is danger,
-## brown is neutral (StudentCard's secondary buttons, the filter chips and the
-## minigame answers went back to it on 2026-09-29, after their cream faces
-## vanished on cream cards), sky and sunflower are the Lobby tiles' and the
-## notebook tabs' own. Information badges keep their meaning colours.
+## brown is neutral (StudentCard's secondary buttons and the filter chips went
+## back to it on 2026-09-29, after their cream faces vanished on cream cards;
+## the minigame answers stay cream, because their scene authors the box),
+## sky and sunflower are the Lobby tiles' and the notebook tabs' own. Information badges keep their meaning colours.
 ## Spec: docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md.
 
 const _STUDENT_CARD := "res://Scenes/StudentCard/StudentCard.tscn"
@@ -46,7 +46,8 @@ func _roles() -> Dictionary:
 		"LobbyNavTile": brown, "MainMenuButton": brown, "ShopShelfButton": brown,
 		"QuirkBadge": brown, "CardArrowButton": [t.brand_primary, t.brand_primary_dark],
 		"StudentCardSecondaryButton": brown, "StudentCardSecondaryButtonL": brown,
-		"FilterChipButton": brown, "MinigameChoiceButton": brown,
+		"FilterChipButton": brown,
+		"MinigameChoiceButton": [t.button_cream, t.button_cream_lip],
 	}
 
 
@@ -106,7 +107,7 @@ func test_label_ink_follows_the_face() -> void:
 	for light in ["NavTileRapor"]:
 		assert_eq(_theme.get_color("font_color", light), _tokens.text_primary, light + " dark ink")
 		assert_eq(_theme.get_constant("outline_size", light), 0, light + " no outline")
-	for dark in ["StudentCardSecondaryButtonL", "FilterChipButton", "MinigameChoiceButton"]:
+	for dark in ["StudentCardSecondaryButtonL", "FilterChipButton"]:
 		assert_eq(_theme.get_color("font_color", dark), _tokens.text_on_brand, dark + " light ink")
 		assert_eq(_theme.get_constant("outline_size", dark), _tokens.lipped_label_outline,
 			dark + " outlined")
@@ -115,7 +116,10 @@ func test_label_ink_follows_the_face() -> void:
 func test_student_card_secondary_is_brown() -> void:
 	assert_eq(_fill("StudentCardSecondaryButtonL"), _tokens.brand_primary_light, "brown face")
 	assert_eq(_fill("StudentCardSecondaryButton"), _tokens.brand_primary_light, "brown at every step")
-	assert_eq(_fill("MinigameChoiceButton"), _tokens.brand_primary_light, "minigame answers are brown too")
+	assert_eq(_fill("MinigameChoiceButton"), _tokens.button_cream,
+		"the minigame answers stay cream: their scene authors a near-white box over the variation")
+	assert_eq(_theme.get_color("font_color", "MinigameChoiceButton"), _tokens.text_primary,
+		"so they keep dark ink")
 	assert_eq(_theme.get_font_size("font_size", "StudentCardSecondaryButtonL"),
 		_tokens.font_h1, "the L step")
 

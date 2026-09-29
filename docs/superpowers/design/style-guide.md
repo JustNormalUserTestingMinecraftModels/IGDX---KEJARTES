@@ -49,8 +49,9 @@ and a script-backed StyleBox there makes every debug run log a SceneTree
 error. Its colours say its role — mint is the main
 action and affirm on every screen, tomato is danger, brown is neutral
 (a cream button vanishes on the cream cards and paper of most screens, so
-StudentCard's secondary buttons, the filter chips and the minigame answers are
-brown; cream stays for the skin tiles' photo cards); sky and sunflower belong
+StudentCard's secondary buttons and the filter chips are brown; cream stays
+for the skin tiles' photo cards and the minigame answers, whose scene authors
+the box); sky and sunflower belong
 to the Lobby tiles and the
 notebook tabs, and sunflower is never an action (gold reads as "buy").
 A Back is a return, so it is brown, not mint (ReportCard's included); a

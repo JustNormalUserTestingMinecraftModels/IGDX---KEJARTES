@@ -1082,14 +1082,15 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 
 	# The tile's own title. CaptionLabel (22) put the tile's most important
 	# text on the scale's second-smallest step; this is the body step (28)
-	# in the primary ink. Body face, not display -- it wraps to two lines,
-	# and Boohong at 28 over two lines reads as a banner, not a caption.
+	# in the primary ink, on the display face (2026-09-29, DISPLAY_ROSTER).
+	# Size stays at the body step so two wrapped lines still fit the tile's
+	# 80 px title slot inside the Card's content margins.
 	theme.add_type("AchievementTileTitleLabel")
 	theme.set_type_variation("AchievementTileTitleLabel", "Label")
 	theme.set_font_size("font_size", "AchievementTileTitleLabel", tokens.font_body_size)
 	theme.set_color("font_color", "AchievementTileTitleLabel", tokens.text_primary)
-	if tokens.font_body != null:
-		theme.set_font("font", "AchievementTileTitleLabel", tokens.font_body)
+	if tokens.font_display != null:
+		theme.set_font("font", "AchievementTileTitleLabel", tokens.font_display)
 
 	# The detail sheet's description. CaptionLabel (22) was too small for a
 	# full sentence on an 864-wide card; this is the body step in the

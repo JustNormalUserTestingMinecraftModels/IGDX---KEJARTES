@@ -97,13 +97,17 @@ Drawing them means setting the three exports on the reveal's root in
 (`book_cover.png`, `book_page.png`, `coin_plate.png`, `progress_plate.png`,
 `chevron_grip.png`, `icon_plus.svg`) standing in for the book/page/plate/grip
 art in `docs/superpowers/specs/2026-09-27-lobby-scrapbook-hud-design.md` § 6,
-drop-replaceable at the same paths with no code change. Every PNG's 9-slice
+drop-replaceable at the same paths, within the plate insets below. Every PNG's 9-slice
 margins are whole pixels: `book_cover.png` 96x96, margins L24 R24 T24 B40
 (the bottom margin carries its lip band); `book_page.png` 96x96, margins L18
 R18 T18 B18; `coin_plate.png` 120x64, margins L20 R20 T18 B26;
 `progress_plate.png` 160x64, margins L20 R20 T18 B26; `chevron_grip.png`
 96x48, margins L26 R26 T8 B8 (a full pill, so the top/bottom margins are only
-a small buffer, not the cap radius). Still pending, waiting on real art: the
+a small buffer, not the cap radius). Since the 2026-09-29 layout grid pass
+the progress tag's contents sit 6 px from `progress_plate`'s left and right
+edges and 8 px from its top, and the coin box's icon and `+` sit 12 px from
+`coin_plate`'s sides, so a replacement plate's visible rim must stay inside
+those insets, or the tag and coin box need re-laying out. Still pending, waiting on real art: the
 dashed washi rim and tape, and JADWAL!'s washi flutter (deferred by the plan's
 Q4 -- `StyleBoxFlat` cannot draw dashes), the 16 UI icons in
 `Assets/Images/UI/Icons/` (placeholders for the owner's chunky set; rules in
@@ -114,6 +118,12 @@ that folder's README, pinned by `test_ui_icons`), and the notebook frame's
 `particle_*.png`: coin, glow, plus and spark. The event-popup set outlived the
 popup: `icon_event.svg` is used by the week-recap rows and RunResult, and
 `bg_event_dialog.png` by `EventStudentSelectDialog`.)
+
+**Lobby book drag (2026-09-29).** A vertical drag that starts on the coin plate
+(now in the book's step) does not drag the book: `DisplayUang` ignores the
+mouse and `LobbyHud` only listens on the `raised_block` and `shelf`
+`gui_input`. The `+` still taps. Fix by letting the plate pass its drag to the
+HUD, if the owner notices.
 
 **Achievements polish (2026-09-18).** `AchievementTile`'s lock overlay is a
 placeholder `Assets/Images/UI/Placeholders/icon_lock.svg` (plain padlock

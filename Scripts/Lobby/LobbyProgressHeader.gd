@@ -2,15 +2,18 @@
 class_name LobbyProgressHeader
 extends Panel
 
-## The Lobby's top-left progress plate (2026-09-27 scrapbook HUD spec §3.1):
-## the grade badge, "Minggu N / total" and the run's star bar toward
+## The Lobby's progress tag (2026-09-27 scrapbook HUD spec §3.1), since the
+## 2026-09-29 layout grid pass a narrow tag in the gap between the two
+## back-row heads: the grade badge, the week "N / total" under a static
+## "Minggu" caption in the scene, and the run's star bar toward
 ## Balance.STARS_TOTAL. Reads GameState only when the Lobby calls refresh()
 ## down; announces nothing. @tool so the lobby_hud suite can call refresh()
 ## on a Lobby it instances. It has no _ready side effects, so an editor
 ## save never bakes a drawn state into Lobby.tscn.
 
-## The week line: the week, then the grade's length.
-const WEEK_FORMAT := "Minggu %d / %d"
+## The week line under the tag's static "Minggu" caption: the week, then the
+## grade's length. "Minggu 1 / 6" on one line (264 px) cannot fit the tag.
+const WEEK_FORMAT := "%d / %d"
 ## The star line: the run's stars over the total, as the spec's "2.0 / 3.0".
 const STAR_FORMAT := "%.1f / %.1f"
 

@@ -3,17 +3,17 @@ class_name LobbyHud
 extends Control
 
 ## The Lobby's bottom HUD (2026-09-27 scrapbook HUD spec §4): the stepped
-## book (JADWAL on the raised block, three tiles on the shelf) and the icon
-## rail. It swipes away as a whole: the book slides down to its chevron
-## peek and the rail slides off the right edge in the same tween (Q5); the
-## chevron, a vertical drag on the book, or a double tap anywhere brings
-## it back. Hidden, only the grip peeks above the screen's bottom edge,
-## and the book's buttons ignore input all the same, so a tap during the
-## slide or a reopening tap cannot press one. It also plays the
-## entrance, JADWAL's breathe and the roster-count chip. It stays
-## inactive until the Lobby calls activate(), so the tutorial's spotlight
-## never measures a moving target. Calls come
-## down from Lobby.gd; nothing here reaches up. @tool so the lobby_hud
+## book (JADWAL on the raised block, three tiles on the shelf, the coin box
+## beside JADWAL) and the icon rail. It swipes away as a whole: the book
+## slides down to its chevron peek and the rail slides off the right edge
+## in the same tween (Q5); the chevron, a vertical drag on the book, or a
+## double tap anywhere brings it back. Hidden, only the grip peeks above
+## the screen's bottom edge, and the book's buttons ignore input all the
+## same, so a tap during the slide or a reopening tap cannot press one. It
+## also plays the entrance, JADWAL's breathe and the roster-count chip. It
+## stays inactive until the Lobby calls activate(), so the tutorial's
+## spotlight never measures a moving target. Calls come down from Lobby.gd;
+## nothing here reaches up. @tool so the lobby_hud
 ## suite can drive it: _ready wires its own signals ungated and the
 ## autoload ones only in game, and every writer runs from the non-@tool
 ## Lobby or a suite's own instance. It also keeps the three notification
@@ -85,6 +85,7 @@ var _hint_timer: Tween
 @onready var koperasi: Control = %Koperasi
 @onready var inventory: Control = %Inventory
 @onready var report_student: Control = %ReportStudent
+@onready var coin_box: Control = %DisplayUang
 @onready var icon_rail: Control = %IconRail
 @onready var chevron_grip: Button = %ChevronGrip
 @onready var chevron_glyph: Control = %ChevronGlyph
@@ -102,6 +103,7 @@ func _ready() -> void:
 	chevron_grip.pressed.connect(_on_chevron_pressed)
 	raised_block.gui_input.connect(_on_book_gui_input)
 	shelf.gui_input.connect(_on_book_gui_input)
+	coin_box.gui_input.connect(_on_book_gui_input)
 	resized.connect(_on_resized)
 	if Engine.is_editor_hint():
 		return
@@ -110,13 +112,13 @@ func _ready() -> void:
 	GameSettings.reduce_motion_changed.connect(_on_reduce_motion_changed)
 
 
-## Turns the swipe on; the entrance (tiles drop in, staggered) plays only
+## Turns the swipe on; the entrance (tiles and the coin plate drop in, staggered) plays only
 ## when asked, then JADWAL breathes. The open rest positions are read at
 ## each hide that does not interrupt a slide, once layout has settled.
 func activate(with_entrance: bool) -> void:
 	is_active = true
 	if with_entrance and not GameSettings.reduce_motion:
-		Juice.stagger_in([koperasi, inventory, report_student])
+		Juice.stagger_in([koperasi, inventory, report_student, coin_box])
 	_update_breathe()
 
 
@@ -206,9 +208,10 @@ func refresh(is_daily_claimable: bool) -> void:
 	_refresh_counts()
 
 
-## What the chatter must not treat as a tap on a face.
+## What the chatter must not treat as a tap on a face: the book's two steps,
+## the coin plate beside JADWAL, the chevron and the rail.
 func tap_blockers() -> Array[Control]:
-	return [raised_block, shelf, chevron_grip, icon_rail]
+	return [raised_block, shelf, coin_box, chevron_grip, icon_rail]
 
 
 ## The badges that follow autoload state. The daily badge is left alone:
@@ -267,13 +270,14 @@ func _on_chevron_pressed() -> void:
 
 
 ## Hidden, the book's buttons ignore input, so nothing under a reopening
-## tap or a mid-slide press opens a screen; the chevron, a sibling of the
-## book's pages, stays live to bring it back.
+## tap or a mid-slide press opens a screen; the coin box's + rides in the
+## book's step (2026-09-29) and goes quiet with it. The chevron, a sibling of
+## the book's pages, stays live to bring it back.
 func _set_book_live(live: bool) -> void:
 	var behavior: Control.MouseBehaviorRecursive = Control.MOUSE_BEHAVIOR_INHERITED
 	if not live:
 		behavior = Control.MOUSE_BEHAVIOR_DISABLED
-	for part: Control in [raised_page, koperasi, inventory, report_student]:
+	for part: Control in [raised_page, koperasi, inventory, report_student, coin_box]:
 		part.mouse_behavior_recursive = behavior
 
 
@@ -288,7 +292,8 @@ func _on_reduce_motion_changed(_still: bool) -> void:
 
 
 ## A vertical drag on the book past swipe_threshold_pixels: down hides, up
-## reopens. Only the book's own margins see it; its buttons keep their taps.
+## reopens. Only the book's own margins and the coin plate see it; its
+## buttons keep their taps.
 func _on_book_gui_input(event: InputEvent) -> void:
 	if not is_active:
 		return

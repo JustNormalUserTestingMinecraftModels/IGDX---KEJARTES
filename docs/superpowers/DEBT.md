@@ -889,9 +889,16 @@ ResultCheckup confetti and MainBola (ExamProgress left this list on
 2026-09-20: its backdrop is anchored to all four edges and its status strip
 to the real screen bottom). The Lobby's classroom stays a centred
 1080×1920 picture, so a tall phone shows black bands above and below it;
-filling them wants taller classroom art. Badminton's authored court keeps
-`STRETCH_SCALE` (the walls sit on the court's edges), so a 1080x2400 phone
-stretches it about 25% vertically; tall-phone rule 1 does not hold there yet.
+filling them wants taller classroom art. Badminton's court `Background` now
+covers (`Keep Aspect Covered`), so tall-phone rule 1 holds for the art. **Open
+check, unverified on a device:** on a 20:9 phone (1080×2400) cover scales the
+1080×1920 court art 1.25× and crops about 135 px per side, so the painted
+sidelines land near x≈77 and x≈1002. `Badminton.gd` `_ready()` places the walls,
+goals, puck and paddles from `get_viewport_rect()` (side walls at x=8 and
+width−8, goals and top/bottom walls at the screen edges), so the physics follow
+the viewport, not fixed design pixels, and the puck bounces at the screen edge,
+outside the painted lines. Whether that reads as misaligned has not been
+looked at: the editor's embedded run is locked to 9:16 and never shows 20:9.
 
 **Ghost-preview bars land only on the item apply screen (2026-09-16).** The
 `ApplyItemScreen` student cards (`ApplyStudentRow`) show, while a student is

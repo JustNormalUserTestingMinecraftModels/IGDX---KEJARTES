@@ -102,7 +102,7 @@ SafeAreaMargin → UI
   (`BarLabel`-style, new `MinigameProgressLabel`).
   - API: `set_progress(value: int, max_value: int, label: String)`.
   - `@export var segmented := false` draws the bar as `max_value` segments
-    (BuatBatik's 5 steps), which covers Part 1's "5-step progress dots".
+    (BuatBatik's 4 tool steps), which covers Part 1's "progress dots".
 - **Root `@export`s** (overrides only serialise on an instanced scene's root):
   `show_score`, `show_timer` and `show_progress`. A hidden slot keeps its
   width, so the pill stays centred.
@@ -115,14 +115,17 @@ SafeAreaMargin → UI
 
 ### 3.2 `MinigameTray` (new)
 
-- It is a `PanelContainer` with the new `MinigameTrayPanel` variation: a
-  brown wood plank with a darker top lip and square bottom corners. It is
-  anchored bottom-wide inside `SafeAreaMargin → UI`.
+- It is a `@tool` `Container` on the `NotebookFrame` pattern: it draws the
+  new `MinigameTrayPanel` stylebox (a brown wood plank with a darker top lip
+  and square bottom corners) and is anchored bottom-wide inside
+  `SafeAreaMargin → UI`.
 - **Children:**
-  - `Controls`, a `VBoxContainer` that the host scene fills (adding children
-    under an instance's child is saved by the host);
-  - `HintLabel`, using the new `MinigameHintLabel` variation: Open Sans 36,
-    cream on the plank.
+  - host content: the host scene drops its controls in as direct children of
+    the tray's root (children of an instance's root always save), and the
+    tray stacks them top to bottom;
+  - `HintLabel`, its own child (tagged with a meta so it is not host
+    content), always laid out last, using the new `MinigameHintLabel`
+    variation: Open Sans 36, cream on the plank.
 - **Root `@export`s:** `hint_text` and `controls_separation`.
 - **Height:** the tray is as tall as its contents. A `Spacer` in the host's
   field takes up the slack, so on a 1080×2400 phone the extra 480px goes to
@@ -192,11 +195,11 @@ the header and the tray or hint.
 | PilihanGanda | skor | `Soal 3/10` | on | `SoalCard` (`QuestionCard`, picture slot as today) hanging from the header; `Spacer` below | **Tray:** 4 answers in one column (`answer_btn_min_height` 130, cream answers) + hint "Ketuk jawaban yang benar" |
 | Password | skor | `Soal 3/10` | on | `SoalCard`, then `KalkulatorSlot` (`AspectRatioContainer`) bottom-aligned just above the tray | **Tray:** `AksiRow`: brown **Hapus** (`SecondaryButtonM`), mint **Kirim** (`LobbyCtaButton`) + hint "Ketik jawaban, lalu Kirim" |
 | Variabel | skor | `Soal 3/10` | on | as Password (`show_zero_key = false` stays) | as Password |
-| Menjodohkan | skor | `Pasangan 2/5` | on | question wheel (read only, cards clamped per Part 1 §4.5) + Part 1's pair chips under it | **Tray:** answer wheel (`WoodNavArrow`s) + brown **Kunci** and mint **Selesai** + hint "Pilih jawaban, lalu Kunci" |
-| BuatBatik | hidden | `Langkah 2/5` (segmented) | on | canvas (`CanvasRect`) | **Tray:** 4 tool cards (Part 1's `MinigameToolCard`) + hint that names the next step ("Seret Canting ke kanvas") |
+| Menjodohkan | skor | `Pasangan 2/4` | on | question wheel (read only, cards clamped per Part 1 §4.5) + Part 1's pair chips under it | **Tray:** answer wheel (`WoodNavArrow`s) + brown **Kunci** and mint **Selesai** + hint "Pilih jawaban, lalu Kunci" |
+| BuatBatik | hidden | `Langkah 2/4` (segmented) | on | canvas (`CanvasRect`) | **Tray:** 4 tool cards (Part 1's `MinigameToolCard`) + hint that names the next step ("Seret Canting ke kanvas") |
 | MainBola | `GOL 3` | `Tendangan 4/8` | on | goal, goalie, target, ball; field full-bleed behind the header | **Hint pill:** swipe-up icon + "Geser ke atas untuk menendang" |
 | Badminton | `2 - 3` | `Poin 3/5` | hidden | the whole court, full-bleed; the court `Background` gets `stretch_mode = KEEP_ASPECT_COVERED` | **Hint pill:** "Geser pemukulmu" |
-| LombaMenari | skor + ×combo | `Not 12/40` | hidden | fixed dancer (Part 1 §4.6: do not move `CharacterDisplay`); Part 1's runway band floats over the lower field | **Hint pill:** "Geser searah panah"; the "Sisa N" miss warning shows here |
+| LombaMenari | skor + ×combo | `Nyawa 7/10` (misses left; the song has no fixed note count) | hidden | fixed dancer (Part 1 §4.6: do not move `CharacterDisplay`); Part 1's runway band floats over the lower field | **Hint pill:** "Geser searah panah"; the "Sisa N" miss warning shows here |
 
 ### Removed by this layout
 
@@ -363,8 +366,9 @@ These are placeholders now and drop-replaceable at the same path. Record them
 in `DEBT.md`.
 
 - `Assets/Images/UI/Icons/pause.svg` and `timer.svg`, `swipe_up.svg`;
-- how-to step icons: one per step, about 20 in all, under
-  `Assets/Images/UI/Icons/HowTo/`;
+- how-to step icons: six shared gesture pictures in `Assets/Images/UI/Icons/`
+  (`howto_tap`, `howto_swipe`, `howto_drag`, `howto_read`, `howto_timer`,
+  `howto_target`), reused across the eight cards;
 - the tray plank and the hint pill are theme styleboxes, so they need no art.
 
 ## 11. Out of scope

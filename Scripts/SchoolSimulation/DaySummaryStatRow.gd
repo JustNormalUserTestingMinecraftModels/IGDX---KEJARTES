@@ -66,14 +66,6 @@ const MAX_TEXT := "MAKS"
 @onready var chevron: TextureRect = $Chevron
 @onready var track: ProgressBar = $Track
 @onready var value: Label = $Value
-## The weekly report's change readout (2026-09-29 weekly colours spec): a
-## green or red chip carrying the week's change, then the run target. Only
-## chip mode shows it; `value` keeps the full "+12/65" reading as data
-## either way, so every existing reading of the row still holds.
-@onready var chip_row: HBoxContainer = $ChipRow
-@onready var delta_chip: PanelContainer = $ChipRow/DeltaChip
-@onready var chip_label: Label = $ChipRow/DeltaChip/DeltaChipLabel
-@onready var target_label: Label = $ChipRow/TargetLabel
 
 ## Where the track sat this morning and where it sits tonight, cached by
 ## set_stat so play_gain can rewind and grow back. set_stat itself still
@@ -92,18 +84,9 @@ var _target: float = 0.0
 ## a change on top and restore it again.
 var _standing_current: float = 0.0
 
-## The in-flight fill and count of this row's weekly reveal, held so land()
-## can stop them: a skip must not leave a number still counting.
-var _reveal_tweens: Array[Tween] = []
-
-## Whether this row reads as the weekly report's chip. The card sets it:
-## DaySummaryStudentRow.setup_week_row turns it on, its other entry points
-## turn it off.
-var _chip_mode: bool = false
-
 ## Reused burst node: created on first fire, reused while still alive,
 ## recreated after it self-frees. Cuts peak GPUParticles2D count in half
-## during the ResultCheckup reveal (one per row instead of two).
+## during a card's play_gain gesture (one per row instead of two).
 var _burst_node: RewardParticles = null
 
 
@@ -115,76 +98,25 @@ static func format_value(delta: float, target: float) -> String:
 	return "%s%d/%d" % [sign_str, d, int(round(target))]
 
 
-## "+12" / "-3": the chip's number. Same sign rule as format_value.
-static func chip_text(delta: float) -> String:
-	var d := int(round(delta))
-	return ("+%d" % d) if d >= 0 else ("%d" % d)
-
-
-## "/52": the run target, read beside the chip.
-static func target_text(target: float) -> String:
-	return "/%d" % int(round(target))
-
-
-## Which chip a change wears: success green for a gain, danger red for a
-## loss. Only asked for a change that is not zero.
-static func chip_variation(delta: float) -> StringName:
-	return &"DeltaChipGain" if delta > 0.0 else &"DeltaChipLoss"
-
-
-## Whether a chip shows: only in chip mode, and only for a change that does
-## not round to zero (a flat stat keeps the plain "+0/65").
-static func shows_chip(chip_mode: bool, delta: float) -> bool:
-	return chip_mode and int(round(delta)) != 0
-
-
 ## Whether this row shows a gain marker the reward can play from: the gold
-## chevron on the nightly card, or a gain chip on the weekly report.
+## chevron, on the nightly card and the weekly report alike.
 func shows_gain_marker() -> bool:
-	return chevron.visible or (chip_row.visible and _delta > 0.0)
+	return chevron.visible
 
 
-## The control the gain's reward pops in and bursts from: the chip when the
-## weekly readout shows one, the gold chevron otherwise.
+## The control the gain's reward pops in and bursts from: the gold chevron.
 func _gain_marker() -> Control:
-	return delta_chip if chip_row.visible else chevron
+	return chevron
 
 
 ## The gain marker's centre in this row's local coordinates: where the
 ## reward burst is thrown from.
 func _gain_marker_center() -> Vector2:
-	if chip_row.visible:
-		return chip_row.position + delta_chip.position + delta_chip.size * 0.5
 	return chevron.position + chevron.size * 0.5
 
 
-## Turn the weekly chip readout on or off and redraw the row's readout.
-## The card calls it before writing its rows.
-func set_chip_mode(on: bool) -> void:
-	_chip_mode = on
-	_sync_readout(_delta)
-
-
-## Point the readout at the row's state: with a chip showing, `value` and
-## the chevron hide and the chip reads `shown` (the count's current value);
-## otherwise the plain label shows, exactly as before chip mode existed.
-func _sync_readout(shown: float) -> void:
-	var chip_on := shows_chip(_chip_mode, _delta)
-	chip_row.visible = chip_on
-	value.visible = not chip_on
-	if not chip_on:
-		return
-	chevron.visible = false
-	delta_chip.theme_type_variation = chip_variation(_delta)
-	chip_label.text = chip_text(shown)
-	target_label.text = target_text(_target)
-
-
-## The counts' formatter: writes the chip as the number climbs (when one
-## shows) and returns the plain label's text, which stays the row's data.
+## The counts' formatter: the "+12/65" text at the count's current value.
 func _count_text(v: float) -> String:
-	if chip_row.visible:
-		chip_label.text = chip_text(v)
 	return format_value(v, _target)
 
 
@@ -243,11 +175,9 @@ func set_stat(stat_key: String, delta: float, target: float, current: float) -> 
 	# shows an invisible arrow.
 	chevron.visible = shows_chevron(delta)
 	_reset_chevron()
-	_reset_chip()
 	_fill_from = track_ratio_before(current, delta, target)
 	_fill_to = track_ratio(current, target)
 	track.value = _fill_to
-	_sync_readout(delta)
 
 
 ## "42/60": where the student stands now against the run's target, with no
@@ -268,9 +198,7 @@ func set_standing(stat_key: String, target: float, current: float) -> void:
 	value.text = format_standing(current, target)
 	chevron.visible = false
 	_reset_chevron()
-	_reset_chip()
 	track.value = track_ratio(current, target)
-	_sync_readout(0.0)
 
 
 ## Layer a proposed change over the standing view: the number reads
@@ -314,20 +242,11 @@ func _reset_chevron() -> void:
 	chevron.scale = Vector2.ONE
 
 
-## Undo what Juice.pop_in leaves on the weekly delta chip -- zeroed alpha and
-## a shrunk scale -- so a row re-armed for another student never shows an
-## invisible chip.
-func _reset_chip() -> void:
-	delta_chip.modulate.a = 1.0
-	delta_chip.scale = Vector2.ONE
-
-
 ## Replay today's movement: rewind the track to where it stood this
 ## morning and grow it back to where set_stat already left it, popping
-## the gain marker in over the same beat (the chevron, or on the weekly
-## report the gain chip) and -- on a day that actually gained -- throwing a
-## star burst from it (a loss chip pops in too, without a burst). `delay`
-## holds the whole gesture so a card can stagger its three rows.
+## the gold chevron in over the same beat and -- on a day that actually
+## gained -- throwing a star burst from it. `delay` holds the whole gesture
+## so a card can stagger its three rows.
 ##
 ## `plays_sparkle` lets the card suppress the sparkle cue on the second and
 ## later bursts of one gesture, so three gaining rows do not fire three
@@ -363,14 +282,10 @@ func play_gain(delay: float = 0.0, plays_sparkle: bool = true) -> void:
 			fill_tw.finished.connect(func() -> void: RewardFeedback.play(&"stat_loss", self, {"queued": true}))
 		else:
 			RewardFeedback.play(&"stat_loss", self, {"queued": true})
-	# A loss chip pops in with the count, with no burst and no gain cue.
-	if chip_row.visible and not shows_gain_marker():
-		Juice.pop_in(delta_chip, delay)
 	Juice.count_up_formatted(value, 0.0, _delta, _count_text, delay)
 
 
-## The gain's reward burst, centred on the chevron (or, on the weekly
-## report, the gain chip). The rising stat cue is
+## The gain's reward burst, centred on the chevron. The rising stat cue is
 ## fired separately by play_gain, on the beat the fill bar LANDS, so a card's
 ## staggered rows chime in sequence rather than all at once. Only the burst's
 ## own sparkle cue is deduplicated across a card's gesture (see
@@ -384,79 +299,6 @@ func _play_burst(delay: float, plays_sparkle: bool) -> void:
 	fx.fire(delay)
 
 
-# ── The weekly reveal (2026-09-14 weekly-report-reveal spec) ─────────
-# ResultCheckup plays a card's rows one at a time rather than all at once,
-# so the row splits play_gain's single gesture into its beats. play_gain
-# and _play_burst above stay exactly as the nightly popup uses them.
-
-## The delta set_stat last cached: what ResultCheckup's reveal timeline
-## reads to decide whether this row pops.
-func shown_delta() -> float:
-	return _delta
-
-
-## The reveal's opening state: the track back on Monday, the number at +0,
-## the chevron armed but transparent until play_count pops it in. In chip
-## mode the chip is armed the same way, at +0. Call set_stat first.
-func rewind() -> void:
-	_stop_reveal()
-	track.value = _fill_from
-	value.text = format_value(0.0, _target)
-	value.scale = Vector2.ONE
-	if chevron.visible:
-		chevron.modulate.a = 0.0
-	_sync_readout(0.0)
-	if chip_row.visible:
-		delta_chip.modulate.a = 0.0
-
-
-## This row's turn: the track fills and the number counts up over
-## `seconds`, and a gaining row's chevron pops in as it starts. Never
-## awaited; the caller schedules land_pop() for when the count lands.
-func play_count(seconds: float) -> void:
-	_stop_reveal()
-	var fill := Juice.fill_bar(track, _fill_to, seconds)
-	var count := Juice.count_up_formatted(value, 0.0, _delta,
-		_count_text, 0.0, seconds)
-	for tw in [fill, count]:
-		if tw != null:
-			_reveal_tweens.append(tw)
-	if chevron.visible:
-		var pop := Juice.pop_in(chevron)
-		if pop != null:
-			_reveal_tweens.append(pop)
-	if chip_row.visible:
-		var chip_pop := Juice.pop_in(delta_chip)
-		if chip_pop != null:
-			_reveal_tweens.append(chip_pop)
-
-
-## A gaining row's reward, on the beat its count lands: the number punches
-## about its own text, the authored burst fires from it, and the tally
-## plays at `pitch`, the report's climbing step. The burst stays silent so
-## the climbing tally is the one sound. Editor-gated like _play_burst. In
-## chip mode the chip punches and throws the burst instead of the number.
-func land_pop(pitch: float) -> void:
-	var target: Control = delta_chip if chip_row.visible else value
-	var center: Vector2
-	if chip_row.visible:
-		center = target.size * 0.5
-	else:
-		center = Juice.text_center(value)
-	Juice.punch(target, center)
-	if Engine.is_editor_hint():
-		return
-	var origin: Vector2
-	if chip_row.visible:
-		origin = chip_row.position + delta_chip.position
-	else:
-		origin = value.position
-	var fx := _get_or_make_burst(origin + center)
-	fx.plays_sfx = false
-	fx.fire()
-	AudioDirector.play_sfx(&"tally", pitch)
-
-
 ## Returns the row's reusable burst node, creating it if it has already
 ## self-freed. Positions it at `pos` (in this node's local coordinates)
 ## before returning so the caller can fire() immediately.
@@ -466,22 +308,3 @@ func _get_or_make_burst(pos: Vector2) -> RewardParticles:
 		add_child(_burst_node)
 	_burst_node.position = pos
 	return _burst_node
-
-
-## The row on its final values at once: the skip's landing. Stops the
-## reveal's fill and count first, so neither writes over it afterwards.
-func land() -> void:
-	_stop_reveal()
-	track.value = _fill_to
-	value.text = format_value(_delta, _target)
-	value.scale = Vector2.ONE
-	_reset_chevron()
-	_sync_readout(_delta)
-	_reset_chip()
-
-
-func _stop_reveal() -> void:
-	for tw in _reveal_tweens:
-		if tw != null and tw.is_valid():
-			tw.kill()
-	_reveal_tweens.clear()

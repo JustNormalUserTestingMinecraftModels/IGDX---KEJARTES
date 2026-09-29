@@ -8,6 +8,16 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — ResultCheckup clarity pass
+
+The week banner's pills now say what they count (UANG DIDAPAT, MINIGAME
+MENANG, EVENT TERJADI) under white, navy-rimmed numbers, and the money
+pill wears the Lobby coin. The weekly student cards are the daily cards
+showing a week: same readout, needs colours and entrance. The chip
+readout, week needs bars and staged reveal were retired. The captions
+wear the heading face at caption size so each fits on one line.
+Spec: `specs/2026-09-29-result-checkup-clarity-design.md`.
+
 ## 2026-09-29 — Skin Select: the warm grade, and a lighter room
 
 The carousel's character cards were the one painted art in the game without

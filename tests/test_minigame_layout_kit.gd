@@ -151,3 +151,46 @@ func test_the_pill_ignores_taps_and_shows_its_icon() -> void:
 	pill.settle()
 	assert_true(is_equal_approx((pill.get_node("%HintLabel") as Label).modulate.a,
 		MinigameHintPill.SETTLED_ALPHA))
+
+
+const HOW_TO_DIR := "res://Resources/Minigames/HowTo/"
+const GAMES: Array[String] = ["PilihanGanda", "Password", "Variabel", "Menjodohkan",
+	"BuatBatik", "MainBola", "Badminton", "LombaMenari"]
+## The banned pictograph ranges (style guide, "No emoji or dingbats").
+const BANNED := [[0x2300, 0x23FF], [0x2600, 0x27BF], [0x2B00, 0x2BFF],
+	[0x1F000, 0x1FAFF], [0xFE0F, 0xFE0F]]
+
+
+func _has_banned(text: String) -> bool:
+	for i in text.length():
+		var c := text.unicode_at(i)
+		for r in BANNED:
+			if c >= r[0] and c <= r[1]:
+				return true
+	return false
+
+
+func test_every_game_has_a_how_to_card_of_two_or_three_steps() -> void:
+	for game: String in GAMES:
+		var how := load(HOW_TO_DIR + game + ".tres") as MinigameHowTo
+		assert_true(how != null, game + " has a MinigameHowTo")
+		if how == null:
+			continue
+		assert_true(how.title != "", game + " has a title")
+		assert_true(how.steps.size() >= 2 and how.steps.size() <= 3, game + ": 2-3 steps")
+		for step in how.steps:
+			assert_true(step.icon != null, game + ": every step has a picture")
+			assert_false(step.text.to_lower().contains("lorem"), game + ": no placeholder text")
+			assert_false(_has_banned(step.text + how.title), game + ": no emoji")
+
+
+func test_a_step_row_shows_its_picture_and_line() -> void:
+	var row := (load("res://Scenes/Minigames/UI/HowToStepRow.tscn") as PackedScene).instantiate()
+	row.icon_texture = load(ICON_DIR + "howto_tap.svg")
+	row.step_text = "Ketuk jawaban yang benar."
+	Engine.get_main_loop().root.add_child(row)
+	track(row)
+	assert_eq((row.get_node("%Icon") as TextureRect).texture, row.icon_texture)
+	var text := row.get_node("%Text") as Label
+	assert_eq(text.text, "Ketuk jawaban yang benar.")
+	assert_eq(text.theme_type_variation, &"MinigameHowToLabel")

@@ -2,7 +2,8 @@
 extends McpTestSuite
 
 ## Every Lobby desk item (the Hand_<Name> nodes) stays inside its desk's
-## width, in every skin's table art. An item wider than its desk hangs off both edges and reads as
+## width, in every skin's table art, except the OWNER_SIZED students, whose
+## by-eye scales are pinned instead. An item wider than its desk hangs off both edges and reads as
 ## floating, which is how the 1.1-1.26x hand-tuned scales looked before
 ## 2026-09-29.
 ##
@@ -34,6 +35,9 @@ const TOLERANCE := 0.5
 ## Desk items the owner sizes by eye, wider than their desk on purpose: the
 ## 2026-09-29 shrink made them read wrong, so their authored scales stand.
 const OWNER_SIZED := ["Citra", "Shinta", "Thea"]
+## The owner-sized items' authored scales all sit above this; the shrink put
+## them at 0.86-1.06x.
+const OWNER_SIZED_MIN_SCALE := 1.04
 
 ## Written properties per node, keyed by path under the scene root.
 var _props: Dictionary
@@ -122,7 +126,20 @@ func test_every_desk_item_fits_its_desk() -> void:
 			assert_true(span.x >= desk.x - TOLERANCE and span.y <= desk.y + TOLERANCE,
 				"%s draws x %.0f..%.0f, past its desk's %.0f..%.0f"
 					% [path.get_file(), span.x, span.y, desk.x, desk.y])
-	assert_eq(checked, EXPECTED_HANDS, "every slot's Hand_* nodes were measured")
+	assert_eq(checked, EXPECTED_HANDS, "every slot's Hand_* nodes were found")
+
+
+## The owner-sized items keep their by-eye scale (1.05-1.26x): the fit pass
+## once shrank them below 1x, which the owner rejected twice.
+func test_owner_sized_items_keep_their_scale() -> void:
+	var checked := 0
+	for slot_path: String in SLOT_DESK:
+		for student: String in OWNER_SIZED:
+			var hand: Dictionary = _node("%s/Hand_%s" % [slot_path, student])
+			var sx: float = (hand.get("scale", Vector2.ONE) as Vector2).x
+			assert_gt(sx, OWNER_SIZED_MIN_SCALE, "%s in %s keeps its authored scale" % [student, slot_path])
+			checked += 1
+	assert_eq(checked, SLOT_DESK.size() * OWNER_SIZED.size(), "every owner-sized item was checked")
 
 
 ## Positive control: the measure flags the pre-fix Citra, 522 px at 1.1007x

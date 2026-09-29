@@ -8,6 +8,13 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Thea, Shinta and Citra desk items back to their own size
+
+The 2026-09-29 fit pass below shrank these three below 1x and the owner found
+them wrong, so their pre-shrink scales and offsets are back in all four
+slots. `test_lobby_desk_items_fit` exempts them (`OWNER_SIZED`) from the fit
+check and pins their scales above 1.04x instead; the other students still fit.
+
 ## 2026-09-30 — CLAUDE.md context audit
 
 Every claim in `CLAUDE.md` was checked against source on 2026-09-30. Fixed:

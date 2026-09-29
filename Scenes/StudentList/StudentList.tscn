@@ -12,7 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="11_y2vk7"]
 [ext_resource type="PackedScene" uid="uid://c50fsdshij16h" path="res://Scenes/StudentList/RosterAvatar.tscn" id="13_35ggc"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
-[ext_resource type="Script" path="res://Scripts/UI/NudgeLoop.gd" id="20_nudge"]
+[ext_resource type="Script" uid="uid://clanrs0mbexi3" path="res://Scripts/UI/NudgeLoop.gd" id="20_nudge"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_spotlight"]
 shader = ExtResource("3_ovxc5")

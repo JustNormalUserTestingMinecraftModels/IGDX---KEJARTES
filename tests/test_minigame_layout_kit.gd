@@ -81,3 +81,70 @@ func test_the_tray_plank_bleeds_past_its_rect() -> void:
 func test_the_hud_icon_button_is_lipped() -> void:
 	var box := _theme().get_stylebox("normal", "MinigameHudIconButton")
 	assert_true(LippedBox.is_lipped(box), "the pause/timer chrome is a lipped face")
+
+
+const LayoutFrame := preload("res://tests/layout_frame.gd")
+const TRAY := "res://Scenes/Minigames/UI/MinigameTray.tscn"
+const PILL := "res://Scenes/Minigames/UI/MinigameHintPill.tscn"
+
+
+func _tray_with(children: int) -> MinigameTray:
+	var tray := (load(TRAY) as PackedScene).instantiate() as MinigameTray
+	for i in children:
+		var c := Control.new()
+		c.custom_minimum_size = Vector2(0, 100)
+		tray.add_child(c)
+	var frame := Control.new()
+	frame.size = Vector2(984, 1000)
+	frame.theme = load(THEME_PATH)
+	frame.add_child(tray)
+	Engine.get_main_loop().root.add_child(frame)
+	track(frame)
+	tray.size = Vector2(984, tray.get_combined_minimum_size().y)
+	tray.sort_now()
+	return tray
+
+
+func test_the_tray_stacks_host_content_above_its_hint() -> void:
+	var tray := _tray_with(2)
+	var hint := tray.get_node("HintLabel") as Control
+	var first := tray.get_child(tray.get_child_count() - 2) as Control
+	var second := tray.get_child(tray.get_child_count() - 1) as Control
+	assert_true(first.position.y < second.position.y, "host children stack in order")
+	assert_true(second.position.y + second.size.y <= hint.position.y, "the hint is last")
+	assert_true(hint.has_meta(MinigameTray.HINT_META), "the hint is tray chrome, not host content")
+
+
+func test_the_tray_is_as_tall_as_its_content() -> void:
+	var one := _tray_with(1).get_combined_minimum_size().y
+	var two := _tray_with(2).get_combined_minimum_size().y
+	var probe := MinigameTray.new()
+	var sep := probe.separation
+	probe.free()
+	assert_true(is_equal_approx(two - one, 100.0 + sep),
+		"each host row adds its height plus one separation")
+
+
+func test_tray_settle_fades_the_hint_but_never_hides_it() -> void:
+	var tray := _tray_with(1)
+	tray.set_hint("Ketuk jawaban yang benar")
+	var hint := tray.get_node("HintLabel") as Label
+	assert_eq(hint.text, "Ketuk jawaban yang benar")
+	tray.settle()
+	assert_true(is_equal_approx(hint.modulate.a, MinigameTray.SETTLED_ALPHA))
+	tray.set_hint("Urutan salah!")
+	assert_true(is_equal_approx(hint.modulate.a, 1.0), "a new hint comes back at full strength")
+
+
+func test_the_pill_ignores_taps_and_shows_its_icon() -> void:
+	var pill := (load(PILL) as PackedScene).instantiate() as MinigameHintPill
+	pill.icon_texture = load(ICON_DIR + "swipe_up.svg")
+	Engine.get_main_loop().root.add_child(pill)
+	track(pill)
+	assert_eq(pill.mouse_filter, Control.MOUSE_FILTER_IGNORE, "gestures pass through")
+	assert_true((pill.get_node("%Icon") as TextureRect).visible, "an icon shows when set")
+	pill.set_hint("Geser ke atas untuk menendang")
+	assert_eq((pill.get_node("%HintLabel") as Label).text, "Geser ke atas untuk menendang")
+	pill.settle()
+	assert_true(is_equal_approx((pill.get_node("%HintLabel") as Label).modulate.a,
+		MinigameHintPill.SETTLED_ALPHA))

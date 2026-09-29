@@ -105,8 +105,23 @@ signal _summary_closed
 @onready var back_button: Button          = $DayScreen/BackButton
 @onready var skip_button: Button          = $DayScreen/SkipButton
 @onready var game_container: Control      = $GameContainer
+## Each DAY_PICTURE node's own alpha while a hosted screen covers the day,
+## put back by _uncover_day(). Empty while the day is showing.
+var _day_picture_alpha: Dictionary = {}
 
 const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]
+
+# -- Hosting a lit screen (2026-09-30 minigame lobby-light pass) --------------
+## The day's own picture on layer 0: the sky, the book clock, the weather and
+## the day's stamp and fireworks. A hosted screen lit the Lobby way (its art on
+## a `World` CanvasLayer at -1 under its own WorldEnvironment: EventDialogue,
+## MainBola, Badminton, LombaMenari) draws BELOW this layer, so the day fades
+## these out while such a screen is up and back in when it closes.
+const DAY_PICTURE: Array[NodePath] = [^"Background", ^"BookClockWidget", ^"Rain",
+	^"Motes", ^"DayStamp", ^"WeekFireworks"]
+## Seconds the day's picture takes to fade around a minigame, matching the
+## minigame's own 0.4 s fade so the two cross.
+const DAY_PICTURE_FADE := 0.4
 ## Fallback seconds to fill a day's progress bar, used only when the
 ## BookClock widget is absent. Normally the pacing comes from the
 ## widget's own transition_duration -- see _phase_duration() -- so the
@@ -1084,8 +1099,9 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		current_minigame.start_minigame(diff_level, duration)
 
 
-	var tween_in = create_tween()
+	var tween_in = create_tween().set_parallel(true)
 	tween_in.tween_property(current_minigame, "modulate:a", 1.0, 0.4)
+	_cover_day(tween_in)
 	await tween_in.finished
 
 	if current_minigame.has_method("activate_minigame"):
@@ -1119,8 +1135,9 @@ func _play_minigame(game_scene: PackedScene, category: String) -> void:
 		exit_choice = current_minigame.result_exit
 
 	AudioDirector.stop_minigame_bgm()
-	var tween_close = create_tween()
+	var tween_close = create_tween().set_parallel(true)
 	tween_close.tween_property(current_minigame, "modulate:a", 0.0, 0.4)
+	_uncover_day(tween_close)
 	await tween_close.finished
 	current_minigame.queue_free()
 	current_minigame = null
@@ -1577,10 +1594,44 @@ func _show_event_dialogue(key: String) -> bool:
 	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
 	var dialogue = dialogue_scene.instantiate()
 	add_child(dialogue)
+	_cover_day(null)
 	dialogue.open(e, featured, GameState.minggu_ke, GameState.get_max_weeks(), day_name)
 	var accepted: bool = await dialogue.closed
 	dialogue.queue_free()
+	_uncover_day(null)
 	return accepted
+
+
+## Fades the day's own picture (DAY_PICTURE) out so a hosted screen's World
+## layer at -1 shows through it, remembering each node's alpha. With a
+## `tween` the fade runs alongside the caller's own; with null it is instant.
+## A second call while covered does nothing.
+func _cover_day(tween: Tween) -> void:
+	if not _day_picture_alpha.is_empty():
+		return
+	for path in DAY_PICTURE:
+		var item := get_node_or_null(path) as CanvasItem
+		if item == null:
+			continue
+		_day_picture_alpha[item] = item.modulate.a
+		if tween == null:
+			item.modulate.a = 0.0
+		else:
+			tween.tween_property(item, "modulate:a", 0.0, DAY_PICTURE_FADE)
+
+
+## Brings the day's picture back to the alphas _cover_day() saved, the same
+## way: alongside `tween`, or at once for null.
+func _uncover_day(tween: Tween) -> void:
+	for item in _day_picture_alpha:
+		if not is_instance_valid(item):
+			continue
+		var alpha: float = _day_picture_alpha[item]
+		if tween == null:
+			(item as CanvasItem).modulate.a = alpha
+		else:
+			tween.tween_property(item, "modulate:a", alpha, DAY_PICTURE_FADE)
+	_day_picture_alpha.clear()
 
 
 ## The minigame's result_reporter (2026-09-25 win-screen spec): applies the

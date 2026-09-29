@@ -243,7 +243,7 @@ var rhythm_patterns: Array = [
 var active_pattern_index: int = 0
 var pattern_step_index: int = 0
 
-@onready var background_rect: TextureRect = $Background
+@onready var background_rect: TextureRect = %Background
 @onready var score_hud: MinigameHeader = %MinigameHeader
 @onready var hit_zone: Control = $HitZone
 @onready var notes_parent: Control = $NotesParent

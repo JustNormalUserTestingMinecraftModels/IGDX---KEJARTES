@@ -387,7 +387,7 @@ func _setup_layout() -> void:
 
 	# FieldBG image setup. When set, the artwork's own goalposts show cleanly
 	# and the procedural goal overlays below hide instead of double-drawing.
-	var field_bg_node: TextureRect = get_node_or_null("FieldBG") as TextureRect
+	var field_bg_node: TextureRect = get_node_or_null("%FieldBG") as TextureRect
 	if field_bg_node:
 		field_bg_node.texture = field_background_texture
 		for node_name in ["GoalBack", "GoalNet", "Crossbar", "PostLeft", "PostRight"]:
@@ -537,7 +537,7 @@ func _setup_field_markings() -> void:
 
 func _on_field_markings_draw() -> void:
 	# Hide green line drawings when full background illustration is active
-	if get_node_or_null("FieldBG") and (get_node_or_null("FieldBG") as TextureRect).texture != null:
+	if get_node_or_null("%FieldBG") and (get_node_or_null("%FieldBG") as TextureRect).texture != null:
 		return
 	if not field_markings:
 		return

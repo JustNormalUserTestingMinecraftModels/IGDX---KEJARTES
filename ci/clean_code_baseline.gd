@@ -47,7 +47,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/SchoolSimulation/SchoolDay.gd::_play_minigame": 85,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd::_run_event": 72,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd::_run_single_day": 83,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd::skip_to_results": 55,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd::skip_to_results": 54,
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd::_draw": 69,
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_jadwal_activity": 60,
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_minigame_result": 68,

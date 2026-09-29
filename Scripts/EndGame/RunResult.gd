@@ -1,7 +1,7 @@
 extends Control
 
 ## The last screen of a run: what the player actually did this grade,
-## reported as six counted-up figures and one letter grade.
+## reported as four counted-up figures and one letter grade.
 ##
 ## Deliberately NOT @tool -- like StatCheck and StudentCard, _ready()
 ## reads GameState, starts BGM and kicks off a tween chain, none of which
@@ -67,15 +67,12 @@ const EXIT_FADE_SECONDS := 0.4
 
 const ROW_SCENE := preload("res://Scenes/EndGame/RunResultRow.tscn")
 
-## The report's six icons, preloaded so a row swap costs nothing at
-## reveal time. Transparent SVGs authored alongside the project's other
-## placeholder icons -- see Task 11's note on why SVG and not PNG.
-const ICON_MINIGAME_MENANG := preload("res://Assets/Images/UI/Placeholders/icon_minigame_menang.svg")
-const ICON_MINIGAME_KALAH := preload("res://Assets/Images/UI/Placeholders/icon_minigame_kalah.svg")
-const ICON_POIN := preload("res://Assets/Images/UI/Placeholders/icon_poin.svg")
-const ICON_BARANG := preload("res://Assets/Images/UI/Placeholders/icon_barang.svg")
-const ICON_UANG := preload("res://Assets/Images/UI/Placeholders/icon_uang.svg")
-const ICON_EVENT := preload("res://Assets/Images/UI/Placeholders/icon_event.svg")
+## The report's four icons, preloaded so a row swap costs nothing at
+## reveal time. Authored art (gamewin, gamelose, coin, event), transparent PNGs.
+const ICON_MINIGAME_MENANG := preload("res://Assets/Images/EndGame/Icons/gamewin_icon.png")
+const ICON_MINIGAME_KALAH := preload("res://Assets/Images/EndGame/Icons/gamelose_icon.png")
+const ICON_UANG := preload("res://Assets/Images/EndGame/Icons/coin_icon.png")
+const ICON_EVENT := preload("res://Assets/Images/EndGame/Icons/event_icon.png")
 
 ## One caption per rank, so the grade says something rather than just
 ## scoring something.
@@ -90,7 +87,12 @@ const GRADE_CAPTIONS := {
 ## The first-run tutorial flags a beaten game resets, by the script that owns
 ## them as static vars. StudentList's walkthrough flag once pointed at Lobby.gd,
 ## which has none, and the old silent guard hid it.
-const TUTORIAL_FLAGS: Dictionary[String, PackedStringArray] = {
+##
+## Deliberately an untyped Dictionary of plain Arrays. It was once typed
+## `Dictionary[String, PackedStringArray]` over Array literals, and iterating it
+## in _apply_progression() handed back empty flag names and then hard-crashed
+## Godot 4.6.2 (signal 11) the moment a beaten game pressed Selesai.
+const TUTORIAL_FLAGS := {
 	"res://Scripts/AturJadwal/AturJadwal.gd": ["tutorial_phase1_done", "tutorial_phase3_done"],
 	"res://Scripts/StudentList/StudentList.gd": ["tutorial_shown"],
 }
@@ -136,10 +138,10 @@ func _dress_backdrop() -> void:
 	blur_layer.show()
 
 
-## The six rows are instanced from RunResultRow.tscn rather than authored
+## The four rows are instanced from RunResultRow.tscn rather than authored
 ## in this scene. Reviewed exception to the no-runtime-construction rule
 ## (per-call-dynamic content): the row count is fixed, but every value is
-## run-dependent, and authoring six frozen rows would mean six near-empty
+## run-dependent, and authoring four frozen rows would mean four near-empty
 ## nodes plus a parallel wiring table. Registered in
 ## tests/test_viewport_editability.gd's ALLOWED dict, not BASELINE.
 func _build_rows() -> void:
@@ -147,10 +149,8 @@ func _build_rows() -> void:
 	var spec := [
 		[ICON_MINIGAME_MENANG, "Minigame selesai", float(stats.minigames_won), ""],
 		[ICON_MINIGAME_KALAH, "Minigame kalah", float(stats.minigames_lost), ""],
-		[ICON_POIN, "Total poin minigame", stats.minigame_points, " poin"],
-		[ICON_BARANG, "Barang dipakai", float(stats.items_used), ""],
 		[ICON_UANG, "Uang dari wirausaha", float(stats.wirausaha_money), "G"],
-		[ICON_EVENT, "Murid ikut event", float(stats.event_student_count()), " murid"],
+		[ICON_EVENT, "Event yang diikuti", float(stats.events_attended), ""],
 	]
 	for entry in spec:
 		# Corrected from the brief: `var row := ROW_SCENE.instantiate()`
@@ -359,9 +359,9 @@ func _apply_progression() -> String:
 		GameState.lobby_tutorial_completed = false
 
 		# A beaten game replays the first-run tutorials.
-		for path: String in TUTORIAL_FLAGS:
-			for flag: String in TUTORIAL_FLAGS[path]:
-				_reset_static_flag(path, flag)
+		for path in TUTORIAL_FLAGS:
+			for flag in TUTORIAL_FLAGS[path]:
+				_reset_static_flag(String(path), String(flag))
 		return destination
 
 

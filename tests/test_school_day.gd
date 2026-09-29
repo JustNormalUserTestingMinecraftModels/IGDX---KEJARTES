@@ -505,6 +505,10 @@ func test_school_day_records_event_students_into_run_stats() -> void:
 		"res://Scripts/SchoolSimulation/SchoolDay.gd")
 	assert_true(src.contains("GameState.run_stats.record_event_student("),
 		"the event branch feeds the run tally")
+	assert_true(src.contains("GameState.run_stats.record_event_attended()"),
+		"each event also bumps the count the report shows")
+	assert_eq(src.count("_record_event_participation()"), 4,
+		"the helper plus the three event sites (random, skip, forced) all book it")
 
 
 func test_skip_uses_per_grade_loss_chance() -> void:

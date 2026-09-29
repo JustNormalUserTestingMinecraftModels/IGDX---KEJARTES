@@ -296,4 +296,6 @@ static func _seed_run_stats(preset: String, roster: Array) -> void:
 	var wanted: int = mini(int(spec["events"]), roster.size())
 	for i in range(wanted):
 		stats.record_event_student(int(roster[i].get("id", i + 1)))
+	# The report counts events, not students; the spec's tally is both.
+	stats.events_attended = int(spec["events"])
 	GameState.run_stats = stats

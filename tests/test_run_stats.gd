@@ -53,6 +53,17 @@ func test_event_students_are_counted_once_each() -> void:
 	assert_eq(s.event_student_count(), 2, "duplicates collapse")
 
 
+func test_events_attended_counts_every_event_not_every_student() -> void:
+	var s := RunStats.new()
+	assert_eq(s.events_attended, 0, "no events yet")
+	s.record_event_attended()
+	s.record_event_attended()
+	s.record_event_student(3)
+	assert_eq(s.events_attended, 2, "each event counts, however many students")
+	s.reset()
+	assert_eq(s.events_attended, 0, "reset clears the event count")
+
+
 func test_item_and_money_accumulate() -> void:
 	var s := RunStats.new()
 	s.record_item_use()

@@ -28,6 +28,10 @@ extends Resource
 ## idempotent -- SchoolDay's event branch can fire more than once per
 ## student per grade.
 @export var event_student_ids: Array[int] = []
+## Random events and pick-students events the roster sat through this grade.
+## Unlike event_student_ids this counts every occurrence, and it is what the
+## run report shows as "Event yang diikuti".
+@export var events_attended: int = 0
 
 
 func record_minigame(won: bool, points: float) -> void:
@@ -49,6 +53,10 @@ func record_wirausaha(amount: int) -> void:
 func record_event_student(student_id: int) -> void:
 	if not event_student_ids.has(student_id):
 		event_student_ids.append(student_id)
+
+
+func record_event_attended() -> void:
+	events_attended += 1
 
 
 func event_student_count() -> int:
@@ -73,3 +81,4 @@ func reset() -> void:
 	items_used = 0
 	wirausaha_money = 0
 	event_student_ids.clear()
+	events_attended = 0

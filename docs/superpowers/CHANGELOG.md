@@ -8,6 +8,26 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — Debug Look tab on every screen; softer win photo; brighter bloom
+
+The debug overlay's Look tab moved out of `DebugManager.gd` (at its size
+ceiling) into `Scripts/Debug/DebugLookPanel.gd`, and now reaches whatever
+screen is up: switches for Efek Suasana and Efek Visual, and live sliders for
+every `ScreenGlow` (threshold, intensity, spread), `LightPool` and
+`SunShafts` on screen, each reporting how many nodes it reached. The Scenes
+tab lists every routed screen (LevelSelect, CutScene, StudentList,
+ReportCard, Inventory, Achievements, Koperasi, CosmeticShop and StatCheck
+joined), and the minigame launcher lost an entry that pointed at
+`AnswerCard`, a component of Menjodohkan.
+
+The bloom was measurable but too faint to notice in play (peaks +0.06 to
++0.15, frame mean about +1%), so `ScreenGlow`'s intensity doubled to 0.6,
+the exam notices went to 1.2 and ExamProgress to 1.0; the thresholds are
+unchanged. The pass photo on EndCutscene and RunResult was too contrasty (a
+near-black chalkboard under a hot floor): its pass light is dimmer (pool
+0.06, shafts 0.12) and carries a soften pair, a 0.88 multiply then a warm
+0.07 add, which cut the photo's luminance spread by 12% and lifted its
+darkest 2% from 0.008 to 0.069.
 ## 2026-09-29 — MURIDMU: the RosterCard week planner
 
 Spec: `.superpowers/sdd/2026-09-29-muridmu-rostercard/`. Also covers

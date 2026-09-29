@@ -1,7 +1,63 @@
 [gd_scene format=3 uid="uid://c8oam0t1u2v3w"]
 
-[ext_resource type="Script" path="res://Scripts/Minigames/UI/MinigameTutorial.gd" id="1_tutorial"]
+[ext_resource type="Script" uid="uid://cs0fhchnmcd3j" path="res://Scripts/Minigames/UI/MinigameTutorial.gd" id="1_tut"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="2_safe"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="3_frame"]
 
 [node name="MinigameTutorial" type="CanvasLayer"]
+process_mode = 3
 layer = 500
-script = ExtResource("1_tutorial")
+script = ExtResource("1_tut")
+
+[node name="Scrim" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"Scrim"
+
+[node name="Safe" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_safe")
+
+[node name="Center" type="CenterContainer" parent="Safe"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Frame" parent="Safe/Center" instance=ExtResource("3_frame")]
+unique_name_in_owner = true
+layout_mode = 2
+title_text = "CARA MAIN"
+ring_count = 4
+show_well = false
+show_close = false
+
+[node name="Column" type="VBoxContainer" parent="Safe/Center/Frame"]
+custom_minimum_size = Vector2(760, 0)
+layout_mode = 2
+theme_override_constants/separation = 36
+
+[node name="GameTitle" type="Label" parent="Safe/Center/Frame/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"H2Label"
+horizontal_alignment = 1
+
+[node name="Steps" type="VBoxContainer" parent="Safe/Center/Frame/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="Mulai" type="Button" parent="Safe/Center/Frame/Column"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"PrimaryButtonM"
+text = "Mulai"

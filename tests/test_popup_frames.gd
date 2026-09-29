@@ -41,6 +41,7 @@ const POPUPS := {
 	"res://Scenes/EndGame/StatCheck.tscn": ["Safe/Center/Frame", "dialog", "safe"],
 	# free: StudentCard and SchoolDay each place the panel themselves.
 	"res://Scenes/UI/TutorialPanel.tscn": ["Frame", "dialog", "free"],
+	"res://Scenes/Minigames/UI/MinigameTutorial.tscn": ["Safe/Center/Frame", "dialog", "safe"],
 	# free: the frame is drawn behind the calendar art it wraps, so it
 	# rides DailyLoginPanel's own show, hide and scale.
 	"res://Scenes/Lobby/Lobby.tscn": ["DailyReward/DailyLoginFrame", "sheet", "free"],

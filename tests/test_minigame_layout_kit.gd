@@ -194,3 +194,36 @@ func test_a_step_row_shows_its_picture_and_line() -> void:
 	var text := row.get_node("%Text") as Label
 	assert_eq(text.text, "Ketuk jawaban yang benar.")
 	assert_eq(text.theme_type_variation, &"MinigameHowToLabel")
+
+
+const TUTORIAL := "res://Scenes/Minigames/UI/MinigameTutorial.tscn"
+
+
+func test_the_card_fills_one_row_per_step_and_the_title() -> void:
+	var card := (load(TUTORIAL) as PackedScene).instantiate() as MinigameTutorial
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	card.setup(load(HOW_TO_DIR + "PilihanGanda.tres"))
+	assert_eq((card.get_node("%GameTitle") as Label).text, "Pilihan Ganda")
+	assert_eq(card.get_node("%Steps").get_child_count(), 3, "one HowToStepRow per step")
+
+
+func test_only_mulai_finishes_the_card() -> void:
+	var card := (load(TUTORIAL) as PackedScene).instantiate() as MinigameTutorial
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	var fired := [false]
+	card.tutorial_finished.connect(func() -> void: fired[0] = true)
+	var tap := InputEventMouseButton.new()
+	tap.button_index = MOUSE_BUTTON_LEFT
+	tap.pressed = true
+	(card.get_node("Scrim") as Control).gui_input.emit(tap)
+	assert_false(fired[0], "a tap on the scrim does nothing")
+	(card.get_node("%Mulai") as Button).pressed.emit()
+	assert_true(fired[0], "Mulai starts the game")
+
+
+func test_mulai_is_the_mint_main_action() -> void:
+	var src := FileAccess.get_file_as_string(TUTORIAL)
+	assert_contains(src, "theme_type_variation = &\"PrimaryButtonM\"")
+	assert_contains(src, "text = \"Mulai\"")

@@ -35,6 +35,8 @@ var has_time_limit: bool = false
 @export var tutorial_title: String = ""
 ## Body text for the same pre-game tutorial popup.
 @export_multiline var tutorial_instructions: String = ""
+## This game's CARA MAIN card (Resources/Minigames/HowTo/<Game>.tres).
+@export var how_to: MinigameHowTo
 
 # ─── Visual - Result Overlay (Win/Lose Condition Texts) ─────────────────────
 @export_group("Visual - Result Overlay")
@@ -519,7 +521,7 @@ func activate_minigame() -> void:
 	if active_title != "" and GameSettings.minigame_tutorial_enabled:
 		var tut_scene = load("res://Scenes/Minigames/UI/MinigameTutorial.tscn")
 		var tutorial = tut_scene.instantiate() if tut_scene else preload("res://Scripts/Minigames/UI/MinigameTutorial.gd").new()
-		tutorial.setup(active_title, active_instructions)
+		tutorial.setup(how_to)
 		_get_or_create_ui_layer().add_child(tutorial)
 		await tutorial.tutorial_finished
 		await _play_countdown()

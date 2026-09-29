@@ -65,6 +65,32 @@ func test_focus_shader_preserves_modulate_for_the_fade() -> void:
 		"must multiply by the incoming COLOR or SkinSelect's modulate fade breaks")
 
 
+## The cards wear the same warm grade as every other painted plate. The focus
+## shader carries its own copy of the grade (a card can wear only one
+## material), so its defaults are compared with the game's grade material:
+## retune one without the other and this fails.
+func test_the_cards_wear_the_games_illustration_grade() -> void:
+	var grade := load("res://Scripts/Shaders/illustration_grade_material.tres") as ShaderMaterial
+	var src := FileAccess.get_file_as_string(SHADER)
+	assert_true(grade != null and src != "", "both load")
+	if grade == null or src == "":
+		return
+	for param in ["saturation", "contrast", "exposure", "tint", "amount"]:
+		var want: Variant = grade.get_shader_parameter(param)
+		# The uniform's default, read from source: "uniform <type> <param> ... = <value>;".
+		var m := RegEx.create_from_string(
+			"uniform \\w+ %s\\b[^=]*=\\s*([^;]+);" % param).search(src)
+		assert_true(m != null, "the card shader declares %s" % param)
+		if m == null:
+			continue
+		var got: Variant = str_to_var(m.get_string(1).replace("vec4(", "Color("))
+		var same: bool = (got is Color and (got as Color).is_equal_approx(want)) if want is Color \
+			else absf(float(got) - float(want)) < 0.00001
+		assert_true(same, "card %s matches the illustration grade: %s vs %s" % [param, got, want])
+	assert_true(src.contains("rgb *= tint.rgb * exposure;"),
+		"the grade is applied in the illustration shader's order")
+
+
 func test_the_screen_blur_material_is_gone() -> void:
 	assert_false(ResourceLoader.exists("res://Scenes/Skins/skin_option_blur_material.tres"))
 

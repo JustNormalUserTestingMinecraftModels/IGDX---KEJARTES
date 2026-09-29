@@ -3,22 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ckkwq8tubxn64"
-path.bptc="res://.godot/imported/Andi.png-24dd18c6c4474508252bafef58c9ea08.bptc.ctex"
-path.astc="res://.godot/imported/Andi.png-24dd18c6c4474508252bafef58c9ea08.astc.ctex"
+path="res://.godot/imported/Andi.png-24dd18c6c4474508252bafef58c9ea08.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/MuridPortrait/Andi.png"
-dest_files=["res://.godot/imported/Andi.png-24dd18c6c4474508252bafef58c9ea08.bptc.ctex", "res://.godot/imported/Andi.png-24dd18c6c4474508252bafef58c9ea08.astc.ctex"]
+dest_files=["res://.godot/imported/Andi.png-24dd18c6c4474508252bafef58c9ea08.ctex"]
 
 [params]
 
-compress/mode=2
-compress/high_quality=true
+compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -207,7 +207,7 @@ func test_an_applied_skin_is_worn_on_outfit_days_too() -> void:
 
 
 ## Same canvas and import as the default splashes, or the outfit would jump
-## on screen or ship uncompressed.
+## on screen or render with different compression.
 func test_every_outfit_is_a_splash_canvas_imported_like_the_default() -> void:
 	for n in StudentSkins.NAMES:
 		for outfit in StudentSkins.DAY_OUTFITS.values():
@@ -218,16 +218,30 @@ func test_every_outfit_is_a_splash_canvas_imported_like_the_default() -> void:
 				assert_eq(tex.get_size(), Vector2(1080, 1920), path + " is a 1080x1920 splash canvas")
 			var cfg := ConfigFile.new()
 			assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
-			assert_eq(cfg.get_value("params", "compress/mode"), 2, path + " is VRAM-compressed like splash_thea")
+			assert_eq(cfg.get_value("params", "compress/mode"), 0, path + " is lossless like splash_thea")
 			assert_eq(cfg.get_value("params", "mipmaps/generate"), true, path + " carries mipmaps like splash_thea")
 
 
-## Every VRAM-compressed texture imports at high quality. Low quality (S3TC on
-## desktop, ETC2 on mobile) leaves 4x4 block artifacts on the student art's
-## smooth shading and line work; high quality (BPTC / ASTC) costs no extra
-## memory. Walks every image import, so new VRAM art is held to it too.
+## The student art imports lossless. VRAM compression, even at high quality
+## (BPTC / ASTC), leaves faint block artifacts on its smooth shading and line
+## work; lossless costs about 4x the texture memory (see DEBT.md).
+func test_student_art_is_lossless() -> void:
+	for n in StudentSkins.NAMES:
+		var paths: Array[String] = [
+			StudentSkins.layer_path(n, StudentSkins.DEFAULT_ID, "splash"),
+			StudentSkins.layer_path(n, StudentSkins.DEFAULT_ID, "portrait"),
+		]
+		for path in paths:
+			var cfg := ConfigFile.new()
+			assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
+			assert_eq(cfg.get_value("params", "compress/mode"), 0, path + " is lossless")
+
+
+## Any texture that is VRAM-compressed imports at high quality. Low quality
+## (S3TC on desktop, ETC2 on mobile) leaves 4x4 block artifacts; high quality
+## (BPTC / ASTC) costs no extra memory. Walks every image import, so art that
+## moves to VRAM later is held to it.
 func test_vram_compressed_art_is_high_quality() -> void:
-	var vram := 0
 	var low: Array[String] = []
 	var stack: Array[String] = ["res://Assets/Images"]
 	while not stack.is_empty():
@@ -239,13 +253,8 @@ func test_vram_compressed_art_is_high_quality() -> void:
 			if not f.ends_with(".import"):
 				continue
 			var text := FileAccess.get_file_as_string(dir_path.path_join(f))
-			if not text.contains("compress/mode=2"):
-				continue
-			vram += 1
-			if not text.contains("compress/high_quality=true"):
+			if text.contains("compress/mode=2") and not text.contains("compress/high_quality=true"):
 				low.append(f.get_basename())
 		for sub in d.get_directories():
 			stack.append(dir_path.path_join(sub))
-	# 6 portraits, 6 default splashes and 12 day outfits.
-	assert_true(vram >= 24, "sanity: expected the student art to be VRAM-compressed, saw %d" % vram)
 	assert_true(low.is_empty(), "import these at compress/high_quality=true: %s" % ", ".join(low))

@@ -611,6 +611,14 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     should stay lossless regardless: block artifacts show on small crisp UI
     and the saving is minor. Land it only together with a way to run the
     suite -- coverage is the quality floor.
+  - **The student art is lossless for now (2026-09-29).** The 24 portraits,
+    default splashes and day outfits were the only VRAM-compressed art; they
+    showed block artifacts, so they went to high-quality VRAM (#142) and then
+    lossless. That is about 4x their texture memory (a 1080x1920 splash with
+    mipmaps is ~11 MB instead of ~2.7 MB). If phone memory becomes a
+    problem, move them back to `compress/mode=2` with
+    `compress/high_quality=true`, and flip `test_student_art_is_lossless` and
+    the outfit import test in `tests/test_student_skins.gd` with them.
   - **ETC2 is on but nothing is built for Android yet.** There is no
     `export_presets.cfg`. `import_etc2_astc` is enabled so the committed
     `.import` files stay deterministic across machines; it costs import time

@@ -3,22 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://6pi65iumean8"
-path.bptc="res://.godot/imported/Thea.png-e0caa879e675a8e364902ce370c3d01e.bptc.ctex"
-path.astc="res://.godot/imported/Thea.png-e0caa879e675a8e364902ce370c3d01e.astc.ctex"
+path="res://.godot/imported/Thea.png-e0caa879e675a8e364902ce370c3d01e.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/MuridPortrait/Thea.png"
-dest_files=["res://.godot/imported/Thea.png-e0caa879e675a8e364902ce370c3d01e.bptc.ctex", "res://.godot/imported/Thea.png-e0caa879e675a8e364902ce370c3d01e.astc.ctex"]
+dest_files=["res://.godot/imported/Thea.png-e0caa879e675a8e364902ce370c3d01e.ctex"]
 
 [params]
 
-compress/mode=2
-compress/high_quality=true
+compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

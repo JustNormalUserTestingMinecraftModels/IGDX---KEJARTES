@@ -54,8 +54,9 @@ static func crop_for(student_name: String, tex: Texture2D, is_splash: bool = fal
 ## frames better than the square portrait.
 ##
 ## `day_name` dresses the student for that school day (2026-09-25 spec,
-## StudentSkins.DAY_OUTFITS): batik on Kamis, pramuka on Jumat. An outfit
-## shares its student's canvas, so SPLASH_CROP frames it unchanged.
+## StudentSkins.DAY_OUTFITS): batik on Kamis, pramuka on Jumat, unless the
+## student wears a skin, which stays on. An outfit shares its student's
+## canvas, so SPLASH_CROP frames it unchanged.
 func set_student(student: StudentData, day_name: String = "") -> void:
 	if student == null:
 		art.texture = null

@@ -376,10 +376,18 @@ func test_roster_avatar_bounce_is_guarded_and_cleaned_up() -> void:
 ## card's edge); moving CardContainer down to fix that then pushed the
 ## card's bottom past the nav arrows on a 1080x1920 phone. Pins all three
 ## boundaries at once, at both screen sizes tests/test_tall_screen_-
-## layout.gd covers, mirroring the same pivot-scaling arithmetic
-## _apply_current_state() uses and reading everything from authored scene
-## data / RosterAvatar consts, so a future change to any of them that
-## reopens a collision fails loudly here instead of only in a screenshot.
+## layout.gd covers.
+##
+## Round 3 review: this test used to re-derive the ring's centre from the
+## RESTING avatar's get_global_rect() -- wrong, because that Control sits
+## at INACTIVE_SCALE with pivot_offset (75,75), and get_global_rect()'s
+## `.position` is the pivot-scaled transform origin (shifted by
+## pivot*(1-scale) = 13.5px at rest) while its `.size` ignores scale
+## entirely, a mismatched pair that biased the derived centre. Ground
+## truth instead: snap the avatar to is_current = true (the instant path
+## fires here since Engine.is_editor_hint() is true in this suite) and
+## read Highlight's REAL transformed rect via the avatar's own
+## get_global_transform() -- Godot's own math, not a hand re-derivation.
 const _MIN_CLEARANCE_PX := 8.0
 
 
@@ -389,22 +397,20 @@ func _assert_stack_clears(screen: Vector2) -> void:
 	var title_bottom: float = (list.get_node("%HeaderLabel") as Control).get_global_rect().end.y
 	var card_rect := (list.get_node("CardContainer") as Control).get_global_rect()
 	var arrow_top: float = (list.get_node("%LeftArrow") as Control).get_global_rect().position.y
-	var avatar := list.get_node("%RosterStrip/Avatar1") as Control
-	var avatar_rect := avatar.get_global_rect()
+
+	var avatar := list.get_node("%RosterStrip/Avatar1") as RosterAvatar
+	avatar.is_current = true
 	var highlight := avatar.get_node("Highlight") as Control
-	var highlight_pad: float = -highlight.offset_left
+	var highlight_local := Rect2(highlight.offset_left, highlight.offset_top,
+		highlight.offset_right - highlight.offset_left, highlight.offset_bottom - highlight.offset_top)
+	var ring_rect: Rect2 = avatar.get_global_transform() * highlight_local
 
-	var half_extent: float = avatar_rect.size.y * 0.5 + highlight_pad
-	var center: float = avatar_rect.position.y + avatar_rect.size.y * 0.5 - RosterAvatar.ACTIVE_LIFT_PX
-	var ring_top: float = center - half_extent * RosterAvatar.ACTIVE_SCALE
-	var ring_bottom: float = center + half_extent * RosterAvatar.ACTIVE_SCALE
-
-	assert_true(ring_top - title_bottom >= _MIN_CLEARANCE_PX,
+	assert_true(ring_rect.position.y - title_bottom >= _MIN_CLEARANCE_PX,
 		"%s: active ring top %.1f must clear the title's bottom %.1f by %.0fpx"
-			% [screen, ring_top, title_bottom, _MIN_CLEARANCE_PX])
-	assert_true(card_rect.position.y - ring_bottom >= _MIN_CLEARANCE_PX,
+			% [screen, ring_rect.position.y, title_bottom, _MIN_CLEARANCE_PX])
+	assert_true(card_rect.position.y - ring_rect.end.y >= _MIN_CLEARANCE_PX,
 		"%s: active ring bottom %.1f must clear the card's top %.1f by %.0fpx"
-			% [screen, ring_bottom, card_rect.position.y, _MIN_CLEARANCE_PX])
+			% [screen, ring_rect.end.y, card_rect.position.y, _MIN_CLEARANCE_PX])
 	assert_true(arrow_top - card_rect.end.y >= _MIN_CLEARANCE_PX,
 		"%s: the card's bottom %.1f must clear the nav arrows' top %.1f by %.0fpx"
 			% [screen, card_rect.end.y, arrow_top, _MIN_CLEARANCE_PX])

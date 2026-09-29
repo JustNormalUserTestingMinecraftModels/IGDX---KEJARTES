@@ -40,9 +40,13 @@ const INACTIVE_SCALE := 0.82
 ## binding constraint. 1.25, the floor the review allows, paired with
 ## tight ring padding and StudentList.tscn's RosterStrip/CardContainer
 ## repositioned for headroom, clears the whole stack (title, ring, card,
-## arrows) with room to spare (test_active_avatar_ring_clears_the_-
-## title_and_the_card does the arithmetic for both screen sizes) while
-## staying clearly dominant.
+## arrows) at 1080x1920 (the tight case) by ~8.5px above the title,
+## ~8.5px above the card and ~10px above the arrows -- not spare margin,
+## the minimum the review asked for; 1080x2400 keeps ~250px to spare
+## below since the card/arrows move down with the taller screen and the
+## ring doesn't. test_active_avatar_ring_clears_the_title_and_the_card(_-
+## on_a_tall_phone) measures both, reading the avatar's real transformed
+## rect rather than re-deriving it.
 const ACTIVE_SCALE := 1.25
 ## How far the current avatar lifts upward, in px.
 const ACTIVE_LIFT_PX := 4.0

@@ -8,6 +8,39 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-29 — The event dialogue speaker's shadow is visible
+
+The speaker's shadow was outer AO at the shared strength (offset 0, scale 1,
+alpha 0.34, blur 1.2), which sits exactly behind the art and left a
+one-pixel hairline: hiding it changed 0.10% of the frame. It keeps the
+2026-09-23 rule of no drop shadow (offset stays 0) but is now denser and wider
+so it reads against the photographic backdrop: alpha 0.7, blur 4.0, scale
+1.02. That was option B of three compared at 1080x1920; the owner passed on a
+down-right drop shadow. The Lobby desks, Herman and BGHari keep the shared
+strength, and `test_paper_shadow` lets the speaker carry its own.
+
+## 2026-09-29 — The Lobby look and 30% less colour on the event dialogue
+
+EventDialogue (the character line before every minigame and event) now wears
+the Lobby look under its UI. A new kit piece, `ScreenSaturation`
+(`Scenes/Look/ScreenSaturation.tscn`, `screen_saturation.gdshader`), reads the
+frame and mixes it toward luminance: 0.7 keeps 70% of the colour, so the
+backdrop and speaker lose 30%. It grades the composed picture in one pass
+instead of forking the shared illustration grade materials, which a dozen
+tests pin. The scene order is Background, Blur, Splash, Desaturate, Light,
+Shafts, Bloom, then the header and dialogue box, so the lights are not
+desaturated and the UI is never graded, lit or bloomed. The bloom is the
+art-only `ScreenGlow` at threshold 0.85: on the bright school it lifts about a
+tenth of the art with the median untouched (+0.8% frame mean), where 0.7
+washed it out; the rain scene is too dark to bloom. Measured at 1080x1920 the
+picture's colour fell to about 75% of before (a chroma mix plus clipping). The
+debug Look tab gains a Saturasi Layar slider.
+
+One trap on the way: Godot copies the screen texture once and shares it, so
+the grade first read the frame from before the blur and the speaker and
+dropped both. Each screen reader now has a `BackBufferCopy` right before it
+(`GradeCopy`, `BloomCopy`), pinned by `test_event_dialogue`.
+
 ## 2026-09-29 — Koperasi takes the Lobby's bloom
 
 The owner asked for the Lobby's WorldEnvironment on the shop, and Koperasi

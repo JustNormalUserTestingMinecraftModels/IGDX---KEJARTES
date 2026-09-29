@@ -4,6 +4,7 @@ extends McpTestSuite
 ## EventDialogue (2026-09-14 event-dialogue spec): the catalog's 13 entries,
 ## the screen's two tap rules, its theme variations, and SchoolDay's wiring.
 
+const Census := preload("res://tests/scene_census.gd")
 const _SCENE := "res://Scenes/SchoolSimulation/EventDialogue.tscn"
 const _SCHOOL_DAY := "res://Scripts/SchoolSimulation/SchoolDay.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
@@ -268,7 +269,8 @@ func test_the_scene_is_authored_and_themed() -> void:
 		if n != null:
 			assert_eq(n.theme_type_variation, want[path], path)
 	assert_eq(d.mouse_filter, Control.MOUSE_FILTER_STOP, "the root takes the taps")
-	for path in ["Background", "Blur", "Splash", "Header", "DialogueBox", "DialogueBox/Content/Line"]:
+	for path in ["Background", "Blur", "Splash", "Desaturate", "Light", "Shafts", "Bloom", "Header",
+			"DialogueBox", "DialogueBox/Content/Line"]:
 		assert_eq((d.get_node(path) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
 			path + " must let taps through to the root")
 	assert_eq((d.get_node("Blur") as ColorRect).material.resource_path,
@@ -280,6 +282,79 @@ func test_the_scene_is_authored_and_themed() -> void:
 	var scene := FileAccess.get_file_as_string(_SCENE)
 	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
 		assert_false(scene.contains(kind), "no " + kind + " in EventDialogue.tscn")
+
+
+# ── look ─────────────────────────────────────────────────────────────────────
+
+## The dialogue wears the Lobby look under its UI (2026-09-29): a screen-read
+## desaturation of 30% grades the backdrop and the speaker, then the Lobby's
+## light, shafts and the art-only bloom sit over that. Everything the player
+## reads (header, dialogue box, buttons) is drawn after all of it, so it is
+## never desaturated, lit or bloomed.
+func test_the_dialogue_wears_the_lobby_look_under_its_ui() -> void:
+	var kids := Census.children_of(Census.of(_SCENE), ".")
+	assert_eq(kids, ["Background", "Blur", "Splash", "GradeCopy", "Desaturate", "Light", "Shafts",
+			"BloomCopy", "Bloom", "Header", "DialogueBox"] as Array[String],
+		"art, then the grade, the light and the bloom, then the UI")
+	var c := Census.of(_SCENE)
+	assert_eq(Census.entry(c, "Desaturate").get("instance"), "res://Scenes/Look/ScreenSaturation.tscn")
+	assert_eq(Census.entry(c, "Light").get("instance"), "res://Scenes/Look/LightPool.tscn")
+	assert_eq(Census.entry(c, "Shafts").get("instance"), "res://Scenes/Look/SunShafts.tscn")
+	assert_eq(Census.entry(c, "Bloom").get("instance"), "res://Scenes/Look/ScreenGlow.tscn")
+	## The school backdrop is bright sky and paper: at 0.8 a fifth of the art
+	## bloomed, at 0.85 about a tenth with the median untouched (measured
+	## 2026-09-29 at 1080x1920); the rain scene is too dark to bloom at all.
+	assert_eq(float(Census.prop(Census.entry(c, "Bloom"), "threshold", 0.7)), 0.85, "the bloom's threshold")
+
+
+## Godot copies the screen texture ONCE and shares it between screen-reading
+## nodes, so without a BackBufferCopy the grade read the frame as it was after
+## the Background: it dropped the blur and the speaker entirely (found live,
+## 2026-09-29; an offscreen capture showed the same and was misread). Each
+## reader here -- the grade, then the bloom -- gets a fresh copy of the whole
+## viewport right before it.
+func test_each_screen_reader_gets_a_fresh_copy_of_the_frame() -> void:
+	var c := Census.of(_SCENE)
+	var kids := Census.children_of(c, ".")
+	for pair in [["GradeCopy", "Desaturate"], ["BloomCopy", "Bloom"]]:
+		assert_eq(kids.find(pair[1]) - kids.find(pair[0]), 1, "%s sits right before %s" % pair)
+		var copy := Census.entry(c, pair[0])
+		assert_eq(copy.get("type"), "BackBufferCopy", pair[0] + " is a BackBufferCopy")
+		assert_eq(int(Census.prop(copy, "copy_mode", 1)), BackBufferCopy.COPY_MODE_VIEWPORT,
+			pair[0] + " copies the whole viewport")
+
+
+## "Reduce the saturation by 30%": the pass keeps 0.7 of the colour, at the
+## piece's own default so the scene carries no override to drift from it.
+func test_the_dialogue_keeps_seventy_percent_of_its_colour() -> void:
+	var node := Census.entry(Census.of(_SCENE), "Desaturate")
+	assert_false(node.get("props", {}).has("saturation"), "the scene leaves the default")
+	var piece := (load("res://Scenes/Look/ScreenSaturation.tscn") as PackedScene).instantiate() as ScreenSaturation
+	track(piece)
+	Engine.get_main_loop().root.add_child(piece)
+	assert_true(is_equal_approx(piece.saturation, 0.7), "the default is 0.7")
+	piece.saturation = 0.5
+	assert_true(is_equal_approx(float((piece.material as ShaderMaterial).get_shader_parameter("saturation")), 0.5),
+		"the knob reaches the shader")
+
+
+## The speaker's shadow is a visible contact glow (2026-09-29). As plain outer
+## AO (alpha 0.34, blur 1.2, scale 1) it sat exactly behind the art and showed
+## as a one-pixel hairline: hiding it changed 0.10% of the frame. Zero offset
+## stays (the 2026-09-23 rule: no drop shadow, the floor darkening where the
+## art occludes it), but this one is denser (0.7), wider (blur 4.0) and 2%
+## larger so it reads against a photographic backdrop. It follows the splash's
+## rect and stretch, so it stays under the art on a tall phone.
+func test_the_speakers_shadow_is_a_visible_contact_glow() -> void:
+	var shadow := Census.entry(Census.of(_SCENE), "Splash/Shadow")
+	assert_eq(Census.prop(shadow, "shadow_offset", Vector2.ZERO), Vector2.ZERO,
+		"still outer AO: no drop shadow")
+	assert_true(float(Census.prop(shadow, "shadow_alpha", 0.34)) >= 0.6, "dense enough to read")
+	assert_true(float(Census.prop(shadow, "blur", 1.2)) >= 3.0, "and wide enough to show past the outline")
+	assert_true(float(Census.prop(shadow, "shadow_scale", 1.0)) > 1.0, "a little larger than the art")
+	assert_eq(Census.prop(shadow, "follow_parent_rect", false), true, "it follows the splash's rect")
+	assert_eq(int(Census.prop(shadow, "shadow_stretch_mode", 0)), TextureRect.STRETCH_KEEP_ASPECT_CENTERED,
+		"and its stretch, so the two never diverge")
 
 
 # ── theme ────────────────────────────────────────────────────────────────────

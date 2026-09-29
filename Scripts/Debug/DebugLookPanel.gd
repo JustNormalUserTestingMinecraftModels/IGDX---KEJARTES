@@ -7,7 +7,7 @@ extends RefCounted
 ##
 ## Two halves. "Efek layar ini" reaches whatever screen is up when a control
 ## moves: the Efek Suasana and Efek Visual switches, and every AmbientGlow (the
-## Lobby's bloom), ScreenGlow, LightPool and SunShafts in the tree, so the bloom on the shops, the end game
+## Lobby's bloom), ScreenGlow, ScreenSaturation, LightPool and SunShafts in the tree, so the bloom on the shops, the end game
 ## and the minigames can be seen and tuned live. The rest tunes SHARED
 ## materials (AO, rim, the Lobby's shafts and its WorldEnvironment glow), so one
 ## drag moves every plate at once. Nothing here persists except the two
@@ -36,6 +36,7 @@ const NODE_SLIDERS := [
 	[&"ScreenGlow", "spread", "Bloom Layar: Sebaran", 0.0, 5.0, 0.1, 2.0],
 	[&"LightPool", "intensity", "Cahaya (LightPool): Kekuatan", 0.0, 0.12, 0.005, 0.08],
 	[&"SunShafts", "intensity", "Berkas (SunShafts): Kekuatan", 0.0, 0.2, 0.005, 0.2],
+	[&"ScreenSaturation", "saturation", "Saturasi Layar", 0.0, 2.0, 0.01, 0.7],
 ]
 
 

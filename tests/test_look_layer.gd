@@ -427,6 +427,24 @@ func test_the_grade_leaves_alpha_alone() -> void:
 ## pulls them out of their own scene. Judge any raise on a full-size capture.
 const GRADE_SATURATION_CEILING := 1.02
 const GRADE_CONTRAST_CEILING := 1.0125
+## The grade's saturation since 2026-09-29: the previous 1.0175 less 15%.
+const GRADE_SATURATION := 0.865
+
+
+## 2026-09-29: the overall colour grade is 15% less saturated (1.0175 x 0.85),
+## on all four materials and on the shader's own default.
+func test_the_grade_is_fifteen_percent_less_saturated() -> void:
+	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_LOBBY_CUTOUT_MATERIAL,
+			GRADE_FACE_MATERIAL]:
+		var mat: ShaderMaterial = load(path)
+		assert_true(mat != null, "%s must exist" % path)
+		if mat == null:
+			continue
+		assert_eq(mat.get_shader_parameter("saturation"), GRADE_SATURATION,
+			"%s carries the calmer saturation" % path)
+	var src := FileAccess.get_file_as_string("res://Scripts/Shaders/illustration_grade.gdshader")
+	assert_contains(src, "saturation : hint_range(0.0, 2.0) = 0.865;",
+		"and so does the shader's own default")
 
 
 func test_the_grade_stays_subtle() -> void:

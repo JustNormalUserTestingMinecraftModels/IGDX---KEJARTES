@@ -47,8 +47,11 @@ top border), sinking onto the lip when held (`expand_margin_top`), with no
 rim. It is native on purpose: the theme loads before the SceneTree exists,
 and a script-backed StyleBox there makes every debug run log a SceneTree
 error. Its colours say its role — mint is the main
-action and affirm on every screen, tomato is danger, brown is neutral,
-cream is quiet; sky and sunflower belong to the Lobby tiles and the
+action and affirm on every screen, tomato is danger, brown is neutral
+(a cream button vanishes on the cream cards and paper of most screens, so
+StudentCard's secondary buttons, the filter chips and the minigame answers are
+brown; cream stays for the skin tiles' photo cards); sky and sunflower belong
+to the Lobby tiles and the
 notebook tabs, and sunflower is never an action (gold reads as "buy").
 A Back is a return, so it is brown, not mint (ReportCard's included); a
 routine, reversible clear beside the main action is brown too, never

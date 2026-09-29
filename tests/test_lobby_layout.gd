@@ -146,3 +146,74 @@ func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 				and head.y + radius > r.position.y and head.y - radius < r.end.y
 			assert_true(not overlaps,
 				"%s %s covers a student's head at %s" % [n, str(r), str(head)])
+
+
+# ── back seats and front desks (2026-09-29) ────────────────────────────────
+
+## How far a seat's centre may sit from the centre of its desk's top, px.
+const SEAT_TOLERANCE := 2.5
+## The rows of a desk's top surface, in the desk plate's own pixels, that the
+## seat is centred against (the back desks' tops run from y=343 to about 560).
+const DESK_TOP_ROWS := Vector2i(343, 560)
+
+
+## The mean centre, in plate pixels, of the opaque span across a desk plate's
+## top surface.
+func _desk_top_centre(tex: Texture2D) -> float:
+	var img := tex.get_image()
+	if img.is_compressed():
+		img.decompress()
+	var total := 0.0
+	var rows := 0
+	for y in range(DESK_TOP_ROWS.x, DESK_TOP_ROWS.y, 4):
+		var lo := -1
+		var hi := -1
+		for x in img.get_width():
+			if img.get_pixel(x, y).a > 0.5:
+				if lo < 0:
+					lo = x
+				hi = x
+		if lo >= 0:
+			total += (lo + hi) / 2.0
+			rows += 1
+	return total / maxf(rows, 1.0)
+
+
+## The two students in the back row sat 13-18 px right of their desks' centres,
+## so they read as off-centre whichever student took the seat (every face rig
+## is drawn centred on its own canvas). The slots' Portrait rects, which the
+## rigs copy, are what place them.
+func test_back_row_students_sit_on_their_desks_centre() -> void:
+	var classroom := _lobby.get_node("World/Classroom")
+	for pair in [["Slot1", "Meja_KiriAtas"], ["Slot2", "Meja_KananAtas"]]:
+		var portrait := classroom.get_node("StudentPortraitsContainer_Back/%s/Portrait" % pair[0]) as Control
+		var desk := classroom.get_node(pair[1]) as TextureRect
+		var seat := portrait.get_global_rect().get_center().x
+		var desk_centre := desk.global_position.x + _desk_top_centre(desk.texture)
+		assert_true(absf(seat - desk_centre) <= SEAT_TOLERANCE,
+			"%s's student is centred at x=%.1f, its desk's top at x=%.1f" % [pair[0], seat, desk_centre])
+
+
+## The front desks fill the screen edge to edge; the parallax slides them
+## inward by up to travel.x * depth when the phone tilts, which used to open a
+## gap at the rim. Each is stretched outward about its inner side by more than
+## that swing, so the desk still reaches the rim at full tilt.
+func test_front_desks_still_reach_the_rim_at_full_tilt() -> void:
+	var classroom := _lobby.get_node("World/Classroom")
+	var parallax := classroom.get_node("Parallax")
+	var travel: Vector2 = parallax.get("travel")
+	var depths: Dictionary = parallax.get("depth_by_child")
+	var left := classroom.get_node("Meja_KiriBawah") as TextureRect
+	var right := classroom.get_node("Meja_KananBawah") as TextureRect
+	var left_swing: float = travel.x * float(depths["Meja_KiriBawah"])
+	var right_swing: float = travel.x * float(depths["Meja_KananBawah"])
+	# In the Classroom's own space: the World layer is centred on the real
+	# viewport, not on this test's frame.
+	var to_classroom := (classroom as Control).get_global_transform().affine_inverse()
+	var width := (classroom as Control).size.x
+	var left_edge := (to_classroom * left.get_global_transform() * Vector2(0, 0)).x
+	var right_edge := (to_classroom * right.get_global_transform() * Vector2(width, 0)).x
+	assert_true(left_edge <= -left_swing,
+		"the left front desk starts at x=%.1f; a tilt slides it in %.1f px" % [left_edge, left_swing])
+	assert_true(right_edge >= width + right_swing,
+		"the right front desk ends at x=%.1f; a tilt slides it in %.1f px" % [right_edge, right_swing])

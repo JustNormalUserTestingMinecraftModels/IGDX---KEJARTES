@@ -6,8 +6,10 @@ extends McpTestSuite
 ## look). Every framed button is now a lipped box (LippedBox): a face on a
 ## darker lip, sinking onto the lip when held. Its colours say its role --
 ## mint is the main action and affirm on every screen, tomato is danger,
-## brown is neutral, cream is quiet, sky and sunflower are the Lobby tiles'
-## and the notebook tabs' own. Information badges keep their meaning colours.
+## brown is neutral (StudentCard's secondary buttons, the filter chips and the
+## minigame answers went back to it on 2026-09-29, after their cream faces
+## vanished on cream cards), sky and sunflower are the Lobby tiles' and the
+## notebook tabs' own. Information badges keep their meaning colours.
 ## Spec: docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md.
 
 const _STUDENT_CARD := "res://Scenes/StudentCard/StudentCard.tscn"
@@ -32,7 +34,6 @@ func _roles() -> Dictionary:
 	var mint := [t.accent_mint, t.accent_mint_lip]
 	var brown := [t.brand_primary_light, t.brand_primary_dark]
 	var tomato := [t.accent_tomato, t.accent_tomato_lip]
-	var cream := [t.button_cream, t.button_cream_lip]
 	return {
 		"PrimaryButton": mint, "PrimaryButtonM": mint, "PrimaryButtonL": mint,
 		"SuccessButton": mint, "SuccessButtonL": mint,
@@ -44,8 +45,8 @@ func _roles() -> Dictionary:
 		"SecondaryButton": brown, "SecondaryButtonM": brown, "SecondaryButtonL": brown,
 		"LobbyNavTile": brown, "MainMenuButton": brown, "ShopShelfButton": brown,
 		"QuirkBadge": brown, "CardArrowButton": [t.brand_primary, t.brand_primary_dark],
-		"StudentCardSecondaryButton": cream, "StudentCardSecondaryButtonL": cream,
-		"FilterChipButton": cream, "MinigameChoiceButton": cream,
+		"StudentCardSecondaryButton": brown, "StudentCardSecondaryButtonL": brown,
+		"FilterChipButton": brown, "MinigameChoiceButton": brown,
 	}
 
 
@@ -102,13 +103,19 @@ func test_label_ink_follows_the_face() -> void:
 		"outlined")
 	assert_eq(_theme.get_color("font_outline_color", "PrimaryButton"), _tokens.accent_mint_lip,
 		"in the lip colour")
-	for light in ["NavTileRapor", "StudentCardSecondaryButtonL", "FilterChipButton"]:
+	for light in ["NavTileRapor"]:
 		assert_eq(_theme.get_color("font_color", light), _tokens.text_primary, light + " dark ink")
 		assert_eq(_theme.get_constant("outline_size", light), 0, light + " no outline")
+	for dark in ["StudentCardSecondaryButtonL", "FilterChipButton", "MinigameChoiceButton"]:
+		assert_eq(_theme.get_color("font_color", dark), _tokens.text_on_brand, dark + " light ink")
+		assert_eq(_theme.get_constant("outline_size", dark), _tokens.lipped_label_outline,
+			dark + " outlined")
 
 
-func test_student_card_keeps_its_cream_secondary() -> void:
-	assert_eq(_fill("StudentCardSecondaryButtonL"), _tokens.button_cream, "cream face")
+func test_student_card_secondary_is_brown() -> void:
+	assert_eq(_fill("StudentCardSecondaryButtonL"), _tokens.brand_primary_light, "brown face")
+	assert_eq(_fill("StudentCardSecondaryButton"), _tokens.brand_primary_light, "brown at every step")
+	assert_eq(_fill("MinigameChoiceButton"), _tokens.brand_primary_light, "minigame answers are brown too")
 	assert_eq(_theme.get_font_size("font_size", "StudentCardSecondaryButtonL"),
 		_tokens.font_h1, "the L step")
 

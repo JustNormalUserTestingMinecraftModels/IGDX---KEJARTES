@@ -79,6 +79,12 @@ var tutorials_bypassed: bool = false
 ## MinigameHowTo resource paths whose CARA MAIN card has shown this session.
 ## Session-scoped by design (CLAUDE.md: no new persistence).
 var seen_minigame_how_to: Dictionary = {}
+## The grades whose headmaster's beat has played this session, grade -> true.
+## HeadmasterBeat marks Kelas 8 or 9 when its congratulation ends, so the beat
+## plays once per promotion and a retry of the same grade does not replay it.
+## Cleared by forget_session() and by set_grade() (a new run starts there).
+## Session-scoped by design (CLAUDE.md: no new persistence) -- never saved.
+var headmaster_beats_seen: Dictionary = {}
 var current_grade: int = 7:
 	set(val):
 		current_grade = clampi(val, 7, 9)
@@ -204,6 +210,7 @@ func set_grade(grade_num: int) -> void:
 	minggu_ke = 1
 	run_stats.reset()
 	run_failed = false
+	headmaster_beats_seen = {}
 	reset_shop_week()
 	if current_grade != previous_grade:
 		reset_roster_for_new_grade()  # no-op when the roster is empty
@@ -492,6 +499,7 @@ func forget_session() -> void:
 	lobby_tutorial_completed = false
 	tutorials_bypassed = false
 	seen_minigame_how_to = {}
+	headmaster_beats_seen = {}
 	current_grade = 7
 	max_minggu = get_max_weeks()
 	grade7_student_ids = []

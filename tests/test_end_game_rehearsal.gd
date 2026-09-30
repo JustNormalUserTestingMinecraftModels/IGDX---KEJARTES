@@ -388,6 +388,25 @@ func test_every_game_state_field_is_snapshotted_or_deliberately_excluded() -> vo
 			+ ", ".join(missing))
 
 
+## A rehearsal that runs to completion reaches StudentCard for the next grade,
+## which plays that grade's headmaster beat and marks it seen. Restoring must
+## un-see it, or the real promotion later would skip the congratulation.
+func test_restore_hands_back_the_seen_headmaster_beats() -> void:
+	assert_true(EndGameRehearsal.SNAPSHOT_KEYS.has("headmaster_beats_seen"),
+		"the seen beats are part of the run a rehearsal protects")
+	var outer := EndGameRehearsal.snapshot()
+	GameState.headmaster_beats_seen = {8: true}
+	var before := EndGameRehearsal.snapshot()
+	GameState.headmaster_beats_seen = {8: true, 9: true}  # what the rehearsal's StudentCard would add
+	assert_true(EndGameRehearsal.restore(before), "restore reports success")
+	assert_eq(GameState.headmaster_beats_seen.size(), 1, "the rehearsal's beat is un-seen")
+	assert_true(GameState.headmaster_beats_seen.has(8), "and the earlier one is still seen")
+	GameState.headmaster_beats_seen = {8: true, 9: true}
+	assert_eq(before["headmaster_beats_seen"].size(), 1,
+		"the snapshot is a copy, so later writes do not reach it")
+	EndGameRehearsal.restore(outer)
+
+
 # ───────────────────────────────────────────── restore after run progression
 
 ## Final-review finding: the tests only ever restored immediately after arm() --

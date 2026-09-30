@@ -69,6 +69,9 @@ var _blink_tween: Tween
 var _highlight_tween: Tween
 var _tutorial_arrow: Control = null
 
+## The headmaster's congratulation while it plays on this card, else null.
+var _beat: HeadmasterBeat
+
 # --- Paginasi Kertas Murid ---
 @onready var kertas_murid: Array = [$KertasMurid1, $KertasMurid2, $KertasMurid3, $KertasMurid4, $KertasMurid5, $KertasMurid6]
 @onready var next_kanan: BaseButton = %NextButtonKanan
@@ -202,11 +205,8 @@ func _ready():
 	# (Shinta's) appear to glitch in "behind" the others on first entry.
 	_show_page(current_page)
 
-	if GameState.tutorials_bypassed:
-		tutorial_active = false
-		color_rect.hide()
-	else:
-		_show_step(0)
+	if not _maybe_play_headmaster_beat():
+		_begin_tutorial()
 	AudioDirector.play_bgm_playlist(&"lobby")
 
 # ================= TOUCH SWIPE NAVIGATION =================
@@ -251,10 +251,11 @@ func _evaluate_swipe(end_pos: Vector2):
 
 # ================= TUTORIAL =================
 
-func _populate_default_tutorial_steps():
+func _populate_default_tutorial_steps() -> void:
 	tutorial_steps.clear()
+	var defaults: Array = []
 	if GameState.current_grade == 7:
-		var defaults = [
+		defaults = [
 			["Selamat Datang!", "Kita disini mempunyai beberapa laporan berbagai macam murid yang dapat anda pilih untuk anda ajari!\n\nMereka mempunyai performance dan sifat berbeda-beda, jadi pilihlah dengan bijak!", "", ""],
 			["Mood Murid", "Ini adalah bar Mood murid. Mood menunjukkan tingkat kebahagiaan murid.\n\nJika mood rendah, murid akan sulit untuk belajar dengan baik.", "KertasMurid1/Mood", ""],
 			["Energy Murid", "Ini adalah bar Energy murid. Energy menunjukkan kapasitas seberapa banyak murid untuk dapat diajar berbagai mata pelajaran.", "KertasMurid1/Energy", ""],
@@ -271,42 +272,15 @@ func _populate_default_tutorial_steps():
 			["Memilih Murid", "Kamu bisa memilih hingga 2 murid untuk diajar.\n\nGunakan tombol panah untuk melihat murid lainnya dan pilih dengan bijak!", "NextButtonKanan", "Tekan tombol panah Kanan untuk lanjut!"],
 			["Approve Murid", "Tekan tombol APPROVE untuk memilih murid ini.\n\nSetelah memilih 2 murid, tombol BELAJAR akan muncul untuk melanjutkan!", "KertasMurid1/Aprove", "Tekan tombol 'APPROVE' untuk lanjut!"]
 		]
-		for entry in defaults:
-			var step = TutorialStepData.new()
-			step.title = entry[0]
-			step.text = entry[1]
-			step.target_node_path = entry[2]
-			step.prompt_text = entry[3]
-			tutorial_steps.append(step)
-	elif GameState.current_grade == 8:
-		var defaults = [
-			["Selamat Datang di Kelas 8!", "Kepala Sekolah: 'Selamat atas keberhasilanmu membimbing murid-murid di Kelas 7! Namun perjuangan belum usai. Sekarang mereka resmi naik ke Kelas 8.'", "", ""],
-			["Tantangan Baru", "Kepala Sekolah: 'Kelas 8 akan memiliki kurikulum yang lebih menantang. Untuk membantu menyeimbangkan dinamika kelas, kita kedatangan murid-murid baru.'", "", ""],
-			["Pilih Murid Tambahan", "Narator: 'Silakan pilih 1 murid tambahan dari kartu yang tersedia untuk melengkapi kelasmu menjadi 3 murid. Murid lama tidak bisa diganti.'", "", ""]
-		]
-		for entry in defaults:
-			var step = TutorialStepData.new()
-			step.title = entry[0]
-			step.text = entry[1]
-			step.target_node_path = entry[2]
-			step.prompt_text = entry[3]
-			tutorial_steps.append(step)
-	elif GameState.current_grade == 9:
-		var defaults = [
-			["Selamat Datang di Kelas 9!", "Kepala Sekolah: 'Luar biasa! Murid-muridmu sekarang telah mencapai jenjang akhir di Kelas 9. Ini tahun penentuan kelulusan mereka.'", "", ""],
-			["Persiapan Ujian Akhir", "Kepala Sekolah: 'Ujian akhir nasional sudah di depan mata. Kita membutuhkan satu murid lagi agar kelas bimbinganmu genap berisi 4 murid.'", "", ""],
-			["Pilih Murid Terakhir", "Narator: 'Pilihlah murid terakhir dari kartu yang tersisa untuk melengkapi kelasmu menjadi 4 murid. Persiapkan mereka untuk kelulusan!'", "", ""]
-		]
-		for entry in defaults:
-			var step = TutorialStepData.new()
-			step.title = entry[0]
-			step.text = entry[1]
-			step.target_node_path = entry[2]
-			step.prompt_text = entry[3]
-			tutorial_steps.append(step)
-
-
-
+	elif HeadmasterBeat.PICK_STEPS.has(GameState.current_grade):
+		defaults = [HeadmasterBeat.PICK_STEPS[GameState.current_grade]]
+	for entry in defaults:
+		var step := TutorialStepData.new()
+		step.title = entry[0]
+		step.text = entry[1]
+		step.target_node_path = entry[2]
+		step.prompt_text = entry[3]
+		tutorial_steps.append(step)
 
 ## Instantiates the shared TutorialPanel with StudentCard's shipped look
 ## (its component defaults: 0.92/1000 width, no content margin, H1Label
@@ -335,9 +309,6 @@ func _build_tutorial_panel():
 	# Position panel at bottom-center
 	call_deferred("_position_tutorial_panel")
 
-
-
-
 func _start_prompt_blink():
 	if _blink_tween and _blink_tween.is_valid():
 		_blink_tween.kill()
@@ -361,12 +332,14 @@ func _position_tutorial_panel():
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 
 ## Where the card's top-left corner goes at the current step, for a card of
-## `panel_size`: at the bottom, or from step 7 on centred down the screen.
+## `panel_size`: at the bottom, or centred down the screen (from step 7 on, and
+## during the headmaster's beat).
 func _tutorial_card_position(panel_size: Vector2) -> Vector2:
 	var viewport_size := get_viewport_rect().size
 	var centred_y := (viewport_size.y - panel_size.y) / 2.0
 	var bottom_y := maxf(viewport_size.y * 0.55, viewport_size.y - panel_size.y - 40)
-	return Vector2((viewport_size.x - panel_size.x) / 2.0, centred_y if current_step >= 7 else bottom_y)
+	var centred := (_beat != null and _beat.is_playing()) or current_step >= 7
+	return Vector2((viewport_size.x - panel_size.x) / 2.0, centred_y if centred else bottom_y)
 
 ## The rectangle the card will cover at the current step, for the arrow to keep off.
 func _tutorial_card_rect() -> Rect2:
@@ -394,7 +367,11 @@ func _fit_color_rect_to_viewport():
 	if tutorial_active and _tutorial_panel and is_instance_valid(_tutorial_panel):
 		call_deferred("_position_tutorial_panel")
 
+## A tap on the overlay: the headmaster's next card while it plays, else the next step.
 func _next_step():
+	if _beat != null and _beat.is_playing():
+		_beat.advance()
+		return
 	current_step += 1
 	if current_step >= tutorial_steps.size():
 		_end_tutorial()
@@ -584,6 +561,29 @@ func _end_tutorial():
 		_tutorial_panel.queue_free()
 	color_rect.hide()
 	_show_page(current_page)
+
+## Starts this grade's tutorial steps, or -- with tutorials bypassed -- drops
+## the overlay. The one place the tutorial toggle is read; the beat never asks.
+func _begin_tutorial() -> void:
+	if GameState.tutorials_bypassed:
+		tutorial_active = false
+		color_rect.hide()
+	else:
+		_show_step(0)
+
+## Plays the headmaster's congratulation when this grade has one not yet seen
+## this session (GameState.headmaster_beats_seen): once per promotion, so a
+## retry does not replay it, and tutorials on or off. It rides the tutorial's
+## overlay and card; the tutorial (or its bypass) follows. True when one began.
+func _maybe_play_headmaster_beat() -> bool:
+	var grade: int = GameState.current_grade
+	if not HeadmasterBeat.is_due(grade, GameState.headmaster_beats_seen):
+		return false
+	_beat = HeadmasterBeat.new()
+	_beat.finished.connect(_begin_tutorial)
+	_clear_highlight()
+	_beat.start(_tutorial_panel, grade, _position_tutorial_panel, GameState.headmaster_beats_seen)
+	return true
 
 # ================= PAGINASI =================
 

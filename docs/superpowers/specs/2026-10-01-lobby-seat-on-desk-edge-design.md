@@ -21,10 +21,10 @@ started at the **chair's top**, not the desk's back edge:
 
 | Desk plate | Chair top (texture px) | Real desk back edge (texture px) | Chair height |
 |---|---|---|---|
-| `kiri_atas.png` | 343 | 411 | 68 |
-| `kanan_atas.png` | 343 | 409 | 66 |
-| `kiri_bawah.png` | 687 | 765 | 78 |
-| `kanan_bawah.png` | 687 | 765 | 78 |
+| `kiri_atas.png` | 343 | 410 | 67 |
+| `kanan_atas.png` | 343 | 410 | 67 |
+| `kiri_bawah.png` | 687 | 766 | 79 |
+| `kanan_bawah.png` | 687 | 766 | 79 |
 
 (chair top: first row with alpha > 0.5; desk edge: first row whose longest
 opaque run is wider than 260 px.)
@@ -61,6 +61,8 @@ six `Hand_*`) — move down by that correction:
 Each seat's `Portrait` square then ends within 1.25 px of its desk's back
 edge, the gap the picture itself has (Thea: 491.8 + 320 = 811.8 against 813,
 times K).
+
+Superseded in part by the Addendum below: after owner review the hands no longer keep their 2026-09-30 x; each sits at one place on its own body.
 
 Nothing else moves. Portrait sizes, hand scales, x positions and Marcel's
 flip in Slot3 stay as #169 set them. Both slots of a seat move by the same

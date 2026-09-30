@@ -164,13 +164,14 @@ func _slot_rect(slot_path: String) -> Rect2:
 ## The first row of `plate`'s texture whose longest opaque run is wider than
 ## DESK_MIN_RUN, in classroom px (the plate's offset_top added; the plates
 ## are never stretched vertically). A colour or alpha bounding box would start
-## at the chair back's top instead.
+## at the chair back's top instead. The scan starts at the first opaque row,
+## skipping the empty plate above the chair.
 func _desk_back_edge(plate: String) -> float:
 	var props := _node(plate)
 	var img := TexturePixels.of(props["texture"] as Texture2D)
 	if img.is_compressed():
 		img.decompress()
-	for y in img.get_height():
+	for y in range(img.get_used_rect().position.y, img.get_height()):
 		var run := 0
 		for x in img.get_width():
 			run = run + 1 if img.get_pixel(x, y).a > 0.5 else 0
@@ -282,7 +283,7 @@ func test_every_student_wears_its_rows_scale_and_sits_the_same_on_its_body() -> 
 			assert_true(absf(absf(scale.x) - row_scale) < SCALE_TOLERANCE and absf(scale.y - row_scale) < SCALE_TOLERANCE,
 				"%s in %s is scaled %s, its row wears %.4f" % [student, name, str(scale), row_scale])
 			var mirrored: bool = (MIRRORED.get(seat["hands"], []) as Array).has(student)
-			assert_eq(scale.x < 0.0, mirrored, "%s in %s is mirrored only where it always was" % [student, name])
+			assert_eq(scale.x < 0.0, mirrored, "%s in %s is mirrored only where MIRRORED says" % [student, name])
 			var place := _place_on_body(student)
 			var want := Vector2(body.get_center().x + place.x * body.size.x * (-1.0 if mirrored else 1.0),
 				body.position.y + place.y * body.size.y)

@@ -24,6 +24,40 @@ Spec `docs/superpowers/specs/2026-09-30-schoolday-cloud-layer-design.md`.
   play, so the dusk clouds hung over every midday.
 - **Sun and moon in front.** `CloudLayer` moved below `SkyBodies`; the
   painting all but hid the midday sun.
+## 2026-09-30 — Phone audio sliders and tall-phone stragglers
+
+- **Musik and Efek Suara did nothing on a phone build.** They work in the
+  editor; with the BGM and SFX buses absent (removed in a running game to
+  reproduce it) every player falls back to Master and `set_bus_volume()` finds
+  nothing to turn, while Suara Utama keeps working. `AudioDirector` now
+  creates any bus in `MIXER_BUSES` the loaded layout lacks
+  (`ensure_bus()`), before it makes its players. Not yet confirmed on a
+  device: no export preset or templates exist on the dev PC, so why the APK
+  lacks the layout is still open (DEBT.md, "Android export").
+- **Koperasi's tall-phone band** read as an empty strip: `WallFill` lacked the
+  room backdrop's grade and came out paler than the wall. Same material now.
+- **Bottom controls pinned to the bottom edge**: AturJadwal's START WEEK,
+  CutScene's dialogue box and hint, EndCutscene's Lanjut. Inventory's and
+  CutScene's backdrops cover instead of stretching.
+## 2026-09-30 — Parallax follows the phone's rotation
+
+`ParallaxDiorama` reads the gyroscope first (owner's ask). The gyroscope gives
+a turn rate, so `integrate_turn()` adds it up into an angle from the held
+pose, eases it back to zero at `tilt_recenter` and caps it at
+`tilt_angle_degrees` (12, full deflection). A phone with no gyroscope keeps
+the accelerometer path; desktop keeps the pointer. Knobs on the driver:
+`use_gyroscope`, `tilt_angle_degrees`, `gyro_direction` (flip a sign to
+reverse an axis).
+
+**The parallax had been dead on handsets.** Godot ships every sensor disabled
+(`input_devices/sensors/enable_*`), and a disabled sensor reads zero, so the
+driver took the pointer path and followed the last touch. `project.godot` now
+enables the gyroscope and the accelerometer, pinned by
+`test_the_sensors_the_driver_reads_are_enabled`.
+
+Not checked on a device: the default `gyro_direction` of (-1, -1) is derived
+from the sensor's axis convention, not from a handset in hand.
+
 ## 2026-09-30 — Minigame text hierarchy, spacing and fixes
 
 Spec `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`, plan

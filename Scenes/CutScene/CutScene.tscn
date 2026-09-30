@@ -20,6 +20,7 @@ layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource("2_w1y33")
+expand_mode = 1
 stretch_mode = 6
 
 [node name="Sun" parent="BgCutScene" instance=ExtResource("amb_pool")]
@@ -33,11 +34,15 @@ density = 0.6
 drift = Vector2(1, -0.2)
 
 [node name="DialogueBox" type="Panel" parent="." unique_id=1079685626]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
 offset_left = 44.0
-offset_top = 1340.0
+offset_top = -580.0
 offset_right = 1036.0
-offset_bottom = 1660.0
+offset_bottom = -260.0
+grow_vertical = 0
 mouse_filter = 2
 theme_type_variation = &"Card"
 
@@ -58,11 +63,15 @@ mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
 [node name="HintLabel" type="Label" parent="." unique_id=910481723]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
 offset_left = 110.0
-offset_top = 1700.0
+offset_top = -220.0
 offset_right = 967.0
-offset_bottom = 1760.0
+offset_bottom = -160.0
+grow_vertical = 0
 theme_type_variation = &"CaptionLabel"
 text = "Ketuk untuk melanjutkan"
 horizontal_alignment = 1

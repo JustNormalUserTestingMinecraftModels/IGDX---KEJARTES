@@ -17,8 +17,8 @@ extends Control
 ## and must run in both a human's editor session and the test suite's
 ## instantiation, exactly like MainMenu's button wiring. Everything below the
 ## Engine.is_editor_hint() guard -- reading GameState to decide which
-## branch of the cutscene to show, refreshing GameState-derived button
-## text, and kicking off the first CG/dialogue reveal -- is a genuine
+## branch of the cutscene to show and kicking off the first CG/dialogue
+## reveal -- is a genuine
 ## runtime-only side effect and must never fire just because a human
 ## opened this scene in the editor, or because the test suite
 ## instantiated it. _input() is left unguarded: per Splashscreen's
@@ -32,10 +32,12 @@ extends Control
 ## image. Set from the token in _ready so it tracks the design system.
 @onready var backdrop: ColorRect = $Backdrop
 @onready var bg_cutscene: TextureRect = $BgCutScene
-## The incoming CG for a cross-dissolve: it fades in over BgCutScene so the
-## swap never dips to the bare Backdrop (which itself sits behind BgCutScene
-## so the entrance reveal is the academy backdrop, never the gray window).
-@onready var cg_overlay: TextureRect = $CgOverlay
+## The incoming CG for a cross-dissolve: it fades in over BgCutScene's picture so
+## the swap never dips to the bare Backdrop (which itself sits behind BgCutScene
+## so the entrance reveal is the academy backdrop, never the gray window). It is
+## BgCutScene's FIRST child, so it draws over the picture but under the Sun and
+## Sparkles (a dissolve never hides them) and rides BgCutScene's entrance fade.
+@onready var cg_overlay: TextureRect = $BgCutScene/CgOverlay
 @onready var fade_overlay: ColorRect = $FadeOverlay
 ## The advance chevron in the note's bottom-right corner; _pulse_chevron()
 ## breathes it so the player reads the box as waiting on a tap (2026-09-30 VN
@@ -49,7 +51,7 @@ extends Control
 var cg_data = [
 	{
 		"image": preload("res://Assets/Images/CG/cg0.jpg"),
-		"text": "Fiuh, setelah sekian lama aku mendaftar di sekolah ini. Akhirnya saya resmi diakui untuk mengajar disini!"
+		"text": "Fiuh, setelah sekian lama aku mendaftar di sekolah ini. Akhirnya aku resmi diakui untuk mengajar di sini!"
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg1.jpg"),
@@ -73,15 +75,7 @@ var cg_index := 0
 var is_transitioning := false
 var _reveal_tween: Tween
 
-## Where the Debug Level Select toggle sends the player once switched on.
-const _LEVEL_SELECT_SCENE := "res://Scenes/LevelSelect/LevelSelect.tscn"
-
 var btn_skip: Button
-var btn_debug_toggle: Button
-## True once a scene change has been asked for. Separate from
-## is_transitioning, which also covers the CG fades, so the Debug toggle
-## still leaves mid-fade but never fires a second change_scene.
-var _exiting := false
 
 func _ready():
 	fade_overlay.color.a = 0.0
@@ -91,7 +85,6 @@ func _ready():
 	if Engine.is_editor_hint():
 		return
 
-	_update_debug_button_text()
 	_pulse_chevron()
 
 	# With the picker on, the grade was chosen on the Level Select already.
@@ -100,17 +93,18 @@ func _ready():
 	show_current()
 
 func _setup_top_bar_buttons() -> void:
-	# Top HBox for Skip & Debug controls
+	# Top HBox for the Skip control
 	var top_bar = HBoxContainer.new()
 	top_bar.position = Vector2(30, 40)
 	top_bar.size = Vector2(1020, _tokens.touch_target_min + 20)
 	add_child(top_bar)
 
 	# The "Debug Level Select" toggle is gone from the player-facing intro
-	# (2026-09-30): it was developer chrome, and devs still reach the grade
-	# picker from the Debug overlay's Scenes tab ("Pilih Kelas (LevelSelect)").
-	# btn_debug_toggle stays null; _update_debug_button_text() and
-	# _on_debug_toggle_pressed() are null-guarded / unwired accordingly.
+	# (2026-09-30): it was developer chrome. Its switch (the persisted
+	# GameState.debug_level_select_enabled) now lives on the Debug overlay's
+	# General tab -- Scripts/Debug/DebugLevelSelectToggle.gd -- beside the
+	# tutorial switches. The Scenes tab's "Pilih Kelas (LevelSelect)" only
+	# teleports to the picker; it does not flip that flag.
 
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -124,28 +118,11 @@ func _setup_top_bar_buttons() -> void:
 	# Lean and mobile-friendly: a short Indonesian label in a compact pill,
 	# tucked top-right, rather than the wide "Skip Intro" (2026-09-30).
 	btn_skip.text = "Lewati"
-	# No clip_text: with the debug toggle gone the HBox can't overflow, so the
+	# No clip_text: with nothing else in the HBox it can't overflow, so the
 	# pill simply sizes to the word (min width keeps a comfortable tap target).
 	btn_skip.custom_minimum_size = Vector2(200, _tokens.touch_target_min)
 	btn_skip.pressed.connect(_on_skip_pressed)
 	top_bar.add_child(btn_skip)
-
-func _update_debug_button_text() -> void:
-	if btn_debug_toggle:
-		var mode_str = "ON (Pilih Kelas)" if GameState.debug_level_select_enabled else "OFF (Normal)"
-		btn_debug_toggle.text = "Debug Level Select: " + mode_str
-
-## Switched on, the toggle goes back to the Level Select to pick a grade
-## before the intro, as the old in-scene modal used to pop up.
-func _on_debug_toggle_pressed() -> void:
-	GameState.debug_level_select_enabled = not GameState.debug_level_select_enabled
-	GameSettings.save_settings()
-	_update_debug_button_text()
-	print("Debug Level Select toggled: ", GameState.debug_level_select_enabled)
-	if GameState.debug_level_select_enabled and not _exiting and not Transition.is_busy():
-		_exiting = true
-		is_transitioning = true
-		Transition.change_scene(_LEVEL_SELECT_SCENE, Transition.Style.WIPE)
 
 ## Skip must route through StudentCard exactly like finishing the cutscene
 ## normally does (go_to_gameplay, below) -- this scene is only ever reached
@@ -174,22 +151,27 @@ func _on_skip_pressed() -> void:
 	if Transition.is_busy():
 		return
 	is_transitioning = true
-	_exiting = true
 	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)
 
 
-## Deliberately slower than transition_to_next()'s panel-to-panel
-## crossfade (which uses _tokens.dur_normal) -- this is the very first
-## beat of a reveal sequence (fresh game, after grade select, or the
-## loss-retry cutscene), and it should read as a breath before the
-## scene commits to its opening image, not a routine page-turn.
-## The advance chevron's breathing pulse: its dimmest alpha and the seconds
-## each half of the loop takes.
-const _CHEVRON_PULSE_MIN_ALPHA := 0.35
-const _CHEVRON_PULSE_SEC := 0.6
-
+## Seconds the opening CG holds back before its reveal starts. Deliberately
+## slower than transition_to_next()'s panel-to-panel crossfade (which uses
+## _tokens.dur_normal) -- this is the very first beat of a reveal sequence
+## (fresh game, after grade select, or the loss-retry cutscene), and it
+## should read as a breath before the scene commits to its opening image,
+## not a routine page-turn.
 const _ENTRANCE_HOLD_SEC := 0.4
+
+## Seconds the opening CG takes to fade up. Slow for the same reason as
+## _ENTRANCE_HOLD_SEC: the first beat is a breath, not a page-turn.
 const _ENTRANCE_FADE_SEC := 1.0
+
+## The advance chevron's dimmest alpha in its breathing pulse
+## (_pulse_chevron()).
+const _CHEVRON_PULSE_MIN_ALPHA := 0.35
+
+## Seconds each half of the chevron's breathing loop takes.
+const _CHEVRON_PULSE_SEC := 0.6
 
 func show_current():
 	AudioDirector.play_bgm(&"introcutscene")
@@ -265,6 +247,8 @@ func advance():
 ## while the current one holds on BgCutScene, then becomes the base layer.
 ## The old code faded BgCutScene down to alpha 0 and back with nothing behind
 ## it, so every advance dipped through the bare backdrop; this never does.
+## CgOverlay sits under BgCutScene's Sun and Sparkles, so they stay lit
+## throughout and never pop back at the swap.
 func transition_to_next():
 	is_transitioning = true
 
@@ -298,5 +282,4 @@ func _next_scene_path() -> String:
 func go_to_gameplay():
 	# See _on_skip_pressed() for why the black fade is gone.
 	is_transitioning = true
-	_exiting = true
 	Transition.change_scene(_next_scene_path(), Transition.Style.WIPE)

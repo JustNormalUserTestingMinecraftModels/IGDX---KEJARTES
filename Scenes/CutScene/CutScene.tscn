@@ -32,6 +32,18 @@ texture = ExtResource("2_w1y33")
 expand_mode = 1
 stretch_mode = 6
 
+[node name="CgOverlay" type="TextureRect" parent="BgCutScene" unique_id=827945534]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
 [node name="Sun" parent="BgCutScene" unique_id=1135639279 instance=ExtResource("amb_pool")]
 anchors_preset = 0
 center = Vector2(0.8, 0.08)
@@ -43,15 +55,6 @@ anchors_preset = 0
 preset = 1
 density = 0.6
 drift = Vector2(1, -0.2)
-
-[node name="CgOverlay" type="TextureRect" parent="." unique_id=827945534]
-modulate = Color(1, 1, 1, 0)
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-expand_mode = 1
-stretch_mode = 6
 
 [node name="DialogueBox" type="Panel" parent="." unique_id=1079685626]
 layout_mode = 1

@@ -15,7 +15,7 @@ extends McpTestSuite
 ##    without awaiting it, so a coroutine test returns control at its
 ##    first `await` before any post-await assertion runs and is scored
 ##    as "0 assertions" (a false pass). CutScene actually has real
-##    Button nodes (top-bar Skip/Debug; the grade picker moved to the
+##    Button nodes (the top-bar Skip; the grade picker moved to the
 ##    Level Select scene on 2026-09-25), unlike Splashscreen/Loading,
 ##    so the touch-target test from the shared brief template DOES apply
 ##    here -- but per test_main_menu.gd's finding, it is measured via
@@ -92,7 +92,7 @@ func test_scene_instantiates_without_errors() -> void:
 
 
 ## Adapted from the shared brief template: unlike a menu screen, this one
-## builds its interactive controls (top-bar Skip/Debug) in code rather
+## builds its interactive controls (the top-bar Skip) in code rather
 ## than in the .tscn, so the walk starts from
 ## the scene root and collects every BaseButton it finds, checking each
 ## against get_combined_minimum_size() -- synchronous, per note 2 above,
@@ -229,10 +229,26 @@ func test_typewriter_reveal_uses_visible_ratio_not_character_slicing() -> void:
 		"must not rebuild the label character-by-character, which breaks BBCode")
 
 
+## A CG swap dissolves rather than cuts. transition_to_next() loads the incoming
+## CG onto CgOverlay, tweens the overlay's alpha toward opaque over the picture
+## still showing, and only then promotes the texture to BgCutScene and clears the
+## overlay's alpha. (BgCutScene's own modulate:a belongs to show_current()'s
+## entrance fade, so it is not evidence of a dissolve.)
 func test_cg_changes_crossfade_instead_of_hard_cutting() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(src.contains("bg_cutscene, \"modulate:a\""),
-		"CG swaps must tween BgCutScene.modulate:a rather than hard-cutting the texture")
+	var body := _function_body(src, "transition_to_next")
+	var load_at := body.find("cg_overlay.texture = cg_data[cg_index][\"image\"]")
+	assert_true(load_at >= 0, "the incoming CG is loaded onto CgOverlay, not straight onto BgCutScene")
+	var fade_at := body.find("tween_property(cg_overlay, \"modulate:a\", 1.0")
+	assert_true(fade_at > load_at,
+		"CG swaps must tween CgOverlay.modulate:a toward opaque rather than hard-cutting the texture")
+	var promote_at := body.find("bg_cutscene.texture = cg_overlay.texture")
+	assert_true(promote_at > fade_at,
+		"only after the dissolve does the overlay's texture become the base picture")
+	assert_true(body.find("cg_overlay.modulate.a = 0.0", promote_at) > promote_at,
+		"and the overlay's alpha is cleared with it, so the next advance starts clean")
+	assert_false(body.contains("bg_cutscene.modulate"),
+		"a swap never dips the picture: BgCutScene's alpha is not touched")
 
 
 ## Pulls one top-level function's body out of the script source, from its

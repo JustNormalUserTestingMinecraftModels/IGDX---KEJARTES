@@ -473,7 +473,9 @@ func test_main_menu_routes_through_the_level_select() -> void:
 
 
 ## CutScene's runtime-built picker is gone; it defaults to Kelas 7 only when
-## no grade was picked upstream, and its Debug toggle comes back here.
+## no grade was picked upstream. Its Debug toggle left for the Debug overlay's
+## General tab (Scripts/Debug/DebugLevelSelectToggle.gd), so the intro no longer
+## names the picker's scene at all.
 func test_cutscene_hands_grade_picking_to_the_level_select() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/CutScene/CutScene.gd")
 	for gone in ["PILIH TINGKAT KELAS", "_setup_level_select_ui", "level_select_overlay",
@@ -481,5 +483,5 @@ func test_cutscene_hands_grade_picking_to_the_level_select() -> void:
 		assert_false(src.contains(gone), "CutScene.gd must not mention " + gone)
 	assert_true(src.contains("if not GameState.is_level_select_enabled():"),
 		"CutScene defaults the grade only when the picker is off")
-	assert_true(src.contains('"res://Scenes/LevelSelect/LevelSelect.tscn"'),
-		"the Debug toggle routes to the level select")
+	assert_false(src.contains('"res://Scenes/LevelSelect/LevelSelect.tscn"'),
+		"the Debug toggle that routed to the level select moved to the Debug overlay")

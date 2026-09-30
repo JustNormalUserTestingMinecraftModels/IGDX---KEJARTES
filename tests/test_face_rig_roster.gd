@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## Layered lobby faces (StudentFace) for the rest of the roster: Andi, Doni,
 ## Marcel, Shinta and Thea. Citra's rig predates them and keeps its own suite,
 ## tests/test_student_face.gd, which also covers the shared StudentFace motion.
@@ -243,13 +246,13 @@ func test_no_eye_cut_out_is_left_see_through() -> void:
 	for student in _RIGS:
 		var face := _rig(student)
 		var sclera := _layer(face, "Sclera")
-		var base_img := _layer(face, "Base").texture.get_image()
+		var base_img := TexturePixels.of(_layer(face, "Base").texture)
 		var covers: Array = []
 		for entry in _RIGS[student]["layers"]:
 			if entry[0] in ["Base", "Pupil", "Eyelid"]:
 				continue
 			var node := _layer(face, entry[0])
-			covers.append([node.texture.get_image(), Vector2i(node.position), _cover_alpha(node)])
+			covers.append([TexturePixels.of(node.texture), Vector2i(node.position), _cover_alpha(node)])
 		var r := Rect2i(Vector2i(sclera.position) - Vector2i(4, 4),
 			Vector2i(sclera.size) + Vector2i(8, 8))
 		var open := 0

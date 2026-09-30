@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## The ghost track that sat behind Wirausaha and Libur, and the two faint
 ## motifs drawn over it. Since the 2026-09-24 picker rebuild the track has
 ## no consumer (logged in docs/superpowers/DEBT.md); its asset checks stay
@@ -40,7 +43,7 @@ func test_the_texture_exists_at_the_expected_size() -> void:
 func test_alpha_ramps_left_to_right() -> void:
 	var tex := load(TRACK_PATH) as Texture2D
 	assert_not_null(tex, "missing " + TRACK_PATH)
-	var img := tex.get_image()
+	var img := TexturePixels.of(tex)
 	var mid_y := int(img.get_height() / 2)
 	var left := img.get_pixel(2, mid_y).a
 	var right := img.get_pixel(img.get_width() - 3, mid_y).a
@@ -54,7 +57,7 @@ func test_alpha_ramps_left_to_right() -> void:
 func test_left_cap_matches_the_ramp_start() -> void:
 	var tex := load(TRACK_PATH) as Texture2D
 	assert_not_null(tex, "missing " + TRACK_PATH)
-	var img := tex.get_image()
+	var img := TexturePixels.of(tex)
 	var mid_y := int(img.get_height() / 2)
 	var left := img.get_pixel(2, mid_y).a
 	assert_true(abs(left - LEFT_ALPHA) < TOLERANCE,
@@ -91,7 +94,7 @@ func test_the_motifs_are_lighter_than_the_row_icon_brown() -> void:
 	for path in [KOIN_PATH, SABIT_PATH]:
 		var tex := load(path) as Texture2D
 		assert_not_null(tex, "missing " + path)
-		var img := tex.get_image()
+		var img := TexturePixels.of(tex)
 		var lit := 0.0
 		var n := 0
 		for y in range(0, img.get_height(), 4):

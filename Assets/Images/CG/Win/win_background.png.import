@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://56hidkmdh1e"
-path="res://.godot/imported/win_background.png-ad13166e8eb38f5438707c3c177d7fdb.ctex"
+path.bptc="res://.godot/imported/win_background.png-ad13166e8eb38f5438707c3c177d7fdb.bptc.ctex"
+path.astc="res://.godot/imported/win_background.png-ad13166e8eb38f5438707c3c177d7fdb.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/CG/Win/win_background.png"
-dest_files=["res://.godot/imported/win_background.png-ad13166e8eb38f5438707c3c177d7fdb.ctex"]
+dest_files=["res://.godot/imported/win_background.png-ad13166e8eb38f5438707c3c177d7fdb.bptc.ctex", "res://.godot/imported/win_background.png-ad13166e8eb38f5438707c3c177d7fdb.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

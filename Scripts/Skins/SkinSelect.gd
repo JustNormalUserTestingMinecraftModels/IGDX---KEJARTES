@@ -15,9 +15,15 @@ extends Control
 ## the Lobby -- the live pixels are gone by the time the new scene loads, and
 ## the project's other answer to that (Achievements' baked
 ## bg_achievements_blur.jpg) cannot show the room the student is standing in.
-## Blur here is skin_select_backdrop_material.tres over the live screen: the shop
-## hub's blur, dimmed 25% less (darkness 0.4375, not 0.55) so the room behind
-## the characters reads lighter.
+## The backdrop is a still of the Lobby, not the live room (2026-09-30 mobile
+## performance pass). open() shrinks the last frame drawn to an eighteenth of
+## its size, which is the blur, and shows it on Frozen dimmed by the darkness of
+## skin_select_backdrop_material.tres (0.4375: the shop hub's blur, dimmed 25%
+## less). Once the fade-in ends it emits `covered`, and the Lobby stops
+## drawing the room until `uncovering`. The live screen blur it replaces kept
+## the whole Lobby rendering under an opaque screen and copied the screen
+## every frame; Blur stays in the scene as the fallback for a frame that
+## cannot be read.
 ##
 ## Sliding the carousel records a PENDING choice per character; nothing is
 ## equipped until TERAPKAN, which commits every pending character at once.
@@ -39,6 +45,12 @@ extends Control
 ## fades are skipped in the editor.
 
 signal closed
+## Emitted when the fade-in ends: the screen now hides everything behind it,
+## so whoever opened it may stop drawing that.
+signal covered
+## Emitted as the screen starts to leave, before its fade-out shows what is
+## behind it again.
+signal uncovering
 
 ## One card per skin of the open character, instanced per open: the count
 ## depends on who the rail has open, so it is per-call dynamic content.
@@ -63,6 +75,10 @@ signal closed
 @export var side_blur_px: float = 4.0
 ## How far a drag may pull past the first or last card, in cards.
 @export var overscroll: float = 0.35
+## How many times smaller than the screen the backdrop still is kept, each
+## way. Stretched back over the screen it is the blur: 18 was matched by eye
+## to the old screen blur on a side-by-side capture. Higher is blurrier.
+@export_range(2, 32) var backdrop_shrink: int = 18
 
 ## Width of the splash canvas every card is drawn at before scaling.
 const CARD_W := 1080.0
@@ -85,6 +101,8 @@ const ROSTER_HEADER_FORMAT := "Kelasmu - %d murid"
 @onready var _back_button: TextureButton = %BackButton
 @onready var _terapkan: Button = %Terapkan
 @onready var _roster_header: Label = %RosterHeader
+@onready var _blur: ColorRect = $Blur
+@onready var _frozen: TextureRect = %Frozen
 
 ## The characters on the rail, in rail order: whoever open() was given, or
 ## StudentSkins.NAMES if it fell back. Tiles beyond _names.size() stay
@@ -168,8 +186,13 @@ func open(names: Array[String] = []) -> void:
 	select_student(0)
 	if Engine.is_editor_hint() or not is_inside_tree():
 		return
+	# Before the first frame of this screen is drawn, so the last frame on
+	# the viewport is still the room alone.
+	show_still(frozen_backdrop(get_viewport().get_texture().get_image(), backdrop_shrink))
 	modulate.a = 0.0
-	create_tween().tween_property(self, "modulate:a", 1.0, fade_time)
+	var fade := create_tween()
+	fade.tween_property(self, "modulate:a", 1.0, fade_time)
+	fade.tween_callback(_on_faded_in)
 	play_rail_entrance()
 	AudioDirector.play_sfx(&"tap")
 
@@ -193,6 +216,45 @@ func play_rail_entrance() -> void:
 		if tile != null:
 			tiles.append(tile)
 	Juice.stagger_in(tiles)
+
+
+## A small, soft still of `frame` for the backdrop: `shrink` times smaller
+## each way, so stretching it back over the screen blurs it. Null when there
+## is no frame to read. Works on a copy; `frame` is left alone. Halved in
+## steps first, because one big bilinear resize skips most of the pixels and
+## the still would shimmer with whatever they happened to be.
+static func frozen_backdrop(frame: Image, shrink: int) -> Image:
+	if frame == null or frame.is_empty() or frame.is_compressed():
+		return null
+	var still: Image = frame.duplicate()
+	var target := Vector2i(maxi(frame.get_width() / shrink, 1), maxi(frame.get_height() / shrink, 1))
+	while still.get_width() >= target.x * 2 and still.get_height() >= target.y * 2:
+		still.shrink_x2()
+	if still.get_size() != target:
+		still.resize(target.x, target.y, Image.INTERPOLATE_BILINEAR)
+	still.convert(Image.FORMAT_RGB8)
+	return still
+
+
+## Puts `still` on the backdrop in place of the live blur, dimmed by the
+## blur material's own darkness. A null still changes nothing, so the live
+## blur stays as the fallback.
+func show_still(still: Image) -> void:
+	if still == null:
+		return
+	var light := 1.0 - float((_blur.material as ShaderMaterial).get_shader_parameter(&"darkness"))
+	_frozen.texture = ImageTexture.create_from_image(still)
+	_frozen.self_modulate = Color(light, light, light)
+	_frozen.visible = true
+	_blur.visible = false
+
+
+## The fade-in's last step. Says nothing once close() has begun: a quick
+## open-then-back would otherwise hide the room under a screen that is
+## already fading away.
+func _on_faded_in() -> void:
+	if not _closing:
+		covered.emit()
 
 
 ## The character the rail currently has open.
@@ -289,6 +351,7 @@ func close() -> void:
 	if _closing:
 		return
 	_closing = true
+	uncovering.emit()
 	if Engine.is_editor_hint() or not is_inside_tree():
 		return
 	var tw := create_tween()

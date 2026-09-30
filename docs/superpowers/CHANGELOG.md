@@ -8,6 +8,168 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Lobby seating to the owner's picture; planks on tall phones
+
+Spec `docs/superpowers/specs/2026-09-30-lobby-seating-and-planks-design.md`,
+plan `docs/superpowers/plans/2026-09-30-lobby-seating-and-planks.md`,
+reference `docs/superpowers/mockups/lobby-seating-reference-2026-09-30.jpg`.
+
+- **Planks.** `World/Backdrop` is desk wood (`#B07A45`, the owner's pick over
+  flat, edge-carried, fade, blurred-room and two other plank tones), with
+  `PlankEdgeTop` / `PlankEdgeBottom` lines where it meets the room. Anchored
+  off the screen's centre, so 1080x1920 is unchanged.
+- **Seating.** Measured by matching the game's own textures in the picture:
+  portraits 0.20 (back) and 0.25 (front) of 1280 px, items 0.80 and 1.00 of
+  native, mapped by `K = 448 / 429` from each desk's back edge. Each seat's
+  `Portrait` is that square; every `Hand_*` wears its row's scale; the
+  pictured four (Andi, Citra, Marcel mirrored, Thea) are exact; the others
+  keep their x, stay off the aisle in the front row, and rise 72 / 80 px.
+- **Superseded:** the 2026-09-29 by-eye item sizes of Citra, Shinta and Thea,
+  and the rule that an item stays inside its desk's width.
+  `test_lobby_desk_items_fit` is rewritten around the picture.
+## 2026-09-30 — Efek Visual loses its own bloom
+
+Owner's call: with Efek Visual on, the look layer's full-screen bloom stacked
+on the glow each screen already carries and read as overwhelming; the glow
+that is always there is the one to keep. `LookLayer.bloom_enabled` (an
+export, default off) now gates it, so Efek Visual is the vignette and the
+grain, and no longer copies the screen. The debug Look tab has the switch
+("Bloom global Efek Visual"); strength and threshold are still
+`bloom_material.tres`'s. Nothing else changed: the Lobby, shop and end-game
+glow and the minigames' `ScreenGlow` measured the same before and after
+today's three performance PRs (Lobby frame mean 141.97 and 141.48).
+
+## 2026-09-30 — Grafis HD switch (mobile performance 3 of 3)
+
+Settings gains **Grafis HD** at the top of TAMPILAN, on by default (owner's
+ask: off means no bloom and no MSAA). `GameSettings.hd_graphics_enabled`,
+saved as `hd_graphics`.
+
+- **Off drops the root viewport's 2D MSAA**; on restores whatever
+  `project.godot` asks for (`LookLayer.msaa_for`).
+- **Off switches every bloom off**: the look layer's bloom leaves the draw
+  list (a transparent one would still copy the screen), every `ScreenGlow`
+  and `AmbientGlow` follows `AmbientKit.wants_bloom()`, and the Lobby's
+  WorldEnvironment wears `HdEnvironmentGlow` for its own glow.
+- Vignette and grain stay with Efek Visual; the rest of the ambient kit
+  stays with Efek Suasana. The debug Look panel carries the switch too.
+- In the Lobby with Efek Visual on, on the dev PC: 2.3 ms of GPU time per
+  frame with Grafis HD on, 1.4 ms off; 249 MB of textures on, 223 MB off.
+- The bloom was not moved to a lower resolution, as first proposed: a
+  screen-reading shader always copies the whole screen, so there is no
+  cheaper bloom short of a SubViewport pipeline. The switch is the saving.
+
+## 2026-09-30 — Skin Select stops drawing the Lobby (mobile performance 2 of 3)
+
+Skin Select was the costliest screen in the game: the whole Lobby kept
+rendering under an opaque screen, the backdrop blur copied the screen and
+rebuilt its mip chain every frame, and the neighbour card's blur took 48
+texture samples per pixel. GPU time per frame on the dev PC, which shows the
+ratio and not what a phone will do: 2.7 ms at rest and 3.8 ms mid-swipe
+before, about 1.2 ms after (4.1 to 1.4 with Efek Visual on).
+
+- **The backdrop is a still.** `SkinSelect.open()` shrinks the last frame
+  drawn to an eighteenth of its size (`backdrop_shrink`), which is the blur,
+  and shows it on `Frozen`, dimmed by `skin_select_backdrop_material.tres`'s
+  own darkness. `Blur` stays as the fallback for a frame that cannot be
+  read. The room behind no longer animates while the picker is open.
+- **The Lobby stops drawing the room** between the picker's `covered` and
+  `uncovering` signals (`Lobby._set_room_drawn`): `World` is hidden, and the
+  Environment glow goes with it and comes back.
+- **The neighbour blur reads the splash's mip chain**: five taps instead of
+  48, through its own linear sampler (`blur_source`). The six skin splashes
+  gained mipmaps for it.
+- With Efek Visual on, the still is taken with the vignette already on it,
+  so the vignette reaches the backdrop twice. On a capture the two were not
+  told apart (mean brightness of the carousel area 68.1 before, 68.5 after).
+
+## 2026-09-30 — Texture memory pass (mobile performance 1 of 3)
+
+Measured in the running game before the pass: 128 MB of textures at boot,
+348 MB in the Lobby, 419 MB with Skin Select open. Every image was imported
+lossless, which sits in video memory at 4 bytes per pixel. No leak: 18
+open/close cycles of Skin Select left node, object and texture counts flat.
+
+- **131 images at or over 500,000 px now import VRAM-compressed with
+  `compress/high_quality=true`**: ASTC 4x4 on a phone, BPTC on desktop, a
+  quarter of the memory. After: 64 MB at boot, 238 MB in the Lobby, 303 MB
+  with Skin Select open. Smaller art (icons, 9-slices, bar fills) stays
+  lossless.
+- **The character art stays lossless**, listed with its reasons in
+  `tests/test_texture_memory.gd`'s `ALLOWED`. The twelve face bases:
+  compressed, Thea's base opened 2 see-through pixels in her eye cut-outs.
+  The 24 student portraits, splashes and outfits: the owner's 2026-09-29
+  call on block artifacts, not reversed here (DEBT.md has what it costs).
+- **`tests/test_texture_memory.gd`** pins the rule and a total ceiling
+  (700 MiB if every image were loaded; it was 1309 and is 632). A new large image fails
+  the suite until its import is flipped or it is given a reason in `ALLOWED`.
+- **`tests/texture_pixels.gd`**: every suite that reads pixels goes through
+  it, because `get_image()` on a compressed texture comes back compressed and
+  a per-pixel loop over it hung the editor. That hang is what reverted the
+  2026-09-22 attempt at this pass ("Item 12"); the full run now completes.
+
+## 2026-09-30 — Main Bola: a goal in the air beats the clock
+
+The clock ended the game with the ball still flying: `lose_game()` put the
+loss card up, the goal landed behind it and a winning goal never reached the
+win screen (owner's report, "goal not registered to the winscreen"). With 30 s
+at Kelas 7 and 18 s at Kelas 9 against a 0.4 s flight, the last shot often
+straddles the buzzer. `lose_game()` now returns while `is_resolving`; the
+clock sits at zero and calls it again each frame, so a shot that does not win
+ends the game as soon as it resolves. `_clock_is_out()` keeps a swipe from
+starting another shot in that frame. Pinned in `tests/test_main_bola_shots.gd`.
+
+## 2026-09-30 — SchoolDay split sky and cloud layer
+
+Spec `docs/superpowers/specs/2026-09-30-schoolday-cloud-layer-design.md`.
+
+- **The artist's split sky.** `transition_background.png` is now the
+  gradient alone and `Sky/cloud_layer.png` the clouds alone (both from
+  3998² sources, downscaled to 2048²). The three SVG clouds are deleted.
+- **The clouds ride the sky and creep.** `BookClockWidget` fits `Clouds` to
+  the sky's square and pivot and hands every sky angle to
+  `CloudDrift.follow_sky()`; `CloudDrift` adds a slow own-clock creep
+  (`spin_degrees_per_second`, -2 by default, `preview_in_editor` to watch it)
+  that turns back at `max_drift_degrees` (24), so an idling day never walks
+  them out of register; `set_day()` clears it under the full night. An own-clock spin with no
+  ride was built first and dropped: the sky turns a full circle in seconds of
+  play, so the dusk clouds hung over every midday.
+- **Sun and moon in front.** `CloudLayer` moved below `SkyBodies`; the
+  painting all but hid the midday sun.
+## 2026-09-30 — Phone audio sliders and tall-phone stragglers
+
+- **Musik and Efek Suara did nothing on a phone build.** They work in the
+  editor; with the BGM and SFX buses absent (removed in a running game to
+  reproduce it) every player falls back to Master and `set_bus_volume()` finds
+  nothing to turn, while Suara Utama keeps working. `AudioDirector` now
+  creates any bus in `MIXER_BUSES` the loaded layout lacks
+  (`ensure_bus()`), before it makes its players. Not yet confirmed on a
+  device: no export preset or templates exist on the dev PC, so why the APK
+  lacks the layout is still open (DEBT.md, "Android export").
+- **Koperasi's tall-phone band** read as an empty strip: `WallFill` lacked the
+  room backdrop's grade and came out paler than the wall. Same material now.
+- **Bottom controls pinned to the bottom edge**: AturJadwal's START WEEK,
+  CutScene's dialogue box and hint, EndCutscene's Lanjut. Inventory's and
+  CutScene's backdrops cover instead of stretching.
+## 2026-09-30 — Parallax follows the phone's rotation
+
+`ParallaxDiorama` reads the gyroscope first (owner's ask). The gyroscope gives
+a turn rate, so `integrate_turn()` adds it up into an angle from the held
+pose, eases it back to zero at `tilt_recenter` and caps it at
+`tilt_angle_degrees` (12, full deflection). A phone with no gyroscope keeps
+the accelerometer path; desktop keeps the pointer. Knobs on the driver:
+`use_gyroscope`, `tilt_angle_degrees`, `gyro_direction` (flip a sign to
+reverse an axis).
+
+**The parallax had been dead on handsets.** Godot ships every sensor disabled
+(`input_devices/sensors/enable_*`), and a disabled sensor reads zero, so the
+driver took the pointer path and followed the last touch. `project.godot` now
+enables the gyroscope and the accelerometer, pinned by
+`test_the_sensors_the_driver_reads_are_enabled`.
+
+Not checked on a device: the default `gyro_direction` of (-1, -1) is derived
+from the sensor's axis convention, not from a handset in hand.
+
 ## 2026-09-30 — Minigame text hierarchy, spacing and fixes
 
 Spec `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`, plan

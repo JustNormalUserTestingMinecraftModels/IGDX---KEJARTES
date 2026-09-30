@@ -806,10 +806,22 @@ func _on_skin_switch_pressed() -> void:
 	add_child(screen)
 	screen.closed.connect(func(): _skin_select_open = false)
 	screen.closed.connect(_setup_students)
+	screen.covered.connect(_set_room_drawn.bind(false))
+	screen.uncovering.connect(_set_room_drawn.bind(true))
 	# Calls down with the roster's names -- SkinSelect never reads GameState
 	# itself, so the rail shows this class, not every character.
 	var names: Array[String] = SkinSelect.roster_names(GameState.approved_students)
 	screen.open(names)
+
+
+## Draws the room, or stops drawing it while the skin picker covers the whole
+## screen with its own still of it. The room is the costly part of this
+## screen (every plate is shaded, and the glow runs over all of it), and
+## under the picker none of it can be seen. `World` sits on layer -1, and a
+## hidden layer there also switches the Environment glow off, which is wanted
+## here and comes back with the layer.
+func _set_room_drawn(drawn: bool) -> void:
+	($World as CanvasLayer).visible = drawn
 
 
 ## LobbyChatter's gate: nobody talks over the tutorial, the daily reward,

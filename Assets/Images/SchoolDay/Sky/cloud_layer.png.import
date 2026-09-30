@@ -2,21 +2,23 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bprw8gqgiqimm"
-path="res://.godot/imported/cloud_c.svg-83d434ef4f4f5d5b73ed685af394fcb3.ctex"
+uid="uid://c604cm0q612cv"
+path.bptc="res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.bptc.ctex"
+path.astc="res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
-source_file="res://Assets/Images/SchoolDay/Sky/cloud_c.svg"
-dest_files=["res://.godot/imported/cloud_c.svg-83d434ef4f4f5d5b73ed685af394fcb3.ctex"]
+source_file="res://Assets/Images/SchoolDay/Sky/cloud_layer.png"
+dest_files=["res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.bptc.ctex", "res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
@@ -38,6 +40,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

@@ -5,6 +5,8 @@ func suite_name() -> String:
 	return "audio_director"
 
 const _MIXER_BUSES := ["Master", "BGM", "SFX"]
+## A throwaway bus name for the ensure_bus() test; teardown removes it.
+const _PROBE_BUS := &"KejarTesProbeBus"
 
 var _director: Node
 var _saved_bus_state: Array[Dictionary] = []
@@ -37,6 +39,13 @@ func teardown() -> void:
 	if is_instance_valid(_director):
 		_director.queue_free()
 	_director = null
+
+	# The probe bus test_a_missing_bus_is_created_and_sent_to_master adds. It
+	# is removed here, not only in the test, so a run aborted part-way can
+	# never leave it in the editor's mixer to be saved into the bus layout.
+	var probe := AudioServer.get_bus_index(_PROBE_BUS)
+	if probe >= 0:
+		AudioServer.remove_bus(probe)
 
 	for state in _saved_bus_state:
 		AudioServer.set_bus_volume_db(state["idx"], state["db"])
@@ -753,3 +762,37 @@ func test_the_players_volume_is_the_source_of_truth() -> void:
 	assert_true(src.contains("return float(_volumes[StringName(bus)])"), "get_bus_volume reports it")
 	var debug := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
 	assert_false(debug.contains("AudioServer.set_bus_mute"), "no debug default mutes the music")
+
+
+## 2026-09-30: on a phone build the Musik and Efek Suara sliders did nothing.
+## With the BGM and SFX buses absent (the layout file not carried or loaded by
+## an export), set_bus_volume() finds no bus and every player falls back to
+## Master. The director now makes any bus it needs.
+func test_a_missing_bus_is_created_and_sent_to_master() -> void:
+	var probe := _PROBE_BUS
+	assert_eq(AudioServer.get_bus_index(probe), -1, "the probe bus does not exist yet")
+	var before := AudioServer.bus_count
+	var idx: int = _director.ensure_bus(probe)
+	assert_true(idx >= 0, "ensure_bus returns the new bus's index")
+	assert_eq(AudioServer.get_bus_index(probe), idx, "and the AudioServer knows it by name")
+	assert_eq(AudioServer.bus_count, before + 1, "one bus was added")
+	if idx >= 0:
+		assert_eq(AudioServer.get_bus_send(idx), &"Master", "it sends to Master")
+	assert_eq(_director.ensure_bus(probe), idx, "asking again finds the same bus")
+	assert_eq(AudioServer.bus_count, before + 1, "and adds no second one")
+	if idx >= 0:
+		AudioServer.remove_bus(idx)
+	assert_eq(_director.ensure_bus(&"BGM"), AudioServer.get_bus_index(&"BGM"),
+		"a bus the layout already has is left alone")
+	assert_eq(AudioServer.bus_count, before, "the mixer is back as it was")
+
+
+## Both buses are ensured before any player is pointed at them.
+func test_setup_ensures_its_buses_before_making_players() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Audio/AudioDirector.gd")
+	var at := src.find("func _ready(")
+	var body := src.substr(at, src.find("\nfunc ", at + 1) - at)
+	var ensured := body.find("_ensure_mixer_buses()")
+	assert_true(ensured >= 0, "_ready ensures the mixer buses")
+	assert_true(ensured < body.find("AudioStreamPlayer.new()"), "before the first player exists")
+	assert_true(src.contains("for bus in MIXER_BUSES:"), "every player-facing bus is covered")

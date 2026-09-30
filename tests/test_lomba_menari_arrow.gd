@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuite
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## LombaMenari's note arrow (2026-09-28): one right-pointing, white-filled,
 ## dark-outlined texture in a MenariNote.tscn template, turned and tinted per
 ## lane, replacing the ←/→/↖/↗ glyphs Boohong and Open Sans cannot draw. The
@@ -22,7 +25,7 @@ func suite_name() -> String:
 # ─── the art
 
 func _arrow_image() -> Image:
-	var img := (load(ARROW_PATH) as Texture2D).get_image()
+	var img := TexturePixels.of(load(ARROW_PATH) as Texture2D)
 	if img.is_compressed():
 		img.decompress()
 	return img

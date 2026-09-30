@@ -46,7 +46,7 @@ eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 `penjadwalan_card_bg.png` was part of this pass too, but Phase 2 left it
 unreferenced -- see the UI depth pass entry below),
 the 2026-09-24 SchoolDay liveliness set (the sky's `Assets/Images/SchoolDay/Sky/`
-sun, moon, three clouds, star field and rain streak; the avatar rings in
+sun, moon, star field and rain streak -- its clouds are now the artist's final `Sky/cloud_layer.png`, 2026-09-30; the avatar rings in
 `SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
 band's `caution_tape.svg`; and `night_windows.png`, generated from
 `transition_foreground.png` -- regenerate it if that painting changes),
@@ -343,6 +343,16 @@ by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
 
+**No vibration on the phone build (2026-09-30).** `Haptics.buzz()` calls
+`Input.vibrate_handheld()`, which does nothing on Android unless the export
+preset grants the Vibrate permission. `export_presets.cfg` is gitignored, so
+the setting lives only on the machine that builds the APK and nothing in the
+repo can pin it. Whoever exports: Project > Export > Android > Permissions >
+tick **Vibrate**, then re-export. Not confirmed on a device; if the phone
+still stays silent with the permission on, the 8 ms and 20 ms tiers
+(`RewardFeedback.HAPTIC_MS`, `PressFeel.PRESS_TICK_MS`) are the next suspect,
+since many motors cannot render a pulse that short.
+
 **Unsimulated item boosts die on quit (moved from CLAUDE.md, 2026-09-30).**
 Item boosts land on `approved_students`, which is not persisted, so a boost applied and not simulated before quit is lost.
 It follows from the session-scoped-run rule; fixing it means persisting the roster, which needs the owner's go-ahead.
@@ -534,6 +544,27 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Texture memory follow-ons (2026-09-30).** Rule and numbers:
+  `tests/test_texture_memory.gd`.
+  - **Not checked on a phone.** The compressed art was judged on desktop
+    (BPTC); a phone gets ASTC 4x4 from the same import. Look at the desk
+    plates and the backdrops on a device before a release.
+  - **The character art is most of what is left**: the 24 student portraits,
+    splashes and outfits (below, "The student art is lossless for now") and
+    the twelve 1280x1280 face bases, drawn at about 400 px. All six bases
+    load in the Lobby whatever the roster is. Halving the base art, or
+    loading only the roster's faces, is the next saving.
+  - **The download size was not measured.** A compressed texture is stored
+    at its video-memory size (about 1 byte per pixel), where a lossless one
+    is stored packed, so the APK probably grows. No export preset exists on
+    the dev PC to build one; compare a build before and after.
+  - **A phone build cannot unpack ASTC** (the decoder ships in the editor
+    only), so `Image.decompress()` fails there. `TraySlot` carries its crops
+    baked for that reason; any new runtime pixel read of large art needs the
+    same, or the art in `ALLOWED`.
+  - **About 100 MB in the Lobby is not art**: probably render targets, MSAA,
+    fonts and the theme. Not investigated.
+
 - **Minigame hierarchy follow-ons (2026-09-30).** Spec:
   `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`.
   - **Stray key outline in the calculator art (artist).**
@@ -685,7 +716,8 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
   `timeout 600 "$GODOT" --headless --path . res://ci/project_check.tscn > check.log 2>&1`.
 - **Premium-look leftovers (2026-09-22, PRs 2-6).** The programme in
   `.superpowers/gamecode/premium-look/` shipped items 1-10 and 12; item 11
-  (the Lobby's black bands at 20:9) was cut by the brief. What was
+  (the Lobby's black bands at 20:9) was cut by the brief and landed on
+  2026-09-30 as desk-wood planks. What was
   deliberately left:
   - **SchoolDay has no parallax.** Its two bands (SkyBackground,
     SchoolForeground) live inside BookClockWidget, whose root already runs
@@ -702,29 +734,23 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     each face's `Base`; `Pupil` already carries `eye_mask.gdshader` and a
     CanvasItem has one material slot. It is a few hundred pixels of iris and
     reads fine, but a CanvasGroup pass would close it.
-  - **Item 12, VRAM compression, is built and reverted, not skipped.** The
-    project holds 1182 MB of uncompressed RGBA8 texture data, 1069 MB of it
-    Lossless. Compressing the 160 textures at 512x512 or larger cuts 975 MB
-    to 244 MB and every suite still passes individually -- but a FULL
-    `test_run` then never completes: the editor climbs to ~2 GB, stops
-    responding and has to be killed. Reverting the 160 `.import` files and
-    keeping only the project setting brought the full run back at 2123/2123
-    in 9 s, so the compression is the cause, and disabling ETC2 alone did not
-    help. To redo it: `compress/mode=2` on every texture .import whose source
-    is >= 512x512, EXCLUDING `Assets/Images/UI/BarFill/**` and
-    `Shop/UI/tray_dots.png` (their sharpness is asserted) and every `.svg`
-    (test_end_cutscene pixel-checks the badges). The 195 smaller textures
-    should stay lossless regardless: block artifacts show on small crisp UI
-    and the saving is minor. Land it only together with a way to run the
-    suite -- coverage is the quality floor.
   - **The student art is lossless for now (2026-09-29).** The 24 portraits,
     default splashes and day outfits were the only VRAM-compressed art; they
     showed block artifacts, so they went to high-quality VRAM (#142) and then
     lossless. That is about 4x their texture memory (a 1080x1920 splash with
     mipmaps is ~11 MB instead of ~2.7 MB). If phone memory becomes a
     problem, move them back to `compress/mode=2` with
-    `compress/high_quality=true`, and flip `test_student_art_is_lossless` and
-    the outfit import test in `tests/test_student_skins.gd` with them.
+    `compress/high_quality=true`, flip `test_student_art_is_lossless` and
+    the outfit import test in `tests/test_student_skins.gd`, and drop their
+    `STUDENT_ART` rows from `tests/test_texture_memory.gd`. Measured
+    2026-09-30 with them compressed: the Lobby 210 MB instead of 238, Skin
+    Select 242 instead of 303; on desktop (BPTC) a splash compared at
+    46 dB PSNR against its source.
+  - **Android export: why the APK lacks the bus layout is unknown (2026-09-30).**
+    A phone build booted without the BGM and SFX buses. `AudioDirector.ensure_bus()`
+    now covers it, but the preset that builds the APK lives on another machine
+    (`export_presets.cfg` is gitignored and absent here): check its resource
+    filter carries `Assets/Audio/default_bus_layout.tres`.
   - **ETC2 is on but nothing is built for Android yet.** There is no
     `export_presets.cfg`. `import_etc2_astc` is enabled so the committed
     `.import` files stay deterministic across machines; it costs import time

@@ -57,6 +57,25 @@ func bind(item: ItemData, quantity: int) -> void:
 ## decodes its image twice.
 static var _crops: Dictionary = {}
 
+## The opaque rect of every shop item's art, by resource path, in texels.
+## Baked, because the art is VRAM-compressed (tests/test_texture_memory.gd)
+## and a phone build cannot unpack ASTC to measure it: there the pixel read
+## below fails and the art would stand uncropped, floating over the plank.
+## tests/test_basket_tray.gd checks each rect against its PNG and that every
+## ItemDatabase icon has one, so new or repainted art fails there with the
+## rect to paste in.
+const ICON_CROPS := {
+	"res://Assets/Images/Shop/ItemRak/LKS.png": Rect2i(29, 369, 1186, 1074),
+	"res://Assets/Images/Shop/ItemRak/bank_soal.png": Rect2i(77, 41, 1029, 1429),
+	"res://Assets/Images/Shop/ItemRak/cilok.png": Rect2i(170, 86, 939, 1583),
+	"res://Assets/Images/Shop/ItemRak/komik.png": Rect2i(102, 142, 1002, 1458),
+	"res://Assets/Images/Shop/ItemRak/lompat_tali.png": Rect2i(25, 518, 1120, 644),
+	"res://Assets/Images/Shop/ItemRak/mie.png": Rect2i(37, 451, 1185, 899),
+	"res://Assets/Images/Shop/ItemRak/pop_es.png": Rect2i(163, 99, 751, 1469),
+	"res://Assets/Images/Shop/ItemRak/raket.png": Rect2i(288, 28, 553, 1596),
+	"res://Assets/Images/Shop/ItemRak/susus.png": Rect2i(256, 62, 768, 1649),
+}
+
 
 ## The art cropped to its opaque pixels. Item PNGs carry transparent
 ## padding, and padded art floats above the plank with its badge adrift; the
@@ -69,18 +88,30 @@ static func _cropped(tex: Texture2D) -> Texture2D:
 	if _crops.has(tex):
 		return _crops[tex]
 	var out: Texture2D = tex
-	var img := tex.get_image()
-	if img != null:
-		if img.is_compressed():
-			img.decompress()
-		var used := img.get_used_rect()
-		if used.size.x > 0 and used.size.y > 0 and used.size != img.get_size():
-			var crop := AtlasTexture.new()
-			crop.atlas = tex
-			crop.region = Rect2(used)
-			out = crop
+	var used := _opaque_rect(tex)
+	if used.size.x > 0 and used.size.y > 0 and used.size != Vector2i(tex.get_size()):
+		var crop := AtlasTexture.new()
+		crop.atlas = tex
+		crop.region = Rect2(used)
+		out = crop
 	_crops[tex] = out
 	return out
+
+
+## `tex`'s opaque rect: the baked one for a shop item, else measured from its
+## pixels. An empty rect when the image cannot be read.
+static func _opaque_rect(tex: Texture2D) -> Rect2i:
+	if ICON_CROPS.has(tex.resource_path):
+		return ICON_CROPS[tex.resource_path]
+	var img := tex.get_image()
+	if img == null:
+		return Rect2i()
+	if img.is_compressed():
+		# A copy: an editor build hands out one cached Image per texture.
+		img = img.duplicate()
+		if img.decompress() != OK:
+			return Rect2i()
+	return img.get_used_rect()
 
 
 ## Updates the ×N badge.

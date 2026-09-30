@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://t6ana4kpuktm"
-path="res://.godot/imported/lompat_tali.png-7b545458c1b676a50c3bca605e66917c.ctex"
+path.bptc="res://.godot/imported/lompat_tali.png-7b545458c1b676a50c3bca605e66917c.bptc.ctex"
+path.astc="res://.godot/imported/lompat_tali.png-7b545458c1b676a50c3bca605e66917c.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Shop/ItemRak/lompat_tali.png"
-dest_files=["res://.godot/imported/lompat_tali.png-7b545458c1b676a50c3bca605e66917c.ctex"]
+dest_files=["res://.godot/imported/lompat_tali.png-7b545458c1b676a50c3bca605e66917c.bptc.ctex", "res://.godot/imported/lompat_tali.png-7b545458c1b676a50c3bca605e66917c.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

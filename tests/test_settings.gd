@@ -22,19 +22,21 @@ const LayoutFrame := preload("res://tests/layout_frame.gd")
 const _SECTIONS := {
 	"AudioCard": ["SUARA", ["MasterRow", "BgmRow", "SfxRow"]],
 	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
-	"DisplayCard": ["TAMPILAN", ["LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
+	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
 }
 ## Each switch row's words.
 const _ROW_LABELS := {
 	"TutorialRow": "Tutorial Minigame", "SkipDialogRow": "Lewati Dialog Minigame",
 	"LookLayerRow": "Efek Visual", "AmbientRow": "Efek Suasana",
 	"ReduceMotionRow": "Kurangi Gerakan", "HapticsRow": "Getaran (Haptic)",
+	"HdGraphicsRow": "Grafis HD",
 }
 ## Each switch row's GameSettings property.
 const _ROW_SETTINGS := {
 	"TutorialRow": "minigame_tutorial_enabled", "SkipDialogRow": "skip_event_dialogue",
 	"LookLayerRow": "look_layer_enabled", "AmbientRow": "ambient_effects_enabled",
 	"ReduceMotionRow": "reduce_motion", "HapticsRow": "haptics_enabled",
+	"HdGraphicsRow": "hd_graphics_enabled",
 }
 const _ROW_SCRIPT := "res://Scripts/UI/SettingsToggleRow.gd"
 
@@ -218,6 +220,31 @@ func test_ambient_effects_default_on() -> void:
 	var fresh: Node = (load("res://Scripts/GameSettings.gd") as GDScript).new()
 	assert_true(fresh.get("ambient_effects_enabled"), "Efek Suasana defaults to on")
 	fresh.free()
+
+
+## Grafis HD (2026-09-30 mobile performance pass) is on until the player
+## turns it off: a fresh GameSettings, before any load, holds true, so nobody
+## loses the antialiasing or the bloom without asking.
+func test_hd_graphics_default_on() -> void:
+	var fresh: Node = (load("res://Scripts/GameSettings.gd") as GDScript).new()
+	assert_true(fresh.get("hd_graphics_enabled"), "Grafis HD defaults to on")
+	fresh.free()
+
+
+func test_hd_graphics_persist_and_announce() -> void:
+	var heard: Array = []
+	var on_hd := func(enabled: bool) -> void: heard.append(enabled)
+	GameSettings.hd_graphics_changed.connect(on_hd)
+	GameSettings.hd_graphics_enabled = false
+	GameSettings.hd_graphics_enabled = false
+	GameSettings.save_settings()
+	GameSettings.hd_graphics_changed.disconnect(on_hd)
+	GameSettings.hd_graphics_enabled = true
+	GameSettings.load_settings()
+	assert_false(GameSettings.hd_graphics_enabled, "hd_graphics_enabled round-trips through save/load")
+	assert_eq(heard, [false], "one emit per real flip, none for a repeat")
+	GameSettings.hd_graphics_enabled = true
+	GameSettings.save_settings()
 
 
 func test_ambient_effects_persist() -> void:

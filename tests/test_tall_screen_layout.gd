@@ -134,15 +134,62 @@ func test_lobby_classroom_is_one_centred_piece() -> void:
 
 
 ## A black Full Rect behind the classroom fills the bands a tall phone adds.
-func test_lobby_backdrop_is_black_and_full_rect() -> void:
+func test_lobby_backdrop_is_the_plank_and_full_rect() -> void:
 	var back := _scene(LOBBY).get_node_or_null("World/Backdrop") as ColorRect
 	assert_true(back != null, "the Lobby needs a Backdrop ColorRect")
 	if back == null:
 		return
 	assert_eq(back.get_index(), 0, "Backdrop draws first, behind the Classroom")
 	assert_eq(_anchors(back), Vector4(0, 0, 1, 1), "Backdrop is Full Rect")
-	assert_eq(back.color, Color.BLACK, "the bands are black")
+	assert_eq(_offsets(back), Vector4.ZERO, "and not inset")
+	# The bands above and below the classroom on a tall phone were black
+	# until 2026-09-30; the owner picked a desk-wood plank.
+	assert_eq(back.color.to_html(false), LOBBY_PLANK, "the bands are the desk-wood plank")
 	assert_eq(back.mouse_filter, Control.MOUSE_FILTER_IGNORE, "Backdrop takes no clicks")
+
+
+## The plank's colour, as the owner picked it (spec
+## 2026-09-30-lobby-seating-and-planks-design).
+const LOBBY_PLANK := "b07a45"
+## Each plank's edge strip against the room: [node, its y offsets from the
+## screen's centre, the child against the room, the child beyond it].
+const LOBBY_PLANK_EDGES := [
+	["World/PlankEdgeTop", Vector2(-974, -960), "Dark", "Light"],
+	["World/PlankEdgeBottom", Vector2(960, 974), "Dark", "Light"],
+]
+
+
+## Where a plank meets the room it carries a dark line against the room and
+## a light line beyond it. The strips hang off the screen's centre like the
+## Classroom does, so they sit on its edges at any height and just off
+## screen at the design size.
+func test_lobby_plank_edges_meet_the_room() -> void:
+	var lobby := _scene(LOBBY)
+	var room := lobby.get_node("World/Classroom") as Control
+	for row in LOBBY_PLANK_EDGES:
+		var edge := lobby.get_node_or_null(row[0]) as Control
+		assert_true(edge != null, "%s is missing" % row[0])
+		if edge == null:
+			continue
+		assert_eq(_anchors(edge), Vector4(0, 0.5, 1, 0.5), "%s spans the width from the screen's centre line" % row[0])
+		assert_eq(Vector2(edge.offset_top, edge.offset_bottom), row[1], "%s sits on the room's edge" % row[0])
+		assert_true(edge.get_index() < room.get_index(), "%s draws under the room" % row[0])
+		assert_eq(edge.mouse_filter, Control.MOUSE_FILTER_IGNORE, "%s takes no clicks" % row[0])
+		var dark := edge.get_node_or_null(row[2]) as ColorRect
+		var light := edge.get_node_or_null(row[3]) as ColorRect
+		assert_true(dark != null and light != null, "%s has its Dark and Light lines" % row[0])
+		if dark == null or light == null:
+			continue
+		var top: bool = (row[1] as Vector2).x < 0.0
+		# Against the room: the bottom of the top strip, the top of the bottom one.
+		assert_eq(Vector2(dark.anchor_top, dark.anchor_bottom), Vector2(1, 1) if top else Vector2(0, 0),
+			"%s Dark is the line against the room" % row[0])
+		assert_eq(absf(dark.offset_bottom - dark.offset_top), 8.0, "Dark is 8 px")
+		assert_eq(Vector2(light.anchor_top, light.anchor_bottom), Vector2(0, 0) if top else Vector2(1, 1),
+			"%s Light is the line beyond it" % row[0])
+		assert_eq(absf(light.offset_bottom - light.offset_top), 6.0, "Light is 6 px")
+		assert_true(dark.color.get_luminance() < Color(LOBBY_PLANK).get_luminance(), "Dark is darker than the plank")
+		assert_true(light.color.get_luminance() > Color(LOBBY_PLANK).get_luminance(), "Light is lighter than it")
 
 
 ## The HUD sits in Safe/UI: the title on the top edge, the stepped book and
@@ -734,3 +781,52 @@ func test_minigame_chrome_is_inside_the_safe_area() -> void:
 		var bottom: String = MINIGAME_BOTTOMS[path]
 		_assert_under_safe_area(screen.get_node_or_null("%MinigameHeader"), path + " strip")
 		_assert_under_safe_area(screen.get_node_or_null(bottom), path + " " + bottom)
+
+# ── Bottom controls on the remaining screens (2026-09-30) ────────────────────
+
+## The Koperasi's wall strip wears the room backdrop's own grade. Ungraded it
+## came out paler than the wall it continues, and the tall-phone band above
+## the counter read as an empty strip.
+func test_koperasi_wall_strip_matches_the_room() -> void:
+	var root := _scene(KOPERASI)
+	var strip := root.get_node_or_null("World/WallFill") as TextureRect
+	var room := root.get_node_or_null("World/Room/Background") as TextureRect
+	assert_true(strip != null and room != null, "the wall strip and the room backdrop exist")
+	if strip == null or room == null:
+		return
+	assert_true(strip.material != null, "the wall strip is graded")
+	assert_eq(strip.material, room.material, "with the room backdrop's own material")
+
+
+## Controls that sat at a fixed y near the bottom of the 1920 design, and so
+## floated mid-screen on a tall phone. Each is [scene, node, its rect at the
+## design size]; it must be anchored to the bottom edge and still land on that
+## rect at 1080x1920.
+const BOTTOM_PINNED := [
+	["res://Scenes/AturJadwal/AturJadwal.tscn", "StartWeek", Rect2(442, 1754, 614, 128)],
+	["res://Scenes/CutScene/CutScene.tscn", "DialogueBox", Rect2(44, 1340, 992, 320)],
+	["res://Scenes/EndGame/EndCutscene.tscn", "BtnNext", Rect2(290, 1736, 500, 128)],
+]
+
+
+func test_bottom_controls_ride_the_bottom_edge() -> void:
+	for row in BOTTOM_PINNED:
+		var label: String = "%s %s" % [String(row[0]).get_file(), row[1]]
+		var c := _scene(row[0]).get_node_or_null(row[1]) as Control
+		assert_true(c != null, label + " is missing")
+		if c == null:
+			continue
+		assert_eq(Vector2(c.anchor_top, c.anchor_bottom), Vector2(1, 1),
+			label + " must be anchored to the bottom edge")
+		var want: Rect2 = row[2]
+		var at_design := Rect2(c.offset_left, DESIGN.y + c.offset_top,
+			c.offset_right - c.offset_left, c.offset_bottom - c.offset_top)
+		_assert_rect(at_design, want, label + " at the design size")
+
+
+## Two more full-screen pictures that must cover, not stretch.
+func test_the_remaining_backdrops_fill() -> void:
+	_assert_background_fills(_scene("res://Scenes/Inventory/Inventory.tscn")
+		.get_node_or_null("Background") as TextureRect, "Inventory Background")
+	_assert_background_fills(_scene("res://Scenes/CutScene/CutScene.tscn")
+		.get_node_or_null("BgCutScene") as TextureRect, "CutScene BgCutScene")

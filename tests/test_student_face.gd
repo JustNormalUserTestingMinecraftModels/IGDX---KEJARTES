@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## The lobby's layered student face (StudentFace + Scenes/Lobby/CitraFace.tscn),
 ## which replaces the single flat portrait TextureRect for students that have
 ## multi-layer art.
@@ -181,13 +184,13 @@ func test_no_eye_cut_out_is_left_see_through() -> void:
 	# resting layer covers it at alpha >= 0.5; the lobby shows through it.
 	# The Sclera alone leaves two anti-aliased rim pixels, at (438-439, 581),
 	# and the lashes cover both. With the Sclera at y=578 this counts 114.
-	var holes := _cut_out_pixels(_layer("Base").texture.get_image(), _EYE_WINDOW)
+	var holes := _cut_out_pixels(TexturePixels.of(_layer("Base").texture), _EYE_WINDOW)
 	assert_gt(holes.size(), 0,
 		"citra_base.png must still have eye cut-outs, or this test proves nothing")
 	var covers: Array = []
 	for layer_name in _COVER_LAYERS:
 		var node := _layer(layer_name)
-		covers.append([node.texture.get_image(), Vector2i(node.position)])
+		covers.append([TexturePixels.of(node.texture), Vector2i(node.position)])
 	var open: Array[Vector2i] = []
 	for p in holes:
 		var covered := false

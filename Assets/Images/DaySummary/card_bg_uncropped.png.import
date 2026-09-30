@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://hbptqsiuo4wd"
-path="res://.godot/imported/card_bg_uncropped.png-7f18b01ea121e2c2b004e21af63177ca.ctex"
+path.bptc="res://.godot/imported/card_bg_uncropped.png-7f18b01ea121e2c2b004e21af63177ca.bptc.ctex"
+path.astc="res://.godot/imported/card_bg_uncropped.png-7f18b01ea121e2c2b004e21af63177ca.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/DaySummary/card_bg_uncropped.png"
-dest_files=["res://.godot/imported/card_bg_uncropped.png-7f18b01ea121e2c2b004e21af63177ca.ctex"]
+dest_files=["res://.godot/imported/card_bg_uncropped.png-7f18b01ea121e2c2b004e21af63177ca.bptc.ctex", "res://.godot/imported/card_bg_uncropped.png-7f18b01ea121e2c2b004e21af63177ca.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bfssqgef1rto1"
-path="res://.godot/imported/doni_portrait_skin1.png-27d764bea8fbe77c2d00b5e318eff9b9.ctex"
+path.bptc="res://.godot/imported/doni_portrait_skin1.png-27d764bea8fbe77c2d00b5e318eff9b9.bptc.ctex"
+path.astc="res://.godot/imported/doni_portrait_skin1.png-27d764bea8fbe77c2d00b5e318eff9b9.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Skins/Doni/doni_portrait_skin1.png"
-dest_files=["res://.godot/imported/doni_portrait_skin1.png-27d764bea8fbe77c2d00b5e318eff9b9.ctex"]
+dest_files=["res://.godot/imported/doni_portrait_skin1.png-27d764bea8fbe77c2d00b5e318eff9b9.bptc.ctex", "res://.godot/imported/doni_portrait_skin1.png-27d764bea8fbe77c2d00b5e318eff9b9.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

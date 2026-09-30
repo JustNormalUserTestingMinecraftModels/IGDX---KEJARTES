@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bc5b3cryjeq32"
-path="res://.godot/imported/shop_herman.png-7518abf72b5feb8c36cb2579a7f492d5.ctex"
+path.bptc="res://.godot/imported/shop_herman.png-7518abf72b5feb8c36cb2579a7f492d5.bptc.ctex"
+path.astc="res://.godot/imported/shop_herman.png-7518abf72b5feb8c36cb2579a7f492d5.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Shop/Koperasi/shop_herman.png"
-dest_files=["res://.godot/imported/shop_herman.png-7518abf72b5feb8c36cb2579a7f492d5.ctex"]
+dest_files=["res://.godot/imported/shop_herman.png-7518abf72b5feb8c36cb2579a7f492d5.bptc.ctex", "res://.godot/imported/shop_herman.png-7518abf72b5feb8c36cb2579a7f492d5.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -28,6 +28,11 @@ extends CanvasLayer
 ## one switch, so this answers to GameSettings.look_layer_enabled and starts
 ## off. It listens to that setting's signal rather than polling it.
 ##
+## GRAFIS HD. This layer also owns the player's Grafis HD switch
+## (GameSettings.hd_graphics_enabled), because it is the one node that is
+## always in the tree: off, it takes the bloom out of the draw list and drops
+## the root viewport's MSAA; on, it restores whatever project.godot asks for.
+##
 ## Must be @tool: as an autoload it is instantiated by the editor process
 ## itself, and a non-@tool autoload is a placeholder whose every property
 ## access throws (the failure GameSettings.gd documents at length). Its only
@@ -42,7 +47,8 @@ const GLINT_MATERIAL := preload("res://Scripts/Shaders/glint_material.tres")
 ## The full-rect ColorRect carrying the vignette and grain shader.
 @onready var _cover: ColorRect = $Cover
 
-## The full-rect ColorRect carrying the bloom, drawn under the cover so the
+## The full-rect ColorRect carrying the bloom (off by default, see
+## bloom_enabled), drawn under the cover so the
 ## vignette darkens the bloom rather than the bloom washing out the vignette.
 ##
 ## It reads the screen texture once per frame, which is the only genuinely
@@ -50,6 +56,16 @@ const GLINT_MATERIAL := preload("res://Scripts/Shaders/glint_material.tres")
 ## its own always-on autoload. _refresh() takes the whole layer out of the draw
 ## list when the setting is off, so an unchecked box costs nothing at all.
 @onready var _bloom: ColorRect = $Bloom
+
+## Whether Efek Visual adds its own full-screen bloom on top of the glow each
+## screen already carries. OFF since 2026-09-30, the owner's call: stacked on
+## the Lobby's glow it read as overwhelming, so Efek Visual is the vignette
+## and the grain. On, it still needs Grafis HD. Strength and threshold are
+## bloom_material.tres's; the debug overlay's Look tab has the same switch.
+@export var bloom_enabled: bool = false:
+	set(value):
+		bloom_enabled = value
+		_refresh()
 
 ## How long the layer takes to fade in or out when the setting is flipped, in
 ## seconds. A hard cut on a full-screen tint reads as a glitch.
@@ -81,6 +97,8 @@ func _ready() -> void:
 		return
 	get_viewport().size_changed.connect(_push_viewport_size)
 	GameSettings.look_layer_changed.connect(_on_setting_changed)
+	GameSettings.hd_graphics_changed.connect(_on_hd_changed)
+	_apply_msaa()
 	GameSettings.ambient_effects_changed.connect(_push_glint.unbind(1))
 	GameSettings.reduce_motion_changed.connect(_push_glint.unbind(1))
 	_push_glint()
@@ -103,6 +121,23 @@ func _push_viewport_size() -> void:
 
 func _on_setting_changed(_enabled: bool) -> void:
 	_refresh()
+
+
+func _on_hd_changed(_enabled: bool) -> void:
+	_apply_msaa()
+	_refresh()
+
+
+## The 2D MSAA level for a Grafis HD setting: off is none, on is whatever
+## project.godot asks for, so that setting stays the one place it is tuned.
+static func msaa_for(hd: bool) -> Viewport.MSAA:
+	if not hd:
+		return Viewport.MSAA_DISABLED
+	return int(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_2d", 0)) as Viewport.MSAA
+
+
+func _apply_msaa() -> void:
+	get_tree().root.msaa_2d = msaa_for(GameSettings.hd_graphics_enabled)
 
 
 ## 1.0 while the glint may sweep -- Efek Suasana on and Kurangi Gerakan off --
@@ -133,6 +168,11 @@ func _refresh(instant: bool = false) -> void:
 	_tween = null
 	if want:
 		visible = true
+	# Hidden, not just faded, when it may not run: a transparent bloom still
+	# copies the screen every frame. Efek Visual's own fade is the layer's,
+	# above and below.
+	if _bloom != null:
+		_bloom.visible = bloom_enabled and GameSettings.hd_graphics_enabled
 	if instant or fade_seconds <= 0.0:
 		_cover.modulate.a = target
 		if _bloom != null:

@@ -883,3 +883,47 @@ func test_no_tutorial_text_says_disini_silahkan_or_dimana() -> void:
 		var src := FileAccess.get_file_as_string(path)
 		for drift: String in ["Disini", "disini", "Silahkan", "silahkan", "dimana", "Dimana"]:
 			assert_false(src.contains(drift), "%s still says \"%s\"" % [path, drift])
+
+
+const NOTEBOOK_FRAME_PATH := "res://Scenes/UI/NotebookFrame.tscn"
+
+## NotebookFrame.tscn floors every frame at 640 x 520, which suits a popup and
+## left a short coach-mark step a band of empty ruled page. The card's own Frame
+## carries a lower floor on the instance (the popups keep the scene's).
+func test_the_cards_frame_floor_is_below_the_popup_default() -> void:
+	var popup := (load(NOTEBOOK_FRAME_PATH) as PackedScene).instantiate() as NotebookFrame
+	track(popup)
+	var card := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(card)
+	var frame := card.get_node("Frame") as NotebookFrame
+	assert_true(popup.custom_minimum_size.y >= 520.0,
+		"the popup default is still 520 tall, so the popups are untouched (and this is not vacuous)")
+	assert_true(frame.custom_minimum_size.y < popup.custom_minimum_size.y,
+		"the card's frame floor (%.0f) is below the popup's (%.0f)"
+		% [frame.custom_minimum_size.y, popup.custom_minimum_size.y])
+	var src := FileAccess.get_file_as_string(SCENE_PATH)
+	var at := src.find('[node name="Frame" parent="."')
+	var block := src.substr(at, src.find("\n[node", at + 1) - at)
+	assert_contains(block, "custom_minimum_size",
+		"the override is on the Frame instance's root, the one place an instance override serialises")
+
+
+## A short step's card is shorter than the popup floor, and a long one still
+## grows it past the short one (so the lower floor did not cap the card).
+func test_a_short_step_makes_a_card_shorter_than_the_popup_floor() -> void:
+	var popup := (load(NOTEBOOK_FRAME_PATH) as PackedScene).instantiate() as NotebookFrame
+	track(popup)
+	var frame := track(LayoutFrame.stand_up(SCENE_PATH, Vector2(1080, 1920))) as Control
+	var panel := frame.get_child(0) as TutorialPanel
+	panel.show_step("Pilihan Bagus!", "Pilihan yang sangat bagus!", TutorialPanel.DEFAULT_PROMPT, 1, 5)
+	panel.reset_size()
+	LayoutFrame.settle(panel)
+	var short_height := panel.get_combined_minimum_size().y
+	assert_true(short_height < popup.custom_minimum_size.y,
+		"a one-line step's card is %.0f tall; it must be under the popup floor of %.0f"
+		% [short_height, popup.custom_minimum_size.y])
+	panel.show_step("Judul", "Kalimat yang panjang sekali. ".repeat(24), TutorialPanel.DEFAULT_PROMPT, 2, 5)
+	panel.reset_size()
+	LayoutFrame.settle(panel)
+	assert_true(panel.get_combined_minimum_size().y > short_height + 100.0,
+		"a long step's card still grows with its text")

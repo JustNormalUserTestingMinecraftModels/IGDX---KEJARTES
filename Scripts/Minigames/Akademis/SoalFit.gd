@@ -62,3 +62,16 @@ static func font_size(label: Label, badge: Control, text: String,
 			return size
 		size -= STEP
 	return min_size
+
+
+## Height `text` needs in `label` at `size`, wrapped the way font_size()
+## measures it (the label's own width, or FALLBACK_BOX before layout), with
+## the label's line_spacing added per line.
+static func text_height(label: Label, text: String, size: int) -> float:
+	var font_res := label.get_theme_font("font")
+	var width := label.size.x if label.size.x > 0.0 else FALLBACK_BOX.x
+	var flags := TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_ADAPTIVE
+	var measured := font_res.get_multiline_string_size(
+		text, HORIZONTAL_ALIGNMENT_CENTER, width - SIDE_PADDING, size, -1, flags)
+	var lines := roundi(measured.y / font_res.get_height(size))
+	return measured.y + label.get_theme_constant("line_spacing") * maxi(lines - 1, 0)

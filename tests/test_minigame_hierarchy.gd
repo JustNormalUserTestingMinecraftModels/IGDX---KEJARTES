@@ -362,3 +362,60 @@ func test_the_court_baseline_clears_the_hint_pill() -> void:
 			"the uncovered strip is filled to the screen bottom")
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd")
 	assert_true(src.contains('"Capai %d poin"'), "one score: the bar names the goal")
+
+
+# ------------------------------------------------ review follow-ups
+
+func test_menjodohkan_tiles_refit_once_laid_out() -> void:
+	var src := FileAccess.get_file_as_string(MJ_GD)
+	assert_true(src.contains("label.resized.connect(_fit_card_text.bind(card, label))"),
+		"B1 for the tiles: a tile refits when its label gets its real size")
+	assert_true(src.contains("if not label.has_meta(REFIT_META):"), "and connects only once")
+
+
+func test_text_height_grows_with_the_lines() -> void:
+	var label := Label.new()
+	label.theme = load(THEME_PATH)
+	label.theme_type_variation = &"MinigameQuestionLabel"
+	label.size = Vector2(600, 300)
+	track(label)
+	var two := SoalFit.text_height(label, "Spidol + Spidol = 18\nSpidol - Pulpen = 6", 45)
+	var four := SoalFit.text_height(label,
+		"Spidol + Spidol = 18\nSpidol - Pulpen = 6\n\nBerapakah nilai Pulpen?", 45)
+	assert_gt(four, two, "four lines need more room than two")
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/Variabel.gd")
+	assert_true(src.contains("SoalFit.text_height(equation_label"),
+		"Variabel grows its row to the fitted text instead of clipping the ask")
+
+
+func test_the_ring_stays_on_the_tray_and_off_used_tools() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/SeniBudaya/BuatBatik.gd")
+	var ghost := src.substr(src.find("func _ghost_of"))
+	ghost = ghost.substr(0, ghost.find("\nfunc ", 1))
+	assert_true(ghost.contains("ring.visible = false"), "a dragged ghost leaves the ring behind")
+	assert_eq(src.count("_ghost_of("), 3, "one builder, used by the drag and the reveal ghosts")
+	assert_true(src.contains('and not tool_node.get_meta("used", false))'),
+		"a used, locked tool is never ringed")
+
+
+func test_the_goal_line_rises_with_the_court() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd")
+	assert_true(src.contains("screen_size.y - 30 - COURT_LIFT"), "the player's goal follows the art up")
+	var bg_lift := -(_stand(BADMINTON, Vector2(1080, 1920)).get_node("%Background") as Control).offset_top
+	assert_true(src.contains("const COURT_LIFT := %.1f" % bg_lift),
+		"COURT_LIFT matches the Background's offset (%.1f)" % bg_lift)
+
+
+func test_follow_width_connects_once() -> void:
+	var k := _kalk(true)
+	var card := Control.new()
+	track(card)
+	k.call("follow_width", card)
+	k.call("follow_width", card)
+	var body := k.get_node("Body") as Control
+	var hits := 0
+	for c: Dictionary in body.resized.get_connections():
+		var cb := c["callable"] as Callable
+		if cb.get_method() == &"_match_width" and cb.get_bound_arguments().has(card):
+			hits += 1
+	assert_eq(hits, 1, "a second call must not stack a second follower")

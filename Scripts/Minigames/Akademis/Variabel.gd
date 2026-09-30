@@ -123,8 +123,13 @@ func _apply_visual_exports() -> void:
 ## Re-runs the font fit on whatever the card currently shows.
 func _refit_equation() -> void:
 	if equation_label:
-		equation_label.add_theme_font_size_override("font_size",
-			_fit_font_size(equation_label.text))
+		var size := _fit_font_size(equation_label.text)
+		equation_label.add_theme_font_size_override("font_size", size)
+		# At the T2 floor a long equation can still need more than
+		# EQUATION_MIN_HEIGHT; grow the row (and the card that hugs it)
+		# rather than let clip_text hide the ask.
+		equation_label.custom_minimum_size.y = maxf(EQUATION_MIN_HEIGHT,
+			SoalFit.text_height(equation_label, equation_label.text, size))
 
 # ── Build 3 random questions ───────────────────────────────────────────────────
 func setup_game() -> void:
@@ -311,8 +316,7 @@ func _show_current_question() -> void:
 	if equation_label:
 		equation_label.text = q_data["eq_text"]
 		equation_label.add_theme_color_override("font_color", _card_text_color)
-		equation_label.add_theme_font_size_override("font_size",
-			_fit_font_size(q_data["eq_text"]))
+		_refit_equation()
 
 	_set_typed("")
 	if kalkulator:
@@ -458,8 +462,7 @@ func _show_variable_reveal(q_index: int) -> void:
 
 	equation_label.text = q_data["eq_text"] + reveal_line
 	equation_label.add_theme_color_override("font_color", equation_reveal_color)
-	equation_label.add_theme_font_size_override("font_size",
-		_fit_font_size(equation_label.text))
+	_refit_equation()
 
 func _show_time_boost_popup() -> void:
 	# Spawn a floating "+20s" label above the calculator: per-call popup text,

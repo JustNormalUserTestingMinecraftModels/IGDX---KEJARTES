@@ -3,6 +3,10 @@ extends BaseMinigame
 ## Seconds between the losing point and the loss card, the beat
 ## BaseMinigame.lose_game() gave before this game overrode it.
 const LOSS_CARD_DELAY := 1.2
+## How far the court art sits above the screen (the scene's Background
+## offsets, spec 2026-09-30 minigame hierarchy B5); the player's goal line
+## moves up with it so a point still lands at the painted baseline.
+const COURT_LIFT := 48.0
 
 # ─── Visual - Shuttlecock ───────────────────────────────────────────────────
 @export_group("Visual - Shuttlecock")
@@ -181,7 +185,7 @@ func _ready() -> void:
 			col.disabled = false
 			
 	if player_goal:
-		player_goal.global_position = Vector2(screen_size.x / 2, screen_size.y - 30)
+		player_goal.global_position = Vector2(screen_size.x / 2, screen_size.y - 30 - COURT_LIFT)
 		var col = player_goal.get_node_or_null("CollisionShape2D")
 		if col and col.shape is RectangleShape2D:
 			col.shape.size = Vector2(screen_size.x * 0.98, 60)

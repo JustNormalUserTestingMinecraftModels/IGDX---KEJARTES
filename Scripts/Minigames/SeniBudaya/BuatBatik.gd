@@ -392,25 +392,33 @@ func _input(event: InputEvent) -> void:
 		if not event.is_pressed():
 			_check_tool_drop()
 
-func _create_drag_ghost(tool: Control) -> void:
-	if drag_ghost:
-		drag_ghost.queue_free()
-
-	# Duplicate the tool node so the ghost exactly mirrors the dragged tool visual
-	var ghost = tool.duplicate() as Control
-	ghost.name = "DragGhost"
+## A translucent copy of `tool` to drag, named `ghost_name` and drawn at
+## `z`: it ignores the mouse all the way down, and it leaves the next-tool
+## ring behind, since the ring marks the tray slot, not the tool in hand.
+func _ghost_of(tool: Control, ghost_name: String, z: int) -> Control:
+	var ghost := tool.duplicate() as Control
+	ghost.name = ghost_name
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ghost.z_index = 10
+	ghost.z_index = z
 	ghost.modulate.a = 0.88
 	ghost.scale = Vector2(1.1, 1.1)
-
-	# Ensure all nested children in the ghost ignore mouse filter
 	for child in ghost.get_children():
 		if child is Control:
 			child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			for sub_child in child.get_children():
 				if sub_child is Control:
 					sub_child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ring := ghost.get_node_or_null("Ring") as Control
+	if ring:
+		ring.visible = false
+	return ghost
+
+
+func _create_drag_ghost(tool: Control) -> void:
+	if drag_ghost:
+		drag_ghost.queue_free()
+
+	var ghost := _ghost_of(tool, "DragGhost", 10)
 
 	drag_ghost = ghost
 	add_child(drag_ghost)
@@ -642,20 +650,7 @@ func reveal_answers() -> void:
 
 		var start_pos = tool_node.get_global_rect().get_center()
 
-		# Create smooth animated ghost duplicating the tool node so visuals match 100%
-		var auto_ghost = tool_node.duplicate() as Control
-		auto_ghost.name = "AutoDragGhost"
-		auto_ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		auto_ghost.z_index = 20
-		auto_ghost.modulate.a = 0.88
-		auto_ghost.scale = Vector2(1.1, 1.1)
-
-		for child in auto_ghost.get_children():
-			if child is Control:
-				child.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				for sub_child in child.get_children():
-					if sub_child is Control:
-						sub_child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var auto_ghost := _ghost_of(tool_node, "AutoDragGhost", 20)
 
 		add_child(auto_ghost)
 		var ghost_offset = (auto_ghost.size * auto_ghost.scale) / 2.0
@@ -742,4 +737,6 @@ func _ring_next_tool() -> void:
 	for tool_node in tools_container.get_children():
 		var ring := tool_node.get_node_or_null("Ring") as Control
 		if ring:
-			ring.visible = str(tool_node.name) == next_name
+			# A tool a wrong drop already used is locked and dimmed: never ring it.
+			ring.visible = (str(tool_node.name) == next_name
+				and not tool_node.get_meta("used", false))

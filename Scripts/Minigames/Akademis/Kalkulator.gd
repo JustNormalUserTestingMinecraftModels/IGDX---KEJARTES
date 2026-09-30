@@ -107,10 +107,16 @@ static func _set_rect(node: Control, frac: Rect2) -> void:
 ## (spec 2026-09-30 minigame hierarchy, H6).
 func follow_width(target: Control) -> void:
 	var body := $Body as Control
-	target.custom_minimum_size.x = body.size.x
-	body.resized.connect(func() -> void:
-		if is_instance_valid(target):
-			target.custom_minimum_size.x = body.size.x)
+	_match_width(target)
+	var follow := _match_width.bind(target)
+	if not body.resized.is_connected(follow):
+		body.resized.connect(follow)
+
+
+## Sets `target`'s minimum width to the calculator body's.
+func _match_width(target: Control) -> void:
+	if is_instance_valid(target):
+		target.custom_minimum_size.x = ($Body as Control).size.x
 
 
 ## Every authored key, in tree order.

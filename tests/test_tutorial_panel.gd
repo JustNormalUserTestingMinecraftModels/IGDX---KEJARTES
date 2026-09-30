@@ -687,3 +687,54 @@ func test_every_arrow_caller_places_the_arrow_from_its_own_size() -> void:
 			"%s seats its card and arrow through place_step" % path)
 	var card_src := FileAccess.get_file_as_string(STUDENT_CARD_PATH)
 	assert_contains(card_src, "_tutorial_arrow.point_at(", "StudentCard points its arrow the same way")
+
+
+# ------------------------------------------------ the card never takes a tap
+#
+# The old runtime panels ignored the mouse throughout. The shared card is a
+# NotebookFrame, whose root STOPs taps and whose Cover PASSes them (both right
+# for a popup), so a mounted card swallowed a tap wherever it sat -- and the
+# placement tests above put it over the forced target at AturJadwal's "Pilih
+# Murid" (the splash) and StudentList's last step (the lower card). At a forced
+# step the caller's click catcher is IGNORE, so the tap has to reach the
+# control under the card; nothing on the card ever needs to take one.
+
+func test_no_control_in_the_card_takes_a_tap() -> void:
+	var panel := _make()
+	var everyone: Array[Node] = [panel]
+	everyone.append_array(panel.find_children("*", "Control", true, false))
+	var catching: Array[String] = []
+	for node: Node in everyone:
+		var filter := (node as Control).mouse_filter
+		if filter != Control.MOUSE_FILTER_IGNORE:
+			catching.append("%s (filter %d)" % [panel.get_path_to(node), filter])
+	assert_true(everyone.size() > 20,
+		"the walk reached the frame's own chrome (%d controls), so this is not vacuous" % everyone.size())
+	assert_true(catching.is_empty(), "these still take a tap: " + ", ".join(catching))
+
+
+func test_the_frames_cover_and_hidden_buttons_are_covered_by_the_walk() -> void:
+	var panel := _make()
+	for path: String in ["Frame", "Frame/Margin", "Frame/Chrome/Cover", "Frame/Chrome/Close",
+			"Frame/Chrome/Tabs/Tab0", "Frame/Chrome/Sticker"]:
+		var control := panel.get_node_or_null(path) as Control
+		assert_not_null(control, "missing " + path)
+		if control != null:
+			assert_eq(control.mouse_filter, Control.MOUSE_FILTER_IGNORE, path + " lets a tap through")
+
+
+## The Frame and its Margin are the scene's own nodes, so the scene says it
+## (an override on an instance ROOT serialises); everything below the frame's
+## root is the NotebookFrame scene's, so TutorialPanel._let_taps_through does it.
+func test_the_scene_authors_the_frame_and_margin_as_tap_through() -> void:
+	var src := FileAccess.get_file_as_string(SCENE_PATH)
+	for header: String in ['[node name="Frame" parent="."',
+			'[node name="Margin" type="MarginContainer" parent="Frame"']:
+		var at := src.find(header)
+		assert_true(at != -1, header + " is in the scene")
+		var block := src.substr(at, src.find("\n[node", at + 1) - at)
+		assert_true(block.contains("mouse_filter = 2"), header + " is authored IGNORE")
+	var code := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_contains(_function_source(code, "_ready"), "_let_taps_through(self)",
+		"and _ready sweeps the rest -- with no editor-hint gate, so the suites see it")
+	assert_false(_function_source(code, "_let_taps_through").contains("is_editor_hint"))

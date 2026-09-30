@@ -51,6 +51,12 @@ const POPUPS := {
 	"res://Scenes/Lobby/Lobby.tscn": ["DailyReward/DailyLoginFrame", "sheet", "free"],
 }
 
+## The one frame that is not a page to tap on. The tutorial's card sits over
+## the very control its step points at, so a tap on it must reach that control:
+## the scene authors its Frame IGNORE and TutorialPanel._let_taps_through does
+## the rest (test_tutorial_panel walks the whole card).
+const TAP_THROUGH := ["res://Scenes/UI/TutorialPanel.tscn"]
+
 ## scene -> the script that wires its frame's close, when that is the
 ## screen's own script rather than the instanced root's.
 const SCREEN_SCRIPTS := {
@@ -86,7 +92,9 @@ func test_every_popup_wears_the_frame() -> void:
 	for path in POPUPS:
 		var frame := _frame_of(_instance(path), path)
 		if frame != null:
-			assert_eq(frame.mouse_filter, Control.MOUSE_FILTER_STOP, path + ": the page stops taps")
+			var expected: int = Control.MOUSE_FILTER_IGNORE if TAP_THROUGH.has(path) else Control.MOUSE_FILTER_STOP
+			assert_eq(frame.mouse_filter, expected,
+				path + (": the card lets taps through" if TAP_THROUGH.has(path) else ": the page stops taps"))
 
 
 func test_each_frame_is_its_kind() -> void:

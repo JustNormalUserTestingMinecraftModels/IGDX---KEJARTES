@@ -15,6 +15,7 @@ script = ExtResource("1_v0ojc")
 [node name="Frame" parent="." instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
 layout_mode = 2
+mouse_filter = 2
 title_text = "TUTORIAL"
 ring_count = 4
 show_well = false
@@ -22,6 +23,7 @@ show_close = false
 
 [node name="Margin" type="MarginContainer" parent="Frame" unique_id=1626375456]
 layout_mode = 2
+mouse_filter = 2
 
 [node name="Layout" type="VBoxContainer" parent="Frame/Margin" unique_id=1522478353]
 layout_mode = 2

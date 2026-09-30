@@ -172,6 +172,22 @@ func _ready() -> void:
 	_apply_prompt_tint()
 	_apply_mode()
 	_apply_geometry()
+	_let_taps_through(self)
+
+
+## The card never takes a tap, anywhere on it: a step advances by the caller's
+## own click catcher, or by the real control the step points at, and the card
+## sits over such a control often enough (a splash, a card stack) that a
+## catching card would make that tap do nothing. Every Control in the card
+## ignores the mouse. The scene authors that on the Frame and its Margin; the
+## NotebookFrame's own chrome (its Cover passes taps to the frame, its hidden
+## tabs and close button are buttons) is an instance's children, which a scene
+## cannot override, so it is done here, in the editor too.
+func _let_taps_through(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child: Node in node.get_children():
+		_let_taps_through(child)
 
 
 ## body_label's forced minimum width must leave room for BOTH insets: the

@@ -1193,7 +1193,6 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 		return
 		
 	log_message("Loading standalone minigame: " + scene_path)
-	
 	minigame_canvas = CanvasLayer.new()
 	# 125, NOT up with the rest of the debug block at 1124-1128. This canvas
 	# hosts a REAL minigame, which brings its own CanvasLayers with it: UI at
@@ -1204,7 +1203,6 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 	# needs to sit above it.
 	minigame_canvas.layer = 125
 	add_child(minigame_canvas)
-	
 	var m_scene = load(scene_path)
 	if not m_scene:
 		log_message("Error: Gagal memuat scene file: " + scene_path)

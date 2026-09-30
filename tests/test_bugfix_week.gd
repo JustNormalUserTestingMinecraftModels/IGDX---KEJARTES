@@ -148,7 +148,7 @@ func test_back_handler_is_guarded_before_the_week_advances() -> void:
 	assert_true(src.contains("NOTIFICATION_WM_GO_BACK_REQUEST and back_button.visible"),
 		"device back only while the week-end continue button is up")
 	var body := _body(src, "_on_back_pressed")
-	var guard := body.find("if _leaving:")
+	var guard := body.find("if _leaving or Transition.is_busy():")
 	var lock := body.find("_leaving = true")
 	var disable := body.find("back_button.disabled = true")
 	var advance := body.find("GameState.minggu_ke += 1")

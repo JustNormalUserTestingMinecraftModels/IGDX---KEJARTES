@@ -544,6 +544,14 @@ widget via `project_run` instead, which exercises it fine.
     the twelve 1280x1280 face bases, drawn at about 400 px. All six bases
     load in the Lobby whatever the roster is. Halving the base art, or
     loading only the roster's faces, is the next saving.
+  - **The download size was not measured.** A compressed texture is stored
+    at its video-memory size (about 1 byte per pixel), where a lossless one
+    is stored packed, so the APK probably grows. No export preset exists on
+    the dev PC to build one; compare a build before and after.
+  - **A phone build cannot unpack ASTC** (the decoder ships in the editor
+    only), so `Image.decompress()` fails there. `TraySlot` carries its crops
+    baked for that reason; any new runtime pixel read of large art needs the
+    same, or the art in `ALLOWED`.
   - **About 100 MB in the Lobby is not art**: probably render targets, MSAA,
     fonts and the theme. Not investigated.
 

@@ -195,7 +195,7 @@ alpha before laying out on any soft-edged texture.
 
 Minigames share one layout (strip · field · tray/hint pill, CARA MAIN card;
 spec `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
-and follow the glyph and popup rules; their inner play art still had no
+and one type ladder (`MinigameType`), and follow the glyph and popup rules; their inner play art still had no
 polish pass. The debug overlay is out of scope for the design system.
 
 ## Testing

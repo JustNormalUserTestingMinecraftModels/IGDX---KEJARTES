@@ -8,6 +8,40 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Minigame text hierarchy, spacing and fixes
+
+Spec `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`, plan
+`docs/superpowers/plans/2026-09-30-minigame-hierarchy.md`; before-sheet
+`docs/superpowers/mockups/minigame-hierarchy-before.jpg`.
+
+- **One type ladder for the minigames**, `MinigameType`: 28 / 45 / 73 / 118,
+  each x1.618 of the last from the 28 px floor (owner's ask). Questions 73
+  (fitted, never below 45), sums and the calculator display 118, answers,
+  buttons, tool names and the timer 45, hint, captions and planks 28. The
+  house tokens are untouched.
+- **One-row header with a plaque.** `MinigameScoreHUD` is now the plaque
+  (score line over a cell bar and caption, on the kit's dark pill with a gold
+  number); the timer ring shows whole seconds. Badminton's caption names the
+  goal ("Capai 5 poin") instead of repeating the score.
+- **One edge and one gap.** Everything sits at the house 48 px screen margin
+  (the tray lost its own 28 px side padding) and field content ends 72 px
+  above the tray. Cards are as wide as the controls under them; Password and
+  Variabel's card follows the calculator's width.
+- **Designer intent finished:** Bingkai Kayu question cards, cream lipped
+  answers and tool cards, SOAL/JAWABAN planks, wood nav arrows.
+- **Bugs.** B1 PilihanGanda's question fitted before layout and fell to 36
+  (now refits on resize, at 73). B2 blue hand-made boxes in PilihanGanda,
+  AnswerCard and BuatBatik moved to theme variations. B3 the calculator keys
+  sat 29 texture px left of the painted face (re-centred on measured
+  constants in `Kalkulator.gd`). B4 BuatBatik's tools showed no names (now
+  named, with a gold ring on the next tool). B5 Badminton's hint pill sat on
+  the painted baseline (the court art sits 48 px higher, a `Surround` fills
+  below). B6 Menjodohkan's arrows covered the cards (own 48 px lanes, cards
+  736 wide) and its dead style exports went.
+- New suite `test_minigame_hierarchy` (21 tests); the header, score HUD,
+  typography, art, card-shadow, calculator and button-role suites follow the
+  new structure with the same guarantees.
+
 ## 2026-09-30 — Thea, Shinta and Citra desk items back to their own size
 
 The 2026-09-29 fit pass below shrank these three below 1x and the owner found

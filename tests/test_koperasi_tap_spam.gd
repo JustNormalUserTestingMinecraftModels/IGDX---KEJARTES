@@ -209,8 +209,8 @@ func test_a_returning_slot_and_a_refused_add_both_reset_the_price_tag() -> void:
 ## list price and badge too. Bare stage, bare tag -- neither enters the tree.
 func test_reset_tag_to_price_undoes_beli_and_redresses_the_promo() -> void:
 	var item: ItemData = ItemDatabase.get_item(ITEM_NAME)
-	var was_promo_item := GameState.shop_promo_item
-	var was_promo_percent := GameState.shop_promo_percent
+	var was_promo_item: String = GameState.shop_promo_item
+	var was_promo_percent: int = GameState.shop_promo_percent
 	var stage = RakScript.new()
 	stage.item_data_list.append(item)
 	var tag: PanelContainer = PriceTagScene.instantiate()

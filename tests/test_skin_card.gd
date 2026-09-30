@@ -170,3 +170,37 @@ func test_settle_index_follows_a_fast_flick() -> void:
 func test_settle_index_clamps_at_both_ends() -> void:
 	assert_eq(SkinCard.settle_index(0, 900.0, 2000.0, 812.0, 2), 0)
 	assert_eq(SkinCard.settle_index(1, -900.0, -2000.0, 812.0, 2), 1)
+
+
+## The neighbour's blur (2026-09-30 mobile performance pass). It was a 48-tap
+## spiral over a card that covers most of the screen: tens of millions of
+## texture reads a frame. It now reads the splash's own mip chain, a handful
+## of taps whatever the blur radius.
+func test_the_focus_blur_reads_the_mip_chain_not_a_tap_loop() -> void:
+	var src := FileAccess.get_file_as_string(SHADER)
+	assert_false(src.contains("for ("), "no per-pixel tap loop")
+	assert_true(src.contains("textureLod(blur_source"), "the blur is the splash's own mips")
+	assert_true(src.count("textureLod(blur_source") <= 5, "five taps at most")
+	assert_true(src.contains("uniform sampler2D blur_source : filter_linear_mipmap"),
+		"read smoothly: the project's nearest filter makes a mip read blocky")
+
+
+func test_show_skin_hands_the_blur_the_same_splash() -> void:
+	var card := _new_card()
+	card.show_skin("Thea", StudentSkins.DEFAULT_ID, false)
+	var art := card.get_node("Art") as TextureRect
+	var bound: Variant = (art.material as ShaderMaterial).get_shader_parameter("blur_source")
+	assert_true(bound != null and bound == art.texture, "blur_source is the card's own splash")
+
+
+## A mip blur on a texture with no mip chain is no blur at all, so every
+## splash the carousel can show must carry one.
+func test_every_splash_the_carousel_shows_carries_mipmaps() -> void:
+	var flat := PackedStringArray()
+	for who in StudentSkins.NAMES:
+		for id in StudentSkins.skins_for(who):
+			var path := StudentSkins.layer_path(who, id, "splash")
+			var text := FileAccess.get_file_as_string(path + ".import")
+			if not text.contains("mipmaps/generate=true"):
+				flat.append(path.get_file())
+	assert_eq(flat.size(), 0, "these splashes need mipmaps/generate=true: " + ", ".join(flat))

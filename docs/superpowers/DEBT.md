@@ -343,6 +343,16 @@ by-the-way fix inside an unrelated branch.
 
 ## Known bugs and gaps
 
+**No vibration on the phone build (2026-09-30).** `Haptics.buzz()` calls
+`Input.vibrate_handheld()`, which does nothing on Android unless the export
+preset grants the Vibrate permission. `export_presets.cfg` is gitignored, so
+the setting lives only on the machine that builds the APK and nothing in the
+repo can pin it. Whoever exports: Project > Export > Android > Permissions >
+tick **Vibrate**, then re-export. Not confirmed on a device; if the phone
+still stays silent with the permission on, the 8 ms and 20 ms tiers
+(`RewardFeedback.HAPTIC_MS`, `PressFeel.PRESS_TICK_MS`) are the next suspect,
+since many motors cannot render a pulse that short.
+
 **Unsimulated item boosts die on quit (moved from CLAUDE.md, 2026-09-30).**
 Item boosts land on `approved_students`, which is not persisted, so a boost applied and not simulated before quit is lost.
 It follows from the session-scoped-run rule; fixing it means persisting the roster, which needs the owner's go-ahead.

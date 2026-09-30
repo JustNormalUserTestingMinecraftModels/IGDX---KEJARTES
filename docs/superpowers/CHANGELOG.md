@@ -33,6 +33,17 @@ open/close cycles of Skin Select left node, object and texture counts flat.
   a per-pixel loop over it hung the editor. That hang is what reverted the
   2026-09-22 attempt at this pass ("Item 12"); the full run now completes.
 
+## 2026-09-30 — Main Bola: a goal in the air beats the clock
+
+The clock ended the game with the ball still flying: `lose_game()` put the
+loss card up, the goal landed behind it and a winning goal never reached the
+win screen (owner's report, "goal not registered to the winscreen"). With 30 s
+at Kelas 7 and 18 s at Kelas 9 against a 0.4 s flight, the last shot often
+straddles the buzzer. `lose_game()` now returns while `is_resolving`; the
+clock sits at zero and calls it again each frame, so a shot that does not win
+ends the game as soon as it resolves. `_clock_is_out()` keeps a swipe from
+starting another shot in that frame. Pinned in `tests/test_main_bola_shots.gd`.
+
 ## 2026-09-30 — SchoolDay split sky and cloud layer
 
 Spec `docs/superpowers/specs/2026-09-30-schoolday-cloud-layer-design.md`.

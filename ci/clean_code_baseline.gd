@@ -24,7 +24,6 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Debug/DebugManager.gd::_build_scenes_panel": 76,
 	"res://Scripts/Debug/DebugManager.gd::_build_ui": 96,
 	"res://Scripts/Debug/DebugManager.gd::_rebuild_student_stat_editor": 125,
-	"res://Scripts/Lobby/Lobby.gd::_ready": 64,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::_instantiate_cards": 64,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::reveal_answers": 60,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::setup_game": 55,

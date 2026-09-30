@@ -202,6 +202,18 @@ func _ready() -> void:
 		hud.activate(true)
 		return
 
+	_start_tutorial()
+
+## The first-visit path of _ready: shows the spotlight overlay, sets the HUD
+## buttons for this phase (phase 2's steps when the player is back from
+## StudentCard, else phase 1's), wires the taps and starts the first step.
+func _start_tutorial() -> void:
+	# The scene keeps the overlay hidden (visible = false) so the classroom shows
+	# in the editor. An editor save once baked that state into the file while
+	# nothing in code turned the overlay on, and the tutorial ran unseen for three
+	# weeks. So the path that teaches shows the overlay itself, before step one;
+	# the completed path in _ready and _end_tutorial hide it again.
+	color_rect.show()
 	if GameState.returned_from_student_card:
 		student_button.visible = false
 		jadwal_button.visible = true
@@ -223,8 +235,9 @@ func _ready() -> void:
 	_create_blur_overlay()
 	_setup_daily_login()
 
-## Wires every HUD button and the reopen gate. Called once from _ready's branch,
-## so no is_connected guard is needed (the scene holds no connections).
+## Wires every HUD button and the reopen gate. Called once per Lobby, from
+## whichever path _ready takes, so no is_connected guard is needed (the scene
+## holds no connections).
 func _connect_hud_buttons() -> void:
 	student_button.pressed.connect(_on_student_pressed)
 	jadwal_button.pressed.connect(_on_jadwal_pressed)

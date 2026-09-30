@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://yp0qp24hpygg"
-path="res://.godot/imported/title_daily_results_uncropped.png-2a861fd43f38ed47f2e10504284a61b3.ctex"
+path.bptc="res://.godot/imported/title_daily_results_uncropped.png-2a861fd43f38ed47f2e10504284a61b3.bptc.ctex"
+path.astc="res://.godot/imported/title_daily_results_uncropped.png-2a861fd43f38ed47f2e10504284a61b3.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/DaySummary/title_daily_results_uncropped.png"
-dest_files=["res://.godot/imported/title_daily_results_uncropped.png-2a861fd43f38ed47f2e10504284a61b3.ctex"]
+dest_files=["res://.godot/imported/title_daily_results_uncropped.png-2a861fd43f38ed47f2e10504284a61b3.bptc.ctex", "res://.godot/imported/title_daily_results_uncropped.png-2a861fd43f38ed47f2e10504284a61b3.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

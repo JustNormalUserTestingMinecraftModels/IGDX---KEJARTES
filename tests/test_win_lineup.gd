@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## WinLineup (2026-09-09): the win screen's roster arrangement. Doni is
 ## pinned to the front slot; everyone else fills in roster order. Plain
 ## static functions over Dictionaries, so these are behavioural tests
@@ -33,7 +36,7 @@ func test_the_shadow_ellipse_imported_and_is_soft() -> void:
 	assert_true(ResourceLoader.exists(p), p + " exists")
 	var tex: Texture2D = ResourceLoader.load(
 		p, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE)
-	var img: Image = tex.get_image()
+	var img: Image = TexturePixels.of(tex)
 	assert_not_null(img, "the ellipse rasterised")
 	# Opaque at the centre, clear at the corner, and genuinely soft in
 	# between -- a hard-edged ellipse would read as a sticker, not a shadow.

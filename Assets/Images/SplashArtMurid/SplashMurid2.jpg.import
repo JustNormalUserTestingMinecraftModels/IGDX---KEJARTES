@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bbxwq44cbdjsn"
-path="res://.godot/imported/SplashMurid2.jpg-1b03cab764b0d1b6f98533a61347e104.ctex"
+path.bptc="res://.godot/imported/SplashMurid2.jpg-1b03cab764b0d1b6f98533a61347e104.bptc.ctex"
+path.astc="res://.godot/imported/SplashMurid2.jpg-1b03cab764b0d1b6f98533a61347e104.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/SplashMurid2.jpg"
-dest_files=["res://.godot/imported/SplashMurid2.jpg-1b03cab764b0d1b6f98533a61347e104.ctex"]
+dest_files=["res://.godot/imported/SplashMurid2.jpg-1b03cab764b0d1b6f98533a61347e104.bptc.ctex", "res://.godot/imported/SplashMurid2.jpg-1b03cab764b0d1b6f98533a61347e104.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

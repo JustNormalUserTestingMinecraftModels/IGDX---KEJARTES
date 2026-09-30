@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c604cm0q612cv"
-path="res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.ctex"
+path.bptc="res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.bptc.ctex"
+path.astc="res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SchoolDay/Sky/cloud_layer.png"
-dest_files=["res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.ctex"]
+dest_files=["res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.bptc.ctex", "res://.godot/imported/cloud_layer.png-46c6661d51d8652aa98cd7a754391116.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -8,6 +8,31 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Texture memory pass (mobile performance 1 of 3)
+
+Measured in the running game before the pass: 128 MB of textures at boot,
+348 MB in the Lobby, 419 MB with Skin Select open. Every image was imported
+lossless, which sits in video memory at 4 bytes per pixel. No leak: 18
+open/close cycles of Skin Select left node, object and texture counts flat.
+
+- **131 images at or over 500,000 px now import VRAM-compressed with
+  `compress/high_quality=true`**: ASTC 4x4 on a phone, BPTC on desktop, a
+  quarter of the memory. After: 64 MB at boot, 238 MB in the Lobby, 303 MB
+  with Skin Select open. Smaller art (icons, 9-slices, bar fills) stays
+  lossless.
+- **The character art stays lossless**, listed with its reasons in
+  `tests/test_texture_memory.gd`'s `ALLOWED`. The twelve face bases:
+  compressed, Thea's base opened 2 see-through pixels in her eye cut-outs.
+  The 24 student portraits, splashes and outfits: the owner's 2026-09-29
+  call on block artifacts, not reversed here (DEBT.md has what it costs).
+- **`tests/test_texture_memory.gd`** pins the rule and a total ceiling
+  (700 MiB if every image were loaded; it was 1309 and is 632). A new large image fails
+  the suite until its import is flipped or it is given a reason in `ALLOWED`.
+- **`tests/texture_pixels.gd`**: every suite that reads pixels goes through
+  it, because `get_image()` on a compressed texture comes back compressed and
+  a per-pixel loop over it hung the editor. That hang is what reverted the
+  2026-09-22 attempt at this pass ("Item 12"); the full run now completes.
+
 ## 2026-09-30 — Main Bola: a goal in the air beats the clock
 
 The clock ended the game with the ball still flying: `lose_game()` put the

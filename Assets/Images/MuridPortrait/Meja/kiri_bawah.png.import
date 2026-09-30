@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bflgqwew54uyi"
-path="res://.godot/imported/kiri_bawah.png-6c02f63caa98b6150a8a116d94f000fd.ctex"
+path.bptc="res://.godot/imported/kiri_bawah.png-6c02f63caa98b6150a8a116d94f000fd.bptc.ctex"
+path.astc="res://.godot/imported/kiri_bawah.png-6c02f63caa98b6150a8a116d94f000fd.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/MuridPortrait/Meja/kiri_bawah.png"
-dest_files=["res://.godot/imported/kiri_bawah.png-6c02f63caa98b6150a8a116d94f000fd.ctex"]
+dest_files=["res://.godot/imported/kiri_bawah.png-6c02f63caa98b6150a8a116d94f000fd.bptc.ctex", "res://.godot/imported/kiri_bawah.png-6c02f63caa98b6150a8a116d94f000fd.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://tr3wyd71jg1x"
-path="res://.godot/imported/bhineka_tunggal_ika.png-422601e2131e0c2169c5eb3c25e38754.ctex"
+path.bptc="res://.godot/imported/bhineka_tunggal_ika.png-422601e2131e0c2169c5eb3c25e38754.bptc.ctex"
+path.astc="res://.godot/imported/bhineka_tunggal_ika.png-422601e2131e0c2169c5eb3c25e38754.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/bhineka_tunggal_ika.png"
-dest_files=["res://.godot/imported/bhineka_tunggal_ika.png-422601e2131e0c2169c5eb3c25e38754.ctex"]
+dest_files=["res://.godot/imported/bhineka_tunggal_ika.png-422601e2131e0c2169c5eb3c25e38754.bptc.ctex", "res://.godot/imported/bhineka_tunggal_ika.png-422601e2131e0c2169c5eb3c25e38754.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -521,6 +521,35 @@ func test_a_slot_crops_its_arts_transparent_padding() -> void:
 		assert_eq(shown.region, Rect2(20, 180, 60, 120), "cropped to the opaque rect")
 
 
+## The shop art is VRAM-compressed and a phone cannot unpack it to find its
+## opaque rect, so TraySlot carries the rects baked. Each must match its PNG,
+## and every item on sale must have one.
+func test_every_shop_icon_has_its_baked_crop() -> void:
+	var wrong := PackedStringArray()
+	for info in ItemDatabase.DEFAULT_ITEMS:
+		var path: String = info["icon_path"]
+		var img := Image.load_from_file(ProjectSettings.globalize_path(path))
+		if img == null:
+			wrong.append(path.get_file() + " (unreadable)")
+			continue
+		var used := img.get_used_rect()
+		if not TraySlot.ICON_CROPS.has(path):
+			wrong.append("%s needs %s" % [path.get_file(), used])
+		elif TraySlot.ICON_CROPS[path] != used:
+			wrong.append("%s is %s, baked %s" % [path.get_file(), used, TraySlot.ICON_CROPS[path]])
+	assert_eq(wrong.size(), 0, "TraySlot.ICON_CROPS is out of step with the art: " + ", ".join(wrong))
+
+
+## A baked rect is used as it stands: the slot never reads a shop icon's
+## pixels, which is the read a phone build cannot do.
+func test_a_shop_icon_is_cropped_to_its_baked_rect() -> void:
+	var path := "res://Assets/Images/Shop/ItemRak/mie.png"
+	var shown := TraySlot._cropped(load(path))
+	assert_true(shown is AtlasTexture, "the slot shows a crop of the art")
+	if shown is AtlasTexture:
+		assert_eq(Rect2i(shown.region), TraySlot.ICON_CROPS[path], "cropped to the baked rect")
+
+
 ## The drag gesture (2026-09-21): the tray follows a finger between its docked
 ## and hidden positions, and the release decides where it settles. The rule
 ## lives in a pure static function because the runner cannot await -- a test

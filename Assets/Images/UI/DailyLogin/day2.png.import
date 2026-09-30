@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://g1kdksj6t7s6"
-path="res://.godot/imported/day2.png-7b795d2250d97c1ba9c329eb065cd4be.ctex"
+path.bptc="res://.godot/imported/day2.png-7b795d2250d97c1ba9c329eb065cd4be.bptc.ctex"
+path.astc="res://.godot/imported/day2.png-7b795d2250d97c1ba9c329eb065cd4be.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/UI/DailyLogin/day2.png"
-dest_files=["res://.godot/imported/day2.png-7b795d2250d97c1ba9c329eb065cd4be.ctex"]
+dest_files=["res://.godot/imported/day2.png-7b795d2250d97c1ba9c329eb065cd4be.bptc.ctex", "res://.godot/imported/day2.png-7b795d2250d97c1ba9c329eb065cd4be.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

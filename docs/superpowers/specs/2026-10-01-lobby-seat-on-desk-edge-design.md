@@ -108,7 +108,21 @@ plate or a front student.
   chair back, so a desk is measured by its first run wider than 260 px, never
   by a wood-colour bounding box. The test's `##` header says so.
 
+## Addendum: hands follow the body (owner review, 2026-10-01)
+
+On review the owner found Citra, Doni and Shinta still off: the 2026-09-30
+rule kept an unpictured student's old x and only raised it with its row, so
+after the bodies shrank and moved, the arms and desk items drifted off the
+body by up to 17% of a body width, differently per seat. Every `Hand_*` now
+sits at one place on its own body in every seat, mirrored with the art: from
+the picture for Andi, Citra, Marcel and Thea, and from Doni's and Shinta's
+mean placement before the picture pass (`4ec87bc0^`), where each already sat
+the same in every seat (`OWN_PLACE`). Row scales, mirroring and the front-row
+aisle rule are unchanged; a pictured student in its own seat stays exactly
+where the picture puts it, aisle included (Thea's items there overhang the
+aisle line by 1 px).
+
 ## Out of scope
 
 Separating the chairs from the desk art (option "B"); removing them (option
-"C"); any change to sizes, x positions or the room's framing.
+"C"); any change to sizes or the room's framing.

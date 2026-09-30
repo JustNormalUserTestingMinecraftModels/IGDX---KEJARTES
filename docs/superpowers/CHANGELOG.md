@@ -8,6 +8,35 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Lobby students sit at the desk, not on the chair
+
+Branch `fix/lobby-seat-desk-edge`; spec and plan
+`2026-10-01-lobby-seat-on-desk-edge`. Every desk plate carries a chair back
+drawn in the desk's own wood, and the 2026-09-30 seating pass (#169)
+measured each desk by its wood-colour box, so it anchored every seat on the
+chair's top. Students sat one chair-height too high, with arms resting on the
+chair. Each seat's portrait and hands slots move down together by the
+correction (Slot1 62.045, Slot2 62.0, Slot3 and Slot4 83.0 px), so each body
+ends on the desk's real back edge (400.045 / 400.0 / 766). With the chair
+left out, the game's desks are the picture's art (156 px deep against 155).
+`test_lobby_desk_items_fit` now reads each edge from the plate's pixels
+(first row with an opaque run over 260 px) and requires each Portrait to end
+on it; `test_lobby_layout`'s front-head pins and `DESK_TOP_ROWS` follow.
+
+**Hands follow the body.** On review the owner found Citra, Doni and Shinta
+still off: the 2026-09-30 rule kept an unpictured student's old x and only
+raised it with its row, so after the bodies shrank and moved, the arms and
+desk items drifted off the body by up to 17% of a body width, differently
+per seat. Every `Hand_*` now sits at one place on its own body in every
+seat, mirrored with the art: from the picture for Andi, Citra, Marcel and
+Thea, and from Doni's and Shinta's mean placement before the picture pass
+(`4ec87bc0^`), where each already sat the same in every seat (`OWN_PLACE`).
+Row scales, mirroring and the front-row aisle rule are unchanged; a
+pictured student in its own seat stays exactly where the picture puts it,
+aisle included (Thea's items there overhang the aisle line by 1 px).
+`test_every_student_wears_its_rows_scale_and_sits_the_same_on_its_body`
+replaces the row-rise test and its 24-entry `BEFORE` table.
+
 ## 2026-10-01 — Intro VN polish and two bug fixes land (collaborator's PR #160)
 
 The collaborator's PR #160 (branch `feat/intro-vn-and-bugfixes`), merged with

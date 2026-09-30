@@ -411,7 +411,23 @@ left out, the game's desks are the picture's art (156 px deep against 155).
 `test_lobby_desk_items_fit` now reads each edge from the plate's pixels
 (first row with an opaque run over 260 px) and requires each Portrait to end
 on it; `test_lobby_layout`'s front-head pins and `DESK_TOP_ROWS` follow.
+
+**Hands follow the body.** On review the owner found Citra, Doni and Shinta
+still off: the 2026-09-30 rule kept an unpictured student's old x and only
+raised it with its row, so after the bodies shrank and moved, the arms and
+desk items drifted off the body by up to 17% of a body width, differently
+per seat. Every `Hand_*` now sits at one place on its own body in every
+seat, mirrored with the art: from the picture for Andi, Citra, Marcel and
+Thea, and from Doni's and Shinta's mean placement before the picture pass
+(`4ec87bc0^`), where each already sat the same in every seat (`OWN_PLACE`).
+Row scales, mirroring and the front-row aisle rule are unchanged; a
+pictured student in its own seat stays exactly where the picture puts it,
+aisle included (Thea's items there overhang the aisle line by 1 px).
+`test_every_student_wears_its_rows_scale_and_sits_the_same_on_its_body`
+replaces the row-rise test and its 24-entry `BEFORE` table.
 ```
+
+- [ ] **Step 1b: Spec addendum.** Append to `docs/superpowers/specs/2026-10-01-lobby-seat-on-desk-edge-design.md`, just above `## Out of scope`, a section `## Addendum: hands follow the body (owner review, 2026-10-01)` that holds the "Hands follow the body" paragraph above (without its bold lead). In that spec's `## Out of scope`, delete the phrase `any change to sizes, x positions or the room's framing` and write `any change to sizes or the room's framing`.
 
 - [ ] **Step 2: Notes on the 2026-09-30 docs.** In the spec, append to the `**Status:**` line: ` · **Desk edges corrected 2026-10-01:** the "game desk" numbers below were the chair back's top; see 2026-10-01-lobby-seat-on-desk-edge-design.md.` In the plan, insert above `**Desk top surfaces**`: `> **Corrected 2026-10-01:** the game y0 values here (338, 683) are the top of the chair back drawn into each plate; the desks' real back edges are 400.045 / 400.0 / 766 / 766 (2026-10-01-lobby-seat-on-desk-edge).`
 - [ ] **Step 3: Commit** (`msg_t5.txt`: `docs(lobby): log the desk-edge seating fix; flag the 2026-09-30 numbers`, plus the trailer):

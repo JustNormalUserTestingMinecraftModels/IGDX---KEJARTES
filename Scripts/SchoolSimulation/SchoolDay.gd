@@ -74,7 +74,7 @@ signal _summary_closed
 ## Body text for the same end-of-week-1 tutorial.
 @export_multiline var end_tutorial_text: String = "Kerja bagus, Guru! Kamu telah berhasil membimbing murid-muridmu melewati simulasi minggu pertama.\n\nMulai sekarang, alur permainan akan terus berlanjut dalam siklus:\nAtur Jadwal, Simulasi Hari Sekolah, lalu Evaluasi Mingguan\n\nMisi Utamamu:\nTingkatkan seluruh kemampuan murid (Akademis, Olahraga, dan Seni Budaya) hingga melampaui Target Ambang Batas masing-masing sebelum minggu terakhir kelas ini selesai!\n\nPada akhir minggu terakhir, akan diadakan Ujian Kenaikan Kelas untuk menentukan kelulusan murid-muridmu ke jenjang berikutnya. Rencanakan jadwal belajar dan istirahat dengan taktis!"
 ## Prompt text for the same tutorial.
-@export var end_tutorial_prompt: String = "KLIK DIMANA SAJA UNTUK MELANJUTKAN"
+@export var end_tutorial_prompt: String = "KETUK DI MANA SAJA UNTUK MELANJUTKAN"
 
 # ── Node references ───────────────────────────────────────────────────────────
 @onready var day_screen: VBoxContainer    = $DayScreen

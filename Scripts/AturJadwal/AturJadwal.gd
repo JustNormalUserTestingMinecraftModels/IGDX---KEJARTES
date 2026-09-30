@@ -1427,7 +1427,7 @@ func _show_holiday_warning(holiday_title: String) -> void:
 
 	# Prompt Label
 	var prompt_lbl = Label.new()
-	prompt_lbl.text = "KLIK DIMANA SAJA UNTUK LANJUT"
+	prompt_lbl.text = TutorialPanel.DEFAULT_PROMPT
 	prompt_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	prompt_lbl.theme_type_variation = &"BarLabel"
 	vbox.add_child(prompt_lbl)

@@ -39,8 +39,11 @@ extends MarginContainer
 ## What the pill reads: the step number, then how many steps there are.
 const STEP_PILL_FORMAT := "Langkah %d / %d"
 
-## What the prompt says when a step gives it no line of its own.
-const DEFAULT_PROMPT := "CLICK DIMANA SAJA UNTUK LANJUT"
+## What the prompt says when a step gives it no line of its own, and what every
+## tap-to-continue card in the game says (the headmaster's beat, each screen's
+## empty card, the unhighlighted steps): one line, so two cards in a row never
+## ask for the same tap two ways.
+const DEFAULT_PROMPT := "KETUK DI MANA SAJA UNTUK LANJUT"
 ## The tutorial arrow's script, for the geometry placement() shares with it.
 const ArrowScript := preload("res://Scripts/TutorialArrow.gd")
 ## How far the spotlight hole stands off the control it frames, in pixels.

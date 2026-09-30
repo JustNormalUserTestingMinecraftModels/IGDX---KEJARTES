@@ -301,7 +301,7 @@ func _build_tutorial_panel():
 	color_rect.move_child(_tutorial_panel, click_idx)
 	# No step yet: show_step() with no count keeps the scene's sample pill
 	# ("Langkah 1 / 3") hidden until _show_step() writes the real one.
-	_tutorial_panel.show_step("", "", "CLICK DIMANA SAJA UNTUK LANJUT")
+	_tutorial_panel.show_step("", "", TutorialPanel.DEFAULT_PROMPT)
 
 	# Start blinking prompt
 	_start_prompt_blink()
@@ -427,7 +427,7 @@ func _show_step(index: int):
 
 	# Dynamic Prompt Text
 	var requires_button_press = (GameState.current_grade == 7 and index == tutorial_steps.size() - 1 and step.target_node_path != "") or (GameState.current_grade == 7 and index == 11)
-	var prompt := "CLICK DIMANA SAJA UNTUK LANJUT"
+	var prompt := TutorialPanel.DEFAULT_PROMPT
 	if step.prompt_text != "":
 		prompt = step.prompt_text
 	elif requires_button_press and not targets.is_empty():

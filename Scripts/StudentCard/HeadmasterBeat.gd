@@ -16,8 +16,9 @@ signal finished
 
 ## The name plate on every card.
 const SPEAKER := "Pak Kepala Sekolah"
-## What a card's prompt says.
-const PROMPT := "KETUK MANA SAJA UNTUK LANJUT"
+## What a card's prompt says: the tutorial's own tap prompt, so a beat card and
+## the pick step that follows it ask for the tap in the same words.
+const PROMPT := TutorialPanel.DEFAULT_PROMPT
 ## The congratulation on entering a grade, keyed by that grade (Kelas 7 has
 ## none: nobody is promoted into it). Each line is one card, its title and its
 ## body, played in order.

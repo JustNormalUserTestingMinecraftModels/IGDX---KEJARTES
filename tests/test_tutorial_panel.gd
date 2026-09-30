@@ -839,3 +839,38 @@ func test_point_at_moves_below_a_spot_when_the_card_is_centred_above_it() -> voi
 	assert_false(picture.intersects(card), "told where the card is, it stands below the spot instead")
 	assert_eq(tip.y, spot.end.y + TutorialPanel.ArrowScript.TIP_GAP)
 	assert_eq(arrow.get_node("Visual").rotation_degrees, 180.0, "pointing up at the spot")
+
+
+# ---------------------------------------------- the final review's fix wave
+
+## Every screen whose tutorial copy and tap prompt share the panel's one line.
+const PROMPT_SCREENS := [
+	"res://Scripts/StudentCard/StudentCard.gd",
+	"res://Scripts/StudentCard/HeadmasterBeat.gd",
+	"res://Scripts/StudentList/StudentList.gd",
+	"res://Scripts/AturJadwal/AturJadwal.gd",
+	"res://Scripts/SchoolSimulation/SchoolDay.gd",
+	"res://Scripts/Lobby/Lobby.gd",
+	"res://Scripts/UI/TutorialPanel.gd",
+]
+
+
+## Every "tap anywhere" card says one thing, in standard Indonesian: the headmaster's
+## beat and the pick step after it used to show two different prompts back to back,
+## and the rest said an English "CLICK" or "KLIK" with a run-together "dimana".
+func test_the_tap_prompt_is_one_line_in_standard_indonesian() -> void:
+	assert_eq(TutorialPanel.DEFAULT_PROMPT, "KETUK DI MANA SAJA UNTUK LANJUT")
+	assert_eq(HeadmasterBeat.PROMPT, TutorialPanel.DEFAULT_PROMPT,
+		"the beat's card and the pick step after it ask for the tap in the same words")
+	for path: String in PROMPT_SCREENS:
+		var src := FileAccess.get_file_as_string(path)
+		for drift: String in ["CLICK DIMANA", "KLIK DIMANA", "DIMANA SAJA", "KETUK MANA SAJA"]:
+			assert_false(src.contains(drift), "%s still says \"%s\"" % [path, drift])
+	var card_src := FileAccess.get_file_as_string(STUDENT_CARD_PATH)
+	assert_eq(card_src.count("TutorialPanel.DEFAULT_PROMPT"), 2,
+		"StudentCard's empty card and its default step both use the panel's constant")
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd"),
+		"prompt_lbl.text = TutorialPanel.DEFAULT_PROMPT", "so does AturJadwal's holiday card")
+	assert_contains(FileAccess.get_file_as_string(SCHOOL_DAY_PATH),
+		"@export var end_tutorial_prompt: String = \"KETUK DI MANA SAJA UNTUK MELANJUTKAN\"",
+		"SchoolDay's end-of-week card says the same, in its longer form")

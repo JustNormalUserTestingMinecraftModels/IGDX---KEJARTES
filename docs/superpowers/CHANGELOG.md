@@ -8,7 +8,57 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
-## 2026-10-01 — Lobby students sit at the desk, not on the chair
+## 2026-10-01 — Tutorial unification, headmaster beat, Lobby tutorial back
+
+Branch `feat/tutorial-unify-headmaster`; spec
+`2026-09-30-tutorial-unify-and-headmaster-beat-design`, plan
+`2026-10-01-tutorial-unify-adapted` (the collaborator's
+`2026-09-30-tutorial-unify-and-headmaster-beat`, adapted to the current
+rules; Task 4 was added at the owner's request). Four tasks and a review wave.
+
+1. **The card and the arrow.** `TutorialPanel` heads its card with one of two
+   authored badges chosen by `mode`: the "Langkah n / N" step pill, or the
+   speaker's name plate. `play_in` / `play_out` are its entrance and exit
+   springs. The tutorial arrow is the authored scene `Scenes/UI/TutorialArrow.tscn`
+   (180 px by default, sized by its `arrow_size` knob about its tip).
+2. **Every coach-mark goes through it.** AturJadwal, StudentList and the Lobby
+   mount the shared card (`TutorialPanel.mount` / `place_step` / `cut_hole`)
+   instead of building their own; the card sits against the half of the screen
+   opposite the spotlight so the arrow has room and never lies across it, and
+   no control of the card takes a tap (a step advances by the caller's own
+   catcher or the real control). A wrong tap on a forced step now answers:
+   the error cue, the wanted control shakes, its siblings dim.
+   StudentCard's steps count through the pill and its arrow keeps off the card.
+3. **The headmaster's beat.** Every promotion (Kelas 8, Kelas 9) opens with
+   Pak Kepala Sekolah's congratulation, a short run of cards on the same panel
+   in name-plate mode, one per tap; it is a story beat, never a lesson, so it
+   ignores the tutorial toggle and its card wears a **PENGUMUMAN** sticker
+   instead of TUTORIAL. The one real instruction after it (which new student
+   to pick) is a tutorial step (`HeadmasterBeat.PICK_STEPS`).
+4. **The Lobby tutorial shows again.** Root cause: `Lobby.tscn` has saved the
+   tutorial overlay `visible = false` since 09f0d3ca (2026-09-10, an editor
+   save made while the overlay was hidden to look at the desks), and no code
+   ever showed it, so no new player had seen the Lobby tutorial since. The
+   first-visit path (`_start_tutorial`) now shows the overlay itself; the
+   scene keeps it hidden so the classroom reads in the editor. Each phase's
+   last step lets the tap through to the button it names.
+
+**Review wave.** The Lobby tutorial's copy reaches every new player, so it
+was put in one voice and standard words ("kamu", "-mu", "di mana", "barang",
+"Rapor", "statistik", "kostum"), and the same class of slip was fixed in the
+other tutorial bodies ("Disini" to "Di sini", "Silahkan" to "Silakan").
+**One tap prompt:** `TutorialPanel.DEFAULT_PROMPT` is now "KETUK DI MANA SAJA
+UNTUK LANJUT"; StudentCard, AturJadwal's holiday card and the headmaster's
+beat read it (the beat and the pick step after it had asked for the same tap
+two ways), and SchoolDay's end-of-week prompt says the same in "MELANJUTKAN".
+**Short steps get a short card:** `NotebookFrame.tscn` floors every frame at
+640 x 520, which suits a popup and left a short coach-mark step a band of empty
+ruled page; the card's own `Frame` instance carries a 360 px floor (the
+popups keep the scene's). **No blank card at mount:** a mounted card starts
+transparent (an empty card showed at the overlay's corner for a frame, and
+each screen's exit tween played on it); each screen's step entrance fades it
+in.
+
 
 Branch `fix/lobby-seat-desk-edge`; spec and plan
 `2026-10-01-lobby-seat-on-desk-edge`. Every desk plate carries a chair back

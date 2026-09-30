@@ -332,3 +332,48 @@ func test_the_minigame_launcher_lists_only_games() -> void:
 		assert_true(base != null, m.get_string(1) + " is a whole game (a BaseMinigame)")
 		found += 1
 	assert_eq(found, 8, "the eight games, each once")
+
+
+# ──────────────────────────────────────────────── Debug Level Select switch
+
+const _LEVEL_SELECT_TOGGLE := "res://Scripts/Debug/DebugLevelSelectToggle.gd"
+
+
+## The cutscene's "Debug Level Select" button went with the 2026-09-30 VN pass,
+## and it was the only control that flipped the saved flag -- with the flag
+## saved OFF a LevelSelect pick of Kelas 9 is overridden (CutScene forces
+## Kelas 7), and with it ON nothing could turn the picker off. The General
+## tab carries the switch now, beside the tutorial ones; the cutscene keeps
+## none of the dead handler.
+func test_the_general_tab_carries_the_level_select_switch() -> void:
+	var body := _function_body(_source(), "_build_general_panel")
+	var needle := "v_tut_btns.add_child(preload(\"%s\").new())" % _LEVEL_SELECT_TOGGLE
+	assert_true(body.contains(needle),
+		"the General tab's tutorial group adds the Debug Level Select switch")
+	var cutscene := FileAccess.get_file_as_string("res://Scripts/CutScene/CutScene.gd")
+	for gone in ["btn_debug_toggle", "_on_debug_toggle_pressed",
+			"_update_debug_button_text", "_LEVEL_SELECT_SCENE", "_exiting"]:
+		assert_false(cutscene.contains(gone), "CutScene.gd no longer has " + gone)
+	var src := FileAccess.get_file_as_string(_LEVEL_SELECT_TOGGLE)
+	assert_true(src.contains("GameState.debug_level_select_enabled = not GameState.debug_level_select_enabled"),
+		"a press flips the persisted flag")
+	assert_true(src.contains("GameSettings.save_settings()"),
+		"and saves it the way the cutscene's button did")
+
+
+## Behaviour: a press flips GameState.debug_level_select_enabled both ways and
+## the label follows. Built detached (never in the tree); the flag is put back.
+func test_the_level_select_switch_flips_the_flag_and_its_label() -> void:
+	var was: bool = GameState.debug_level_select_enabled
+	var toggle = (load(_LEVEL_SELECT_TOGGLE) as GDScript).new()
+	GameState.debug_level_select_enabled = true
+	toggle.refresh_text()
+	assert_true(toggle.text.contains("ON"), "it reads ON while the picker is on")
+	toggle._pressed()
+	assert_false(GameState.debug_level_select_enabled, "a press turns the picker off")
+	assert_true(toggle.text.contains("OFF"), "and the label follows")
+	toggle.toggle()
+	assert_true(GameState.debug_level_select_enabled, "a second press turns it back on")
+	assert_true(toggle.text.contains("ON"), "and the label follows again")
+	toggle.free()
+	GameState.debug_level_select_enabled = was

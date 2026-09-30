@@ -65,7 +65,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 193,
 	"res://Scripts/CutScene/CutScene.gd": 12,
 	"res://Scripts/CutScene/HintLabel.gd": 3,
-	"res://Scripts/Debug/DebugManager.gd": 168,
+	"res://Scripts/Debug/DebugManager.gd": 167,
 	"res://Scripts/Debug/EndGameRehearsal.gd": 2,
 	"res://Scripts/GameSettings.gd": 2,
 	"res://Scripts/GameState.gd": 9,

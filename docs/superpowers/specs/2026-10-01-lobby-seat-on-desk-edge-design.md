@@ -26,7 +26,8 @@ started at the **chair's top**, not the desk's back edge:
 | `kiri_bawah.png` | 687 | 765 | 78 |
 | `kanan_bawah.png` | 687 | 765 | 78 |
 
-(first alpha > 128 row; the desk edge is the first row wider than 300 px.)
+(chair top: first row with alpha > 0.5; desk edge: first row whose longest
+opaque run is wider than 260 px.)
 
 Every seat was anchored on that chair top (plan: 338 back, 683 front), so the
 row "rise" of 72 / 80 px was mostly the chair's height. With the chair
@@ -35,30 +36,37 @@ the same art, and the plan's "other art" conclusion came from the same error.
 
 ## The fix
 
-**Move whole seats, down, by one number per seat.** For each of the four seats,
-shift both the portrait slot (`StudentPortraitsContainer_*/SlotN`, which holds
-`Portrait` and `ChatAnchor`) and the hands slot (`StudentHandsContainer_*/SlotN`,
-which holds all six `Hand_*`) down by the same `drop`:
+**Re-anchor the picture on the real desk edge, and move whole seats by the
+correction.** The 2026-09-30 mapping `game = anchor_game + (picture -
+anchor_picture) * K` stays; only each seat's `anchor_game.y` changes, from the
+chair top to the desk's real back edge. Both slots of the seat — the portrait
+slot (`StudentPortraitsContainer_*/SlotN`, holding `Portrait` and
+`ChatAnchor`) and the hands slot (`StudentHandsContainer_*/SlotN`, holding all
+six `Hand_*`) — move down by that correction:
 
-    drop = desk_back_edge - portrait_square_bottom
+    drop = desk_back_edge - old anchor_game.y
 
-- `desk_back_edge`: the first row of the seat's desk plate whose opaque
-  (alpha > 128) run is wider than 300 px — the chair back is at most 220 px
-  wide, so this skips it — mapped to classroom px by adding the plate's
+- `desk_back_edge`: the first row of the seat's desk plate whose longest
+  opaque (alpha > 0.5) run is wider than 260 px — the chair backs are at most
+  223 px wide and each desk's first row at least 303 — plus the plate's
   `offset_top` (all four plates have y scale 1).
-- `portrait_square_bottom`: the seat's `Portrait` rect bottom in classroom px
-  today (back 338.4, front 681.8).
 
-In the picture, each pictured portrait square ends within 1.2 px of its
-desk's back edge (Thea: 491.8 + 320 = 811.8 against 813), so this is the
-picture's own rule. Expected drops: about **63 px back, 82 px front**, exact
-values measured in build and recorded in the test.
+| Seat | Plate | Edge (texture + offset_top) | Old anchor | drop |
+|---|---|---|---|---|
+| Slot1 back-left | `Meja_KiriAtas` | 410 − 9.955 = 400.045 | 338 | 62.045 |
+| Slot2 back-right | `Meja_KananAtas` | 410 − 10 = 400.0 | 338 | 62.0 |
+| Slot3 front-left | `Meja_KiriBawah` | 766 + 0 = 766.0 | 683 | 83.0 |
+| Slot4 front-right | `Meja_KananBawah` | 766 + 0 = 766.0 | 683 | 83.0 |
+
+Each seat's `Portrait` square then ends within 1.25 px of its desk's back
+edge, the gap the picture itself has (Thea: 491.8 + 320 = 811.8 against 813,
+times K).
 
 Nothing else moves. Portrait sizes, hand scales, x positions and Marcel's
 flip in Slot3 stay as #169 set them. Both slots of a seat move by the same
 `drop`, so body, hands and items keep their relative placement from the
-picture. That is 8 node edits in `Scenes/Lobby/Lobby.tscn`, made in the worktree
-(no editor attached to it), and no script changes:
+picture. That is 8 node edits in `Scenes/Lobby/Lobby.tscn`, made through the
+worktree's own editor, and no script changes:
 
 - the face rig copies `Portrait`'s rect (`Lobby._match_rect`), so it follows;
 - the idle bob tweens from the container's current position, so it follows;
@@ -70,15 +78,17 @@ plate or a front student.
 
 ## Tests
 
-- `tests/test_lobby_desk_items_fit.gd`: the pinned portrait squares and hand
-  centres move by their seat's `drop`; the recorded 2026-09-30 anchor
-  numbers (338 / 683) are replaced by the real desk edges. **New test:** each
-  seat's `Portrait` bottom equals its desk plate's back edge (±1 px), where
-  the edge is read from the plate texture's alpha at run time (widest-run
-  rule above), not from a constant. That test would have caught this bug.
-- `tests/test_lobby_layout.gd`, `tests/test_tall_screen_layout.gd`,
-  `tests/test_student_chatter.gd`, `tests/test_parallax_diorama.gd`: re-pin
-  only the rects that moved; no rule changes.
+- `tests/test_lobby_desk_items_fit.gd`: `anchor_game.y` becomes the real
+  edges above, so every existing picture check follows. **Two new tests:**
+  each seat's `anchor_game.y` equals its plate's back edge read from the
+  texture's alpha at run time (the rule above), and each seat's `Portrait`
+  ends within 1.5 px of that edge. Either would have caught this bug.
+- `tests/test_lobby_layout.gd`: the front-row head centres it hard-codes
+  (y 389) move down 83 px to y 472; `DESK_TOP_ROWS` starts at the desk's real
+  back edge (410, not the chair's 343). The back-row centring still holds:
+  the desk-top centre moves 1.54 px, inside its 2.5 px tolerance.
+- `tests/test_tall_screen_layout.gd`, `tests/test_student_chatter.gd`,
+  `tests/test_parallax_diorama.gd`: pin no seat heights; run unchanged.
 - Targeted `test_run` per touched suite, then the full suite in `ship-pr`.
 
 ## Verification
@@ -95,7 +105,7 @@ plate or a front student.
   desk-edge numbers are wrong).
 - `docs/superpowers/CHANGELOG.md`: one entry.
 - The new test pins the rule, so no CLAUDE.md line: the desk plates carry a
-  chair back, so a desk is measured by its first run wider than 300 px, never
+  chair back, so a desk is measured by its first run wider than 260 px, never
   by a wood-colour bounding box. The test's `##` header says so.
 
 ## Out of scope

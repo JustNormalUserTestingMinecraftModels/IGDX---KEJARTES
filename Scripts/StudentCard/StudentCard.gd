@@ -353,27 +353,26 @@ func _start_prompt_blink():
 func _position_tutorial_panel():
 	if not _tutorial_panel or not is_instance_valid(_tutorial_panel):
 		return
-	var viewport_size = get_viewport_rect().size
 	_tutorial_panel.reset_size()
 	await get_tree().process_frame
 	if not is_instance_valid(_tutorial_panel):
 		return
-	var panel_size = _tutorial_panel.size
-	
-	var target_y: float
-	if current_step >= 7:
-		# Center vertically in the viewport for steps 7+ to avoid covering bottom controls and popups
-		target_y = (viewport_size.y - panel_size.y) / 2.0
-	else:
-		var min_y = viewport_size.y * 0.55
-		var ideal_y = viewport_size.y - panel_size.y - 40
-		target_y = max(min_y, ideal_y)
-		
-	_tutorial_panel.position = Vector2(
-		(viewport_size.x - panel_size.x) / 2.0,
-		target_y
-	)
-	_tutorial_panel.pivot_offset = panel_size / 2.0
+	_tutorial_panel.position = _tutorial_card_position(_tutorial_panel.size)
+	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
+
+## Where the card's top-left corner goes at the current step, for a card of
+## `panel_size`: at the bottom, or from step 7 on centred down the screen.
+func _tutorial_card_position(panel_size: Vector2) -> Vector2:
+	var viewport_size := get_viewport_rect().size
+	var centred_y := (viewport_size.y - panel_size.y) / 2.0
+	var bottom_y := maxf(viewport_size.y * 0.55, viewport_size.y - panel_size.y - 40)
+	return Vector2((viewport_size.x - panel_size.x) / 2.0, centred_y if current_step >= 7 else bottom_y)
+
+## The rectangle the card will cover at the current step, for the arrow to keep off.
+func _tutorial_card_rect() -> Rect2:
+	if not is_instance_valid(_tutorial_panel): return Rect2()
+	var card_size := _tutorial_panel.get_combined_minimum_size()
+	return Rect2(_tutorial_card_position(card_size), card_size)
 
 func _on_click_area_gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -534,11 +533,12 @@ func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 		_highlight_tween.kill()
 		
 	var current_size = mat.get_shader_parameter("hole_size")
-	# The arrow sizes itself from its own arrow_size and stands its tip beside the
-	# hole (above it, or below when there is no room above), inside the overlay.
+	# The arrow sizes itself from arrow_size and stands its tip beside the hole
+	# (above, or below when there is no room), inside the overlay and off the card.
 	var arrow_pos := Vector2.ZERO
 	if _tutorial_arrow:
-		arrow_pos = _tutorial_arrow.point_at(Rect2(local_pos, size_with_padding), Rect2(Vector2.ZERO, color_rect.size))
+		arrow_pos = _tutorial_arrow.point_at(Rect2(local_pos, size_with_padding),
+				Rect2(Vector2.ZERO, color_rect.size), _tutorial_card_rect())
 	if current_size == null or (current_size is Vector2 and current_size.length_squared() < 1.0):
 		# If coming from a cleared state, warp the position to center immediately to avoid swiping across screen
 		var center = local_pos + size_with_padding / 2.0

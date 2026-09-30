@@ -358,14 +358,32 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 ## StudentCard clamped its arrow with a hard-coded 320px picture, so the
 ## smaller arrow still kept 320px away from every edge. The arrow now sizes
 ## itself from its own arrow_size and stands its tip beside the hole, inside
-## the overlay; only this screen's card placement is still its own.
+## the overlay and off the card. This screen still places its card itself
+## (from step 7 on it is centred down the screen), so the arrow is told the
+## rectangle that rule gives, not left to land on it.
 func test_the_arrow_is_placed_from_its_own_size_not_a_hard_coded_clamp() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var body := _function_source(src, "_highlight_multiple")
 	assert_false(body.is_empty(), "_highlight_multiple was found")
-	assert_true(body.contains(
-			"_tutorial_arrow.point_at(Rect2(local_pos, size_with_padding), Rect2(Vector2.ZERO, color_rect.size))"),
-		"the arrow points at the padded hole, within the overlay")
+	assert_true(body.contains("_tutorial_arrow.point_at(Rect2(local_pos, size_with_padding),"),
+		"the arrow points at the padded hole")
+	assert_true(body.contains("Rect2(Vector2.ZERO, color_rect.size)"), "within the overlay")
 	assert_false(src.contains("320.0"), "no hard-coded 320px arrow is left")
 	assert_false(src.contains("var W =") or src.contains("var H ="),
 		"no local arrow width and height either")
+
+
+func test_the_arrow_keeps_off_the_card_this_screen_places() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_source(src, "_highlight_multiple").contains("_tutorial_card_rect())"),
+		"the arrow is handed the card's rectangle to avoid")
+	var rect := _function_source(src, "_tutorial_card_rect")
+	assert_false(rect.is_empty(), "_tutorial_card_rect was found")
+	assert_true(rect.contains("get_combined_minimum_size()")
+			and rect.contains("_tutorial_card_position(card_size)"),
+		"it is the placement rule applied to the size the card fits its text to")
+	assert_true(_function_source(src, "_position_tutorial_panel").contains(
+			"_tutorial_panel.position = _tutorial_card_position(_tutorial_panel.size)"),
+		"the card itself is placed by that same rule, so the two cannot drift apart")
+	assert_true(_function_source(src, "_tutorial_card_position").contains("current_step >= 7"),
+		"and the rule still centres the card down the screen from step 7 on")

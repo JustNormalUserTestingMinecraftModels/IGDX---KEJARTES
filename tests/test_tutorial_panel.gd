@@ -738,3 +738,25 @@ func test_the_scene_authors_the_frame_and_margin_as_tap_through() -> void:
 	assert_contains(_function_source(code, "_ready"), "_let_taps_through(self)",
 		"and _ready sweeps the rest -- with no editor-hint gate, so the suites see it")
 	assert_false(_function_source(code, "_let_taps_through").contains("is_editor_hint"))
+
+
+# ------------------------------------- an arrow that keeps off a card it does not place
+
+## StudentCard centres its card down the screen from step 7 on, so an arrow
+## hung above a spot below the card can land on it. The arrow takes the card's
+## rectangle to keep off, the way the three spotlight screens' arrows do.
+func test_point_at_moves_below_a_spot_when_the_card_is_centred_above_it() -> void:
+	var arrow := _make_arrow()
+	var screen := Rect2(0, 0, 1080, 1920)
+	var spot := Rect2(400, 1300, 200, 150)
+	var card := Rect2(43.5, 700, 993, 520)
+	var unaware: Vector2 = arrow.point_at(spot, screen)
+	assert_eq(unaware.y, spot.position.y - TutorialPanel.ArrowScript.TIP_GAP,
+		"without the card the arrow hangs above the spot")
+	var unaware_picture: Rect2 = TutorialPanel.ArrowScript.picture_rect(unaware, arrow.arrow_size, false)
+	assert_true(unaware_picture.intersects(card), "which is across a card centred above the spot")
+	var tip: Vector2 = arrow.point_at(spot, screen, card)
+	var picture: Rect2 = TutorialPanel.ArrowScript.picture_rect(tip, arrow.arrow_size, true)
+	assert_false(picture.intersects(card), "told where the card is, it stands below the spot instead")
+	assert_eq(tip.y, spot.end.y + TutorialPanel.ArrowScript.TIP_GAP)
+	assert_eq(arrow.get_node("Visual").rotation_degrees, 180.0, "pointing up at the spot")

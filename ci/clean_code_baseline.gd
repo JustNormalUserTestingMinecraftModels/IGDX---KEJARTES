@@ -91,7 +91,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 36,
 	"res://Scripts/SchoolSimulation/StudentData.gd": 8,
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 38,
-	"res://Scripts/StudentCard/StudentCard.gd": 139,
+	"res://Scripts/StudentCard/StudentCard.gd": 135,
 	"res://Scripts/StudentCard/StudentCardView.gd": 13,
 	"res://Scripts/StudentList/StudentList.gd": 59,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 17,

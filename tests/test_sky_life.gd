@@ -201,6 +201,15 @@ func test_clouds_ride_the_sky_and_creep() -> void:
 		"the sky moving keeps the creep")
 	assert_true(absf(clouds.rotation_degrees - (sky.rotation_degrees + layer.drift_degrees())) < 0.001,
 		"and the clouds keep riding it")
+	# However long the day idles, the creep turns back inside its bound.
+	assert_true(layer.max_drift_degrees > 0.0, "the creep is bounded by default")
+	var furthest := 0.0
+	for i in 400:
+		layer.step(0.5)
+		furthest = maxf(furthest, absf(layer.drift_degrees()))
+	assert_true(furthest <= layer.max_drift_degrees + 0.001,
+		"200 idle seconds never creep past max_drift_degrees, furthest %.1f" % furthest)
+	assert_true(furthest > layer.max_drift_degrees * 0.9, "and they do reach out to it")
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/CloudDrift.gd")
 	assert_true(src.contains("Engine.is_editor_hint() or GameSettings.reduce_motion"),
 		"the creep never runs in the game under reduce_motion, nor unasked in the editor")
@@ -239,11 +248,12 @@ func test_cloud_layer_matches_the_sky_square() -> void:
 func test_clouds_start_in_register_with_the_sky() -> void:
 	var fresh := (load(SCENE_PATH) as PackedScene).instantiate() as BookClockWidget
 	Engine.get_main_loop().root.add_child(fresh)
-	var clouds := fresh.get_node(BookClockWidget.CLOUDS_PATH) as Control
-	assert_true(absf(clouds.rotation_degrees - fresh.dawn_rotation_degrees) < 0.001,
-		"clouds open at the dawn angle, %.2f" % clouds.rotation_degrees)
-	fresh.get_parent().remove_child(fresh)
-	fresh.free()
+	track(fresh)
+	var clouds := fresh.get_node_or_null(BookClockWidget.CLOUDS_PATH) as Control
+	assert_true(clouds != null, "the fresh widget has its cloud painting")
+	if clouds != null:
+		assert_true(absf(clouds.rotation_degrees - fresh.dawn_rotation_degrees) < 0.001,
+			"clouds open at the dawn angle, %.2f" % clouds.rotation_degrees)
 
 ## The three SVG clouds the painting replaced are gone for good.
 func test_the_old_svg_clouds_are_retired() -> void:

@@ -10,7 +10,9 @@ extends Control
 ## The clouds ride with the sky -- BookClockWidget hands every sky angle to
 ## follow_sky() -- so the painted sunset clouds stay over the sunset and the
 ## white ones over noon. On top of that they creep slowly on their own clock,
-## so they are never dead still, even while the day waits on an event.
+## so they are never dead still, even while the day waits on an event. The
+## creep turns back at max_drift_degrees: left unbounded, a day screen idling
+## on "tap to continue" walked the clouds right out of register again.
 ## reset_drift() puts them back in register; BookClockWidget calls it at each
 ## new day, which starts under the full night. An own-clock spin with no ride
 ## was built first and dropped the same day: the sky turns a full circle in a
@@ -27,6 +29,10 @@ extends Control
 ## turns counter-clockwise, the sky's own direction; 0 stops the creep and
 ## leaves the clouds riding the sky alone.
 @export_range(-30.0, 30.0, 0.1) var spin_degrees_per_second: float = -2.0
+## The furthest the clouds creep from the sky's own angle, degrees, before
+## they turn back -- so however long a day idles, the painted colours stay
+## near the sky they were painted for. 0 lets them creep without limit.
+@export_range(0.0, 90.0, 0.5) var max_drift_degrees: float = 24.0
 ## Opacity of the whole cloud layer, so it can sit back into the sky.
 @export_range(0.0, 1.0, 0.01) var base_opacity: float = 0.85:
 	set(value):
@@ -44,6 +50,9 @@ extends Control
 var _sky_degrees := 0.0
 ## How far the clouds have crept past the sky, degrees.
 var _drift_degrees := 0.0
+## Degrees of creep travelled since the last reset, never negative; the drift
+## is this folded back and forth inside max_drift_degrees.
+var _travel_degrees := 0.0
 
 
 func _ready() -> void:
@@ -77,12 +86,17 @@ func follow_sky(sky_degrees: float) -> void:
 
 ## Creeps the clouds on by `delta` seconds. Public so the suite can drive it.
 func step(delta: float) -> void:
-	_drift_degrees += spin_degrees_per_second * delta
+	_travel_degrees += absf(spin_degrees_per_second) * delta
+	var reach := _travel_degrees
+	if max_drift_degrees > 0.0:
+		reach = pingpong(_travel_degrees, max_drift_degrees)
+	_drift_degrees = reach * signf(spin_degrees_per_second)
 	_apply_rotation()
 
 
 ## Puts the clouds back in register with the sky.
 func reset_drift() -> void:
+	_travel_degrees = 0.0
 	_drift_degrees = 0.0
 	_apply_rotation()
 

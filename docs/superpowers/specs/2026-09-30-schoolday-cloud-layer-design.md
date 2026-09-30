@@ -71,6 +71,9 @@ Night dimming is unchanged: `set_night()` already modulates `CloudLayer` by
   sky + creep. `reset_drift()` clears the creep; `drift_degrees()` reads it.
 - `spin_degrees_per_second: float = -2.0` -- the creep; negative is the
   sky's direction; 0 leaves the clouds riding the sky alone.
+- `max_drift_degrees: float = 24.0` -- the creep folds back and forth inside
+  this (`pingpong`), so an idle day screen never walks the clouds out of
+  register; 0 removes the limit. Added by the local review.
 - `base_opacity: float = 0.85` -- the layer's alpha.
 - `preview_in_editor: bool = false` -- creeps in the editor viewport too.
 - `_process` creeps only in the game, or in the editor under the preview;

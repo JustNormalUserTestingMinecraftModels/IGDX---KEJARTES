@@ -19,7 +19,8 @@ Spec `docs/superpowers/specs/2026-09-30-schoolday-cloud-layer-design.md`.
   the sky's square and pivot and hands every sky angle to
   `CloudDrift.follow_sky()`; `CloudDrift` adds a slow own-clock creep
   (`spin_degrees_per_second`, -2 by default, `preview_in_editor` to watch it)
-  and `set_day()` clears it under the full night. An own-clock spin with no
+  that turns back at `max_drift_degrees` (24), so an idling day never walks
+  them out of register; `set_day()` clears it under the full night. An own-clock spin with no
   ride was built first and dropped: the sky turns a full circle in seconds of
   play, so the dusk clouds hung over every midday.
 - **Sun and moon in front.** `CloudLayer` moved below `SkyBodies`; the

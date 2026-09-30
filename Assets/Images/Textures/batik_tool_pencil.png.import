@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://wktogrsj02k2"
-path="res://.godot/imported/batik_tool_pencil.png-010fa53656f7638d65909870cce0d660.ctex"
+path.bptc="res://.godot/imported/batik_tool_pencil.png-010fa53656f7638d65909870cce0d660.bptc.ctex"
+path.astc="res://.godot/imported/batik_tool_pencil.png-010fa53656f7638d65909870cce0d660.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Textures/batik_tool_pencil.png"
-dest_files=["res://.godot/imported/batik_tool_pencil.png-010fa53656f7638d65909870cce0d660.ctex"]
+dest_files=["res://.godot/imported/batik_tool_pencil.png-010fa53656f7638d65909870cce0d660.bptc.ctex", "res://.godot/imported/batik_tool_pencil.png-010fa53656f7638d65909870cce0d660.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

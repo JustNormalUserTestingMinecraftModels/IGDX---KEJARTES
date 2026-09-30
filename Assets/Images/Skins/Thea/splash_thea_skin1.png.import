@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cnh2i6gqo7ffc"
-path="res://.godot/imported/splash_thea_skin1.png-686b2c36045ad27fb1b97cd3cb56c9aa.ctex"
+path.bptc="res://.godot/imported/splash_thea_skin1.png-686b2c36045ad27fb1b97cd3cb56c9aa.bptc.ctex"
+path.astc="res://.godot/imported/splash_thea_skin1.png-686b2c36045ad27fb1b97cd3cb56c9aa.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Skins/Thea/splash_thea_skin1.png"
-dest_files=["res://.godot/imported/splash_thea_skin1.png-686b2c36045ad27fb1b97cd3cb56c9aa.ctex"]
+dest_files=["res://.godot/imported/splash_thea_skin1.png-686b2c36045ad27fb1b97cd3cb56c9aa.bptc.ctex", "res://.godot/imported/splash_thea_skin1.png-686b2c36045ad27fb1b97cd3cb56c9aa.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

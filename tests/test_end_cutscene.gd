@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## EndCutscene (2026-09-05): the win/lose beat between StatCheck and
 ## RunResult. One scene, dressed by GameState.run_failed.
 ##
@@ -43,7 +46,7 @@ func test_the_stamps_actually_rendered_their_word() -> void:
 		# rasterisation and quietly test the wrong bytes.
 		var tex: Texture2D = ResourceLoader.load(
 			p, "Texture2D", ResourceLoader.CACHE_MODE_IGNORE)
-		var img: Image = tex.get_image()
+		var img: Image = TexturePixels.of(tex)
 		assert_not_null(img, p + " rasterised to an image")
 		var w := img.get_width()
 		var h := img.get_height()

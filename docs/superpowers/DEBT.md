@@ -544,6 +544,27 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Texture memory follow-ons (2026-09-30).** Rule and numbers:
+  `tests/test_texture_memory.gd`.
+  - **Not checked on a phone.** The compressed art was judged on desktop
+    (BPTC); a phone gets ASTC 4x4 from the same import. Look at the desk
+    plates and the backdrops on a device before a release.
+  - **The character art is most of what is left**: the 24 student portraits,
+    splashes and outfits (below, "The student art is lossless for now") and
+    the twelve 1280x1280 face bases, drawn at about 400 px. All six bases
+    load in the Lobby whatever the roster is. Halving the base art, or
+    loading only the roster's faces, is the next saving.
+  - **The download size was not measured.** A compressed texture is stored
+    at its video-memory size (about 1 byte per pixel), where a lossless one
+    is stored packed, so the APK probably grows. No export preset exists on
+    the dev PC to build one; compare a build before and after.
+  - **A phone build cannot unpack ASTC** (the decoder ships in the editor
+    only), so `Image.decompress()` fails there. `TraySlot` carries its crops
+    baked for that reason; any new runtime pixel read of large art needs the
+    same, or the art in `ALLOWED`.
+  - **About 100 MB in the Lobby is not art**: probably render targets, MSAA,
+    fonts and the theme. Not investigated.
+
 - **Minigame hierarchy follow-ons (2026-09-30).** Spec:
   `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`.
   - **Stray key outline in the calculator art (artist).**
@@ -712,29 +733,18 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     each face's `Base`; `Pupil` already carries `eye_mask.gdshader` and a
     CanvasItem has one material slot. It is a few hundred pixels of iris and
     reads fine, but a CanvasGroup pass would close it.
-  - **Item 12, VRAM compression, is built and reverted, not skipped.** The
-    project holds 1182 MB of uncompressed RGBA8 texture data, 1069 MB of it
-    Lossless. Compressing the 160 textures at 512x512 or larger cuts 975 MB
-    to 244 MB and every suite still passes individually -- but a FULL
-    `test_run` then never completes: the editor climbs to ~2 GB, stops
-    responding and has to be killed. Reverting the 160 `.import` files and
-    keeping only the project setting brought the full run back at 2123/2123
-    in 9 s, so the compression is the cause, and disabling ETC2 alone did not
-    help. To redo it: `compress/mode=2` on every texture .import whose source
-    is >= 512x512, EXCLUDING `Assets/Images/UI/BarFill/**` and
-    `Shop/UI/tray_dots.png` (their sharpness is asserted) and every `.svg`
-    (test_end_cutscene pixel-checks the badges). The 195 smaller textures
-    should stay lossless regardless: block artifacts show on small crisp UI
-    and the saving is minor. Land it only together with a way to run the
-    suite -- coverage is the quality floor.
   - **The student art is lossless for now (2026-09-29).** The 24 portraits,
     default splashes and day outfits were the only VRAM-compressed art; they
     showed block artifacts, so they went to high-quality VRAM (#142) and then
     lossless. That is about 4x their texture memory (a 1080x1920 splash with
     mipmaps is ~11 MB instead of ~2.7 MB). If phone memory becomes a
     problem, move them back to `compress/mode=2` with
-    `compress/high_quality=true`, and flip `test_student_art_is_lossless` and
-    the outfit import test in `tests/test_student_skins.gd` with them.
+    `compress/high_quality=true`, flip `test_student_art_is_lossless` and
+    the outfit import test in `tests/test_student_skins.gd`, and drop their
+    `STUDENT_ART` rows from `tests/test_texture_memory.gd`. Measured
+    2026-09-30 with them compressed: the Lobby 210 MB instead of 238, Skin
+    Select 242 instead of 303; on desktop (BPTC) a splash compared at
+    46 dB PSNR against its source.
   - **Android export: why the APK lacks the bus layout is unknown (2026-09-30).**
     A phone build booted without the BGM and SFX buses. `AudioDirector.ensure_bus()`
     now covers it, but the preset that builds the APK lives on another machine

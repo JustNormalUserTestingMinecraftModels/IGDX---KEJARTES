@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cxgjvwqathxst"
-path="res://.godot/imported/splash_citra_skin1.png-61b7257de517a340f60559b6a3f0f16e.ctex"
+path.bptc="res://.godot/imported/splash_citra_skin1.png-61b7257de517a340f60559b6a3f0f16e.bptc.ctex"
+path.astc="res://.godot/imported/splash_citra_skin1.png-61b7257de517a340f60559b6a3f0f16e.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Skins/Citra/splash_citra_skin1.png"
-dest_files=["res://.godot/imported/splash_citra_skin1.png-61b7257de517a340f60559b6a3f0f16e.ctex"]
+dest_files=["res://.godot/imported/splash_citra_skin1.png-61b7257de517a340f60559b6a3f0f16e.bptc.ctex", "res://.godot/imported/splash_citra_skin1.png-61b7257de517a340f60559b6a3f0f16e.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

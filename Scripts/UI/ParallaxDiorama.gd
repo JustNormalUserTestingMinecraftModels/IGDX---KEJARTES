@@ -16,12 +16,19 @@ extends Control
 ## script of its own, and a node has only one -- and because a driver that
 ## owns no pixels cannot be mistaken for part of the picture.
 ##
-## WHAT DRIVES IT. On a phone, the accelerometer: tilt the handset and the
-## near bands swing further than the far ones, which is what parallax does
-## under a translating viewpoint. On desktop, where Input.get_accelerometer()
-## returns zero, the pointer stands in for tilt, measured from the middle of
-## the screen. force_deflection() drives either without a device, an input
-## event or a frame of smoothing, which is how the suite checks it.
+## WHAT DRIVES IT. On a phone, the gyroscope: turn the handset and the near
+## bands swing further than the far ones, which is what parallax does under a
+## translating viewpoint. The gyroscope reports how fast the phone is turning,
+## so the driver adds that up into an angle away from the held pose; a shake
+## or a step moves the phone without turning it and so moves nothing. A phone
+## with no gyroscope falls back to the accelerometer. On desktop, where both
+## return zero, the pointer stands in for tilt, measured from the middle of
+## the screen. force_deflection() drives any of them without a device, an
+## input event or a frame of smoothing, which is how the suite checks it.
+##
+## Both sensors are off in a fresh project and read zero on a device until
+## input_devices/sensors/enable_gyroscope and enable_accelerometer are set,
+## which tests/test_parallax_diorama.gd pins.
 ##
 ## Kurangi Gerakan (GameSettings.reduce_motion) holds every band at rest.
 ##
@@ -84,8 +91,22 @@ const SEAM_PAD := Vector2(3.0, 3.0)
 ## high feels twitchy and shows up hand tremor.
 @export_range(0.5, 20.0, 0.1) var smoothing: float = 5.0
 
+## Follow the gyroscope where the phone has one. Off, the phone path reads the
+## accelerometer, as it does on a handset without a gyroscope.
+@export var use_gyroscope: bool = true
+
+## How far the phone turns from the held pose, in degrees, to reach full
+## deflection. Lower answers a smaller turn; the angle is also capped here,
+## so turning further and coming back answers at once.
+@export_range(2.0, 45.0, 0.5) var tilt_angle_degrees: float = 12.0
+
+## Which way the bands answer a turn, per axis: x for turning the phone left
+## and right, y for tipping it toward and away. Flip a sign to reverse that
+## axis; a larger magnitude makes it answer harder than the other.
+@export var gyro_direction: Vector2 = Vector2(-1.0, -1.0)
+
 ## Multiplies the accelerometer vector before it is clamped to [-1, 1]. Only
-## the phone path uses it; the pointer path is already normalised.
+## the accelerometer path uses it; the others are already normalised.
 @export_range(0.05, 2.0, 0.01) var tilt_gain: float = 0.35
 
 ## Set false to pin every band at rest.
@@ -95,6 +116,8 @@ const SEAM_PAD := Vector2(3.0, 3.0)
 ## handset, per second. Tilt is read against this, not against gravity, so any
 ## comfortable holding angle rests at zero deflection and only a change of
 ## angle moves the bands. Low keeps a deliberate tilt from being absorbed.
+## The gyroscope path eases its angle back to zero at the same rate, which
+## also bleeds off the drift that adding up a turn rate collects.
 @export_range(0.05, 5.0, 0.05) var tilt_recenter: float = 0.6
 
 ## Rest offsets of each band (left, top, right, bottom), captured on the first
@@ -113,6 +136,15 @@ var _neutral: Vector3 = Vector3.ZERO
 
 ## Whether `_neutral` has been seeded from a real reading yet.
 var _has_neutral: bool = false
+
+## How far the phone has turned from the held pose, in radians: x about the
+## phone's long axis (left and right), y about its short one (toward and away).
+var _turn: Vector2 = Vector2.ZERO
+
+## Whether the gyroscope has ever reported a turn. Latched, because a phone
+## held perfectly still reads zero exactly as a missing sensor does, and
+## dropping to the accelerometer for that frame would jolt the bands.
+var _has_gyroscope: bool = false
 
 
 func _ready() -> void:
@@ -197,9 +229,31 @@ func _target_tilt(raw: Vector2) -> Vector2:
 	return raw
 
 
-## Tilt as a vector in [-1, 1]: the accelerometer where there is one, the
-## pointer otherwise.
+## Adds one frame of gyroscope `rate` (radians per second about the phone's
+## x, y and z axes) to `turn`, eases the result back toward zero at `recenter`
+## per second and caps it at `limit` radians. Static and free of Input so the
+## suite can drive it without a device.
+static func integrate_turn(turn: Vector2, rate: Vector3, delta: float,
+		recenter: float, limit: float) -> Vector2:
+	# Turning left and right is rotation about the phone's y axis, tipping it
+	# toward and away is rotation about x.
+	var next := turn + Vector2(rate.y, rate.x) * delta
+	next = next.lerp(Vector2.ZERO, clampf(recenter * delta, 0.0, 1.0))
+	return Vector2(clampf(next.x, -limit, limit), clampf(next.y, -limit, limit))
+
+
+## Tilt as a vector in [-1, 1]: the gyroscope where there is one, then the
+## accelerometer, the pointer otherwise.
 func _read_tilt(delta: float) -> Vector2:
+	var rate := Input.get_gyroscope() if use_gyroscope else Vector3.ZERO
+	if not rate.is_zero_approx():
+		_has_gyroscope = true
+	if use_gyroscope and _has_gyroscope:
+		var limit := deg_to_rad(tilt_angle_degrees)
+		_turn = integrate_turn(_turn, rate, delta, tilt_recenter, limit)
+		return Vector2(
+			clampf(_turn.x / limit * gyro_direction.x, -1.0, 1.0),
+			clampf(_turn.y / limit * gyro_direction.y, -1.0, 1.0))
 	var accel := Input.get_accelerometer()
 	if not accel.is_zero_approx():
 		# Read against the pose the player is holding, not against gravity.

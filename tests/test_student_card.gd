@@ -275,7 +275,55 @@ func test_tutorial_target_node_paths_are_unchanged() -> void:
 	scene.free()
 
 
+# ------------------------------------------------ the tutorial's one counter
+
+## StudentCard used to write the coach-mark's labels itself, with its own
+## "(n/N) " title prefix, and never called TutorialPanel.show_step(). When the
+## panel grew a "Langkah n / N" pill, the scene's sample pill ("Langkah 1 / 3")
+## therefore showed above every step of the grade-7 tutorial. Now every step
+## goes through show_step() with its number and count, and the pill is this
+## screen's only counter.
+func test_show_step_hands_its_number_and_count_to_the_panels_pill() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_show_step")
+	assert_false(body.is_empty(), "_show_step was found")
+	assert_contains(body,
+		"_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size())",
+		"every step goes through the panel with its 1-based number and the step count")
+
+
+func test_the_title_no_longer_carries_its_own_counter() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("(%d/%d)"),
+		"the panel's pill counts the steps; a title prefix would count them twice")
+	assert_false(src.contains("_tutorial_title_label"),
+		"the title is written by show_step(), not by a label this screen holds")
+	assert_false(src.contains("_tutorial_body_label"),
+		"the body is written by show_step(), not by a label this screen holds")
+
+
+func test_a_fresh_tutorial_panel_shows_no_sample_pill() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_build_tutorial_panel")
+	assert_false(body.is_empty(), "_build_tutorial_panel was found")
+	var added := body.find("color_rect.add_child(_tutorial_panel)")
+	var emptied := body.find('_tutorial_panel.show_step("", "",')
+	assert_true(added != -1, "the panel joins the tree here")
+	assert_true(emptied > added,
+		"once in the tree, an empty show_step() hides the scene's authored sample pill")
+
+
 # ----------------------------------------------------------------- helper
+
+## The source of `func_name` in `src`: from its `func` line up to the next
+## column-0 `func`, or the end of the file.
+func _function_source(src: String, func_name: String) -> String:
+	var start := src.find("\nfunc %s(" % func_name)
+	if start == -1:
+		return ""
+	var stop := src.find("\nfunc ", start + 1)
+	return src.substr(start) if stop == -1 else src.substr(start, stop - start)
+
 
 ## Copied verbatim from tests/test_main_menu.gd. Godot 4.6's Control has
 ## no get_theme_*_override_list(); this walks get_property_list() and asks

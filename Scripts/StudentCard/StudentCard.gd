@@ -64,8 +64,6 @@ const TutorialArrow: PackedScene = preload("res://Scenes/UI/TutorialArrow.tscn")
 var current_step := 0
 var tutorial_active := true
 var _tutorial_panel: TutorialPanel
-var _tutorial_title_label: Label
-var _tutorial_body_label: Label
 var _tutorial_prompt_label: Label
 var _blink_tween: Tween
 var _highlight_tween: Tween
@@ -312,24 +310,24 @@ func _populate_default_tutorial_steps():
 
 ## Instantiates the shared TutorialPanel with StudentCard's shipped look
 ## (its component defaults: 0.92/1000 width, no content margin, H1Label
-## title, TitleLabel body/prompt). Keeps the three label vars pointed at
-## the panel's own nodes so the rest of this file's per-step text logic
-## (_show_step, _start_prompt_blink) is unchanged.
+## title, TitleLabel body/prompt). Keeps the prompt label var pointed at
+## the panel's own node, which _start_prompt_blink fades; every step's
+## text goes through TutorialPanel.show_step() in _show_step.
 func _build_tutorial_panel():
 	_tutorial_panel = tutorial_panel_scene.instantiate()
 	_tutorial_panel.name = "TutorialPanel"
 
 	# The panel hasn't entered the tree yet (it's appended below), so its
-	# @onready title_label/body_label/prompt_label aren't live -- get_node
-	# still works because instantiate() built the subtree.
-	_tutorial_title_label = _tutorial_panel.get_node("Frame/Margin/Layout/TitleLabel")
-	_tutorial_body_label = _tutorial_panel.get_node("Frame/Margin/Layout/BodyLabel")
+	# @onready prompt_label isn't live -- get_node still works because
+	# instantiate() built the subtree.
 	_tutorial_prompt_label = _tutorial_panel.get_node("Frame/Margin/Layout/PromptLabel")
-	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
 
 	color_rect.add_child(_tutorial_panel)
 	var click_idx = click_area.get_index()
 	color_rect.move_child(_tutorial_panel, click_idx)
+	# No step yet: show_step() with no count keeps the scene's sample pill
+	# ("Langkah 1 / 3") hidden until _show_step() writes the real one.
+	_tutorial_panel.show_step("", "", "CLICK DIMANA SAJA UNTUK LANJUT")
 
 	# Start blinking prompt
 	_start_prompt_blink()
@@ -418,9 +416,6 @@ func _show_step(index: int):
 	
 	await tween_out.finished
 	
-	_tutorial_title_label.text = "(%d/%d) %s" % [index + 1, tutorial_steps.size(), step.title]
-	_tutorial_body_label.text = step.text
-
 	if GameState.current_grade == 7:
 		next_kanan.visible = (index == 11)
 	else:
@@ -456,13 +451,14 @@ func _show_step(index: int):
 
 	# Dynamic Prompt Text
 	var requires_button_press = (GameState.current_grade == 7 and index == tutorial_steps.size() - 1 and step.target_node_path != "") or (GameState.current_grade == 7 and index == 11)
+	var prompt := "CLICK DIMANA SAJA UNTUK LANJUT"
 	if step.prompt_text != "":
-		_tutorial_prompt_label.text = step.prompt_text
+		prompt = step.prompt_text
 	elif requires_button_press and not targets.is_empty():
 		var btn_name = _get_button_display_name(targets[0])
-		_tutorial_prompt_label.text = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
-	else:
-		_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
+		prompt = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
+	# The panel's own step pill is this screen's one counter ("Langkah n / N").
+	_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size())
 
 	_position_tutorial_panel()
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0

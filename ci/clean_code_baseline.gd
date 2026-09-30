@@ -53,7 +53,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/StudentCard/StudentCard.gd::_highlight_multiple": 54,
 	"res://Scripts/StudentCard/StudentCard.gd::_populate_default_tutorial_steps": 52,
 	"res://Scripts/StudentCard/StudentCard.gd::_ready": 74,
-	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 60,
+	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 58,
 	"res://Scripts/StudentCard/StudentCard.gd::_transition_page": 61,
 	"res://Scripts/StudentList/StudentList.gd::_setup_students": 55,
 	"res://Scripts/StudentList/StudentList.gd::_show_step": 53,
@@ -227,7 +227,7 @@ const LARGE_SCRIPTS: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 1576,
 	"res://Scripts/Debug/DebugManager.gd": 1745,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1637,
-	"res://Scripts/StudentCard/StudentCard.gd": 1451,
+	"res://Scripts/StudentCard/StudentCard.gd": 1447,
 }
 
 ## Must reach zero: .gd/.tscn names that are not PascalCase.

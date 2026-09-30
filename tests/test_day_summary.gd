@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## The rebuilt Daily Results popup (spec:
 ## docs/superpowers/specs/2026-08-29-day-summary-mockup-design.md).
 ##
@@ -1280,7 +1283,7 @@ func test_particle_sprites_exist_and_are_transparent() -> void:
 		assert_true(ResourceLoader.exists(p), "missing particle sprite: " + p)
 		var tex: Texture2D = load(p)
 		assert_true(tex != null, "must load as a texture: " + p)
-		var img := tex.get_image()
+		var img := TexturePixels.of(tex)
 		assert_true(img.detect_alpha() != Image.ALPHA_NONE,
 			"particle sprite must have a transparent background: " + p)
 

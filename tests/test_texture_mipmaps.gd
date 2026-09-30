@@ -71,6 +71,15 @@ const TARGETS := {
 	"res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_pramuka.png": 2.63,
 	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png": 2.67,
 	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_pramuka.png": 2.67,
+	# The six skin splashes (2026-09-30). Skin Select draws the neighbour card
+	# at 0.658, and its focus blur (skin_card_focus.gdshader) IS the mip chain:
+	# without one the neighbour is not blurred at all.
+	"res://Assets/Images/Skins/Andi/splash_andi_skin1.png": 1.52,
+	"res://Assets/Images/Skins/Citra/splash_citra_skin1.png": 1.52,
+	"res://Assets/Images/Skins/Doni/splash_doni_skin1.png": 1.52,
+	"res://Assets/Images/Skins/Marcel/splash_marcel_skin1.png": 1.52,
+	"res://Assets/Images/Skins/Shinta/splash_shinta_skin1.png": 1.52,
+	"res://Assets/Images/Skins/Thea/splash_thea_skin1.png": 1.52,
 	# Minigame sprites. CLAUDE.md puts Scenes/Minigames/** out of scope for
 	# the design system, but an .import flag is not a design decision, and
 	# these are the project's worst ratios on art that is always moving.
@@ -177,7 +186,8 @@ func test_mipmaps_stay_targeted_not_global() -> void:
 		for sub in d.get_directories():
 			stack.append(dir_path.path_join(sub))
 	assert_true(total > 300, "sanity: expected the full texture set, saw %d" % total)
-	# 45 until 2026-09-25, when the twelve day outfits joined TARGETS above.
-	assert_true(mipmapped <= 57,
+	# 45 until 2026-09-25, when the twelve day outfits joined TARGETS above;
+	# 57 until 2026-09-30, when the six skin splashes joined them.
+	assert_true(mipmapped <= 63,
 		"mipmaps are per-asset and measured, not a bulk flip: %d of %d imports "
 			% [mipmapped, total] + "generate them")

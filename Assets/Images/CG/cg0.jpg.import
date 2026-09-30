@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dgvesub2rdjot"
-path="res://.godot/imported/cg0.jpg-e6e6f9faa3d4546a34cd9a2c3ae175ac.ctex"
+path.bptc="res://.godot/imported/cg0.jpg-e6e6f9faa3d4546a34cd9a2c3ae175ac.bptc.ctex"
+path.astc="res://.godot/imported/cg0.jpg-e6e6f9faa3d4546a34cd9a2c3ae175ac.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/CG/cg0.jpg"
-dest_files=["res://.godot/imported/cg0.jpg-e6e6f9faa3d4546a34cd9a2c3ae175ac.ctex"]
+dest_files=["res://.godot/imported/cg0.jpg-e6e6f9faa3d4546a34cd9a2c3ae175ac.bptc.ctex", "res://.godot/imported/cg0.jpg-e6e6f9faa3d4546a34cd9a2c3ae175ac.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

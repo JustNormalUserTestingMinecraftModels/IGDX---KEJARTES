@@ -17,8 +17,8 @@ extends ColorRect
 ## Additive, so it only ever brightens. The material is local to the scene, so
 ## each placed ScreenGlow tunes its own copy; the root restores Full Rect in
 ## _ready (AmbientKit.fill_parent). It follows its screen's fades through the
-## inherited modulate, and Efek Suasana off hides it, which also drops its
-## screen read. It does not move, so Kurangi Gerakan leaves it.
+## inherited modulate, and Efek Suasana off or Grafis HD off hides it, which
+## also drops its screen read. It does not move, so Kurangi Gerakan leaves it.
 ##
 ## THE CREAM CATCH. Nothing is brighter than 1.0 (hdr_2d is off), and this
 ## palette's paper sits close to it: a low threshold fogs a pale screen. Dark
@@ -63,4 +63,4 @@ func _refresh() -> void:
 	mat.set_shader_parameter("intensity", intensity)
 	mat.set_shader_parameter("spread", spread)
 	mat.set_shader_parameter("bloom_tint", bloom_tint)
-	visible = AmbientKit.is_enabled()
+	visible = AmbientKit.wants_bloom()

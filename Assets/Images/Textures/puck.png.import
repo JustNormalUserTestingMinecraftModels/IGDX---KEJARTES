@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cmnd3wco3mg3y"
-path="res://.godot/imported/puck.png-9cc91226751e0068e53160160651a49d.ctex"
+path.bptc="res://.godot/imported/puck.png-9cc91226751e0068e53160160651a49d.bptc.ctex"
+path.astc="res://.godot/imported/puck.png-9cc91226751e0068e53160160651a49d.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Textures/puck.png"
-dest_files=["res://.godot/imported/puck.png-9cc91226751e0068e53160160651a49d.ctex"]
+dest_files=["res://.godot/imported/puck.png-9cc91226751e0068e53160160651a49d.bptc.ctex", "res://.godot/imported/puck.png-9cc91226751e0068e53160160651a49d.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

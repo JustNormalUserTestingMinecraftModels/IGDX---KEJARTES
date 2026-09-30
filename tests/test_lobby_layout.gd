@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuite
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## Geometry guards for the lobby, from the 2026-09-08 warm-UI pass.
 ##
 ## Three defects motivated these, all measured rather than eyeballed:
@@ -164,7 +167,7 @@ const DESK_TOP_ROWS := Vector2i(343, 560)
 ## The mean centre, in plate pixels, of the opaque span across a desk plate's
 ## top surface.
 func _desk_top_centre(tex: Texture2D) -> float:
-	var img := tex.get_image()
+	var img := TexturePixels.of(tex)
 	if img.is_compressed():
 		img.decompress()
 	var total := 0.0
@@ -444,7 +447,7 @@ func _keep_out_around(rect: Rect2) -> Rect2:
 ## on-screen point found, Vector2.INF when none; "scanned": how many art
 ## pixels were sampled}. A scan of 0 checked nothing.
 func _first_hair_in(keep_out: Rect2, tex: Texture2D, portrait: Rect2, bob: float) -> Dictionary:
-	var img := tex.get_image()
+	var img := TexturePixels.of(tex)
 	if img.is_compressed():
 		img.decompress()
 	var scanned := 0

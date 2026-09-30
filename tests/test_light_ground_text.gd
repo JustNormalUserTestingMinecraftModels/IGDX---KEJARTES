@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuite
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## Small text on the light result surfaces has to read at WCAG AA.
 ##
 ## ResultBodyLabel is cream text_on_brand, made for SemesterEnd's dark
@@ -358,7 +361,7 @@ func _inventory() -> Control:
 
 ## The colour an icon's art paints: the mean of its opaque texels.
 func _art_ink(texture: Texture2D) -> Color:
-	var image := texture.get_image()
+	var image := TexturePixels.of(texture)
 	if image.is_compressed():
 		image.decompress()
 	var r := 0.0
@@ -449,7 +452,7 @@ func _texture_fill(panel: Control) -> Color:
 		"%s must be a textured panel for its art to be sampled" % panel.name)
 	if box == null or box.texture == null:
 		return Color.BLACK
-	var image := box.texture.get_image()
+	var image := TexturePixels.of(box.texture)
 	if image.is_compressed():
 		image.decompress()
 	var r := 0.0

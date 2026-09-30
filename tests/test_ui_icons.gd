@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuite
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## The UI icon set (2026-09-28 UI depth pass): one file per job at a fixed
 ## path, so the owner's chunky set drops in with no code change. A
 ## replacement must read on BOTH the cream panels and the brown boards, which
@@ -36,7 +39,7 @@ func _image(name: String) -> Image:
 	var tex := load(DIR + name + ext) as Texture2D
 	if tex == null:
 		return null
-	var img := tex.get_image()
+	var img := TexturePixels.of(tex)
 	if img.is_compressed():
 		img.decompress()
 	return img

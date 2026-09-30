@@ -783,3 +783,37 @@ func test_run_result_picks_one_mood_from_the_verdict() -> void:
 	assert_true(src.contains("shown.modulate.a = 0.0"), "the shown mood starts transparent")
 	assert_true(src.contains("tween_property(shown, \"modulate:a\", 1.0, Juice.tokens().dur_slow)"),
 		"and fades in, so it never pops on EndCutscene's invisible scene swap")
+
+
+# ── Grafis HD ────────────────────────────────────────────────────────────────
+
+## Both per-screen blooms answer to Grafis HD as well as Efek Suasana: the
+## screen-reading one leaves the draw list, the Environment one is disabled.
+func test_hd_off_switches_every_bloom_off() -> void:
+	var was_hd: bool = GameSettings.hd_graphics_enabled
+	GameSettings.ambient_effects_enabled = true
+	var glow: ScreenGlow = (load("res://Scenes/Look/ScreenGlow.tscn") as PackedScene).instantiate()
+	var env_glow: AmbientGlow = (load("res://Scenes/Look/AmbientGlow.tscn") as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(glow)
+	Engine.get_main_loop().root.add_child(env_glow)
+	track(glow)
+	track(env_glow)
+	GameSettings.hd_graphics_enabled = true
+	assert_true(glow.visible, "on: the screen bloom draws")
+	assert_true(env_glow.environment.glow_enabled, "on: the Environment glow runs")
+	GameSettings.hd_graphics_enabled = false
+	assert_false(glow.visible, "Grafis HD off hides the screen bloom")
+	assert_false(env_glow.environment.glow_enabled, "and disables the Environment glow")
+	assert_false(AmbientKit.wants_bloom(), "the kit's one answer for both")
+	GameSettings.hd_graphics_enabled = was_hd
+
+
+## The rest of the kit is not bloom and stays with Efek Suasana alone.
+func test_hd_off_leaves_the_rest_of_the_kit_on() -> void:
+	var was_hd: bool = GameSettings.hd_graphics_enabled
+	GameSettings.ambient_effects_enabled = true
+	GameSettings.hd_graphics_enabled = false
+	assert_true(AmbientKit.is_enabled(), "Efek Suasana is its own switch")
+	assert_true(_pool.visible, "the light pool stays")
+	GameSettings.hd_graphics_enabled = was_hd
+

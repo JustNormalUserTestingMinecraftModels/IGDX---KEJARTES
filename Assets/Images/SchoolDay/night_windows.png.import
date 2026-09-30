@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://luixx2ai1re6"
-path="res://.godot/imported/night_windows.png-5d8e303300d5548bed61f95ea1770555.ctex"
+path.bptc="res://.godot/imported/night_windows.png-5d8e303300d5548bed61f95ea1770555.bptc.ctex"
+path.astc="res://.godot/imported/night_windows.png-5d8e303300d5548bed61f95ea1770555.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SchoolDay/night_windows.png"
-dest_files=["res://.godot/imported/night_windows.png-5d8e303300d5548bed61f95ea1770555.ctex"]
+dest_files=["res://.godot/imported/night_windows.png-5d8e303300d5548bed61f95ea1770555.bptc.ctex", "res://.godot/imported/night_windows.png-5d8e303300d5548bed61f95ea1770555.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

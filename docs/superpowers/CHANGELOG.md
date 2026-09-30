@@ -27,6 +27,86 @@ reference `docs/superpowers/mockups/lobby-seating-reference-2026-09-30.jpg`.
 - **Superseded:** the 2026-09-29 by-eye item sizes of Citra, Shinta and Thea,
   and the rule that an item stays inside its desk's width.
   `test_lobby_desk_items_fit` is rewritten around the picture.
+## 2026-09-30 — Efek Visual loses its own bloom
+
+Owner's call: with Efek Visual on, the look layer's full-screen bloom stacked
+on the glow each screen already carries and read as overwhelming; the glow
+that is always there is the one to keep. `LookLayer.bloom_enabled` (an
+export, default off) now gates it, so Efek Visual is the vignette and the
+grain, and no longer copies the screen. The debug Look tab has the switch
+("Bloom global Efek Visual"); strength and threshold are still
+`bloom_material.tres`'s. Nothing else changed: the Lobby, shop and end-game
+glow and the minigames' `ScreenGlow` measured the same before and after
+today's three performance PRs (Lobby frame mean 141.97 and 141.48).
+
+## 2026-09-30 — Grafis HD switch (mobile performance 3 of 3)
+
+Settings gains **Grafis HD** at the top of TAMPILAN, on by default (owner's
+ask: off means no bloom and no MSAA). `GameSettings.hd_graphics_enabled`,
+saved as `hd_graphics`.
+
+- **Off drops the root viewport's 2D MSAA**; on restores whatever
+  `project.godot` asks for (`LookLayer.msaa_for`).
+- **Off switches every bloom off**: the look layer's bloom leaves the draw
+  list (a transparent one would still copy the screen), every `ScreenGlow`
+  and `AmbientGlow` follows `AmbientKit.wants_bloom()`, and the Lobby's
+  WorldEnvironment wears `HdEnvironmentGlow` for its own glow.
+- Vignette and grain stay with Efek Visual; the rest of the ambient kit
+  stays with Efek Suasana. The debug Look panel carries the switch too.
+- In the Lobby with Efek Visual on, on the dev PC: 2.3 ms of GPU time per
+  frame with Grafis HD on, 1.4 ms off; 249 MB of textures on, 223 MB off.
+- The bloom was not moved to a lower resolution, as first proposed: a
+  screen-reading shader always copies the whole screen, so there is no
+  cheaper bloom short of a SubViewport pipeline. The switch is the saving.
+
+## 2026-09-30 — Skin Select stops drawing the Lobby (mobile performance 2 of 3)
+
+Skin Select was the costliest screen in the game: the whole Lobby kept
+rendering under an opaque screen, the backdrop blur copied the screen and
+rebuilt its mip chain every frame, and the neighbour card's blur took 48
+texture samples per pixel. GPU time per frame on the dev PC, which shows the
+ratio and not what a phone will do: 2.7 ms at rest and 3.8 ms mid-swipe
+before, about 1.2 ms after (4.1 to 1.4 with Efek Visual on).
+
+- **The backdrop is a still.** `SkinSelect.open()` shrinks the last frame
+  drawn to an eighteenth of its size (`backdrop_shrink`), which is the blur,
+  and shows it on `Frozen`, dimmed by `skin_select_backdrop_material.tres`'s
+  own darkness. `Blur` stays as the fallback for a frame that cannot be
+  read. The room behind no longer animates while the picker is open.
+- **The Lobby stops drawing the room** between the picker's `covered` and
+  `uncovering` signals (`Lobby._set_room_drawn`): `World` is hidden, and the
+  Environment glow goes with it and comes back.
+- **The neighbour blur reads the splash's mip chain**: five taps instead of
+  48, through its own linear sampler (`blur_source`). The six skin splashes
+  gained mipmaps for it.
+- With Efek Visual on, the still is taken with the vignette already on it,
+  so the vignette reaches the backdrop twice. On a capture the two were not
+  told apart (mean brightness of the carousel area 68.1 before, 68.5 after).
+
+## 2026-09-30 — Texture memory pass (mobile performance 1 of 3)
+
+Measured in the running game before the pass: 128 MB of textures at boot,
+348 MB in the Lobby, 419 MB with Skin Select open. Every image was imported
+lossless, which sits in video memory at 4 bytes per pixel. No leak: 18
+open/close cycles of Skin Select left node, object and texture counts flat.
+
+- **131 images at or over 500,000 px now import VRAM-compressed with
+  `compress/high_quality=true`**: ASTC 4x4 on a phone, BPTC on desktop, a
+  quarter of the memory. After: 64 MB at boot, 238 MB in the Lobby, 303 MB
+  with Skin Select open. Smaller art (icons, 9-slices, bar fills) stays
+  lossless.
+- **The character art stays lossless**, listed with its reasons in
+  `tests/test_texture_memory.gd`'s `ALLOWED`. The twelve face bases:
+  compressed, Thea's base opened 2 see-through pixels in her eye cut-outs.
+  The 24 student portraits, splashes and outfits: the owner's 2026-09-29
+  call on block artifacts, not reversed here (DEBT.md has what it costs).
+- **`tests/test_texture_memory.gd`** pins the rule and a total ceiling
+  (700 MiB if every image were loaded; it was 1309 and is 632). A new large image fails
+  the suite until its import is flipped or it is given a reason in `ALLOWED`.
+- **`tests/texture_pixels.gd`**: every suite that reads pixels goes through
+  it, because `get_image()` on a compressed texture comes back compressed and
+  a per-pixel loop over it hung the editor. That hang is what reverted the
+  2026-09-22 attempt at this pass ("Item 12"); the full run now completes.
 
 ## 2026-09-30 — Main Bola: a goal in the air beats the clock
 

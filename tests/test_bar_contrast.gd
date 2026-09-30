@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuiteCompat
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## WCAG contrast floor for every progress-bar fill against its track.
 ##
 ## This test exists because of a measured failure, not a hypothetical
@@ -124,7 +127,7 @@ const _MIN_FILL_BRIGHTNESS := 0.90
 ## screen.
 func _fill_brightness(path: String, region: Rect2i) -> float:
 	var texture: Texture2D = load(path)
-	var image := texture.get_image()
+	var image := TexturePixels.of(texture)
 	var total := 0.0
 	var count := 0
 	for y in range(region.position.y, region.end.y):

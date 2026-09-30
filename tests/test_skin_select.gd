@@ -760,3 +760,82 @@ func test_open_clamps_names_past_the_rails_tile_count() -> void:
 	s.open(seven)
 	assert_eq(s.visible_names().size(), 6, "the rail has only 6 authored tiles")
 	assert_eq(_visible_tile_names(s).size(), 6)
+
+
+## -- The frozen backdrop (2026-09-30 mobile performance pass) -------------
+##
+## The backdrop used to blur the live Lobby: the whole room kept rendering
+## under an opaque screen, and the blur copied the screen and rebuilt its mip
+## chain every frame. Measured on the dev PC, hiding the Lobby under the
+## picker took the frame from 1.29 ms to 0.52 ms. The picker now freezes one
+## small, blurred still of the room and tells the Lobby when it may stop
+## drawing.
+
+func test_the_frozen_backdrop_node_is_authored_and_starts_hidden() -> void:
+	var s := _new_screen()
+	var frozen := s.get_node_or_null("%Frozen") as TextureRect
+	assert_true(frozen != null, "Frozen is a TextureRect in SkinSelect.tscn")
+	if frozen == null:
+		return
+	assert_false(frozen.visible, "hidden until a still has been taken")
+	assert_eq(frozen.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_eq(frozen.stretch_mode, TextureRect.STRETCH_SCALE, "the small still fills the screen")
+	assert_true(frozen.get_index() < s.get_node("%Carousel").get_index(), "behind the carousel")
+
+
+func test_the_still_is_a_small_fraction_of_the_frame() -> void:
+	var frame := Image.create_empty(1080, 2400, false, Image.FORMAT_RGBA8)
+	frame.fill(Color(0.8, 0.6, 0.4, 1.0))
+	var still := SkinSelect.frozen_backdrop(frame, 12)
+	assert_true(still != null, "a readable frame yields a still")
+	if still == null:
+		return
+	assert_eq(still.get_size(), Vector2i(90, 200), "one twelfth of the frame each way")
+	assert_eq(frame.get_size(), Vector2i(1080, 2400), "the frame itself is left alone")
+	var c := still.get_pixel(45, 100)
+	assert_true(absf(c.r - 0.8) < 0.02 and absf(c.b - 0.4) < 0.02, "the colour survives: %s" % c)
+
+
+func test_no_frame_means_no_still() -> void:
+	assert_true(SkinSelect.frozen_backdrop(null, 12) == null)
+	assert_true(SkinSelect.frozen_backdrop(Image.new(), 12) == null)
+
+
+## The still is dimmed by the backdrop material's own darkness, so the number
+## tests pin above stays the one place the backdrop's brightness is set.
+func test_showing_a_still_dims_it_like_the_live_blur_and_drops_the_screen_read() -> void:
+	var s := _new_screen()
+	var still := Image.create_empty(90, 160, false, Image.FORMAT_RGB8)
+	s.show_still(still)
+	var frozen := s.get_node("%Frozen") as TextureRect
+	var blur := s.get_node("Blur") as ColorRect
+	assert_true(frozen.visible and frozen.texture != null, "the still is shown")
+	assert_false(blur.visible, "the live blur, and its screen read, is off")
+	var darkness := float((blur.material as ShaderMaterial).get_shader_parameter("darkness"))
+	assert_true(absf(frozen.self_modulate.r - (1.0 - darkness)) < 0.0001, "dimmed by the same darkness")
+
+
+func test_closing_announces_it_before_the_fade() -> void:
+	var s := _new_screen()
+	var heard := [0]
+	s.uncovering.connect(func() -> void: heard[0] += 1)
+	s.close()
+	s.close()
+	assert_eq(heard[0], 1, "uncovering fires once, on the first close")
+
+
+func test_a_screen_already_closing_never_reports_covered() -> void:
+	var s := _new_screen()
+	var heard := [0]
+	s.covered.connect(func() -> void: heard[0] += 1)
+	s._on_faded_in()
+	assert_eq(heard[0], 1, "the fade-in's end reports covered")
+	s.close()
+	s._on_faded_in()
+	assert_eq(heard[0], 1, "a late fade-in callback after close() must not hide the room")
+
+
+func test_the_lobby_stops_drawing_the_room_under_the_picker() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
+	assert_true(src.contains("screen.covered.connect(_set_room_drawn.bind(false))"))
+	assert_true(src.contains("screen.uncovering.connect(_set_room_drawn.bind(true))"))

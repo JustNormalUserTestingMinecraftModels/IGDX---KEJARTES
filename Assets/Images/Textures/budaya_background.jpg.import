@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://32vps8suf6fa"
-path="res://.godot/imported/budaya_background.jpg-fcaba97796ec681dfcc2a95774404c1e.ctex"
+path.bptc="res://.godot/imported/budaya_background.jpg-fcaba97796ec681dfcc2a95774404c1e.bptc.ctex"
+path.astc="res://.godot/imported/budaya_background.jpg-fcaba97796ec681dfcc2a95774404c1e.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Textures/budaya_background.jpg"
-dest_files=["res://.godot/imported/budaya_background.jpg-fcaba97796ec681dfcc2a95774404c1e.ctex"]
+dest_files=["res://.godot/imported/budaya_background.jpg-fcaba97796ec681dfcc2a95774404c1e.bptc.ctex", "res://.godot/imported/budaya_background.jpg-fcaba97796ec681dfcc2a95774404c1e.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -45,6 +45,9 @@ const HOLIDAYS = {
 
 @onready var color_rect = $ColorRect
 @onready var click_area = $ColorRect/ClickArea
+## The tutorial's own Safe/UI inside the overlay: the area its card and arrow
+## keep to, so neither crowds a notch or a gesture bar on a tall phone.
+@onready var tutorial_safe_ui: Control = $ColorRect/Safe/UI
 @onready var select_student_button = $TextureButton
 @onready var name_label = $LabelNama
 @onready var start_week_button = $StartWeek
@@ -107,10 +110,9 @@ var _picked_category := ""
 @export var tutorial_phase2_alt_step: TutorialStepData = null
 ## Phase 3 tutorial steps (After scheduling Monday)
 @export var tutorial_phase3_steps: Array[TutorialStepData] = []
-## Optional PNG texture for custom tutorial dialogue box background.
-@export var custom_panel_texture: Texture2D = null
-## Optional custom StyleBox override for the tutorial panel.
-@export var custom_panel_stylebox: StyleBox = null
+## The shared onboarding coach-mark the steps show on: the look StudentCard
+## ships (its component defaults), so the tutorial has one voice on every screen.
+@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")
 
 static var tutorial_phase1_done := false
 static var tutorial_phase3_done := false
@@ -119,10 +121,10 @@ const TutorialArrow: PackedScene = preload("res://Scenes/UI/TutorialArrow.tscn")
 var current_step := 0
 var current_phase_steps: Array[TutorialStepData] = []
 var tutorial_active := true
-var _tutorial_panel: PanelContainer
-var _tutorial_title_label: Label
-var _tutorial_body_label: Label
+var _tutorial_panel: TutorialPanel
 var _tutorial_prompt_label: Label
+## The controls the current step highlights; the card and the arrow are placed from them.
+var _step_targets: Array[Control] = []
 var _blink_tween: Tween
 var _tutorial_arrow: Control = null
 
@@ -203,6 +205,7 @@ func _setup_back_button():
 
 func _on_back_button_pressed():
 	if tutorial_active:
+		_reject_current_step()
 		return
 	print("Kembali ke Lobby...")
 	Transition.change_scene("res://Scenes/Lobby/Lobby.tscn")
@@ -315,85 +318,12 @@ func _populate_default_tutorial_steps():
 			step.prompt_text = entry[3]
 			tutorial_phase3_steps.append(step)
 
-## The tutorial panel and its three labels are built at runtime (they are
-## not part of the .tscn), so test_scene_has_no_theme_overrides never sees
-## them -- but every color/size here still comes from DesignTokens, not a
-## literal, matching the rest of the migration.
-func _build_tutorial_panel():
-	var viewport_size = get_viewport_rect().size
-	var tokens := _get_tokens()
-
-	_tutorial_panel = PanelContainer.new()
-	_tutorial_panel.name = "TutorialPanel"
-	_tutorial_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var style: StyleBox
-	if custom_panel_stylebox:
-		style = custom_panel_stylebox
-	elif custom_panel_texture:
-		var tex_style = StyleBoxTexture.new()
-		tex_style.texture = custom_panel_texture
-		tex_style.content_margin_left = tokens.space_lg
-		tex_style.content_margin_top = tokens.space_md
-		tex_style.content_margin_right = tokens.space_lg
-		tex_style.content_margin_bottom = tokens.space_sm
-		style = tex_style
-	else:
-		var flat = StyleBoxFlat.new()
-		flat.bg_color = tokens.surface_overlay
-		var border := tokens.currency_gold
-		border.a = 0.5
-		flat.border_color = border
-		flat.set_border_width_all(int(tokens.outline_width) / 2)
-		flat.set_corner_radius_all(tokens.radius_lg)
-		flat.shadow_color = tokens.shadow_color
-		flat.shadow_size = tokens.shadow_size
-		flat.set_content_margin_all(tokens.space_md)
-		style = flat
-	_tutorial_panel.add_theme_stylebox_override("panel", style)
-
-	var panel_width = min(viewport_size.x * 0.92, 1000)
-	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
-
-	var vbox = VBoxContainer.new()
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_theme_constant_override("separation", tokens.space_sm)
-	_tutorial_panel.add_child(vbox)
-
-	# BarLabel: white glyph, dark rim -- reads on both the light main scene
-	# and this dark overlay, which is why all three tutorial labels share
-	# it instead of the light-background label variations.
-	_tutorial_title_label = Label.new()
-	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.theme_type_variation = &"BarLabel"
-	vbox.add_child(_tutorial_title_label)
-
-	var sep = HSeparator.new()
-	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(sep)
-
-	_tutorial_body_label = Label.new()
-	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.theme_type_variation = &"BarLabel"
-	_tutorial_body_label.add_theme_constant_override("line_spacing", tokens.space_xs)
-	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
-	vbox.add_child(_tutorial_body_label)
-
-	var sep2 = HSeparator.new()
-	sep2.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(sep2)
-
-	_tutorial_prompt_label = Label.new()
-	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
-	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.theme_type_variation = &"BarLabel"
-	vbox.add_child(_tutorial_prompt_label)
-
-	color_rect.add_child(_tutorial_panel)
-	var click_idx = click_area.get_index()
-	color_rect.move_child(_tutorial_panel, click_idx)
-
+## Mounts the shared TutorialPanel in the spotlight overlay. Keeps its prompt
+## label, which _start_prompt_blink fades; every step's text goes through
+## TutorialPanel.show_step() in _show_step.
+func _build_tutorial_panel() -> void:
+	_tutorial_panel = TutorialPanel.mount(tutorial_panel_scene, color_rect, click_area)
+	_tutorial_prompt_label = _tutorial_panel.prompt_label
 	_start_prompt_blink()
 	call_deferred("_position_tutorial_panel")
 
@@ -408,30 +338,10 @@ func _start_prompt_blink():
 	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, t.dur_slow) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
-func _position_tutorial_panel(force_center: bool = false):
-	if not _tutorial_panel or not is_instance_valid(_tutorial_panel):
-		return
-	var viewport_size = get_viewport_rect().size
-	_tutorial_panel.reset_size()
-	await get_tree().process_frame
-	if not is_instance_valid(_tutorial_panel):
-		return
-	var panel_size = _tutorial_panel.size
-
-	var target_y: float
-	if force_center:
-		# Position panel near the top (Y = 15% of screen height) so it stays cleanly above day sticky notes
-		target_y = viewport_size.y * 0.15
-	else:
-		var min_y = viewport_size.y * 0.55
-		var ideal_y = viewport_size.y - panel_size.y - 40
-		target_y = max(min_y, ideal_y)
-
-	_tutorial_panel.position = Vector2(
-		(viewport_size.x - panel_size.x) / 2.0,
-		target_y
-	)
-	_tutorial_panel.pivot_offset = panel_size / 2.0
+## Seats the card and the arrow for the current step's targets, inside the
+## tutorial's Safe/UI (TutorialPanel.place_step).
+func _position_tutorial_panel() -> void:
+	TutorialPanel.place_step(_tutorial_panel, tutorial_safe_ui, color_rect, _step_targets, _tutorial_arrow)
 
 func _fit_color_rect_to_viewport():
 	var viewport_size = get_viewport_rect().size
@@ -779,7 +689,7 @@ func _on_select_student_pressed():
 		var current_step_data = current_phase_steps[current_step] if current_step < current_phase_steps.size() else null
 		if current_step_data:
 			if current_step_data.target_node_path == "" or not ("TextureButton" in current_step_data.target_node_path):
-				print("Tutorial active: ignoring student card press on step ", current_step)
+				_reject_tutorial_tap(current_step_data)
 				return
 		tutorial_phase1_done = true
 		tutorial_active = false
@@ -805,7 +715,7 @@ var current_warning_mode := ""
 
 func _on_start_week_pressed():
 	if tutorial_active:
-		print("Tutorial active: ignoring start week button press")
+		_reject_current_step()
 		return
 
 	# 1. Safety check: prevent start if any student runs out of energy (predicted <= 0)
@@ -1188,10 +1098,10 @@ func _on_day_pressed(day_name: String):
 			var target_path = current_step_data.target_node_path
 			if "Senin" in target_path or "Selasa" in target_path or "Rabu" in target_path or "Kamis" in target_path or "Jumat" in target_path:
 				if not target_path.ends_with(day_name):
-					print("Tutorial active: expected target ", target_path, " but clicked ", day_name)
+					_reject_tutorial_tap(current_step_data)
 					return
 			elif target_path != "" and not ("BGHari" in target_path):
-				print("Tutorial active: step targets non-day element, ignoring day click")
+				_reject_tutorial_tap(current_step_data)
 				return
 		tutorial_active = false
 		color_rect.hide()
@@ -1230,72 +1140,52 @@ func _next_step():
 		return
 	_show_step(current_step)
 
-func _show_step(index: int):
+func _show_step(index: int) -> void:
 	if index < 0 or index >= current_phase_steps.size():
 		return
-	var step = current_phase_steps[index]
+	var step := current_phase_steps[index]
 
 	# Disable click detection during bouncy transition
 	click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Transition Out: bouncy fade-out scale down
 	if _tutorial_panel and _tutorial_panel.modulate.a > 0.1:
-		var tween_out = create_tween().set_parallel(true)
+		var tween_out := create_tween().set_parallel(true)
 		tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.15)\
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 		tween_out.tween_property(_tutorial_panel, "modulate:a", 0.0, 0.15)
 		await tween_out.finished
 
-	# Update text contents
-	_tutorial_title_label.text = "(%d/%d) %s" % [index + 1, current_phase_steps.size(), step.title]
-	var student = GameState.selected_student
-	var student_name = student.get("name", "Murid") if not student.is_empty() else "Murid"
-	_tutorial_body_label.text = step.text.replace("Nama Murid", student_name)
+	var student: Dictionary = GameState.selected_student
+	var student_name: String = student.get("name", "Murid") if not student.is_empty() else "Murid"
 
 	# Handle spotlight highlight
-	var targets: Array[Control] = []
-	if step.target_node_path != "":
-		var paths = step.target_node_path.split(",")
-		for p in paths:
-			var trimmed = p.strip_edges()
-			if trimmed == "BGHari":
-				var bg_hari_node = get_node_or_null("BGHari")
-				if bg_hari_node:
-					for child in bg_hari_node.get_children():
-						if child is Control and child.visible:
-							targets.append(child)
-			elif trimmed != "":
-				var target = get_node_or_null(trimmed)
-				if target and target is Control:
-					targets.append(target)
-		if not targets.is_empty():
-			var arrow_at_bottom = (step.title == "Pilih Murid")
-			_highlight_multiple(targets, 12.0, arrow_at_bottom)
-		else:
-			_clear_highlight()
-	else:
+	_step_targets = _resolve_step_targets(step)
+	if _step_targets.is_empty():
 		_clear_highlight()
+	else:
+		_highlight_multiple(_step_targets)
 
 	# Determine if step requires specific button interaction (only when prompt_text is explicitly set or when target is an actual action button)
-	var is_button_target = (step.target_node_path == "TextureButton" or step.target_node_path == "BGHari/Senin")
-	var requires_button_press = (step.prompt_text != "") or (is_button_target and index == current_phase_steps.size() - 1)
+	var is_button_target := step.target_node_path == "TextureButton" or step.target_node_path == "BGHari/Senin"
+	var requires_button_press := step.prompt_text != "" or (is_button_target and index == current_phase_steps.size() - 1)
 
 	# Dynamic Prompt Text
+	var prompt := TutorialPanel.DEFAULT_PROMPT
 	if step.prompt_text != "":
-		_tutorial_prompt_label.text = step.prompt_text.replace("Nama Murid", student_name)
-	elif requires_button_press and not targets.is_empty():
-		var btn_name = _get_button_display_name(targets[0])
-		_tutorial_prompt_label.text = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
-	else:
-		_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
+		prompt = step.prompt_text.replace("Nama Murid", student_name)
+	elif requires_button_press and not _step_targets.is_empty():
+		var btn_name := _get_button_display_name(_step_targets[0])
+		prompt = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
 
-	# Reposition panel (center vertically for 'Hari Kosong' step 3/4)
-	var should_center = (step.title == "Hari Kosong" or "BGHari/Senin,BGHari/Selasa" in step.target_node_path)
-	_position_tutorial_panel(should_center)
+	# The panel's own step pill is this screen's one counter ("Langkah n / N").
+	_tutorial_panel.show_step(step.title, step.text.replace("Nama Murid", student_name), prompt,
+			index + 1, current_phase_steps.size())
+	_position_tutorial_panel()
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 
 	# Transition In: cute bouncy scale-up pop-in
-	var tween_in = create_tween().set_parallel(true)
+	var tween_in := create_tween().set_parallel(true)
 	tween_in.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.3)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.2)
@@ -1310,6 +1200,56 @@ func _show_step(index: int):
 		color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
 
+## The controls a step highlights: each comma-separated path in its
+## target_node_path, with "BGHari" standing for every visible day note.
+func _resolve_step_targets(step: TutorialStepData) -> Array[Control]:
+	var targets: Array[Control] = []
+	for path in step.target_node_path.split(","):
+		var trimmed := path.strip_edges()
+		if trimmed == "BGHari":
+			var bg_hari_node := get_node_or_null("BGHari")
+			if bg_hari_node:
+				for child in bg_hari_node.get_children():
+					if child is Control and child.visible:
+						targets.append(child)
+		elif trimmed != "":
+			var target := get_node_or_null(trimmed) as Control
+			if target:
+				targets.append(target)
+	return targets
+
+## Every control a wrong tap can land on while a step has the overlay open to
+## taps: the five day notes, the splash that picks the student, START WEEK and
+## Kembali.
+func _tutorial_alternatives() -> Array[Control]:
+	var controls: Array[Control] = []
+	for candidate: Control in [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn,
+			select_student_button, start_week_button, back_button]:
+		controls.append(candidate)
+	return controls
+
+## A wrong tap at a forced step used to be dropped without a sound (a print(),
+## or a bare return), so the screen looked broken. Now the error cue plays, the
+## control the step wants shakes and the other controls dim
+## (TutorialPanel.answer_wrong_tap). The card stays up and says nothing: the
+## motion says "not that one, this one."
+func _reject_tutorial_tap(step: TutorialStepData) -> void:
+	var targets := _resolve_step_targets(step)
+	if targets.is_empty():
+		AudioDirector.play_sfx(&"error")
+		return
+	var alternatives: Array[Control] = []
+	for candidate in _tutorial_alternatives():
+		if not targets.has(candidate):
+			alternatives.append(candidate)
+	TutorialPanel.answer_wrong_tap(targets[0], alternatives)
+
+## The same answer for a tap on a control that belongs to no step's gate
+## (Kembali, START WEEK): the step on screen is the one that is answered.
+func _reject_current_step() -> void:
+	if current_step < current_phase_steps.size():
+		_reject_tutorial_tap(current_phase_steps[current_step])
+
 func _get_button_display_name(node: Node) -> String:
 	if not node:
 		return ""
@@ -1320,61 +1260,13 @@ func _get_button_display_name(node: Node) -> String:
 			return child.text.strip_edges().split("\n")[0]
 	return node.name
 
-func _highlight_multiple(controls: Array, padding: float = 12.0, arrow_at_bottom: bool = false):
+## Cuts the spotlight hole around `controls`. The arrow is not placed here: it
+## needs the card's rectangle to stay off it, so _position_tutorial_panel
+## places both once the card has sized itself.
+func _highlight_multiple(controls: Array, padding: float = TutorialPanel.SPOT_PADDING):
 	await get_tree().process_frame
-
-	var valid_controls: Array[Control] = []
-	for c in controls:
-		if c and is_instance_valid(c) and c is Control:
-			valid_controls.append(c)
-
-	if valid_controls.is_empty():
+	if not TutorialPanel.cut_hole(color_rect, controls, padding):
 		_clear_highlight()
-		return
-
-	var mat := color_rect.material as ShaderMaterial
-	if not mat:
-		return
-
-	var min_pos = Vector2(INF, INF)
-	var max_pos = Vector2(-INF, -INF)
-
-	for c in valid_controls:
-		var trans = c.get_global_transform()
-		var local_corners = [
-			Vector2.ZERO,
-			Vector2(c.size.x, 0),
-			Vector2(0, c.size.y),
-			Vector2(c.size.x, c.size.y)
-		]
-		for corner in local_corners:
-			var global_corner = trans * corner
-			var local_corner = global_corner - color_rect.global_position
-			min_pos.x = min(min_pos.x, local_corner.x)
-			min_pos.y = min(min_pos.y, local_corner.y)
-			max_pos.x = max(max_pos.x, local_corner.x)
-			max_pos.y = max(max_pos.y, local_corner.y)
-
-	var local_pos = min_pos - Vector2(padding, padding)
-	var size_with_padding = (max_pos - min_pos) + Vector2(padding, padding) * 2
-
-	mat.set_shader_parameter("hole_pos", local_pos)
-	mat.set_shader_parameter("hole_size", size_with_padding)
-	if _tutorial_arrow:
-		_tutorial_arrow.set_direction(arrow_at_bottom)
-		var arrow_y = local_pos.y + size_with_padding.y + 35.0 if arrow_at_bottom else local_pos.y - 35.0
-		var arrow_pos = Vector2(local_pos.x + size_with_padding.x / 2.0, arrow_y)
-		var viewport_size = get_viewport_rect().size
-		var W = 320.0
-		var H = 320.0
-		var margin = 20.0
-		arrow_pos.x = clamp(arrow_pos.x, W/2.0 + margin, viewport_size.x - W/2.0 - margin)
-		if arrow_at_bottom:
-			arrow_pos.y = clamp(arrow_pos.y, margin, viewport_size.y - H - margin)
-		else:
-			arrow_pos.y = clamp(arrow_pos.y, H + margin, viewport_size.y - margin)
-		_tutorial_arrow.position = arrow_pos
-		_tutorial_arrow.show()
 
 func _clear_highlight():
 	var mat := color_rect.material as ShaderMaterial

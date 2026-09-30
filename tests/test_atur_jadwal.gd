@@ -1259,3 +1259,135 @@ func test_the_objective_strip_reads_real_data() -> void:
 	]:
 		assert_true(src.contains(needle), "AturJadwal.gd must call " + needle)
 	assert_false(src.contains("TanggalContainer"), "nothing may still reach for the old header")
+
+
+# ------------------------------------------- the tutorial on the shared panel
+#
+# 2026-10-01 tutorial unification. The tutorial card used to be a PanelContainer,
+# three Labels and two separators built in _build_tutorial_panel() on a flat
+# brown StyleBox overridden by hand, its arrow was clamped with a hard-coded
+# 320px picture, and a tap on the wrong day at a forced step was dropped with a
+# print(). It is now TutorialPanel.tscn, mounted into the overlay, seated inside
+# the tutorial's own Safe/UI, and a wrong tap is answered.
+
+## The shared card's own source, read from its script.
+const _PANEL_SCRIPT := "res://Scripts/UI/TutorialPanel.gd"
+
+
+func test_the_tutorial_card_is_the_shared_panel_not_a_runtime_build() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var build := _body_of(src, "func _build_tutorial_panel(")
+	assert_false(build.is_empty(), "_build_tutorial_panel was found")
+	assert_true(build.contains("TutorialPanel.mount(tutorial_panel_scene, color_rect, click_area)"),
+		"the card is the shared TutorialPanel scene, mounted in the overlay")
+	assert_false(build.contains(".new("), "and this screen builds no node for it")
+	for gone: String in ["_tutorial_title_label", "_tutorial_body_label",
+			"custom_panel_texture", "custom_panel_stylebox"]:
+		assert_false(src.contains(gone), "%s went with the hand-built card" % gone)
+	assert_true(src.contains(
+			'@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")'),
+		"the scene is an export, so it can be swapped in the inspector")
+
+
+func test_every_step_goes_through_the_panel_with_its_number_and_count() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var step := _body_of(src, "func _show_step(")
+	assert_true(step.contains("_tutorial_panel.show_step("), "each step fills the card via show_step")
+	assert_true(step.contains("index + 1, current_phase_steps.size())"),
+		"with its 1-based number and the phase's step count")
+	assert_false(src.contains("(%d/%d)"),
+		"the panel's pill is the step counter; a title prefix would count the steps twice")
+
+
+func test_the_card_and_arrow_are_seated_inside_the_tutorials_safe_area() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var seating := _body_of(src, "func _position_tutorial_panel(")
+	assert_true(seating.contains(
+			"TutorialPanel.place_step(_tutorial_panel, tutorial_safe_ui, color_rect, _step_targets, _tutorial_arrow)"),
+		"the card and the arrow are seated by the shared placement, inside Safe/UI")
+	assert_false(seating.contains("get_viewport_rect"), "with no raw viewport math")
+	assert_true(src.contains("@onready var tutorial_safe_ui: Control = $ColorRect/Safe/UI"))
+	assert_false(src.contains("arrow_at_bottom"),
+		"which side of the spot the arrow stands on is placement's call now")
+
+
+func test_the_tutorial_overlay_carries_its_own_safe_area() -> void:
+	var safe := _screen.get_node_or_null("ColorRect/Safe") as MarginContainer
+	assert_true(safe != null, "the overlay needs a Safe to keep the card off notches and gesture bars")
+	if safe == null:
+		return
+	assert_true(safe is SafeAreaMargin, "a Full Rect SafeAreaMargin named Safe")
+	assert_eq(safe.mouse_filter, Control.MOUSE_FILTER_IGNORE, "it never takes a tap")
+	assert_eq(Vector4(safe.anchor_left, safe.anchor_top, safe.anchor_right, safe.anchor_bottom),
+		Vector4(0, 0, 1, 1), "Full Rect")
+	var ui := safe.get_node_or_null("UI") as Control
+	assert_true(ui != null, "holding one plain Control named UI")
+	if ui != null:
+		assert_eq(ui.mouse_filter, Control.MOUSE_FILTER_IGNORE)
+	assert_true(safe.get_index() < _screen.get_node("ColorRect/ClickArea").get_index(),
+		"the click catcher stays above it")
+
+
+## A tap on the wrong day at a forced step used to hit a print() and return, so
+## the day button looked broken. Both forced-step gates now answer, and still
+## refuse the tap.
+func test_a_wrong_day_at_a_forced_step_is_answered_not_dropped() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var gate := _body_of(src, "func _on_day_pressed(")
+	assert_false(gate.contains("print(\"Tutorial active"), "no more silent print-and-return")
+	var needle := "_reject_tutorial_tap(current_step_data)"
+	var answered := 0
+	var from := 0
+	while true:
+		var at := gate.find(needle, from)
+		if at == -1:
+			break
+		var rest := gate.substr(at + needle.length()).strip_edges(true, false)
+		assert_true(rest.begins_with("return"), "the tap is still refused after the answer")
+		answered += 1
+		from = at + 1
+	assert_eq(answered, 2, "the day gate and the non-day gate both answer")
+
+
+func test_the_answer_shakes_the_wanted_day_and_dims_the_others_with_the_error_cue() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var reject := _body_of(src, "func _reject_tutorial_tap(")
+	assert_true(reject.contains("TutorialPanel.answer_wrong_tap(targets[0], alternatives)"),
+		"the control the step wants is the one that shakes")
+	assert_true(reject.contains("_tutorial_alternatives()") and reject.contains("targets.has(candidate)"),
+		"the controls that are not wanted are the ones that dim")
+	var alternatives := _body_of(src, "func _tutorial_alternatives(")
+	for control: String in ["senin_btn", "jumat_btn", "select_student_button", "start_week_button", "back_button"]:
+		assert_true(alternatives.contains(control), "%s is a control a wrong tap can land on" % control)
+	var helper := FileAccess.get_file_as_string(_PANEL_SCRIPT)
+	var answer := helper.get_slice("func answer_wrong_tap(", 1).get_slice("\nstatic func ", 0)
+	assert_true(answer.contains('AudioDirector.play_sfx(&"error")'), "with the error cue")
+	assert_true(answer.contains("Juice.shake(target)"), "and a shake on the target")
+
+
+## The other forced-step dead taps: Kembali, START WEEK and the student splash
+## each returned early with nothing (or a print) while a step had the overlay
+## open to taps. Each now answers for the step on screen, and still refuses.
+func test_the_other_controls_answer_a_tap_at_a_forced_step_too() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var back := _body_of(src, "func _on_back_button_pressed(")
+	assert_true(_then_returns(back, "_reject_current_step()"),
+		"Kembali answers, then still does not leave")
+	var start := _body_of(src, "func _on_start_week_pressed(")
+	assert_true(_then_returns(start, "_reject_current_step()"),
+		"START WEEK answers, then still does not start the week")
+	var select := _body_of(src, "func _on_select_student_pressed(")
+	assert_true(_then_returns(select, "_reject_tutorial_tap(current_step_data)"),
+		"the splash answers a tap that is not the step's own, then still does not leave")
+	assert_false(src.contains("print(\"Tutorial active"), "no forced-step tap is dropped with a print any more")
+	var current := _body_of(src, "func _reject_current_step(")
+	assert_true(current.contains("_reject_tutorial_tap(current_phase_steps[current_step])"),
+		"the step on screen is the one answered")
+
+
+## True when `statement` is in `body` and the next statement after it is a return.
+func _then_returns(body: String, statement: String) -> bool:
+	var at := body.find(statement)
+	if at == -1:
+		return false
+	return body.substr(at + statement.length()).strip_edges(true, false).begins_with("return")

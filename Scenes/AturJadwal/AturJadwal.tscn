@@ -779,6 +779,20 @@ offset_bottom = 0.9199219
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
 
+[node name="Safe" type="MarginContainer" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("nb_safe")
+
+[node name="UI" type="Control" parent="ColorRect/Safe"]
+layout_mode = 2
+mouse_filter = 2
+
 [node name="ClickArea" type="Button" parent="ColorRect" unique_id=887578700]
 modulate = Color(1, 1, 1, 0)
 layout_mode = 1

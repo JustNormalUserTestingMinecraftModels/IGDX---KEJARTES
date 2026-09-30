@@ -25,8 +25,6 @@ const ALLOWED := {
 	# The stat glyph is the no-icon fallback StatDetailPopup shows when a
 	# screen passes no artwork; every current caller passes one.
 	"res://Scripts/UI/StatInfo.gd": ["\"glyph\":"],
-	# The cutscene's debug-only level-select toggle.
-	"res://Scripts/CutScene/CutScene.gd": ["Debug Level Select"],
 	# The minigame test launcher's School Day button: debug-only launcher,
 	# not player-facing.
 	"res://Scenes/Minigames/UI/MinigameMenu.tscn": ["Simulasi Minggu Sekolah"],

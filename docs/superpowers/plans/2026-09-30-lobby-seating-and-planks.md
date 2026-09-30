@@ -31,6 +31,8 @@ constants in `tests/test_lobby_desk_items_fit.gd`.
 
 Taken by masked template matching of the game's own textures in the picture, and by wood-colour bounding boxes.
 
+> **Corrected 2026-10-01:** the game y0 values here (338, 683) are the top of the chair back drawn into each plate; the desks' real back edges are 400.045 / 400.0 / 766 / 766 (2026-10-01-lobby-seat-on-desk-edge).
+
 **Desk top surfaces** (x0, y0, x1, y1):
 
 | Desk | Picture | Game (classroom px) |

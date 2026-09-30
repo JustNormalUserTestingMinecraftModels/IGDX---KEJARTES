@@ -421,6 +421,49 @@ func test_the_day_cover_is_counted_and_restores_each_alpha() -> void:
 	host.free()
 
 
+## Behaviour of cover()'s `extra` node (SchoolDay's day screen under an event
+## dialogue), on the same stand-in host: hidden and not processing while the day
+## is covered, put back by the matching uncover() to exactly what it was (a node
+## that started hidden stays hidden; its own process mode is not assumed to be
+## inherit), and ignored when it arrives on a nested cover.
+func test_the_day_cover_hides_its_extra_node_and_puts_it_back_exactly() -> void:
+	var host := Control.new()
+	var sky := ColorRect.new()
+	sky.name = "Background"
+	host.add_child(sky)
+	var screen := Control.new()
+	screen.process_mode = Node.PROCESS_MODE_PAUSABLE
+	host.add_child(screen)
+	var other := Control.new()
+	host.add_child(other)
+	var cover = (load("res://Scripts/SchoolSimulation/DayPictureCover.gd") as GDScript).new(host)
+
+	cover.cover(false, screen)
+	assert_false(screen.visible, "the extra node is hidden while the day is covered")
+	assert_eq(screen.process_mode, Node.PROCESS_MODE_DISABLED, "and stops processing")
+	cover.uncover(false)
+	assert_true(screen.visible, "the matching uncover shows it again")
+	assert_eq(screen.process_mode, Node.PROCESS_MODE_PAUSABLE,
+		"with its own process mode back, not an assumed inherit")
+
+	screen.hide()
+	cover.cover(false, screen)
+	cover.uncover(false)
+	assert_false(screen.visible, "a node that started hidden comes back hidden")
+
+	screen.show()
+	cover.cover(false, screen)
+	cover.cover(false, other)
+	assert_true(other.visible, "a nested cover's extra is ignored, not hidden")
+	assert_eq(other.process_mode, Node.PROCESS_MODE_INHERIT, "nor switched off")
+	cover.uncover(false)
+	assert_false(screen.visible, "the first extra stays hidden while a cover is still open")
+	cover.uncover(false)
+	assert_true(screen.visible, "and comes back with the last uncover")
+	assert_true(other.visible, "the ignored extra never changed")
+	host.free()
+
+
 ## A dev skip mid fade-in snaps the picture back while the cover's fade is
 ## still running: the fade is settled first, so it cannot drive the sky back
 ## to 0 afterwards.

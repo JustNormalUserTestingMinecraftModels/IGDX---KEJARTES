@@ -56,9 +56,9 @@ const LONG_FUNCTIONS: Dictionary = {
 const UNTYPED: Dictionary = {
 	"res://Scripts/AnimUtils.gd": 27,
 	"res://Scripts/AturJadwal/AturJadwal.gd": 150,
-	"res://Scripts/CutScene/CutScene.gd": 13,
+	"res://Scripts/CutScene/CutScene.gd": 12,
 	"res://Scripts/CutScene/HintLabel.gd": 3,
-	"res://Scripts/Debug/DebugManager.gd": 168,
+	"res://Scripts/Debug/DebugManager.gd": 167,
 	"res://Scripts/Debug/EndGameRehearsal.gd": 2,
 	"res://Scripts/GameSettings.gd": 2,
 	"res://Scripts/GameState.gd": 9,

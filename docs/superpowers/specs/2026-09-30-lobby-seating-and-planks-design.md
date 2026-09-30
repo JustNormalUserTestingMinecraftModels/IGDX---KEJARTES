@@ -1,6 +1,6 @@
 # Lobby seating to the owner's picture, and planks on tall phones — design
 
-**Date:** 2026-09-30 · **Branch:** `feat/lobby-match-mockup` · **Status:** approved in chat; seating rule revised in build (section 2)
+**Date:** 2026-09-30 · **Branch:** `feat/lobby-match-mockup` · **Status:** approved in chat; seating rule revised in build (section 2) · **Desk edges corrected 2026-10-01:** the "game desk" numbers below were the chair back's top; see 2026-10-01-lobby-seat-on-desk-edge-design.md.
 
 Reference picture: `docs/superpowers/mockups/lobby-seating-reference-2026-09-30.jpg`
 (1080x1920, attached by the owner in chat).

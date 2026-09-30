@@ -27,7 +27,9 @@ extends McpTestSuite
 const TARGETS := {
 	"res://Assets/Images/UI/stickynotes.png": 11.91,
 	"res://Assets/Images/Shop/UI/chat_bubble_tail.svg": 7.39,
-	"res://Assets/Images/UI/Placeholders/arrow.png": 7.11,
+	# 7.11 was the arrow at its old size; TutorialArrow.tscn now draws the 512 px
+	# source at its 180 px arrow_size (512 / 180), derived, not re-measured live.
+	"res://Assets/Images/UI/Placeholders/arrow.png": 2.84,
 	"res://Assets/Images/UI/skin_switch.png": 5.63,
 	"res://Assets/Images/UI/setting.png": 5.33,
 	"res://Assets/Images/UI/Nav/return_button.png": 5.33,

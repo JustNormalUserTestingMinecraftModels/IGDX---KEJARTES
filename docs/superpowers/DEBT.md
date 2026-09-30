@@ -551,6 +551,27 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Tutorial follow-ons (2026-10-01).** Spec
+  `specs/2026-09-30-tutorial-unify-and-headmaster-beat-design.md`, plan
+  `plans/2026-10-01-tutorial-unify-adapted.md`; the pass is in the changelog.
+  - **StudentCard still places its card with viewport math** (40 px above the
+    bottom, the arrow's bounds the whole overlay). Route it through
+    `TutorialPanel.place_step` with its Safe/UI, as AturJadwal, StudentList
+    and the Lobby do.
+  - **The four screens keep hand-rolled 0.8 to 1 step tweens** (exit and
+    entrance) instead of the panel's `play_out` / `play_in`.
+  - **A direct Level Select pick of Kelas 8 or 9 plays the promotion beat**,
+    though nobody was promoted. The owner's call; the gate, if wanted, is
+    `not GameState.approved_students.is_empty()`.
+  - **StudentCard's page arrows stay hidden when tutorials are bypassed**
+    (debug-only): `_show_page` runs while `tutorial_active` is still true. The
+    fix is one `_end_tutorial()` in the bypass branch.
+  - **`StudentCard.gd` sits at its 1444-line ceiling** (`LARGE_SCRIPTS`): the
+    next change there moves something out first.
+  - **The older tutorial bodies still mix "anda" and "kalian" with "kamu"**
+    (StudentCard, AturJadwal, StudentList); only the Lobby's was put in one
+    voice, and the review wave fixed "Disini" and "Silahkan" elsewhere.
+
 - **Texture memory follow-ons (2026-09-30).** Rule and numbers:
   `tests/test_texture_memory.gd`.
   - **Not checked on a phone.** The compressed art was judged on desktop
@@ -654,7 +675,8 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     deleting them means trimming both (the generator's third output,
     `icon_libur_nasional_placeholder.png`, is still the holiday icon).
   - Keep `UI/Nav/return_button.png` (every Back) and
-    `UI/Placeholders/arrow.png` (`TutorialArrow.gd`, `test_texture_mipmaps`).
+    `UI/Placeholders/arrow.png` (`Scenes/UI/TutorialArrow.tscn`,
+    `test_texture_mipmaps`).
 - **`setting.png` has no `Icons/` counterpart yet.** MainMenu's
   `SettingButton` and the Lobby rail's gear still wear
   `Assets/Images/UI/setting.png`; the rail's four icons were left as finished

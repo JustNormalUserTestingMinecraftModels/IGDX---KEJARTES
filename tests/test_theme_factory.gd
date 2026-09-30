@@ -31,6 +31,12 @@ func test_every_declared_variation_exists() -> void:
 		"MinigameCard", "MinigameCardInner", "MinigameImagePlate",
 		"MinigameAnswerButton", "MinigameHudPill", "MinigameHudValue",
 		"MinigameHudIconButton", "MinigamePlankPanel", "MinigamePlankLabel",
+		# 2026-09-30 minigame hierarchy.
+		"MinigameTargetLabel", "MinigameTimerLabel", "MinigameToolNameLabel",
+		"MinigameKeyLabel", "MinigameLcdLabel", "MinigameChoiceButtonCorrect",
+		"MinigameChoiceButtonWrong", "MinigameCtaButton", "MinigameSecondaryButton",
+		"WoodNavArrow", "MinigameAnswerCard", "MinigameCardLock", "MinigameBadgePanel",
+		"MinigameToolCard", "MinigameToolRing",
 		# 2026-09-27 scrapbook HUD (Task 2).
 		"BookHeroButton", "NavTileKoperasi", "NavTileInventory", "NavTileRapor",
 		"PlusButton", "ChevronGripButton", "BookCoverPanel", "BookPagePanel",
@@ -335,12 +341,13 @@ const DISPLAY_ROSTER := [
 	"EventDialogHeaderLabel",
 	# 2026-09-12: the slide warning's caption, display face at DisplayLabel size.
 	"EventWarningCaptionLabel",
-	# 2026-09-21 minigame type ladder: the badge, the two Menjodohkan wheel
-	# headers and PilihanGanda's choice buttons. The other three variations
+	# 2026-09-21 minigame type ladder: the badge and PilihanGanda's choice
+	# buttons (the two Menjodohkan wheel headers left on 2026-09-30, for the
+	# kit's plank). The other three variations
 	# from that pass -- MinigameQuestionLabel, MinigameMetaLabel and
 	# MinigameOverlayLabel -- are deliberately absent: a quiz question and
 	# its meta are body copy, so they keep the body face.
-	"MinigameBadgeLabel", "MinigameWheelHeaderWarm", "MinigameWheelHeaderCool",
+	"MinigameBadgeLabel",
 	"MinigameChoiceButton",
 	# 2026-09-25 minigame win screen: the bubble line and the stat numbers.
 	"MinigameWinLine", "MinigameWinStatLabel",
@@ -403,6 +410,13 @@ const DISPLAY_ROSTER := [
 	# the HUD score value and the plank label. The kit's panels and its icon
 	# button carry no font.
 	"MinigameAnswerButton", "MinigameHudValue", "MinigamePlankLabel",
+	# 2026-09-30 minigame hierarchy: the plaque's target and the timer's
+	# seconds, the tool names, the calculator's keys and display, and the
+	# lipped flash, tray and arrow buttons.
+	"MinigameTargetLabel", "MinigameTimerLabel", "MinigameToolNameLabel",
+	"MinigameKeyLabel", "MinigameLcdLabel", "MinigameChoiceButtonCorrect",
+	"MinigameChoiceButtonWrong", "MinigameCtaButton", "MinigameSecondaryButton",
+	"WoodNavArrow",
 	# 2026-09-27 scrapbook HUD (Task 2): the book's hero button and nav
 	# tiles, the coin plate's +, the header's grade badge and week label,
 	# the star bar's number, and the icon rail's notification badge.

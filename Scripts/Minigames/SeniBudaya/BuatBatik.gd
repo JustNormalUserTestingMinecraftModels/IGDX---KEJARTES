@@ -11,7 +11,7 @@ extends BaseMinigame
 # ─── Tool 0 (Pencil) ─────────────────────────────────────────────────────────
 @export_group("Tool 0 (Pencil)")
 ## Name shown on the Pencil tool slot and its tooltip.
-@export var tool0_display_name: String = "Specialized Pencil"
+@export var tool0_display_name: String = "Pensil"
 ## Tooltip body text for the Pencil tool.
 @export_multiline var tool0_description: String = "Pengadaan akan sketsa pola awal untuk membuat pola yang kelihatan jelas diatas kain kosong."
 
@@ -104,6 +104,9 @@ const WRONG_LAYER_COLOR: Color = Color(0.8, 0.1, 0.1, 0.45)
 var correct_sequence: Array = ["Tool0", "Tool1", "Tool2", "Tool3"]
 ## The hint's name for each tool, in correct_sequence order.
 const STEP_TOOL_NAMES := ["Pensil", "Canting", "Pewarna", "Kompor"]
+## Where a tool card splits between its picture (above) and its name (below),
+## as a fraction of the card's height; the scene's anchors use the same value.
+const TOOL_NAME_SPLIT := 0.7
 ## Wrong tool placements this run. The star rubric's only input -- BuatBatik
 ## has no score, so a clean sequence is what mastery means here.
 var wrong_attempts: int = 0
@@ -174,7 +177,23 @@ func _ready() -> void:
 				child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_apply_visual_exports()
+	_apply_tool_names()
 	_update_progress_label()
+
+## B4 (2026-09-30): writes the name each slot's export promises under its
+## picture, matched by node name like the art.
+func _apply_tool_names() -> void:
+	var tool_names := {
+		"Tool0": tool0_display_name,
+		"Tool1": tool1_display_name,
+		"Tool2": tool2_display_name,
+		"Tool3": tool3_display_name,
+	}
+	for tool_node in tools_container.get_children():
+		var name_label := tool_node.get_node_or_null("NameLabel") as Label
+		if name_label:
+			name_label.text = tool_names.get(str(tool_node.name), name_label.text)
+
 
 func _apply_visual_exports() -> void:
 	# Background
@@ -227,6 +246,7 @@ func _apply_visual_exports() -> void:
 		var tex_rect := tool_node.get_node_or_null("ToolTextureRect") as TextureRect
 		if tool_tex and tex_rect:
 			tex_rect.texture = tool_tex
+
 
 	# Tooltip style
 	if tooltip_panel and tooltip_bg_texture:
@@ -372,25 +392,33 @@ func _input(event: InputEvent) -> void:
 		if not event.is_pressed():
 			_check_tool_drop()
 
-func _create_drag_ghost(tool: Control) -> void:
-	if drag_ghost:
-		drag_ghost.queue_free()
-
-	# Duplicate the tool node so the ghost exactly mirrors the dragged tool visual
-	var ghost = tool.duplicate() as Control
-	ghost.name = "DragGhost"
+## A translucent copy of `tool` to drag, named `ghost_name` and drawn at
+## `z`: it ignores the mouse all the way down, and it leaves the next-tool
+## ring behind, since the ring marks the tray slot, not the tool in hand.
+func _ghost_of(tool: Control, ghost_name: String, z: int) -> Control:
+	var ghost := tool.duplicate() as Control
+	ghost.name = ghost_name
 	ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	ghost.z_index = 10
+	ghost.z_index = z
 	ghost.modulate.a = 0.88
 	ghost.scale = Vector2(1.1, 1.1)
-
-	# Ensure all nested children in the ghost ignore mouse filter
 	for child in ghost.get_children():
 		if child is Control:
 			child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			for sub_child in child.get_children():
 				if sub_child is Control:
 					sub_child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ring := ghost.get_node_or_null("Ring") as Control
+	if ring:
+		ring.visible = false
+	return ghost
+
+
+func _create_drag_ghost(tool: Control) -> void:
+	if drag_ghost:
+		drag_ghost.queue_free()
+
+	var ghost := _ghost_of(tool, "DragGhost", 10)
 
 	drag_ghost = ghost
 	add_child(drag_ghost)
@@ -622,20 +650,7 @@ func reveal_answers() -> void:
 
 		var start_pos = tool_node.get_global_rect().get_center()
 
-		# Create smooth animated ghost duplicating the tool node so visuals match 100%
-		var auto_ghost = tool_node.duplicate() as Control
-		auto_ghost.name = "AutoDragGhost"
-		auto_ghost.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		auto_ghost.z_index = 20
-		auto_ghost.modulate.a = 0.88
-		auto_ghost.scale = Vector2(1.1, 1.1)
-
-		for child in auto_ghost.get_children():
-			if child is Control:
-				child.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				for sub_child in child.get_children():
-					if sub_child is Control:
-						sub_child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var auto_ghost := _ghost_of(tool_node, "AutoDragGhost", 20)
 
 		add_child(auto_ghost)
 		var ghost_offset = (auto_ghost.size * auto_ghost.scale) / 2.0
@@ -709,5 +724,19 @@ func _update_progress_label() -> void:
 	var done := player_sequence.size()
 	var total := correct_sequence.size()
 	set_progress(done, total, "Langkah %d/%d" % [mini(done + 1, total), total])
+	_ring_next_tool()
 	if done < total:
 		show_hint("Seret %s ke kanvas" % STEP_TOOL_NAMES[done])
+
+
+## Rings the tool the next step wants (MinigameToolRing, spec 2026-09-30
+## minigame hierarchy 5.3) and no other; none once every step is placed.
+func _ring_next_tool() -> void:
+	var done := player_sequence.size()
+	var next_name := str(correct_sequence[done]) if done < correct_sequence.size() else ""
+	for tool_node in tools_container.get_children():
+		var ring := tool_node.get_node_or_null("Ring") as Control
+		if ring:
+			# A tool a wrong drop already used is locked and dimmed: never ring it.
+			ring.visible = (str(tool_node.name) == next_name
+				and not tool_node.get_meta("used", false))

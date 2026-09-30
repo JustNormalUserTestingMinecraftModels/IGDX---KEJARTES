@@ -2107,12 +2107,16 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 ## of them below the 28 px body floor. CLAUDE.md puts minigames outside the
 ## design system, which is how they drifted; these variations bring the text
 ## back in without touching the games' own logic.
+##
+## 2026-09-30 (minigame hierarchy): the question, the choice buttons and the
+## badge moved onto the minigames' own x1.618 ladder, MinigameType
+## (28/45/73/118). The house tokens stay as they are for every other screen.
 static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> void:
 	# The question itself is body copy, not a heading, so it keeps the theme's
 	# body face (Open Sans) rather than taking font_display.
 	theme.add_type("MinigameQuestionLabel")
 	theme.set_type_variation("MinigameQuestionLabel", "Label")
-	theme.set_font_size("font_size", "MinigameQuestionLabel", tokens.font_h1)
+	theme.set_font_size("font_size", "MinigameQuestionLabel", MinigameType.T3)
 	theme.set_color("font_color", "MinigameQuestionLabel", tokens.text_primary)
 
 	# Counters and meta sitting on a card, where the ink can be quiet.
@@ -2125,7 +2129,7 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# the display face, per the house rule.
 	theme.add_type("MinigameBadgeLabel")
 	theme.set_type_variation("MinigameBadgeLabel", "Label")
-	theme.set_font_size("font_size", "MinigameBadgeLabel", tokens.font_title)
+	theme.set_font_size("font_size", "MinigameBadgeLabel", MinigameType.T1)
 	theme.set_color("font_color", "MinigameBadgeLabel", tokens.text_on_brand)
 	if tokens.font_display != null:
 		theme.set_font("font", "MinigameBadgeLabel", tokens.font_display)
@@ -2140,26 +2144,9 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	theme.set_constant("outline_size", "MinigameOverlayLabel", 8)
 	theme.set_color("font_outline_color", "MinigameOverlayLabel", Color(0, 0, 0, 0.75))
 
-	# Menjodohkan's two carousel headers. The colours these replace --
-	# Color(0.85,0.45,0.1) and Color(0.2,0.5,0.85) -- are mid-tone (relative
-	# luminance 0.27 and 0.21) and unoutlined over painted card art: they cap
-	# at 3.3:1 and 4.0:1 against pure white and fall toward 1.5:1 on the card
-	# they actually sit on, so neither could reach the 4.5:1 body floor on any
-	# ground. The question header sits on the wood table and takes
-	# brand_primary (7.2:1 on surface_card). The answer header rides the brown
-	# MinigameTrayPanel plank since the mobile layout (2026-09-29), where the
-	# old cat_akademis blue barely read, so it takes the cream text_on_brand
-	# that every label on that plank uses. The name keeps "Cool" because the
-	# scene and tests pin it.
-	for pair in [["MinigameWheelHeaderWarm", tokens.brand_primary],
-			["MinigameWheelHeaderCool", tokens.text_on_brand]]:
-		var wheel: String = pair[0]
-		theme.add_type(wheel)
-		theme.set_type_variation(wheel, "Label")
-		theme.set_font_size("font_size", wheel, tokens.font_title)
-		theme.set_color("font_color", wheel, pair[1])
-		if tokens.font_display != null:
-			theme.set_font("font", wheel, tokens.font_display)
+	# Menjodohkan's two carousel headers (MinigameWheelHeaderWarm/Cool) left
+	# on 2026-09-30: SOAL and JAWABAN now sit on the kit's carved plank,
+	# MinigamePlankPanel + MinigamePlankLabel (gold on dark brown).
 
 	# PilihanGanda's answer buttons. The house helper gives them the full
 	# five-state set at radius_button, plus font_title and the display face,
@@ -2170,6 +2157,7 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 	# ink -- and a brown face would hand it white ink on that near-white box.
 	_add_button_variation(theme, tokens, "MinigameChoiceButton",
 		tokens.button_cream, tokens.button_cream_lip)
+	theme.set_font_size("font_size", "MinigameChoiceButton", MinigameType.T2)
 
 
 # ------------------------------------------------------------ minigame kit
@@ -2194,6 +2182,8 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 ## How far the card's shadow alpha is raised over shadow_color's, so the
 ## frame still pops on the bright light-orange wood backdrop.
 const MINIGAME_CARD_SHADOW_ALPHA_BOOST := 0.2
+## Visible wood, px, between MinigameCard's cream rim and its inner face.
+const MINIGAME_CARD_WOOD := 16
 ## The answer button's hard drop shadow (spec 4.1, "brandD hard shadow"):
 ## StyleBoxFlat draws no shadow at a blur of 0, so this is the least blur
 ## that still draws -- a crisp edge under the full shadow_offset drop.
@@ -2210,6 +2200,7 @@ static func _build_minigame_kit(theme: Theme, tokens: DesignTokens) -> void:
 	_build_minigame_answer_button(theme, tokens)
 	_build_minigame_hud(theme, tokens)
 	_build_minigame_layout(theme, tokens)
+	_build_minigame_hierarchy(theme, tokens)
 
 
 ## MinigameCard, MinigameCardInner and MinigameImagePlate.
@@ -2219,7 +2210,10 @@ static func _build_minigame_card_family(theme: Theme, tokens: DesignTokens) -> v
 	frame.set_border_width_all(int(tokens.outline_width))
 	frame.border_color = tokens.outline_card
 	frame.set_corner_radius_all(tokens.radius_lg)
-	frame.set_content_margin_all(tokens.space_xs)
+	# The wood shows between the cream rim and the inner face: the rim's
+	# outline_width plus MINIGAME_CARD_WOOD px of brand fill (2026-09-30; at
+	# space_xs the rim covered all but 2 px of it, so the frame read as a line).
+	frame.set_content_margin_all(tokens.outline_width + MINIGAME_CARD_WOOD)
 	var lifted: Color = tokens.shadow_color
 	lifted.a = minf(1.0, tokens.shadow_color.a + MINIGAME_CARD_SHADOW_ALPHA_BOOST)
 	frame.shadow_color = lifted
@@ -2332,9 +2326,9 @@ static func _set_minigame_display_text(theme: Theme, tokens: DesignTokens, name:
 ## only in its corners.
 static func _build_minigame_hud(theme: Theme, tokens: DesignTokens) -> void:
 	_add_minigame_panel(theme, "MinigameHudPill", _minigame_tab_box(tokens, tokens.radius_pill))
-	_add_minigame_gold_label(theme, tokens, "MinigameHudValue", tokens.font_title)
+	_add_minigame_gold_label(theme, tokens, "MinigameHudValue", MinigameType.T3)
 	_add_minigame_panel(theme, "MinigamePlankPanel", _minigame_tab_box(tokens, tokens.radius_md))
-	_add_minigame_gold_label(theme, tokens, "MinigamePlankLabel", tokens.font_caption)
+	_add_minigame_gold_label(theme, tokens, "MinigamePlankLabel", MinigameType.T1)
 
 	# Lipped and brown like every neutral button (2026-09-28 UI depth pass).
 	# _add_button_variation also sets the display face, so the variation is
@@ -2383,6 +2377,125 @@ static func _minigame_hud_icon_focus_box(tokens: DesignTokens) -> StyleBoxFlat:
 	return box
 
 
+# ------------------------------------------------ minigame hierarchy
+
+## The 2026-09-30 hierarchy pass (spec
+## docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md, 3 and 5).
+## Every size is a MinigameType rung.
+##   MinigameTargetLabel      the plaque's "/ 3", cream, T1.
+##   MinigameTimerLabel       whole seconds inside the timer ring, T2.
+##   MinigameToolNameLabel    a BuatBatik tool's name, T2.
+##   MinigameKeyLabel         a calculator key's digit, T3.
+##   MinigameLcdLabel         the calculator display, T4, LCD ink.
+##   MinigameChoiceButtonCorrect / Wrong  an answer's flash; disabled keeps it.
+##   MinigameCtaButton        a tray's one main action (mint), T2.
+##   MinigameSecondaryButton  a tray's neutral action (brown), T2.
+##   WoodNavArrow             Menjodohkan's reel arrows.
+##   MinigameAnswerCard       Menjodohkan's answer card.
+##   MinigameCardLock         the veil over a locked card.
+##   MinigameBadgePanel       QuestionCard's status badge.
+##   MinigameToolCard         a BuatBatik tool tile, cream and lipped.
+##   MinigameToolRing         the gold ring round the next tool.
+
+## How much darker than its face a right/wrong flash's lip is.
+const MINIGAME_STATE_LIP_DARKEN := 0.3
+## The locked-card veil's opacity over surface_overlay.
+const MINIGAME_LOCK_VEIL_ALPHA := 0.8
+## The ring's stroke round the next BuatBatik tool, px.
+const MINIGAME_TOOL_RING_WIDTH := 8
+## The calculator display's dark LCD ink (was Kalkulator.layar_color's default).
+const MINIGAME_LCD_INK := Color(0.13, 0.16, 0.12, 1.0)
+
+
+static func _build_minigame_hierarchy(theme: Theme, tokens: DesignTokens) -> void:
+	_add_minigame_display_label(theme, tokens, "MinigameTargetLabel",
+		tokens.text_on_brand, MinigameType.T1)
+	_add_minigame_display_label(theme, tokens, "MinigameTimerLabel",
+		tokens.text_on_brand, MinigameType.T2)
+	theme.set_constant("outline_size", "MinigameTimerLabel", tokens.lipped_label_outline)
+	theme.set_color("font_outline_color", "MinigameTimerLabel", tokens.brand_primary_dark)
+	_add_minigame_display_label(theme, tokens, "MinigameToolNameLabel",
+		tokens.text_primary, MinigameType.T2)
+	_add_minigame_display_label(theme, tokens, "MinigameKeyLabel",
+		tokens.text_on_brand, MinigameType.T3)
+	_add_minigame_display_label(theme, tokens, "MinigameLcdLabel",
+		MINIGAME_LCD_INK, MinigameType.T4)
+	theme.set_constant("outline_size", "MinigameLcdLabel", 0)
+	_build_minigame_hierarchy_buttons(theme, tokens)
+	_build_minigame_hierarchy_panels(theme, tokens)
+
+
+## The flash, tray and arrow buttons, all lipped via _add_button_variation.
+static func _build_minigame_hierarchy_buttons(theme: Theme, tokens: DesignTokens) -> void:
+	for pair in [["MinigameChoiceButtonCorrect", tokens.state_success],
+			["MinigameChoiceButtonWrong", tokens.state_danger]]:
+		var name: String = pair[0]
+		var face: Color = pair[1]
+		_add_button_variation(theme, tokens, name, face,
+			face.darkened(MINIGAME_STATE_LIP_DARKEN))
+		theme.set_font_size("font_size", name, MinigameType.T2)
+		# An answered button is disabled, and the flash must stay on it.
+		theme.set_stylebox("disabled", name, theme.get_stylebox("normal", name))
+		theme.set_color("font_disabled_color", name, theme.get_color("font_color", name))
+	_add_button_variation(theme, tokens, "MinigameCtaButton",
+		tokens.accent_mint, tokens.accent_mint_lip)
+	theme.set_font_size("font_size", "MinigameCtaButton", MinigameType.T2)
+	_add_button_variation(theme, tokens, "MinigameSecondaryButton",
+		tokens.brand_primary_light, tokens.brand_primary_dark)
+	theme.set_font_size("font_size", "MinigameSecondaryButton", MinigameType.T2)
+	# radius_button like every button (tests/test_button_geometry.gd).
+	_add_button_variation(theme, tokens, "WoodNavArrow",
+		tokens.brand_primary_light, tokens.brand_primary_dark)
+
+
+## The answer card, lock veil, badge, tool tile and tool ring.
+static func _build_minigame_hierarchy_panels(theme: Theme, tokens: DesignTokens) -> void:
+	var answer := StyleBoxFlat.new()
+	answer.bg_color = tokens.surface_card
+	answer.set_corner_radius_all(tokens.radius_lg)
+	answer.set_border_width_all(int(tokens.outline_width / 2.0))
+	answer.border_color = tokens.button_cream_lip
+	answer.set_content_margin_all(tokens.space_md)
+	var lifted: Color = tokens.shadow_color
+	lifted.a = minf(1.0, tokens.shadow_color.a + MINIGAME_CARD_SHADOW_ALPHA_BOOST)
+	answer.shadow_color = lifted
+	answer.shadow_size = tokens.shadow_size
+	answer.shadow_offset = tokens.shadow_offset
+	_add_minigame_panel(theme, "MinigameAnswerCard", answer)
+
+	var veil := StyleBoxFlat.new()
+	veil.bg_color = Color(tokens.surface_overlay, MINIGAME_LOCK_VEIL_ALPHA)
+	veil.set_corner_radius_all(tokens.radius_md)
+	_add_minigame_panel(theme, "MinigameCardLock", veil)
+
+	var badge := StyleBoxFlat.new()
+	badge.bg_color = tokens.brand_primary
+	badge.set_corner_radius_all(tokens.radius_sm)
+	badge.content_margin_left = tokens.space_sm
+	badge.content_margin_right = tokens.space_sm
+	badge.content_margin_top = tokens.space_xs
+	badge.content_margin_bottom = tokens.space_xs
+	_add_minigame_panel(theme, "MinigameBadgePanel", badge)
+
+	_add_minigame_panel(theme, "MinigameToolCard", LippedBox.make(
+		tokens.button_cream, tokens.button_cream_lip, tokens.lip_height, tokens.radius_md, 0.0))
+
+	var ring := StyleBoxFlat.new()
+	ring.draw_center = false
+	ring.set_border_width_all(MINIGAME_TOOL_RING_WIDTH)
+	ring.border_color = tokens.currency_gold
+	ring.set_corner_radius_all(tokens.radius_md)
+	_add_minigame_panel(theme, "MinigameToolRing", ring)
+
+
+## A display-face Label variation in `color` at `font_size`.
+static func _add_minigame_display_label(theme: Theme, tokens: DesignTokens, name: String,
+		color: Color, font_size: int) -> void:
+	theme.add_type(name)
+	theme.set_type_variation(name, "Label")
+	_set_minigame_display_text(theme, tokens, name, color, font_size)
+
+
 # ------------------------------------------------- minigame mobile layout
 
 ## The minigame mobile layout's chrome (spec
@@ -2417,7 +2530,7 @@ static func _build_minigame_layout(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("MinigameProgressLabel")
 	theme.set_type_variation("MinigameProgressLabel", "Label")
 	_set_minigame_display_text(theme, tokens, "MinigameProgressLabel",
-		tokens.text_on_brand, tokens.font_body_size)
+		tokens.text_on_brand, MinigameType.T1)
 	theme.set_constant("outline_size", "MinigameProgressLabel", tokens.lipped_label_outline)
 	theme.set_color("font_outline_color", "MinigameProgressLabel", tokens.brand_primary_dark)
 
@@ -2441,12 +2554,14 @@ static func _build_minigame_layout(theme: Theme, tokens: DesignTokens) -> void:
 	pill.content_margin_bottom = tokens.space_xs
 	_add_minigame_panel(theme, "MinigameHintPillPanel", pill)
 
-	for pair in [["MinigameHintLabel", tokens.text_on_brand],
-			["MinigameHowToLabel", tokens.text_primary]]:
-		theme.add_type(pair[0])
-		theme.set_type_variation(pair[0], "Label")
-		theme.set_font_size("font_size", pair[0], tokens.font_title)
-		theme.set_color("font_color", pair[0], pair[1])
+	# The hint is the quietest line in play (T1, 2026-09-30); the CARA MAIN
+	# card's step lines keep the house title rung.
+	for triple in [["MinigameHintLabel", tokens.text_on_brand, MinigameType.T1],
+			["MinigameHowToLabel", tokens.text_primary, tokens.font_title]]:
+		theme.add_type(triple[0])
+		theme.set_type_variation(triple[0], "Label")
+		theme.set_font_size("font_size", triple[0], triple[2])
+		theme.set_color("font_color", triple[0], triple[1])
 
 
 # --------------------------------------------------------------- progress

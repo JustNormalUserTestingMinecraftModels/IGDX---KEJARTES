@@ -59,10 +59,23 @@ func _under_safe(node: Node) -> bool:
 	return p != null
 
 
+## Instanced minigame scenes, one per path, shared by every test (they are
+## only read) and freed in suite_teardown(): instancing big scenes test after
+## test floods the editor's MessageQueue on a full run (CLAUDE.md).
+var _scenes := {}
+
+
+func suite_teardown() -> void:
+	for root: Node in _scenes.values():
+		if is_instance_valid(root):
+			root.free()
+	_scenes.clear()
+
+
 func _scene(path: String) -> Node:
-	var root := (load(path) as PackedScene).instantiate()
-	track(root)
-	return root
+	if not _scenes.has(path) or not is_instance_valid(_scenes[path]):
+		_scenes[path] = (load(path) as PackedScene).instantiate()
+	return _scenes[path]
 
 
 func test_pilihan_ganda_is_laid_out_in_three_bands() -> void:
@@ -102,7 +115,7 @@ func test_the_calculator_games_share_one_layout() -> void:
 		var kirim := root.get_node_or_null("%BtnKirim") as Button
 		assert_true(kirim != null and kirim.get_parent().get_parent() == tray,
 			path + ": Hapus/Kirim ride in the tray")
-		assert_eq(kirim.theme_type_variation, &"PrimaryButtonM", path + ": Kirim is mint, tray-sized")
+		assert_eq(kirim.theme_type_variation, &"MinigameCtaButton", path + ": Kirim is the mint minigame CTA")
 		assert_true(root.get_node_or_null("HeaderRow") == null, path + ": the old header row is gone")
 
 
@@ -143,7 +156,6 @@ func test_batik_tools_live_in_the_tray_and_the_title_is_gone() -> void:
 		assert_true(root.get_node_or_null(gone) == null, gone + " is gone")
 	var header := root.get_node("%MinigameHeader") as MinigameHeader
 	assert_false(header.show_score, "Batik has no score pill")
-	assert_true(header.segmented, "the bar reads as four steps")
 
 
 func test_batik_names_the_next_step_in_the_hint() -> void:
@@ -182,7 +194,7 @@ func test_badminton_has_the_strip_the_pill_and_a_covering_court() -> void:
 	assert_eq((root.get_node("World/Room/Background") as TextureRect).stretch_mode,
 		TextureRect.STRETCH_KEEP_ASPECT_COVERED, "the court covers, never stretches")
 	assert_contains(FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd"),
-		"\"Poin %d/%d\"")
+		"\"Capai %d poin\"")
 
 
 const MENARI := "res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn"

@@ -6,9 +6,14 @@ extends Control
 ##
 ## Before this template, MainBola, Badminton, LombaMenari and Menjodohkan each
 ## styled a bare ScoreLabel at runtime with five theme_override_* calls apiece,
-## all slightly different and none carrying an icon. Chrome now comes from the
-## ScoreHudPanel / ScoreHudValueLabel theme variations; the only thing this
+## all slightly different and none carrying an icon. The only thing this
 ## script sets is content.
+##
+## Since 2026-09-30 (minigame hierarchy, spec 5.1) it is the header's plaque:
+## a MinigameHudPill panel holding the score line (icon, MinigameHudValue
+## number, MinigameTargetLabel target, combo chip) and, under it, the progress
+## line (a segmented MinigameProgressBar and its caption), so the strip is one
+## row and the score and the progress read as one thing.
 ##
 ## Affects: nothing outside itself. Every method is synchronous so a minigame
 ## can call it from _process or a signal handler.
@@ -25,13 +30,21 @@ const POP_TIME: float = 0.12
 ## Burst fired at the readout when the score goes up.
 const BURST_SCENE := "res://Scenes/Minigames/UI/ScorePopBurst.tscn"
 const _BURST_PACKED: PackedScene = preload("res://Scenes/Minigames/UI/ScorePopBurst.tscn")
+## Up to this many steps the progress bar is drawn as cells (BuatBatik's four
+## tools, a three-question quiz); past it, as one continuous fill.
+const SEGMENT_MAX: int = 10
 
 @onready var panel: PanelContainer = $Panel
-@onready var icon: TextureRect = $Panel/Row/Icon
-@onready var value_label: Label = $Panel/Row/ValueLabel
-@onready var target_label: Label = $Panel/Row/TargetLabel
-@onready var combo_chip: PanelContainer = $Panel/Row/ComboChip
-@onready var combo_chip_label: Label = $Panel/Row/ComboChip/ComboRow/ComboLabel
+@onready var value_row: HBoxContainer = $Panel/Stack/Row
+@onready var icon: TextureRect = $Panel/Stack/Row/Icon
+@onready var value_label: Label = $Panel/Stack/Row/ValueLabel
+@onready var target_label: Label = $Panel/Stack/Row/TargetLabel
+@onready var combo_chip: PanelContainer = $Panel/Stack/Row/ComboChip
+@onready var combo_chip_label: Label = $Panel/Stack/Row/ComboChip/ComboRow/ComboLabel
+@onready var progress_line: HBoxContainer = $Panel/Stack/ProgressLine
+@onready var progress_bar: ProgressBar = $Panel/Stack/ProgressLine/ProgressBar
+@onready var progress_label: Label = $Panel/Stack/ProgressLine/ProgressLabel
+@onready var ticks: ProgressTicks = $Panel/Stack/ProgressLine/ProgressBar/Ticks
 @onready var burst_slot: Control = $BurstSlot
 
 ## Last value set_score() saw, so a re-set of the same score does not re-pop.
@@ -136,3 +149,33 @@ func set_combo(value: int) -> void:
 ## Affects: this HUD's value label.
 func set_label_text(text: String) -> void:
 	value_label.text = text
+
+
+## Fill the progress bar to value/max_value and write its caption verbatim
+## ("Soal 3/10"). Up to SEGMENT_MAX steps the bar shows one cell per step. In
+## the running game the fill tweens (Juice.fill_bar); in the editor it is
+## written straight, so tests read it back at once.
+##
+## Affects: this plaque's progress line.
+func set_progress(value: int, max_value: int, label: String) -> void:
+	progress_bar.max_value = maxf(1.0, float(max_value))
+	progress_label.text = label
+	ticks.segments = max_value if max_value <= SEGMENT_MAX else 0
+	if Engine.is_editor_hint():
+		progress_bar.value = float(value)
+	else:
+		Juice.fill_bar(progress_bar, float(value))
+
+
+## Show or hide the score line (BuatBatik keeps no score).
+##
+## Affects: this plaque's score line.
+func set_value_row_visible(shown: bool) -> void:
+	value_row.visible = shown
+
+
+## Show or hide the progress line.
+##
+## Affects: this plaque's progress line.
+func set_progress_visible(shown: bool) -> void:
+	progress_line.visible = shown

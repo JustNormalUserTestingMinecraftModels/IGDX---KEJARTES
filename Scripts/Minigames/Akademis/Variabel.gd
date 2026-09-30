@@ -33,10 +33,11 @@ extends BaseMinigame
 ## Assign a custom Font resource. Leave null to use the project theme font.
 @export var font: Font = null
 ## Font size a short question is shown at; longer ones shrink from here
-## until they fit the card (see SoalFit.gd).
-@export var equation_font_size: int       = 64
-## Smallest size _fit_font_size() will shrink a long question to.
-@export var min_equation_font_size: int   = 28
+## until they fit the card (see SoalFit.gd). T3 (73), the question rung.
+@export var equation_font_size: int       = MinigameType.T3
+## Smallest size _fit_font_size() will shrink a long question to: T2 (45),
+## never lower (spec 2026-09-30 minigame hierarchy, 3).
+@export var min_equation_font_size: int   = MinigameType.T2
 ## Font size for the floating time-boost popup text.
 @export var time_boost_font_size: int     = 48
 
@@ -73,6 +74,10 @@ var active_questions: Array[Dictionary] = []  # list of {eq_text, answer}
 
 ## Measures question text against the SoalCard; shared with Password.
 const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
+## The question row's height: four lines (two sums, a gap, the ask) at the
+## T2 (45) floor, about 65 px each with line spacing, which the shared card's
+## 200 px row clips (260 still hid the ask, measured live 2026-09-30).
+const EQUATION_MIN_HEIGHT := 300.0
 
 ## What the player has typed so far; the LCD shows it.
 var typed_answer: String = ""
@@ -80,8 +85,8 @@ var typed_answer: String = ""
 var _card_text_color: Color = Color.BLACK
 
 @onready var score_hud: MinigameHeader = %MinigameHeader
-@onready var progress_label: Label       = %SoalCard/StatusBadge/BadgeLabel
-@onready var equation_label: Label       = %SoalCard/VBox/TextLabel
+@onready var progress_label: Label       = %SoalCard/Inner/StatusBadge/BadgeLabel
+@onready var equation_label: Label       = %SoalCard/Inner/VBox/TextLabel
 @onready var kalkulator: Control         = %Kalkulator
 @onready var clear_button: Button        = %BtnHapus
 @onready var submit_button: Button       = %BtnKirim
@@ -89,6 +94,9 @@ var _card_text_color: Color = Color.BLACK
 func _ready() -> void:
 	super._ready()
 	_apply_visual_exports()
+	# The card shares the calculator's column (spec 2026-09-30 minigame
+	# hierarchy, H6): as wide as the calculator body, never wider.
+	kalkulator.follow_width(%SoalCard)
 	setup_game()
 	if submit_button:
 		submit_button.pressed.connect(_on_submit_pressed)
@@ -108,12 +116,20 @@ func _apply_visual_exports() -> void:
 		# The first question is set from _ready(), before the card has its laid-
 		# out size, so fit again whenever the label's real size arrives.
 		equation_label.resized.connect(_refit_equation)
+		# Four lines (two sums, a gap, the ask) at the T2 floor need more than
+		# the shared card's 200 px row; the card hugs whatever this sets.
+		equation_label.custom_minimum_size.y = EQUATION_MIN_HEIGHT
 
 ## Re-runs the font fit on whatever the card currently shows.
 func _refit_equation() -> void:
 	if equation_label:
-		equation_label.add_theme_font_size_override("font_size",
-			_fit_font_size(equation_label.text))
+		var size := _fit_font_size(equation_label.text)
+		equation_label.add_theme_font_size_override("font_size", size)
+		# At the T2 floor a long equation can still need more than
+		# EQUATION_MIN_HEIGHT; grow the row (and the card that hugs it)
+		# rather than let clip_text hide the ask.
+		equation_label.custom_minimum_size.y = maxf(EQUATION_MIN_HEIGHT,
+			SoalFit.text_height(equation_label, equation_label.text, size))
 
 # ── Build 3 random questions ───────────────────────────────────────────────────
 func setup_game() -> void:
@@ -300,8 +316,7 @@ func _show_current_question() -> void:
 	if equation_label:
 		equation_label.text = q_data["eq_text"]
 		equation_label.add_theme_color_override("font_color", _card_text_color)
-		equation_label.add_theme_font_size_override("font_size",
-			_fit_font_size(q_data["eq_text"]))
+		_refit_equation()
 
 	_set_typed("")
 	if kalkulator:
@@ -447,8 +462,7 @@ func _show_variable_reveal(q_index: int) -> void:
 
 	equation_label.text = q_data["eq_text"] + reveal_line
 	equation_label.add_theme_color_override("font_color", equation_reveal_color)
-	equation_label.add_theme_font_size_override("font_size",
-		_fit_font_size(equation_label.text))
+	_refit_equation()
 
 func _show_time_boost_popup() -> void:
 	# Spawn a floating "+20s" label above the calculator: per-call popup text,

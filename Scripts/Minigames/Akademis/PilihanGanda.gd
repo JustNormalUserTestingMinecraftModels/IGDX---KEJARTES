@@ -91,38 +91,15 @@ extends BaseMinigame
 
 # ─── Visual - Answer Buttons ─────────────────────────────────────────────────
 @export_group("Visual - Answer Buttons")
-## Drag a PNG here — applies to all answer choice buttons automatically.
-@export var choice_btn_normal_texture:   Texture2D = null
-## Grey tint applied when a choice button is pressed (0=black, 1=full colour).
-@export var choice_btn_pressed_tint: Color   = Color(0.65, 0.65, 0.65, 1.0)
-## Grey tint applied when choice buttons are disabled after answering.
-@export var choice_btn_disabled_tint: Color  = Color(0.55, 0.55, 0.55, 0.75)
 ## Scale the button shrinks to on press (e.g. 0.96 = 96% size).
 @export var choice_btn_press_scale: float    = 0.96
 ## Duration of the press-shrink animation in seconds.
 @export var choice_btn_press_duration: float = 0.07
-## Margin (pixels) inside the button texture where the text is drawn.
-@export var choice_btn_texture_margin: int   = 12
 ## Minimum height (px) of each answer button, regardless of text length.
 ## 130 is the project's ~48dp touch floor in the 1080-wide design space;
 ## this shipped at 100 until 2026-09-21.
 @export var answer_btn_min_height: int       = 130
-## StyleBox used for answer buttons when no texture is assigned. Left null
-## the buttons fall back to MinigameChoiceButton, which carries the full
-## five-state set at radius_button -- assign a StyleBoxFlat only to override
-## that deliberately, as this scene does.
-@export var answer_btn_normal_style:  StyleBox = null
-## Style flashed on the button holding the correct answer.
-@export var answer_btn_correct_style: StyleBox = null
-## Style flashed on a button the player picked incorrectly.
-@export var answer_btn_wrong_style:   StyleBox = null
 
-# ─── Visual - Colors ─────────────────────────────────────────────────────────
-@export_group("Visual - Colors")
-## Procedural-mode tint matching answer_btn_correct_style's flash.
-@export var correct_color: Color        = Color(0.2, 0.75, 0.35, 1)
-## Procedural-mode tint matching answer_btn_wrong_style's flash.
-@export var wrong_color: Color          = Color(0.85, 0.25, 0.25, 1)
 
 # ─── Visual - Typography ─────────────────────────────────────────────────────
 @export_group("Visual - Typography")
@@ -130,11 +107,11 @@ extends BaseMinigame
 const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
 
 ## Largest size for the question text; SoalFit shrinks from here when a
-## long question will not fit the card. 64 is the font_h1 rung.
-@export var question_font_size: int  = 64
-## Smallest size SoalFit will shrink a long question to. 36 is the
-## font_title rung and the floor for this screen.
-@export var min_question_font_size: int = 36
+## long question will not fit the card. T3 (73) of the minigame ladder.
+@export var question_font_size: int  = MinigameType.T3
+## Smallest size SoalFit will shrink a long question to: T2 (45), one rung
+## down, never lower (spec 2026-09-30 minigame hierarchy, 3).
+@export var min_question_font_size: int = MinigameType.T2
 
 # ─── Animation - Transitions ─────────────────────────────────────────────────
 @export_group("Animation - Transitions")
@@ -172,7 +149,19 @@ var max_score: int = 3
 func _ready() -> void:
 	super._ready()
 	_apply_visual_exports()
+	# B1 (2026-09-30): the first question used to be fitted before the card
+	# was laid out, so SoalFit measured a sliver and fell to its floor. Refit
+	# whenever the label settles into its real size.
+	question_label.resized.connect(_refit_question)
 	setup_game()
+
+
+## Refit the current question to the label's laid-out size.
+func _refit_question() -> void:
+	if question_label.text.is_empty():
+		return
+	question_label.add_theme_font_size_override("font_size",
+		_fit_font_size(question_label.text))
 
 ## Largest size, from question_font_size down to min_question_font_size, at
 ## which the question fits the card without running under its "Soal N/M"
@@ -307,7 +296,7 @@ func _show_current_question() -> void:
 			btn.custom_minimum_size = Vector2(0, answer_btn_min_height)
 			btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			btn.theme_type_variation = &"MinigameChoiceButton"
-			_apply_choice_btn_textures(btn)
+			_wire_choice_btn(btn)
 			btn.pressed.connect(_on_choice_pressed.bind(i, btn))
 			choices_container.add_child(btn)
 
@@ -319,37 +308,9 @@ func _show_current_question() -> void:
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	await tween_in.finished
 
-## Applies the answer-button chrome -- texture StyleBoxes when a PNG is
-## supplied, otherwise the rounded-rect StyleBoxes authored in the Inspector.
-## Both paths fall through to the shared press-shrink wiring at the end.
-func _apply_choice_btn_textures(btn: Button) -> void:
-	if choice_btn_normal_texture == null:
-		if answer_btn_normal_style:
-			btn.add_theme_stylebox_override("normal", answer_btn_normal_style)
-			btn.add_theme_stylebox_override("hover",  answer_btn_normal_style)
-			btn.add_theme_stylebox_override("focus",  answer_btn_normal_style)
-			var sb_pressed_flat := answer_btn_normal_style.duplicate() as StyleBoxFlat
-			if sb_pressed_flat:
-				sb_pressed_flat.bg_color = sb_pressed_flat.bg_color * choice_btn_pressed_tint
-				btn.add_theme_stylebox_override("pressed", sb_pressed_flat)
-			var sb_disabled_flat := answer_btn_normal_style.duplicate() as StyleBoxFlat
-			if sb_disabled_flat:
-				sb_disabled_flat.bg_color = sb_disabled_flat.bg_color * choice_btn_disabled_tint
-				btn.add_theme_stylebox_override("disabled", sb_disabled_flat)
-		# The ink comes from MinigameChoiceButton, which sets all five states
-		# explicitly -- that is what this loop used to work around, back when
-		# the buttons fell through to the theme's bare Button and its
-		# near-white hover/pressed defaults washed out on a light card.
-	else:
-		var sb_normal   = _make_btn_stylebox(choice_btn_normal_texture, Color.WHITE)
-		var sb_pressed  = _make_btn_stylebox(choice_btn_normal_texture, choice_btn_pressed_tint)
-		var sb_disabled = _make_btn_stylebox(choice_btn_normal_texture, choice_btn_disabled_tint)
-		btn.add_theme_stylebox_override("normal",   sb_normal)
-		btn.add_theme_stylebox_override("hover",    sb_normal)
-		btn.add_theme_stylebox_override("pressed",  sb_pressed)
-		btn.add_theme_stylebox_override("disabled", sb_disabled)
-		btn.add_theme_stylebox_override("focus",    sb_normal)
-
+## Wires an answer button's press feel. Its chrome is the theme's
+## MinigameChoiceButton, set where the button is made.
+func _wire_choice_btn(btn: Button) -> void:
 	btn.pivot_offset = Vector2(btn.size.x / 2.0, answer_btn_min_height / 2.0)
 	btn.resized.connect(func(): if is_instance_valid(btn): btn.pivot_offset = btn.size / 2.0)
 	btn.button_down.connect(_on_choice_btn_down.bind(btn))
@@ -363,45 +324,14 @@ func _on_choice_btn_up(btn: Button) -> void:
 	var tw = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(btn, "scale", Vector2.ONE, choice_btn_press_duration)
 
-## Builds a StyleBoxTexture from a Texture2D with a modulate tint and content margins.
-func _make_btn_stylebox(tex: Texture2D, tint: Color) -> StyleBoxTexture:
-	var sb = StyleBoxTexture.new()
-	sb.texture = tex
-	sb.modulate_color = tint
-	sb.texture_margin_left   = choice_btn_texture_margin
-	sb.texture_margin_right  = choice_btn_texture_margin
-	sb.texture_margin_top    = choice_btn_texture_margin
-	sb.texture_margin_bottom = choice_btn_texture_margin
-	return sb
-
-func _flash_button_box(btn: Button, box_color: Color) -> void:
+## Flash an answer right or wrong. The colours are theme variations
+## (MinigameChoiceButtonCorrect / Wrong), whose disabled state keeps the flash,
+## since the button is already disabled when it lands.
+func _flash_button_box(btn: Button, correct: bool) -> void:
 	if not btn or not is_instance_valid(btn):
 		return
-
-	if choice_btn_normal_texture:
-		var flash_sb = _make_btn_stylebox(choice_btn_normal_texture, box_color)
-		btn.add_theme_stylebox_override("disabled", flash_sb)
-		btn.add_theme_stylebox_override("normal", flash_sb)
-	elif box_color == correct_color and answer_btn_correct_style:
-		btn.add_theme_stylebox_override("disabled", answer_btn_correct_style)
-		btn.add_theme_stylebox_override("normal", answer_btn_correct_style)
-	elif box_color == wrong_color and answer_btn_wrong_style:
-		btn.add_theme_stylebox_override("disabled", answer_btn_wrong_style)
-		btn.add_theme_stylebox_override("normal", answer_btn_wrong_style)
-	else:
-		var style = StyleBoxFlat.new()
-		style.bg_color = box_color
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_left = 8
-		style.corner_radius_bottom_right = 8
-		btn.add_theme_stylebox_override("disabled", style)
-		btn.add_theme_stylebox_override("normal", style)
-	# The button is already disabled by _on_choice_pressed when the flash
-	# lands, so Godot draws font_disabled_color -- override both or the label
-	# keeps the dark resting ink on top of the coloured flash fill.
-	btn.add_theme_color_override("font_color", Color.WHITE)
-	btn.add_theme_color_override("font_disabled_color", Color.WHITE)
+	btn.theme_type_variation = (&"MinigameChoiceButtonCorrect" if correct
+		else &"MinigameChoiceButtonWrong")
 
 	# Bright highlight flash then smooth settle
 	btn.modulate = Color(flash_highlight_scale, flash_highlight_scale, flash_highlight_scale)
@@ -425,18 +355,18 @@ func _on_choice_pressed(index: int, pressed_btn: Button) -> void:
 			hint_settle()
 		if score_hud:
 			score_hud.set_score(score)
-		_flash_button_box(pressed_btn, correct_color)
+		_flash_button_box(pressed_btn, true)
 		_play_jump_animation(pressed_btn)
 	else:
 		apply_time_penalty(3.0)
-		_flash_button_box(pressed_btn, wrong_color)
+		_flash_button_box(pressed_btn, false)
 		_play_wiggle_animation(soal_card)
 
 		# Highlight correct answer button in green box for educational feedback
 		if expected_answer_index >= 0 and expected_answer_index < choices_container.get_child_count():
 			var correct_btn = choices_container.get_child(expected_answer_index) as Button
 			if correct_btn:
-				_flash_button_box(correct_btn, correct_color)
+				_flash_button_box(correct_btn, true)
 
 	# Pause briefly before advancing to next question
 	await get_tree().create_timer(feedback_hold_duration).timeout
@@ -459,10 +389,10 @@ func reveal_answers() -> void:
 		if child is Button:
 			child.disabled = true
 			if i != expected_answer_index:
-				_flash_button_box(child, wrong_color)
+				_flash_button_box(child, false)
 				_play_wiggle_animation(child)
 			else:
-				_flash_button_box(child, correct_color)
+				_flash_button_box(child, true)
 
 func _finish_quiz() -> void:
 	set_progress(active_questions.size(), active_questions.size(),

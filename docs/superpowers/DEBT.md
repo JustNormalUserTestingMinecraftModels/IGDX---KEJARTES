@@ -164,8 +164,9 @@ for it to move.
 
 **Minigame layout icons (2026-09-29).** Hand-written placeholder SVGs in
 `Assets/Images/UI/Icons/`, to be replaced by the owner's icon set at the same
-paths with no code change: `pause.svg` and `timer.svg` (`MinigameHeader`'s
-`pause_icon`/`timer_icon`), `swipe_up.svg` (MainBola's hint pill) and the six
+paths with no code change: `pause.svg` (`MinigameHeader`'s `pause_icon`;
+`timer.svg` is unused since the timer shows its seconds, 2026-09-30),
+`swipe_up.svg` (MainBola's hint pill) and the six
 how-to step pictures `howto_tap`, `howto_swipe`, `howto_drag`, `howto_read`,
 `howto_timer`, `howto_target` (the CARA MAIN card, via
 `Resources/Minigames/HowTo/*.tres`). A replacement follows
@@ -292,9 +293,11 @@ findings, and the second is the one that matters:
 (`font_sizes`, `styles`, `colors`) existed in scene files, and **every one is
 inside `Scenes/Minigames/**`**, in the minigames' inner play art, which
 had no polish pass (CLAUDE.md). The 2026-09-29 minigame layout cleared
-Menjodohkan, MainBola and PauseMenu and halved BuatBatik: 38 remain (checked
-2026-09-30), in `AnswerRow` 7, `QuestionRow` 9, `QuestionCard` 3, `AnswerCard` 2,
-`KalkulatorKey` 1, `BuatBatik` 6 and the debug launcher `MinigameMenu` 10.
+Menjodohkan, MainBola and PauseMenu and halved BuatBatik, and the
+2026-09-30 minigame hierarchy pass cleared `QuestionCard`, `AnswerCard`,
+`KalkulatorKey` and BuatBatik's four tool boxes: 28 remain, in `AnswerRow` 7,
+`QuestionRow` 9, `BuatBatik` 2 (the tooltip's two font sizes) and the debug
+launcher `MinigameMenu` 10.
 Outside the minigames there are zero. Every remaining
 `theme_override_constants` outside the minigames is `separation`, `margin_*`,
 `v_separation` or `h_separation` — the documented layout-only exception — plus
@@ -531,18 +534,22 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
-- **Minigame Polish Part 1 follow-ons (2026-09-28).**
-  - **Score HUD restyle deferred (decision 2).** `MinigameScoreHUD` still
-    wears `ScoreHudPanel`/`ScoreHudValueLabel`, and `MinigameHeader` wraps it
-    unchanged. Moving it onto `MinigameHudPill`/`MinigameHudValue` restyles
-    all seven scoring minigames at once. It also needs its `TargetLabel`
-    (`ResultBodyLabel`) and combo chip re-checked for contrast on the dark
-    pill (`tests/test_light_ground_text.gd`).
+- **Minigame hierarchy follow-ons (2026-09-30).** Spec:
+  `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`.
+  - **Stray key outline in the calculator art (artist).**
+    `Assets/Images/UI/Kalkulator/kalkulator_base.png` paints a lighter
+    rounded-rect outline at its top left (about 0.051-0.275 x 0.293-0.468 of
+    the art). Key 1 now covers most of it; a sliver at its left edge shows.
+    Remove it in the art, then `Kalkulator.KEYPAD_LEFT` can relax.
+  - **The mentor has not seen the plaque or the x1.618 ladder** (spec §9):
+    shipped on the owner's call.
+  - **The how-to card, JEDA and KELUAR? overlays** keep the house 36 px
+    lines; they were out of this pass's scope.
 
 - **Minigame mobile layout follow-ons (2026-09-29).** Spec:
   `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`.
-  - **Three decisions await mentor sign-off (spec §9)**, so the PR is
-    labelled `hold`: the overlays use `NotebookFrame`, not Part 1's Bingkai
+  - **Three decisions still want the mentor's eye (spec §9).** PR #155 was
+    merged on 2026-09-30 on the owner's call, with its `hold` label waived: the overlays use `NotebookFrame`, not Part 1's Bingkai
     Kayu; the answer buttons stay cream, not brand-filled with a gold edge;
     BuatBatik's wood title plank is dropped (the title lives on the CARA MAIN
     card).
@@ -555,8 +562,7 @@ widget via `project_run` instead, which exercises it fine.
     two-line text also grows the pill). BuatBatik's hint settles after every
     correct drop, not only the first (guard it to the first), and can go
     stale after the final drop. BuatBatik's floating label says "Urutan
-    Salah!" while its hint says "Urutan salah!". Badminton shows the score twice (pill
-    "0 - 0" and bar "Poin 0/5"): a design glance.
+    Salah!" while its hint says "Urutan salah!".
   - **Built differently from the spec (§4), to look at.** LombaMenari's
     floating grade word still reads "UPS! Sisa N" (`_show_hit_feedback`) as
     well as the pill, where the spec moved it. Menjodohkan's SOAL wheel keeps
@@ -565,8 +571,7 @@ widget via `project_run` instead, which exercises it fine.
   - **Header and kit loose ends.** `BaseMinigame.header()` is looked up
     every `_process` frame and twice in each of win/lose/abandon (cache
     it). `TimerRing` redraws on unchanged values; overlapping `fill_bar`
-    tweens are not killed; `segmented` has no setter; the header's `##`
-    still says the timer is driven only by `show_timer`/`timer_icon`. The
+    tweens are not killed. The
     tray and the pill duplicate `set_hint`/`settle`; the pill's label has no
     width cap, and an empty pill still shows. The result popup's game name
     comes from a `String`/`StringName` ternary in `BaseMinigame`

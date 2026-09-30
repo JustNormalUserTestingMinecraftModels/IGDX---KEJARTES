@@ -380,7 +380,7 @@ func show_question_progress(index: int, total: int, card: Node) -> void:
 	set_progress(index, total, "Soal %d/%d" % [index + 1, total])
 	if card == null:
 		return
-	var badge := card.get_node_or_null("StatusBadge") as Control
+	var badge := card.find_child("StatusBadge", true, false) as Control
 	if badge != null:
 		badge.hide()
 

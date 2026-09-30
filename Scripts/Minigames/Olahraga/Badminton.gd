@@ -3,6 +3,10 @@ extends BaseMinigame
 ## Seconds between the losing point and the loss card, the beat
 ## BaseMinigame.lose_game() gave before this game overrode it.
 const LOSS_CARD_DELAY := 1.2
+## How far the court art sits above the screen (the scene's Background
+## offsets, spec 2026-09-30 minigame hierarchy B5); the player's goal line
+## moves up with it so a point still lands at the painted baseline.
+const COURT_LIFT := 48.0
 
 # ─── Visual - Shuttlecock ───────────────────────────────────────────────────
 @export_group("Visual - Shuttlecock")
@@ -120,7 +124,7 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	sync_score_alias()
 	last_conceding_side = "player"
 	if score_hud:
-		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), target_score)
+		score_hud.setup(load("res://Assets/Images/UI/Placeholders/icon_olahraga.svg"), 0)  # "0 - 0" has no target
 	_update_score_ui()
 
 func activate_minigame() -> void:
@@ -181,7 +185,7 @@ func _ready() -> void:
 			col.disabled = false
 			
 	if player_goal:
-		player_goal.global_position = Vector2(screen_size.x / 2, screen_size.y - 30)
+		player_goal.global_position = Vector2(screen_size.x / 2, screen_size.y - 30 - COURT_LIFT)
 		var col = player_goal.get_node_or_null("CollisionShape2D")
 		if col and col.shape is RectangleShape2D:
 			col.shape.size = Vector2(screen_size.x * 0.98, 60)
@@ -593,10 +597,15 @@ func _reset_puck(receiver_side: String = "player") -> void:
 			puck.linear_velocity = target_vel
 		)
 
+## The plaque's gold number is the rally score; its bar is the player's
+## points toward the goal, and the caption names that goal rather than
+## repeating the count (spec 2026-09-30 minigame hierarchy, 5.1). The court
+## art sits 48 px higher than the screen (Background offsets, with Surround
+## filling the strip below) so its painted baseline clears the hint pill (B5).
 func _update_score_ui() -> void:
 	if score_hud:
 		score_hud.set_label_text("%d - %d" % [enemy_score, player_score])
-	set_progress(player_score, target_score, "Poin %d/%d" % [player_score, target_score])
+	set_progress(player_score, target_score, "Capai %d poin" % target_score)
 
 func _check_win_condition() -> void:
 	if player_score >= target_score:

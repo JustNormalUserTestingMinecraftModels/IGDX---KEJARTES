@@ -2,62 +2,29 @@
 
 [ext_resource type="Texture2D" uid="uid://bsu4hxxxajoaa" path="res://Assets/Images/UI/Placeholders/icon_lock.svg" id="1_s225u"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4km62"]
-content_margin_left = 24.0
-content_margin_top = 24.0
-content_margin_right = 24.0
-content_margin_bottom = 24.0
-bg_color = Color(1, 0.99215686, 0.972549, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.47843137, 0.2901961, 0.16862746, 1)
-corner_radius_top_left = 24
-corner_radius_top_right = 24
-corner_radius_bottom_right = 24
-corner_radius_bottom_left = 24
-shadow_color = Color(0, 0, 0, 0.22)
-shadow_size = 12
-shadow_offset = Vector2(0, 6)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sp8rl"]
-content_margin_left = 18.0
-content_margin_top = 6.0
-content_margin_right = 18.0
-content_margin_bottom = 6.0
-bg_color = Color(0.47843137, 0.2901961, 0.16862746, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lock"]
-bg_color = Color(0.1, 0.12, 0.16, 0.8)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
 [node name="QuestionCard" type="PanelContainer" unique_id=82108006]
 custom_minimum_size = Vector2(850, 0)
 offset_right = 850.0
 offset_bottom = 480.0
 pivot_offset = Vector2(425, 240)
-theme_override_styles/panel = SubResource("StyleBoxFlat_4km62")
+theme_type_variation = &"MinigameCard"
 
-[node name="CardBgTexture" type="TextureRect" parent="." unique_id=1157154124]
+[node name="Inner" type="PanelContainer" parent="."]
+layout_mode = 2
+theme_type_variation = &"MinigameCardInner"
+
+[node name="CardBgTexture" type="TextureRect" parent="Inner" unique_id=1157154124]
 layout_mode = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
 
-[node name="VBox" type="VBoxContainer" parent="." unique_id=40828164]
+[node name="VBox" type="VBoxContainer" parent="Inner" unique_id=40828164]
 layout_mode = 2
-theme_override_constants/separation = 24
+theme_override_constants/separation = 28
 alignment = 1
 
-[node name="RowImage" type="TextureRect" parent="VBox" unique_id=776562002]
+[node name="RowImage" type="TextureRect" parent="Inner/VBox" unique_id=776562002]
 visible = false
 custom_minimum_size = Vector2(0, 620)
 layout_mode = 2
@@ -65,11 +32,11 @@ size_flags_vertical = 3
 expand_mode = 1
 stretch_mode = 5
 
-[node name="TextLabel" type="Label" parent="VBox" unique_id=956164476]
+[node name="TextLabel" type="Label" parent="Inner/VBox" unique_id=956164476]
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 1
+size_flags_vertical = 3
 theme_type_variation = &"MinigameQuestionLabel"
 text = "Pertanyaan"
 horizontal_alignment = 1
@@ -77,20 +44,20 @@ vertical_alignment = 1
 autowrap_mode = 2
 clip_text = true
 
-[node name="StatusBadge" type="PanelContainer" parent="." unique_id=1635432709]
+[node name="StatusBadge" type="PanelContainer" parent="Inner" unique_id=1635432709]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
-theme_override_styles/panel = SubResource("StyleBoxFlat_sp8rl")
+theme_type_variation = &"MinigameBadgePanel"
 
-[node name="BadgeLabel" type="Label" parent="StatusBadge" unique_id=1782910264]
+[node name="BadgeLabel" type="Label" parent="Inner/StatusBadge" unique_id=1782910264]
 layout_mode = 2
 theme_type_variation = &"MinigameBadgeLabel"
 text = "Q1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="BadgeTexture" type="TextureRect" parent="StatusBadge" unique_id=806105943]
+[node name="BadgeTexture" type="TextureRect" parent="Inner/StatusBadge" unique_id=806105943]
 visible = false
 layout_mode = 2
 expand_mode = 1
@@ -99,7 +66,7 @@ stretch_mode = 5
 [node name="LockOverlay" type="PanelContainer" parent="." unique_id=591615795]
 visible = false
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_lock")
+theme_type_variation = &"MinigameCardLock"
 
 [node name="LockVBox" type="VBoxContainer" parent="LockOverlay" unique_id=1154192299]
 layout_mode = 2

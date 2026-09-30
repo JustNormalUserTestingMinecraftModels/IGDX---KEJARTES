@@ -52,11 +52,14 @@ func test_layout_variations_exist_with_their_base() -> void:
 			name + " extends " + LAYOUT_VARIATIONS[name])
 
 
-func test_hints_and_how_to_lines_use_the_body_face_at_36() -> void:
+## The hint dropped to the minigame ladder's quietest rung on 2026-09-30
+## (minigame hierarchy); the CARA MAIN step lines keep the house 36.
+func test_hints_and_how_to_lines_use_the_body_face() -> void:
 	var theme := _theme()
 	var tokens := DesignTokens.load_default()
+	var want := {"MinigameHintLabel": MinigameType.T1, "MinigameHowToLabel": tokens.font_title}
 	for name: String in ["MinigameHintLabel", "MinigameHowToLabel"]:
-		assert_eq(theme.get_font_size("font_size", name), tokens.font_title, name + " is 36")
+		assert_eq(theme.get_font_size("font_size", name), want[name], name + " size")
 		# get_font_list, not has_font: has_font is also true with a default font.
 		assert_false(theme.get_font_list(name).has("font"), name + " keeps the body face")
 

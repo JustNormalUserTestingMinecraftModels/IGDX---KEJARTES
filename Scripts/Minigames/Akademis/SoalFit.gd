@@ -21,16 +21,18 @@ const SIDE_PADDING := 24.0
 const BADGE_GAP := 12.0
 ## The card's TextLabel row at its design size -- used only when the label
 ## has not been laid out yet, which is every Menjodohkan tile, since they are
-## instantiated and fitted in the same frame. 850 wide less the card's 24px
-## content margins is 802; 200 is the row's own custom_minimum_size.
+## instantiated and fitted in the same frame. Since 2026-09-30 a tile is
+## Menjodohkan's card_width (736) wide, less the MinigameCard frame's 8 and the
+## MinigameCardInner's 28 on each side: 664. 200 is the row's own
+## custom_minimum_size.
 ##
 ## Deliberately the row's MINIMUM rather than a typical height: the fitter
 ## must under-estimate here, never over-estimate. TextLabel sets
 ## clip_text, so a size chosen against too generous a box is silently
 ## clipped, while too small a box only costs a rung.
 ## (Was 699x333, describing a 715x345 card that had already grown to
-## 850x480 before 2026-09-21.)
-const FALLBACK_BOX := Vector2(802, 200)
+## 850x480 before 2026-09-21; then 802x200 until 2026-09-30.)
+const FALLBACK_BOX := Vector2(664, 200)
 
 
 ## Largest size from `max_size` down to `min_size` at which `text` fits
@@ -60,3 +62,16 @@ static func font_size(label: Label, badge: Control, text: String,
 			return size
 		size -= STEP
 	return min_size
+
+
+## Height `text` needs in `label` at `size`, wrapped the way font_size()
+## measures it (the label's own width, or FALLBACK_BOX before layout), with
+## the label's line_spacing added per line.
+static func text_height(label: Label, text: String, size: int) -> float:
+	var font_res := label.get_theme_font("font")
+	var width := label.size.x if label.size.x > 0.0 else FALLBACK_BOX.x
+	var flags := TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_ADAPTIVE
+	var measured := font_res.get_multiline_string_size(
+		text, HORIZONTAL_ALIGNMENT_CENTER, width - SIDE_PADDING, size, -1, flags)
+	var lines := roundi(measured.y / font_res.get_height(size))
+	return measured.y + label.get_theme_constant("line_spacing") * maxi(lines - 1, 0)

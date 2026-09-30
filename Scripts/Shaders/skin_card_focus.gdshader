@@ -70,7 +70,12 @@ void fragment() {
 		vec4 acc = vec4(s0.rgb * s0.a, s0.a) * 0.4
 			+ (vec4(s1.rgb * s1.a, s1.a) + vec4(s2.rgb * s2.a, s2.a)
 			+ vec4(s3.rgb * s3.a, s3.a) + vec4(s4.rgb * s4.a, s4.a)) * 0.15;
-		c = vec4(acc.rgb / max(acc.a, 0.0001), acc.a);
+		vec4 soft = vec4(acc.rgb / max(acc.a, 0.0001), acc.a);
+		// Eased in over the first texel of sigma. The sharp read above goes
+		// through the project's nearest filter and this one is linear, so a
+		// hard switch would soften the centred card by a visible step the
+		// moment a drag begins.
+		c = mix(texture(TEXTURE, UV), soft, smoothstep(0.05, 1.0, sigma_texels));
 	}
 	// * COLOR reapplies the node's (and every inherited parent's) modulate,
 	// which canvas_item shaders otherwise discard; SkinSelect fades cards by

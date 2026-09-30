@@ -55,20 +55,23 @@
 - [ ] Callers that build the arrow (`StudentCard.gd`) instance the new scene.
 - [ ] Commit.
 
-### Task 2: AturJadwal and StudentList adopt the shared panel; wrong taps answer
+### Task 2: AturJadwal, StudentList and the Lobby adopt the shared panel; wrong taps answer; the arrow points beside
 
-**Spec:** §1a (the four implementations, the dead tap at `AturJadwal.gd` ~1190), §3c positioning, §3d wrong-tap feedback. Their plan Phase 3.
+**Spec:** §1a (the four implementations, the dead tap at `AturJadwal.gd` ~1190), §3c positioning and arrow, §3d wrong-tap feedback. Their plan Phase 3.
 
-**Consumes:** Task 1's `TutorialPanel.show_step(title, body, prompt, step, step_count)`, `play_in()`, `play_out()`, and `Scenes/UI/TutorialArrow.tscn`.
+**Revised 2026-10-01 during execution:** the spec counted four implementations; `Scripts/Lobby/Lobby.gd` builds a fifth runtime panel (`_build_tutorial_panel`, `PanelContainer.new()`, "(n/N)" titles), so it adopts the shared panel too. And every arrow caller (StudentCard, AturJadwal, StudentList, Lobby) still clamps with a hard-coded 320×320 arrow; all four read `TutorialArrow.arrow_size` instead and place the tip beside the target (§3c).
+
+**Consumes:** Task 1's `TutorialPanel.show_step(title, body, prompt, step, step_count)`, `play_in()`, `play_out()`, and `Scenes/UI/TutorialArrow.tscn` with `@export var arrow_size`.
 
 **Files:**
-- Modify: `Scripts/AturJadwal/AturJadwal.gd`, `Scripts/StudentList/StudentList.gd` (and their `.tscn` only if a node must be authored there)
-- Test: `tests/test_atur_jadwal.gd`, `tests/test_student_list.gd`, `tests/test_viewport_editability.gd`
+- Modify: `Scripts/AturJadwal/AturJadwal.gd`, `Scripts/StudentList/StudentList.gd`, `Scripts/Lobby/Lobby.gd`, `Scripts/StudentCard/StudentCard.gd` (arrow math only) (and their `.tscn` only if a node must be authored there)
+- Test: `tests/test_atur_jadwal.gd`, `tests/test_student_list.gd`, `tests/test_lobby.gd`, `tests/test_student_card.gd`, `tests/test_viewport_editability.gd`
 
-- [ ] Tests first: neither script contains `PanelContainer.new()` or `add_theme_stylebox_override` for the tutorial any more; both instance `TutorialPanel.tscn`; a forced-step wrong tap calls the `error` sfx and `Juice.shake` on the correct target (source scan is the house pattern); the panel is placed inside the screen's safe area.
-- [ ] Delete each runtime `_build_tutorial_panel()` and its label vars; instance the shared scene (mirror `StudentCard._build_tutorial_panel`); route each step through `show_step` with its step number and count.
+- [ ] Tests first: none of AturJadwal, StudentList or Lobby contains `PanelContainer.new()` or `add_theme_stylebox_override` for the tutorial any more; all three instance `TutorialPanel.tscn`; a forced-step wrong tap calls the `error` sfx and `Juice.shake` on the correct target (source scan is the house pattern); the panel is placed inside the screen's safe area; no arrow caller hard-codes 320 for the arrow's size.
+- [ ] Delete each runtime `_build_tutorial_panel()` and its label vars; instance the shared scene (mirror `StudentCard._build_tutorial_panel`); route each step through `show_step` with its step number and count (drop any "(n/N)" title prefix — the pill is the counter).
+- [ ] All four arrow callers size and clamp from `arrow_size`, tip beside the target.
 - [ ] Replace the silent `return` at the forced-day gate with: `AudioDirector.play_sfx(&"error")`, `Juice.shake` on the target, a brief dim of the non-targets, panel stays up. Same for StudentList's forced steps.
-- [ ] Lower both files' `BASELINE` counts by what was deleted (never raise).
+- [ ] Lower each touched file's `BASELINE` count by what was deleted (never raise).
 - [ ] Commit.
 
 ### Task 3: The headmaster beat (5-A) and the SchoolDay check

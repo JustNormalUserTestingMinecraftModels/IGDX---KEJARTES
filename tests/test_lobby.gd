@@ -813,8 +813,11 @@ func test_other_hud_buttons_refuse_a_tap_while_the_tutorial_is_up() -> void:
 	var refuses := _function_body("_tutorial_refuses")
 	assert_true(refuses.contains("if not tutorial_active or _step_targets.has(button):"),
 		"only a tap during the tutorial, on a button its step does not point at, is refused")
-	assert_true(refuses.contains("TutorialPanel.answer_wrong_tap(_step_targets[0], [button])"),
+	assert_true(refuses.contains("TutorialPanel.answer_wrong_tap(wanted, [button])")
+			and refuses.contains("_step_targets[0]"),
 		"with the shared wrong-tap answer: the step's button shakes, the tapped one dims")
+	assert_false(refuses.contains("play_sfx("),
+		"the answer plays the cue itself; a second local cue would read as a double fire")
 	for target_handler: String in ["_on_student_pressed", "_on_jadwal_pressed"]:
 		assert_false(_function_body(target_handler).contains("_tutorial_refuses"),
 			"%s is a step's own button; it is never refused" % target_handler)

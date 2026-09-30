@@ -809,14 +809,14 @@ func _on_report_student_pressed() -> void:
 ## would leave the Lobby mid-tutorial and replay the phase on return. So the tap
 ## gets the forced steps' answer (TutorialPanel.answer_wrong_tap: the error cue,
 ## the step's button shakes, the tapped one dims) and goes nowhere. True when
-## the tap was refused.
+## the tap was refused. With no step target, answer_wrong_tap plays only the
+## cue. The handlers return straight after a refusal, so their own tap cue
+## never follows it.
 func _tutorial_refuses(button: Control) -> bool:
 	if not tutorial_active or _step_targets.has(button):
 		return false
-	if _step_targets.is_empty():
-		AudioDirector.play_sfx(&"error")
-	else:
-		TutorialPanel.answer_wrong_tap(_step_targets[0], [button])
+	var wanted: Control = null if _step_targets.is_empty() else _step_targets[0]
+	TutorialPanel.answer_wrong_tap(wanted, [button])
 	return true
 
 func _next_step():

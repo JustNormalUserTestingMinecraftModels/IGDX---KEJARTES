@@ -10,7 +10,9 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="look_bloom"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/AmbientGlow.tscn" id="look_glow"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenSaturation.tscn" id="look_sat"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/MoodTint.tscn" id="look_tint"]
 
 [node name="LombaMenari" type="Control" unique_id=125767780]
 layout_mode = 3
@@ -23,7 +25,21 @@ script = ExtResource("1_lombamenari")
 background_texture = ExtResource("2_cwgfm")
 how_to = ExtResource("howto")
 
-[node name="Background" type="TextureRect" parent="." unique_id=1772325959]
+[node name="World" type="CanvasLayer" parent="."]
+layer = -1
+
+[node name="Room" type="Control" parent="World"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Background" type="TextureRect" parent="World/Room" unique_id=1772325959]
+unique_name_in_owner = true
 material = ExtResource("illus_grade")
 layout_mode = 1
 anchors_preset = 15
@@ -35,24 +51,34 @@ offset_right = 320.0
 offset_bottom = 216.55566
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 texture = ExtResource("2_cwgfm")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Light" parent="." instance=ExtResource("look_pool")]
+[node name="GradeCopy" type="BackBufferCopy" parent="World/Room"]
+copy_mode = 2
+
+[node name="Calm" parent="World/Room" instance=ExtResource("look_sat")]
+saturation = 0.85
+
+[node name="Tint" parent="World/Room" instance=ExtResource("look_tint")]
+mood = 1
+strength = 0.3
+
+[node name="Light" parent="World/Room" instance=ExtResource("look_pool")]
 center = Vector2(0.5, 0.05)
 pool_size = Vector2(1400, 1800)
 aspect = 0.8
 intensity = 0.1
 
-[node name="Shafts" parent="." instance=ExtResource("look_shafts")]
+[node name="Shafts" parent="World/Room" instance=ExtResource("look_shafts")]
 origin = Vector2(0.5, -0.1)
 shaft_count = 5.0
 intensity = 0.15
 
-[node name="Bloom" parent="." instance=ExtResource("look_bloom")]
-threshold = 0.75
-intensity = 0.8
+[node name="Glow" parent="." instance=ExtResource("look_glow")]
+glow_threshold = 0.8
 
 [node name="CharacterDisplay" parent="." unique_id=878431887 instance=ExtResource("3_cwgfm")]
 layout_mode = 1

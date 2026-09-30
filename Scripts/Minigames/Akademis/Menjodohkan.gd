@@ -171,7 +171,7 @@ func _ready() -> void:
 
 func _apply_visual_exports() -> void:
 	# Apply background texture if provided
-	var bg = get_node_or_null("Background") as TextureRect
+	var bg = get_node_or_null("%Background") as TextureRect
 	if bg and background_texture:
 		bg.texture = background_texture
 	# Apply nav button styles & single-PNG texture
@@ -225,8 +225,8 @@ func _make_btn_stylebox(tex: Texture2D, tint: Color) -> StyleBoxTexture:
 	return sb
 
 func start_minigame(game_difficulty: int, time_limit: float = 40.0) -> void:
-	# Enforce 40 seconds time limit for Menjodohkan minigame
-	super.start_minigame(game_difficulty, 40.0)
+	# SchoolDay passes 40 s scaled by grade; the default covers F6 and debug.
+	super.start_minigame(game_difficulty, time_limit)
 	
 	# Responsive resize handler
 	if get_viewport():

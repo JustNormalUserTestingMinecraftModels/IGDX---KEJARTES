@@ -139,7 +139,7 @@ func _load_game(game_scene: PackedScene) -> void:
 		if current_minigame.has_method("start_minigame"):
 			var duration: float
 			if game_scene == menjodohkan_scene:
-				duration = 10.0
+				duration = 40.0
 			elif game_scene == main_bola_scene:
 				duration = 60.0
 			else:

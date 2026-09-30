@@ -21,6 +21,10 @@ var log_scroll: ScrollContainer
 # --- Active Standalone Minigame ---
 var active_minigame: Node = null
 var minigame_canvas: CanvasLayer = null
+## Clears the open scene out of a standalone minigame's way.
+var _scene_stash := preload("res://Scripts/Debug/SceneStash.gd").new()
+## A standalone Menjodohkan's clock, as SchoolDay gives it; every other game 30 s.
+const MENJODOHKAN_SECONDS := 40.0
 
 # --- Tab Panels ---
 var panels: Dictionary = {}
@@ -126,30 +130,22 @@ func _ready() -> void:
 	log_message("Debug System Initialized. Press '~' or F1, or tap top-right 5x to toggle.")
 
 ## Runs once per launch, before the overlay UI exists. Every playtest should
-## start the same way: no tutorials in the way, the window filling the
-## screen, and no music blaring over whatever else is playing on the dev's
-## machine. Muting BGM here is a live AudioServer override, not a call
-## through AudioDirector.set_bus_volume() -- that would persist "off" to
-## user://audio.cfg as if a player chose it. A real volume change (via the
-## Settings screen) still unmutes and saves normally.
+## start the same way: the screen tutorials bypassed (the session-only
+## GameState.tutorials_bypassed) and the window filling the screen. Music and
+## the minigame CARA MAIN card are left to the Settings screen: a BGM mute here
+## (2026-08-31 to 2026-09-30) was saved as "Musik 0" on every quit, and a forced
+## minigame_tutorial_enabled = false would be saved by the next save_settings()
+## the same way. (That one never ran: it sat behind `"GameSettings" in root`,
+## which is always false, since `in` tests properties, not child nodes.)
 ##
 ## Guarded to debug builds only: a real player's release export must never
-## boot muted, fullscreen, and with every tutorial silently disabled.
+## boot fullscreen with every tutorial silently bypassed.
 func _apply_playtest_defaults() -> void:
 	if not OS.is_debug_build():
 		return
 	GameState.tutorials_bypassed = true
 	GameState.lobby_tutorial_completed = true
-	if "GameSettings" in get_node_or_null("/root"):
-		var settings = get_node("/root/GameSettings")
-		if "minigame_tutorial_enabled" in settings:
-			settings.minigame_tutorial_enabled = false
-
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
-
-	var bgm_idx := AudioServer.get_bus_index("BGM")
-	if bgm_idx >= 0:
-		AudioServer.set_bus_mute(bgm_idx, true)
 
 func _input(event: InputEvent) -> void:
 	# 1. Keyboard shortcuts
@@ -736,7 +732,7 @@ func _set_time_scale(scale: float) -> void:
 func _toggle_lobby_tutorial() -> void:
 	GameState.tutorials_bypassed = not GameState.tutorials_bypassed
 	GameState.lobby_tutorial_completed = GameState.tutorials_bypassed
-	if "GameSettings" in get_node_or_null("/root"):
+	if has_node("/root/GameSettings"):
 		var settings = get_node("/root/GameSettings")
 		if "minigame_tutorial_enabled" in settings:
 			settings.minigame_tutorial_enabled = not GameState.tutorials_bypassed
@@ -746,7 +742,7 @@ func _toggle_lobby_tutorial() -> void:
 	_refresh_ui_fields()
 
 func _toggle_minigames_tutorial() -> void:
-	if "GameSettings" in get_node_or_null("/root"):
+	if has_node("/root/GameSettings"):
 		var settings = get_node("/root/GameSettings")
 		if "minigame_tutorial_enabled" in settings:
 			settings.minigame_tutorial_enabled = not settings.minigame_tutorial_enabled
@@ -771,7 +767,7 @@ func _refresh_ui_fields() -> void:
 		_btn_tutorial_lobby.text = "Bypass ALL Tutorials: " + ("ON (Bypassed)" if GameState.tutorials_bypassed else "OFF (Normal)")
 	if _btn_tutorial_minigames:
 		var active = true
-		if "GameSettings" in get_node_or_null("/root"):
+		if has_node("/root/GameSettings"):
 			active = get_node("/root/GameSettings").minigame_tutorial_enabled
 		_btn_tutorial_minigames.text = "Tutorial Minigames: " + ("ON" if active else "OFF (Skipped)")
 		
@@ -1197,7 +1193,6 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 		return
 		
 	log_message("Loading standalone minigame: " + scene_path)
-	
 	minigame_canvas = CanvasLayer.new()
 	# 125, NOT up with the rest of the debug block at 1124-1128. This canvas
 	# hosts a REAL minigame, which brings its own CanvasLayers with it: UI at
@@ -1208,7 +1203,6 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 	# needs to sit above it.
 	minigame_canvas.layer = 125
 	add_child(minigame_canvas)
-	
 	var m_scene = load(scene_path)
 	if not m_scene:
 		log_message("Error: Gagal memuat scene file: " + scene_path)
@@ -1216,6 +1210,7 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 		minigame_canvas = null
 		return
 		
+	_scene_stash.hide(get_tree().current_scene)
 	active_minigame = m_scene.instantiate()
 	minigame_canvas.add_child(active_minigame)
 	active_minigame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -1226,7 +1221,7 @@ func _launch_minigame_standalone(scene_path: String) -> void:
 		active_minigame.minigame_lost.connect(func(): _on_standalone_minigame_finished(false))
 		
 	if active_minigame.has_method("start_minigame"):
-		active_minigame.start_minigame(1, 30.0)
+		active_minigame.start_minigame(1, MENJODOHKAN_SECONDS if scene_path.ends_with("Menjodohkan.tscn") else 30.0)
 	if active_minigame.has_method("activate_minigame"):
 		active_minigame.activate_minigame()
 		
@@ -1242,8 +1237,10 @@ func _on_standalone_minigame_finished(won: bool) -> void:
 	if minigame_canvas:
 		minigame_canvas.queue_free()
 		minigame_canvas = null
-		
+	_scene_stash.restore()
+
 	toggle_overlay()
+
 
 func _trigger_simulation_event(event_id: int) -> void:
 	var cur_scene = get_tree().current_scene
@@ -1381,7 +1378,8 @@ func _teleport_to_scene(path: String) -> void:
 	if minigame_canvas:
 		minigame_canvas.queue_free()
 		minigame_canvas = null
-		
+	_scene_stash.restore()
+
 	_set_time_scale(1.0)
 	toggle_overlay()
 	

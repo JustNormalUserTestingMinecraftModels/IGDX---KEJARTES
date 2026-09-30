@@ -59,6 +59,8 @@ static func compute(manager: StudentManager) -> Dictionary:
 	result["net_skill_delta"] = int(round(net))
 
 	for entry in manager.minigame_history:
+		if entry.get("category", "") == StudentManager.IZIN_CATEGORY:
+			continue
 		if entry.get("category", "") == EVENT_CATEGORY:
 			result["events_count"] += 1
 		else:

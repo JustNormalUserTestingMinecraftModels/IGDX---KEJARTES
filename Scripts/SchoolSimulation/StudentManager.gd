@@ -13,6 +13,10 @@ class_name StudentManager
 ##
 ## Wirausaha balance numbers now live in Scripts/Balance.gd.
 
+## The history category of a student's forced rest day (energy spent): logged
+## for the report's rows, but neither a random event nor a minigame, so the
+## week's EVENT TERJADI count leaves it out (bug sweep 2026-09-30).
+const IZIN_CATEGORY := "Izin"
 var students: Array[StudentData] = []
 var minigame_history: Array[Dictionary] = [] # entries: {day, category, game_name, won, details}
 
@@ -86,14 +90,17 @@ func record_minigame_result(day_name: String, category: String, game_name: Strin
 	# reports the class total, not any single student's share.
 	var roster_points := 0.0
 	# Categories StudentData.apply_minigame_result() actually applies a skill
-	# change for. A skip-path "Event" outcome still computes a positive
-	# stat_delta from the win-points formula even though no skill category
+	# change for. An "Event" category (the skip path sent one until 2026-09-30)
+	# still computes a positive stat_delta from the win-points formula though no skill category
 	# match arm exists for it, so the weekly cap must only track real skill
 	# categories -- otherwise "Event" burns budget out of
 	# minigame_gain_this_week for a gain that never happened, potentially
 	# zeroing out a genuine minigame win later in the same week.
 	var mg_stat_key_map = {"Akademis": "akademis", "SeniBudaya": "seni_budaya", "Olahraga": "olahraga"}
 	for student in students:
+		# The skill before the result, so a capped win lands on before + allowed
+		# rather than subtracting the overflow from an already-clamped 100.
+		var skill_before: float = float(student.get(mg_stat_key_map[category])) if mg_stat_key_map.has(category) else 0.0
 		var deltas = student.apply_minigame_result(category, won, score, max_score)
 
 		# Apply weekly minigame cap: wins are capped per student, losses are untouched
@@ -104,12 +111,9 @@ func record_minigame_result(day_name: String, category: String, game_name: Strin
 			var already: float = float(GameState.minigame_gain_this_week.get(sid, 0.0))
 			var allowed: float = maxf(0.0, cap - already)
 			if raw_delta > allowed:
-				var overflow: float = raw_delta - allowed
-				match category:
-					"Akademis":   student.akademis    = clampf(student.akademis    - overflow, 0.0, 100.0)
-					"SeniBudaya": student.seni_budaya  = clampf(student.seni_budaya  - overflow, 0.0, 100.0)
-					"Olahraga":   student.olahraga     = clampf(student.olahraga     - overflow, 0.0, 100.0)
-				deltas["stat_delta"] = allowed
+				var capped: float = clampf(skill_before + allowed, 0.0, 100.0)
+				student.set(mg_stat_key_map[category], capped)
+				deltas["stat_delta"] = capped - skill_before
 			GameState.minigame_gain_this_week[sid] = already + minf(raw_delta, allowed)
 
 		roster_points += float(deltas.get("stat_delta", 0.0))
@@ -193,9 +197,9 @@ func apply_daily_decay_all(day_name: String) -> Array[Dictionary]:
 			student.energy = clampf(student.energy - Balance.WIRAUSAHA_BIAYA_ENERGI, 0.0, 100.0)
 			mood_loss += Balance.WIRAUSAHA_BIAYA_MOOD
 			energy_loss += Balance.WIRAUSAHA_BIAYA_ENERGI
+			# The cost rides the "decay" entries below (energy_loss/mood_loss),
+			# so it is not logged a second time as "activity".
 			activity_reason = " & Wirausaha (Rp%d)" % earned
-			log_stat_change(day_name, student.student_name, "mood", -Balance.WIRAUSAHA_BIAYA_MOOD, "activity")
-			log_stat_change(day_name, student.student_name, "energy", -Balance.WIRAUSAHA_BIAYA_ENERGI, "activity")
 		elif category != "":
 			var base_gain := Balance.BELAJAR_POIN_KELAS_7
 			var specialty_bonus := Balance.BELAJAR_BONUS_FAVORIT_KELAS_7
@@ -216,13 +220,15 @@ func apply_daily_decay_all(day_name: String) -> Array[Dictionary]:
 			if act_res.get("took_ijin", false):
 				var ijin_msg = act_res.get("ijin_reason", "Izin (Istirahat) memulihkan tenaga")
 				activity_reason = " & " + ijin_msg
-				record_event_result(day_name, "Izin Sakit/Istirahat", [student.student_name], ijin_msg)
+				record_event_result(day_name, "Izin Sakit/Istirahat", [student.student_name], ijin_msg, {}, IZIN_CATEGORY)
 			elif category == "Istirahat":
 				activity_reason = " & Istirahat memulihkan tenaga"
 			else:
 				activity_reason = " & Belajar " + category
 
-		# Log decay
+		# Log decay. These are the day's NET needs changes: energy_loss and
+		# mood_loss already fold in Istirahat's recovery and Wirausaha's cost,
+		# so neither is logged again below (the day summary sums every entry).
 		log_stat_change(day_name, student.student_name, "energy", -energy_loss, "decay")
 		log_stat_change(day_name, student.student_name, "mood", -mood_loss, "decay")
 		# Log activity stat gain
@@ -232,10 +238,7 @@ func apply_daily_decay_all(day_name: String) -> Array[Dictionary]:
 			var stat_k = stat_key_map.get(act_cat_key, "")
 			if stat_k != "" and act_res.get("stat_delta", 0.0) != 0.0:
 				log_stat_change(day_name, student.student_name, stat_k, act_res.get("stat_delta", 0.0), "activity")
-		elif category == "Istirahat":
-			log_stat_change(day_name, student.student_name, "energy", act_res.get("energy_delta", 0.0), "activity")
-			log_stat_change(day_name, student.student_name, "mood", act_res.get("mood_delta", 0.0), "activity")
-				
+
 		decay_results.append({
 			"student_name": student.student_name,
 			"personality": student.personality,
@@ -247,10 +250,10 @@ func apply_daily_decay_all(day_name: String) -> Array[Dictionary]:
 		})
 	return decay_results
 
-func record_event_result(day_name: String, event_name: String, affected_students: Array[String], details: String, stat_deltas: Dictionary = {}) -> void:
+func record_event_result(day_name: String, event_name: String, affected_students: Array[String], details: String, stat_deltas: Dictionary = {}, category: String = "Event") -> void:
 	minigame_history.append({
 		"day": day_name,
-		"category": "Event",
+		"category": category,
 		"game_name": event_name,
 		"won": true,
 		"details": details,
@@ -262,6 +265,56 @@ func record_event_result(day_name: String, event_name: String, affected_students
 		var d = stat_deltas[sn]
 		for sk in d.keys():
 			log_stat_change(day_name, sn, sk, d[sk], "event")
+
+
+## Applies one event to `affected` through StudentData.apply_event_effects()
+## (so quirks like Penyendiri apply), then records it with what really changed,
+## clamping included, so the day summary and the week's net skill change see
+## the event, not only the history. `category` is "" for a class-wide event
+## (Nasi Kotak, Hujan), which moves only energy and mood.
+func apply_event(day_name: String, title: String, details: String, affected: Array[StudentData],
+		category: String, stat_boost: float, energy_change: float, mood_change: float) -> void:
+	var before: Dictionary = snapshot_stats()
+	var names: Array[String] = []
+	for student in affected:
+		student.apply_event_effects(category, stat_boost, energy_change, mood_change)
+		names.append(student.student_name)
+	record_event_result(day_name, title, names, details, stat_deltas_since(before))
+
+
+## Every student's name, in roster order: the affected list of an entry that
+## concerns the whole class.
+func student_names() -> Array[String]:
+	var names: Array[String] = []
+	for student in students:
+		names.append(student.student_name)
+	return names
+
+
+## Every student's five stats, keyed by name, for stat_deltas_since().
+func snapshot_stats() -> Dictionary:
+	var snapshot: Dictionary = {}
+	for student in students:
+		snapshot[student.student_name] = student.stat_snapshot()
+	return snapshot
+
+
+## What each student's stats moved since `before` (a snapshot_stats()), in
+## record_event_result()'s {student_name: {stat_key: delta}} shape. A student
+## or stat that did not move is left out.
+func stat_deltas_since(before: Dictionary) -> Dictionary:
+	var deltas: Dictionary = {}
+	for student in students:
+		var was: Dictionary = before.get(student.student_name, {})
+		var now: Dictionary = student.stat_snapshot()
+		var moved: Dictionary = {}
+		for key in now:
+			var delta: float = float(now[key]) - float(was.get(key, now[key]))
+			if delta != 0.0:
+				moved[key] = delta
+		if not moved.is_empty():
+			deltas[student.student_name] = moved
+	return deltas
 
 func initialize_from_gamestate() -> void:
 	students.clear()

@@ -258,7 +258,8 @@ func play() -> void:
 	if _is_win:
 		RewardFeedback.play(&"minigame_win", self)
 	else:
-		AudioDirector.play_sfx(&"result_fanfare")
+		# A loss gets the fail cue; result_fanfare is the win sting.
+		AudioDirector.play_sfx(&"fail")
 
 	# 3. Title fades in
 	var tw_title := get_tree().create_tween()

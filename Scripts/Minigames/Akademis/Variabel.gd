@@ -98,7 +98,7 @@ func _ready() -> void:
 		kalkulator.digit_pressed.connect(_on_numpad_pressed)
 
 func _apply_visual_exports() -> void:
-	var bg = get_node_or_null("Background") as TextureRect
+	var bg = get_node_or_null("%Background") as TextureRect
 	if bg and background_texture:
 		bg.texture = background_texture
 	if equation_label:

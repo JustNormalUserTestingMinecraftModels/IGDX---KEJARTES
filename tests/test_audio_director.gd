@@ -679,3 +679,77 @@ func test_play_chord_plays_each_known_id() -> void:
 func test_play_chord_is_null_safe_on_unknown_ids() -> void:
 	AudioDirector.play_chord([&"definitely_not_a_cue"])  # must not throw
 	assert_true(true, "unknown chord id did not throw")
+
+
+# ── The player's volume, not the mixer's (2026-09-30 music-setting fix) ─────
+
+## Runs `body` with user://audio.cfg set aside, then puts the player's own file
+## back exactly as it was (or removes the test's file when there was none).
+func _with_audio_cfg_set_aside(body: Callable) -> void:
+	var path: String = _director.SETTINGS_PATH
+	var had_file := FileAccess.file_exists(path)
+	var saved := FileAccess.get_file_as_bytes(path) if had_file else PackedByteArray()
+	body.call()
+	if had_file:
+		var f := FileAccess.open(path, FileAccess.WRITE)
+		f.store_buffer(saved)
+		f.close()
+	else:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## A debug-build BGM mute (DebugManager, 2026-08-31) read back as volume 0
+## and was saved as "Musik 0" on every quit, so the Settings slider never
+## held. A mute applied straight to the AudioServer must now neither show as
+## the player's volume nor reach the file.
+func test_an_outside_mute_never_reads_or_saves_as_the_players_volume() -> void:
+	_with_audio_cfg_set_aside(func() -> void:
+		_director.set_bus_volume(&"BGM", 0.6)
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(&"BGM"), true)
+		assert_true(absf(_director.get_bus_volume(&"BGM") - 0.6) <= 0.01,
+			"the slider shows the player's 0.6, not the outside mute")
+		_director.flush_volume_save()
+		var cfg := ConfigFile.new()
+		assert_eq(cfg.load(_director.SETTINGS_PATH), OK, "the save was written")
+		assert_true(absf(float(cfg.get_value("volume", "BGM", -1.0)) - 0.6) <= 0.01,
+			"the file keeps the player's 0.6")
+		assert_eq(int(cfg.get_value("meta", "format", 0)), _director.VOLUME_SAVE_FORMAT,
+			"and carries the format that marks it as the player's own"))
+
+
+## A version-1 file (no [meta] format) could hold a "BGM = 0" the player never
+## chose, so it loads at full volume once; a current-format 0 is a real choice
+## and is kept.
+func test_an_old_zero_music_loads_at_full_volume_but_a_new_one_is_kept() -> void:
+	_with_audio_cfg_set_aside(func() -> void:
+		var old := ConfigFile.new()
+		for bus in ["Master", "BGM", "SFX"]:
+			old.set_value("volume", bus, 0.0 if bus == "BGM" else 0.8)
+		old.save(_director.SETTINGS_PATH)
+		var repaired: Node = (load("res://Scenes/Audio/AudioDirector.tscn") as PackedScene).instantiate()
+		Engine.get_main_loop().root.add_child(repaired)
+		track(repaired)
+		assert_true(absf(repaired.get_bus_volume(&"BGM") - 1.0) <= 0.01,
+			"a version-1 Musik 0 is the old leak and loads at full volume")
+		assert_true(absf(repaired.get_bus_volume(&"SFX") - 0.8) <= 0.01,
+			"every other saved volume loads as saved")
+		var chosen := ConfigFile.new()
+		chosen.set_value("meta", "format", _director.VOLUME_SAVE_FORMAT)
+		for bus in ["Master", "BGM", "SFX"]:
+			chosen.set_value("volume", bus, 0.0 if bus == "BGM" else 0.8)
+		chosen.save(_director.SETTINGS_PATH)
+		var kept: Node = (load("res://Scenes/Audio/AudioDirector.tscn") as PackedScene).instantiate()
+		Engine.get_main_loop().root.add_child(kept)
+		track(kept)
+		assert_true(absf(kept.get_bus_volume(&"BGM")) <= 0.01,
+			"a current-format Musik 0 is the player's choice and stays 0"))
+
+
+## The source side of the same fix: set_bus_volume records the player's value,
+## get_bus_volume reports it, and the debug playtest defaults leave music alone.
+func test_the_players_volume_is_the_source_of_truth() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Audio/AudioDirector.gd")
+	assert_true(src.contains("_volumes[StringName(bus)] = v"), "set_bus_volume records the player's value")
+	assert_true(src.contains("return float(_volumes[StringName(bus)])"), "get_bus_volume reports it")
+	var debug := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")
+	assert_false(debug.contains("AudioServer.set_bus_mute"), "no debug default mutes the music")

@@ -90,9 +90,12 @@ func _on_lanjut_pressed() -> void:
 
 
 ## Guarded so the auto-advance timer and an impatient tap cannot both fire
-## a scene change.
+## a scene change. It also waits out Transition: a tap while this screen's own
+## arrival wipe is still retracting would latch _advancing on a change that
+## Transition drops, and with no back handler the notice would never leave.
+## Not latching lets the next tap, or the auto-advance, go through.
 func _advance() -> void:
-	if _advancing:
+	if _advancing or Transition.is_busy():
 		return
 	_advancing = true
 	Transition.change_scene("res://Scenes/EndGame/ExamProgress.tscn")

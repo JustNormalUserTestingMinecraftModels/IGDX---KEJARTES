@@ -162,4 +162,7 @@ func test_the_gear_opens_settings_and_comes_back_to_the_lobby() -> void:
 	assert_contains(body, "res://Scenes/UI/Settings.tscn")
 	var settings_src := FileAccess.get_file_as_string(_SETTINGS_SCRIPT)
 	assert_contains(settings_src, "static var return_scene")
-	assert_contains(_body(settings_src, "_on_back_pressed"), "return_scene")
+	# Settings copies the static on arrival and Back leaves for that copy
+	# (2026-09-30: a Back dropped mid-wipe used to lose the Lobby).
+	assert_contains(_body(settings_src, "_ready"), "_destination = return_scene")
+	assert_contains(_body(settings_src, "_on_back_pressed"), "_destination")

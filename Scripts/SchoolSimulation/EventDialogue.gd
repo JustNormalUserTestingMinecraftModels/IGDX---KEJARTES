@@ -18,9 +18,9 @@ signal closed(accepted: bool)
 ## Typewriter speed in characters per second. Same default as the intro cutscene.
 @export var typewriter_chars_per_second: float = 45.0
 
-@onready var background: TextureRect = $Background
-@onready var blur: ColorRect = $Blur
-@onready var splash: TextureRect = $Splash
+@onready var background: TextureRect = %Background
+@onready var blur: ColorRect = %Blur
+@onready var splash: TextureRect = %Splash
 @onready var week_label: Label = $Header/Calendar/Text/WeekLabel
 @onready var day_label: Label = $Header/DayBanner/DayLabel
 @onready var dialogue_box: PanelContainer = $DialogueBox

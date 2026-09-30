@@ -107,6 +107,12 @@ func get_olahraga_delta() -> float: return olahraga - initial_olahraga
 func get_energy_delta() -> float: return energy - initial_energy
 func get_mood_delta() -> float: return mood - initial_mood
 
+## The three skills and two needs under their GameState keys, for
+## StudentManager's before/after event diffs (stat_deltas_since()).
+func stat_snapshot() -> Dictionary:
+	return {"akademis": akademis, "seni_budaya": seni_budaya, "olahraga": olahraga,
+		"energy": energy, "mood": mood}
+
 
 func get_category_efficiency_multiplier(category: String) -> float:
 	if category == specialty_category:

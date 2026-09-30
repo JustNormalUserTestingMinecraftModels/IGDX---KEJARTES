@@ -185,7 +185,7 @@ const _CONTACT_SHADOWS := {
 	],
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman"],
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
-	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
 }
 
 
@@ -232,7 +232,7 @@ const _OUTER_AO := {
 	],
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman"],
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
-	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
 }
 const _OUTER_AO_ALPHA := 0.34
 const _OUTER_AO_BLUR := 1.2
@@ -290,7 +290,7 @@ func test_the_paper_shadows_keep_their_offset() -> void:
 func test_a_full_rect_element_gets_a_shadow_that_follows_its_size() -> void:
 	var root := (load("res://Scenes/SchoolSimulation/EventDialogue.tscn") as PackedScene).instantiate()
 	track(root)
-	var splash := root.get_node_or_null("Splash") as TextureRect
+	var splash := root.get_node_or_null("World/Room/Splash") as TextureRect
 	assert_true(splash != null, "Splash is gone")
 	if splash == null:
 		return

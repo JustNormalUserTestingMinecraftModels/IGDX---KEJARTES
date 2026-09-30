@@ -8,6 +8,44 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Minigames lit the Lobby way; Musik setting fixed; bug sweep
+
+**Lighting.** The minigames and EventDialogue read "weird" beside the Lobby:
+the screen-read `ScreenGlow` hazed pale floors (MainBola's pitch, the stage,
+the desk wood) and the art stayed neon (Badminton's court). Every minigame
+and EventDialogue now keep their backdrop, light and shafts in a `World`
+CanvasLayer at -1 under an `AmbientGlow` WorldEnvironment -- the Lobby's own
+recipe -- and the minigames add a calm-and-warm grade in the room
+(`GradeCopy` + `Calm` ScreenSaturation + `Tint` PAGI MoodTint). Thresholds
+were swept against the Lobby's +0.011 bloom (`tests/test_lobby_look.gd`,
+`BLOOM`). EventDialogue kept its colours and its 0.85 threshold, and
+measures the same (+0.0004 vs +0.0005). SchoolDay fades its own layer-0
+sky out around a hosted lit screen (`DayPictureCover`, counted), and the
+debug launcher clears the scene underneath (`SceneStash`). Found on the way:
+a HIDDEN CanvasLayer at <= -1 switches a Canvas-mode glow off entirely.
+
+**Musik.** The Settings music slider "did not work": `DebugManager` muted the
+BGM bus at every debug boot, and `AudioDirector` saved a muted bus as volume
+0 on every quit, so `user://audio.cfg` held Musik 0 and the slider showed
+it. The boot mute is gone, `AudioDirector` saves the player's own volumes
+(`_volumes`), and a version-1 file's Musik 0 loads at full volume once.
+
+**Bug sweep.** A read-only scan (5 finders, each finding checked by a
+skeptic) confirmed 31 of 34; fixed: Android back / a double tap ending or
+skipping a school week and leaking minigame music; Badminton turning losses
+into wins; the loss card playing the win sting; LombaMenari notes moving
+during the resume countdown; Keluar freezing BuatBatik's ending; Menjodohkan
+ignoring the grade's time limit; MainBola's out-of-shots and buzzer-goal
+results; random events missing from the day log; skipped events booked as
+minigames; Izin counted as an event; the weekly cap lowering a skill near
+100; the holiday rest overwriting the plan; one-shot flags latching while
+Transition refuses a change (TesNotice softlock, Settings/Lobby/MainMenu/
+CutScene/LevelSelect); the inventory not flushed on quit; the Koperasi
+basket surviving the shop; one back closing two Achievements layers; a
+Kelas 8 retry locking its own pick; the coin cue; three always-false
+`in get_node_or_null("/root")` debug checks. Left: DEBT.md, "Bug-sweep
+leftovers".
+
 ## 2026-09-30 — Thea, Shinta and Citra desk items back to their own size
 
 The 2026-09-29 fit pass below shrank these three below 1x and the owner found

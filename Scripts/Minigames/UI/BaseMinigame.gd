@@ -397,11 +397,16 @@ func win_game() -> void:
 	set_process_input(false)
 	_show_result_overlay(true, result_subtitle)
 
+## Quits the run as a loss. Unfreezes the node before the early-out: an end
+## sequence already in flight when JEDA opened (BuatBatik's reveal) has cleared
+## is_game_active, and it can only finish and show its own card once the
+## pause's DISABLED process mode is lifted.
 func abandon_game() -> void:
+	process_mode = Node.PROCESS_MODE_INHERIT
+	is_paused = false
 	if not is_game_active:
 		return
 	is_game_active = false
-	process_mode = Node.PROCESS_MODE_INHERIT
 	if header() != null:
 		header().set_pause_enabled(false)
 	if timer:

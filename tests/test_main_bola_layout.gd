@@ -97,7 +97,7 @@ func test_scene_positions_every_visual_node() -> void:
 	# opening it shows the real thing.
 	var root: Node = load(SCENE_PATH).instantiate()
 	track(root)
-	for path in ["FieldBG", "GoalBack", "GoalNet", "Crossbar",
+	for path in ["World/Room/FieldBG", "GoalBack", "GoalNet", "Crossbar",
 			"PostLeft", "PostRight", "Goalie", "Ball", "TargetBox"]:
 		var node := root.get_node_or_null(path)
 		assert_not_null(node, "missing node: %s" % path)

@@ -11,6 +11,12 @@ extends Node
 
 const SFX_POOL_SIZE := 12
 const SETTINGS_PATH := "user://audio.cfg"
+## user://audio.cfg's layout version, written under [meta] format. Version 2
+## (2026-09-30) is the first written from the player's own volumes
+## (`_volumes`); a version-1 file could hold "BGM = 0" that the player never
+## chose (a debug-build BGM mute, saved on quit), so a version-1 "0" music
+## volume loads as full volume, once.
+const VOLUME_SAVE_FORMAT := 2
 
 @export_group("SFX")
 ## `play_sfx(&"tap")`: generic button/tile taps across most screens
@@ -24,8 +30,8 @@ const SETTINGS_PATH := "user://audio.cfg"
 @export var sfx_cancel: AudioStream
 ## `play_sfx(&"success")`: DaySummaryPopup's win state.
 @export var sfx_success: AudioStream
-## `play_sfx(&"fail")`: AturJadwal validation failure and
-## DaySummaryPopup's loss state.
+## `play_sfx(&"fail")`: AturJadwal validation failure,
+## DaySummaryPopup's loss state and the minigame loss card.
 @export var sfx_fail: AudioStream
 ## `play_sfx(&"coin")`: a purchase completes (koperasi) or money is
 ## earned (lobby, SchoolDay's Wirausaha payout).
@@ -265,6 +271,11 @@ var _bgm_playlist_id: StringName = &""
 var _save_timer: SceneTreeTimer
 var _save_count: int = 0
 var _setup_ran: bool = false
+## The player's own volume per bus (StringName -> 0.0-1.0), as last set through
+## set_bus_volume(). It is what get_bus_volume() reports and what is saved, so
+## a mute applied straight to the AudioServer by anything else can never read
+## back, or be saved, as the player's choice.
+var _volumes: Dictionary = {}
 
 
 func _ready() -> void:
@@ -703,6 +714,7 @@ func set_bus_volume(bus: StringName, linear: float) -> void:
 		push_warning("AudioDirector: unknown bus " + String(bus))
 		return
 	var v := clampf(linear, 0.0, 1.0)
+	_volumes[StringName(bus)] = v
 	AudioServer.set_bus_volume_db(idx, linear_to_db(v))
 	# linear_to_db(0.0) is -inf, which AudioServer stores but which reads
 	# back as -inf; mute the bus instead so get_bus_volume returns 0.0.
@@ -710,10 +722,14 @@ func set_bus_volume(bus: StringName, linear: float) -> void:
 	_schedule_volume_save()
 
 
+## The player's volume for `bus`, 0.0-1.0. Before any set_bus_volume() it
+## reads the AudioServer instead.
 func get_bus_volume(bus: StringName) -> float:
 	var idx := AudioServer.get_bus_index(bus)
 	if idx < 0:
 		return 0.0
+	if _volumes.has(StringName(bus)):
+		return float(_volumes[StringName(bus)])
 	if AudioServer.is_bus_mute(idx):
 		return 0.0
 	return clampf(db_to_linear(AudioServer.get_bus_volume_db(idx)), 0.0, 1.0)
@@ -722,6 +738,7 @@ func get_bus_volume(bus: StringName) -> float:
 func _save_volumes() -> void:
 	_save_count += 1
 	var cfg := ConfigFile.new()
+	cfg.set_value("meta", "format", VOLUME_SAVE_FORMAT)
 	for bus in ["Master", "BGM", "SFX"]:
 		cfg.set_value("volume", bus, get_bus_volume(bus))
 	cfg.save(SETTINGS_PATH)
@@ -778,5 +795,9 @@ func _load_volumes() -> void:
 	var cfg := ConfigFile.new()
 	if cfg.load(SETTINGS_PATH) != OK:
 		return
+	var old_format := int(cfg.get_value("meta", "format", 1)) < VOLUME_SAVE_FORMAT
 	for bus in ["Master", "BGM", "SFX"]:
-		set_bus_volume(bus, cfg.get_value("volume", bus, 1.0))
+		var volume := float(cfg.get_value("volume", bus, 1.0))
+		if old_format and bus == "BGM" and is_zero_approx(volume):
+			volume = 1.0
+		set_bus_volume(bus, volume)

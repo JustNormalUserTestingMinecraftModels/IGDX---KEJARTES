@@ -175,6 +175,17 @@ func _reset_cover() -> void:
 	_cover.position = Vector2.ZERO
 
 
+## True while a scene change runs: from the call until the incoming scene's
+## cover has fully retracted, about one dur_normal after that scene is already
+## live and taking taps (the cover never blocks input). change_scene() drops
+## every call made in that window, so a screen that latches a one-shot flag
+## before calling it checks this first; otherwise a tap during the cover-out
+## latches the flag, the change is dropped, and the screen is stuck
+## (TesNotice's Lanjut, 2026-09-30).
+func is_busy() -> bool:
+	return _busy
+
+
 ## duration_override lets one call site request a slower (or faster) wipe
 ## than the shared default, without changing behavior for the ~20 other
 ## call sites that don't pass it. -1.0 (the default) means "use the

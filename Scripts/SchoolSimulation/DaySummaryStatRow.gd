@@ -143,12 +143,8 @@ static func track_ratio(current: float, target: float) -> float:
 ## cosmetic, and is preferred over threading a pre-day snapshot through the
 ## whole simulation for the sake of one animation.
 ##
-## A second and larger source of under-travel: random events apply their
-## stat boosts straight to StudentData but never route them through
-## StudentManager.log_stat_change(), so they are absent from the day
-## summary and therefore from `delta`. On an event day the bar starts
-## too high and the growth understates what really happened. The fix
-## belongs in SchoolDay's record_event_result calls, not here.
+## Random events are in `delta` too since 2026-09-30: SchoolDay routes every
+## one through StudentManager.apply_event(), which logs what really changed.
 static func track_ratio_before(current: float, delta: float, target: float) -> float:
 	return track_ratio(current - delta, target)
 

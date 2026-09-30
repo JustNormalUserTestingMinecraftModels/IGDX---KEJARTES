@@ -1104,3 +1104,70 @@ func test_the_tutorial_pauses_the_front_cards_idle_loops() -> void:
 	var ending := src.get_slice("func _end_tutorial():", 1).get_slice("\nfunc ", 0)
 	assert_true(ending.contains("_set_front_idle(true)"),
 		"ending the tutorial resumes the front card's loops")
+
+
+# ------------------------------------------- the tutorial on the shared panel
+#
+# 2026-10-01 tutorial unification. The tutorial card used to be a PanelContainer,
+# three Labels and two separators built at runtime, its arrow was clamped with a
+# hard-coded 320px picture, and a tap on the card before the last step was
+# dropped without a sound. It is now TutorialPanel.tscn, mounted into the
+# overlay and seated inside the screen's Safe/UI, and that tap is answered.
+
+## The shared card's own script, for the answer every screen shares.
+const _PANEL_SCRIPT_PATH := "res://Scripts/UI/TutorialPanel.gd"
+
+
+func test_the_tutorial_card_is_the_shared_panel_not_a_runtime_build() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_body("_build_tutorial_panel").contains(
+			"TutorialPanel.mount(tutorial_panel_scene, color_rect, click_area)"),
+		"the card is the shared TutorialPanel scene, mounted in the overlay")
+	for gone: String in ["PanelContainer.new(", "VBoxContainer.new(", "Label.new(",
+			"HSeparator.new(", "_tutorial_title_label", "_tutorial_body_label"]:
+		assert_false(src.contains(gone), "StudentList.gd still carries %s" % gone)
+	assert_true(src.contains(
+			'@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")'),
+		"the scene is an export, so it can be swapped in the inspector")
+
+
+func test_every_step_goes_through_the_panel_with_its_number_and_count() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_body("_show_step").contains(
+			"_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size())"),
+		"each step fills the card via show_step with its 1-based number and the step count")
+	assert_false(src.contains("(%d/%d)"),
+		"the panel's pill is the step counter; a title prefix would count the steps twice")
+
+
+func test_the_card_and_arrow_are_seated_inside_the_screens_safe_ui() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("@onready var tutorial_safe_ui: Control = $Safe/UI"),
+		"the bounds are the screen's own Safe/UI")
+	assert_true(_list.get_node_or_null("Safe/UI") is Control, "and the scene has one")
+	var seating := _function_body("_position_tutorial_panel")
+	assert_true(seating.contains(
+			"TutorialPanel.place_step(_tutorial_panel, tutorial_safe_ui, color_rect, _step_targets, _tutorial_arrow)"),
+		"the card and the arrow are seated by the shared placement")
+	assert_false(seating.contains("get_viewport_rect"), "with no raw viewport math")
+
+
+## A tap on the card before the last step used to fall through to the bare
+## `return`, so the card looked dead. The Navigasi Card step wants the right
+## arrow; the tap is answered, and the pick is still locked to the final step.
+func test_a_card_tap_before_the_last_step_is_answered_not_dropped() -> void:
+	var pressed := _function_body("_on_card_pressed")
+	assert_true(pressed.contains("else:\n\t\t\t_reject_tutorial_tap()\n\t\treturn"),
+		"any tap in the tutorial that is not the final pick is answered, then refused")
+	assert_true(pressed.contains("if current_step == 3:"), "the pick stays locked to the last step")
+	var reject := _function_body("_reject_tutorial_tap")
+	assert_true(reject.contains("_targets_for_step(current_step)"),
+		"the answer goes to the control the current step wants")
+	assert_true(reject.contains("TutorialPanel.answer_wrong_tap(targets[0])"),
+		"that control shakes and its sibling buttons dim")
+	assert_true(_function_body("_targets_for_step").contains("right_arrow if right_arrow else left_arrow"),
+		"at the Navigasi Card step the control wanted is the right arrow")
+	var answer := FileAccess.get_file_as_string(_PANEL_SCRIPT_PATH) \
+		.get_slice("func answer_wrong_tap(", 1).get_slice("\nstatic func ", 0)
+	assert_true(answer.contains('AudioDirector.play_sfx(&"error")'), "with the error cue")
+	assert_true(answer.contains("Juice.shake(target)"), "and a shake on the target")

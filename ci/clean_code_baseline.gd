@@ -53,7 +53,6 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 58,
 	"res://Scripts/StudentCard/StudentCard.gd::_transition_page": 61,
 	"res://Scripts/StudentList/StudentList.gd::_setup_students": 55,
-	"res://Scripts/StudentList/StudentList.gd::_show_step": 53,
 }
 
 ## Untyped vars, signatures without ->, untyped parameters, per script.
@@ -95,7 +94,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 38,
 	"res://Scripts/StudentCard/StudentCard.gd": 139,
 	"res://Scripts/StudentCard/StudentCardView.gd": 13,
-	"res://Scripts/StudentList/StudentList.gd": 92,
+	"res://Scripts/StudentList/StudentList.gd": 59,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 17,
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 7,
 }
@@ -188,7 +187,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Splashscreen/Splashscreen.gd": 1,
 	"res://Scripts/StudentCard/StudentCard.gd": 136,
 	"res://Scripts/StudentCard/StudentCardView.gd": 37,
-	"res://Scripts/StudentList/StudentList.gd": 37,
+	"res://Scripts/StudentList/StudentList.gd": 26,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 28,
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 2,
 	"res://Scripts/Transition/Transition.gd": 7,

@@ -111,3 +111,46 @@ func test_the_new_knobs_are_documented_exports() -> void:
 				break
 		assert_gt(found, 0, knob + " is an @export")
 		assert_true(lines[found - 1].strip_edges().begins_with("##"), knob + " has a ## doc line")
+
+
+# ─── the buzzer
+
+## The body of `func <name>(` in MainBola.gd, up to the next top-level func.
+func _body_of(func_name: String) -> String:
+	var src := FileAccess.get_file_as_string(SCRIPT_PATH)
+	var start := src.find("\nfunc %s(" % func_name)
+	if start < 0:
+		return ""
+	var end := src.find("\nfunc ", start + 1)
+	return src.substr(start, (end if end > 0 else src.length()) - start)
+
+
+## A shot released before the clock ran out still counts. The clock used to
+## end the game with the ball in the air: the loss card went up, the goal
+## landed behind it, and a winning goal never reached the win screen.
+func test_the_clock_waits_for_a_shot_in_the_air() -> void:
+	var body := _body_of("lose_game")
+	var wait := body.find("if is_resolving:")
+	var end := body.find("is_game_active = false")
+	assert_gt(wait, 0, "lose_game() must hold off while a shot resolves")
+	assert_gt(end, wait, "and must do so before it ends the game")
+
+
+func test_no_new_shot_starts_once_the_clock_is_out() -> void:
+	assert_true(_body_of("_input").contains("_clock_is_out()"),
+		"a swipe after the buzzer must not start another shot")
+
+
+## The same thing, run: with a shot in the air the game is still live after
+## lose_game(), so the goal that lands can still win it.
+func test_a_loss_called_mid_shot_leaves_the_game_live() -> void:
+	if not _body_of("lose_game").contains("if is_resolving:"):
+		assert_true(false, "guard missing; not running lose_game() for real")
+		return
+	var game: BaseMinigame = MainBolaScript.new()
+	game.is_game_active = true
+	game.is_resolving = true
+	game.lose_game()
+	assert_true(game.is_game_active, "the game is still live")
+	assert_false(game.is_game_over, "and not over")
+	game.free()

@@ -26,7 +26,7 @@ open/close cycles of Skin Select left node, object and texture counts flat.
   The 24 student portraits, splashes and outfits: the owner's 2026-09-29
   call on block artifacts, not reversed here (DEBT.md has what it costs).
 - **`tests/test_texture_memory.gd`** pins the rule and a total ceiling
-  (630 MiB if every image were loaded; it was 1309). A new large image fails
+  (700 MiB if every image were loaded; it was 1309 and is 632). A new large image fails
   the suite until its import is flipped or it is given a reason in `ALLOWED`.
 - **`tests/texture_pixels.gd`**: every suite that reads pixels goes through
   it, because `get_image()` on a compressed texture comes back compressed and

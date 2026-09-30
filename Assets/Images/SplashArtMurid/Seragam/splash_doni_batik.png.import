@@ -3,22 +3,20 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://2ilp6sb6u3m8"
-path.bptc="res://.godot/imported/splash_doni_batik.png-de5f366c4e59941b8d2fe48f9975b8b2.bptc.ctex"
-path.astc="res://.godot/imported/splash_doni_batik.png-de5f366c4e59941b8d2fe48f9975b8b2.astc.ctex"
+path="res://.godot/imported/splash_doni_batik.png-de5f366c4e59941b8d2fe48f9975b8b2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
-"vram_texture": true
+"vram_texture": false
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/Seragam/splash_doni_batik.png"
-dest_files=["res://.godot/imported/splash_doni_batik.png-de5f366c4e59941b8d2fe48f9975b8b2.bptc.ctex", "res://.godot/imported/splash_doni_batik.png-de5f366c4e59941b8d2fe48f9975b8b2.astc.ctex"]
+dest_files=["res://.godot/imported/splash_doni_batik.png-de5f366c4e59941b8d2fe48f9975b8b2.ctex"]
 
 [params]
 
-compress/mode=2
-compress/high_quality=true
+compress/mode=0
+compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

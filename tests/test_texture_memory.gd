@@ -43,6 +43,30 @@ const ALLOWED := {
 	"res://Assets/Images/Skins/Marcel/marcel_base_skin1.png": FACE_BASE,
 	"res://Assets/Images/Skins/Shinta/shinta_base_skin1.png": FACE_BASE,
 	"res://Assets/Images/Skins/Thea/thea_base_skin1.png": FACE_BASE,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_andi_batik.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_andi_pramuka.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_citra_batik.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_citra_pramuka.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_doni_batik.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_doni_pramuka.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_marcel_batik.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_marcel_pramuka.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_batik.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_pramuka.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_batik.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/Seragam/splash_thea_pramuka.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/splash_andi.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/splash_citra.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/splash_doni.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/splash_marcel.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/splash_shinta.png": STUDENT_ART,
+	"res://Assets/Images/SplashArtMurid/splash_thea.png": STUDENT_ART,
+	"res://Assets/Images/MuridPortrait/Andi.png": STUDENT_ART,
+	"res://Assets/Images/MuridPortrait/Citra.png": STUDENT_ART,
+	"res://Assets/Images/MuridPortrait/Doni.png": STUDENT_ART,
+	"res://Assets/Images/MuridPortrait/Marcel.png": STUDENT_ART,
+	"res://Assets/Images/MuridPortrait/Shinta.png": STUDENT_ART,
+	"res://Assets/Images/MuridPortrait/Thea.png": STUDENT_ART,
 }
 
 ## Why the twelve face bases stay lossless. Each has its eye sockets cut out
@@ -52,10 +76,18 @@ const ALLOWED := {
 ## (tests/test_face_rig_roster.gd, test_no_eye_cut_out_is_left_see_through).
 const FACE_BASE := "pixel-exact eye cut-outs; compression opens see-through pixels"
 
+## Why the 24 student portraits, default splashes and day outfits stay
+## lossless. The owner judged them on 2026-09-29: VRAM compression, even at
+## high quality, left faint block artifacts on their smooth shading and line
+## work (tests/test_student_skins.gd, test_student_art_is_lossless). That is
+## an art call, so it is not reversed here; DEBT.md carries the memory it
+## costs and how to flip it.
+const STUDENT_ART := "owner's call 2026-09-29: block artifacts on the character art"
+
 ## Ceiling on the memory every image under ROOT would take if all were loaded
 ## at once, in MiB, mip chains included. Nothing loads them all; the number is
 ## a ratchet that only goes down. It stood at 1309 before this pass.
-const TOTAL_BUDGET_MIB := 450.0
+const TOTAL_BUDGET_MIB := 630.0
 
 
 func suite_name() -> String:
@@ -147,10 +179,10 @@ func test_large_images_are_vram_compressed() -> void:
 ## an .import edit that was never reimported leaves the flag set and the
 ## texture at full size. One texture stands for the pass.
 func test_a_compressed_import_really_is_compressed() -> void:
-	var tex: Texture2D = load("res://Assets/Images/SplashArtMurid/splash_thea.png")
+	var tex: Texture2D = load("res://Assets/Images/MuridPortrait/Meja/kiri_atas.png")
 	var img: Image = null if tex == null else tex.get_image()
 	assert_true(img != null and img.is_compressed(),
-		"splash_thea.png is flagged VRAM-compressed but the imported texture is not; reimport")
+		"kiri_atas.png is flagged VRAM-compressed but the imported texture is not; reimport")
 
 
 func test_allowed_entries_still_exist_and_still_need_the_exception() -> void:

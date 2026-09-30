@@ -87,6 +87,10 @@ const STARS_PATH := ^"Stars"
 const SCHOOL_NIGHT_PATH := ^"SchoolNight"
 const WINDOW_GLOW_PATH := ^"WindowGlow"
 const CLOUD_LAYER_PATH := ^"CloudLayer"
+## The one cloud painting inside CloudLayer (2026-09-30): fitted to exactly
+## the sky's square and pivot. CloudLayer (a CloudDrift) rides it on the
+## sky's angle and adds its own slow creep.
+const CLOUDS_PATH := ^"CloudLayer/Clouds"
 ## Width of one repeat of the motif tiles, px: the drift wraps every this
 ## many so it never jumps. The Motif node runs this much past the fill's right
 ## edge to cover the shift.
@@ -291,10 +295,14 @@ func set_banner(text: String) -> void:
 	_write_header()
 
 
-## Starts a fresh day. Records the weekday, writes it to the banner and
-## rewinds the sky to morning.
+## Starts a fresh day. Records the weekday, writes it to the banner,
+## rewinds the sky to morning and puts the crept clouds back in register --
+## SchoolDay calls this under the full night, where the snap is hidden.
 func set_day(day_name_in: String) -> void:
 	set_banner(day_name_in)
+	var clouds := get_node_or_null(CLOUD_LAYER_PATH) as CloudDrift
+	if clouds != null:
+		clouds.reset_drift()
 	set_progress(0.0)
 
 
@@ -535,6 +543,9 @@ func _apply_rotation() -> void:
 	var sky := _sky_layer()
 	if sky != null:
 		sky.rotation_degrees = current_rotation_degrees()
+	var clouds := get_node_or_null(CLOUD_LAYER_PATH) as CloudDrift
+	if clouds != null:
+		clouds.follow_sky(current_rotation_degrees())
 
 
 ## Where a body stands on its arc at arc position `t` (0 = rising at the
@@ -599,6 +610,13 @@ func _fit_layers() -> void:
 		sky.size = Vector2(side, side)
 		sky.position = pivot_point - sky.size * 0.5
 		sky.pivot_offset = sky.size * 0.5
+		# The cloud painting is the sky's twin in size and pivot, so its vortex
+		# sits on the same eye and no corner uncovers as it turns.
+		var clouds := get_node_or_null(CLOUDS_PATH) as Control
+		if clouds != null:
+			clouds.size = sky.size
+			clouds.position = sky.position
+			clouds.pivot_offset = sky.pivot_offset
 
 	var foreground := _foreground_layer()
 	if foreground != null:

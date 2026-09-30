@@ -7,9 +7,7 @@
 [ext_resource type="Script" path="res://Scripts/SchoolSimulation/CloudDrift.gd" id="s_clouds"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/sun.svg" id="k_sun"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/moon.svg" id="k_moon"]
-[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/cloud_a.svg" id="k_cloud_a"]
-[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/cloud_b.svg" id="k_cloud_b"]
-[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/cloud_c.svg" id="k_cloud_c"]
+[ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/cloud_layer.png" id="k_cloud_layer"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Sky/stars.svg" id="k_stars"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/night_windows.png" id="k_windows"]
 [ext_resource type="Texture2D" path="res://Assets/Images/SchoolDay/Motifs/motif_grid.svg" id="m_grid"]
@@ -66,6 +64,29 @@ mouse_filter = 2
 texture = ExtResource("k_stars")
 stretch_mode = 1
 
+[node name="CloudLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("s_clouds")
+
+[node name="Clouds" type="TextureRect" parent="CloudLayer"]
+layout_mode = 0
+offset_left = -1494.3823
+offset_top = -114.382324
+offset_right = 2574.3823
+offset_bottom = 3954.3823
+rotation = 1.0471976
+pivot_offset = Vector2(2034.3823, 2034.3823)
+mouse_filter = 2
+texture = ExtResource("k_cloud_layer")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="SkyBodies" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -92,49 +113,6 @@ offset_bottom = 180.0
 pivot_offset = Vector2(90, 90)
 mouse_filter = 2
 texture = ExtResource("k_moon")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="CloudLayer" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("s_clouds")
-
-[node name="CloudA" type="TextureRect" parent="CloudLayer"]
-layout_mode = 0
-offset_left = 120.0
-offset_top = 470.0
-offset_right = 480.0
-offset_bottom = 620.0
-mouse_filter = 2
-texture = ExtResource("k_cloud_a")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="CloudB" type="TextureRect" parent="CloudLayer"]
-layout_mode = 0
-offset_left = 640.0
-offset_top = 700.0
-offset_right = 920.0
-offset_bottom = 820.0
-mouse_filter = 2
-texture = ExtResource("k_cloud_b")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="CloudC" type="TextureRect" parent="CloudLayer"]
-layout_mode = 0
-offset_left = 360.0
-offset_top = 930.0
-offset_right = 580.0
-offset_bottom = 1026.0
-mouse_filter = 2
-texture = ExtResource("k_cloud_c")
 expand_mode = 1
 stretch_mode = 5
 

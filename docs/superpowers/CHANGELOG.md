@@ -8,6 +8,23 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — SchoolDay split sky and cloud layer
+
+Spec `docs/superpowers/specs/2026-09-30-schoolday-cloud-layer-design.md`.
+
+- **The artist's split sky.** `transition_background.png` is now the
+  gradient alone and `Sky/cloud_layer.png` the clouds alone (both from
+  3998² sources, downscaled to 2048²). The three SVG clouds are deleted.
+- **The clouds ride the sky and creep.** `BookClockWidget` fits `Clouds` to
+  the sky's square and pivot and hands every sky angle to
+  `CloudDrift.follow_sky()`; `CloudDrift` adds a slow own-clock creep
+  (`spin_degrees_per_second`, -2 by default, `preview_in_editor` to watch it)
+  that turns back at `max_drift_degrees` (24), so an idling day never walks
+  them out of register; `set_day()` clears it under the full night. An own-clock spin with no
+  ride was built first and dropped: the sky turns a full circle in seconds of
+  play, so the dusk clouds hung over every midday.
+- **Sun and moon in front.** `CloudLayer` moved below `SkyBodies`; the
+  painting all but hid the midday sun.
 ## 2026-09-30 — Phone audio sliders and tall-phone stragglers
 
 - **Musik and Efek Suara did nothing on a phone build.** They work in the

@@ -327,6 +327,39 @@ func test_the_springs_do_nothing_in_the_editor() -> void:
 	assert_eq(panel.modulate.a, 1.0)
 
 
+## The headmaster's beat is the first flow that taps through cards quickly. A tap
+## that lands while the entrance spring (or the step-change fade) is still playing
+## calls play_out() over it; unless play_out() stopped them, the entrance would go
+## on to fade the card back in over its own exit.
+func test_play_out_stops_an_entrance_and_a_step_change_still_playing() -> void:
+	var panel := _make()
+	var entrance := panel.create_tween()
+	entrance.tween_interval(30.0)
+	var fade := panel.create_tween()
+	fade.tween_interval(30.0)
+	panel._entrance_tween = entrance
+	panel._step_tween = fade
+	assert_true(entrance.is_valid() and fade.is_valid(), "both are running before the exit")
+	var exit := panel.play_out()
+	assert_false(entrance.is_valid(), "the exit stops the entrance")
+	assert_false(fade.is_valid(), "and the step-change fade")
+	assert_true(exit != null and exit != entrance and exit != fade, "it still hands back its own tween")
+
+
+func test_play_out_with_nothing_playing_is_safe_and_play_in_keeps_its_spring() -> void:
+	var panel := _make()
+	assert_true(panel.play_out() != null, "an exit before any entrance stops nothing and does not fail")
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_contains(_function_source(src, "play_in"), "_entrance_tween = Juice.pop_in(self)",
+		"play_in keeps the spring it starts, so play_out can stop it")
+	var out := _function_source(src, "play_out")
+	var stopped := out.find("_stop_entering()")
+	var hint := out.find("Engine.is_editor_hint()")
+	var spring := out.find("AnimUtils.popup_spring_out(self, self)")
+	assert_true(stopped != -1 and stopped < hint and hint < spring,
+		"the entrance is stopped first, in the editor too, so this suite can see it, then the exit spring")
+
+
 # ------------------------------------------------------------- the arrow
 
 func test_the_arrow_is_an_authored_scene_180_square_by_default() -> void:

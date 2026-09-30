@@ -161,7 +161,10 @@ enum Mode {
 var _pill_wanted := true
 ## True once a step or beat has filled the card; only later ones animate.
 var _content_shown := false
+## The step-change fade of the badge, title and body, while it plays.
 var _step_tween: Tween
+## The entrance spring play_in() started, while it plays. play_out() kills it.
+var _entrance_tween: Tween
 
 
 func _ready() -> void:
@@ -258,18 +261,30 @@ func _set_texts(title: String, body: String, prompt: String) -> void:
 func play_in() -> void:
 	if Engine.is_editor_hint():
 		return
-	Juice.pop_in(self)
+	_entrance_tween = Juice.pop_in(self)
 
 
 ## The exit: the card shrinks and fades. Returns the tween so a caller can
-## await its `finished` before freeing the card or moving on. In the editor
-## nothing animates and the tween it returns is already done.
+## await its `finished` before freeing the card or moving on. It first stops
+## the entrance and the step change, so a tap that comes while either is still
+## playing is not undone by it: the entrance would otherwise go on to fade
+## the card back in over its own exit. In the editor nothing animates and the
+## tween it returns is already done.
 func play_out() -> Tween:
+	_stop_entering()
 	if Engine.is_editor_hint():
 		var done := create_tween()
 		done.tween_interval(0.0)
 		return done
 	return AnimUtils.popup_spring_out(self, self)
+
+
+## Kills the entrance and the step-change fade, whichever is still running.
+func _stop_entering() -> void:
+	if _entrance_tween != null and _entrance_tween.is_valid():
+		_entrance_tween.kill()
+	if _step_tween != null and _step_tween.is_valid():
+		_step_tween.kill()
 
 
 ## The step change: the badge, title and body fade in one after another

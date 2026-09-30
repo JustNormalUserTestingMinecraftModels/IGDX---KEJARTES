@@ -30,6 +30,8 @@ extends BaseMinigame
 ## Fits tile text to its card, the same helper Password, Variabel and
 ## PilihanGanda use.
 const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
+## Marks a tile label already refitting on resize, so it connects once.
+const REFIT_META := &"menjodohkan_refit"
 
 ## The rungs a tile's text may take, font_display_size down to font_title.
 ## A tile is a short phrase on a big card, so it starts at the top of the
@@ -352,6 +354,11 @@ func _fit_card_text(card: Control, label: Label) -> void:
 	var badge := card.find_child("StatusBadge", true, false) as Control
 	label.add_theme_font_size_override("font_size",
 		SoalFit.font_size(label, badge, label.text, TILE_TEXT_MAX, TILE_TEXT_MIN))
+	# B1 for the tiles (2026-09-30): the first fit runs before layout, against
+	# SoalFit's fallback box; fit again once the label has its real size.
+	if not label.has_meta(REFIT_META):
+		label.set_meta(REFIT_META, true)
+		label.resized.connect(_fit_card_text.bind(card, label))
 
 
 ## One wheel card from `scene`, card_width wide.

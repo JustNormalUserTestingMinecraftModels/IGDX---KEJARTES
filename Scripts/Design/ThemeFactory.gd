@@ -2182,6 +2182,8 @@ static func _build_minigame_typography(theme: Theme, tokens: DesignTokens) -> vo
 ## How far the card's shadow alpha is raised over shadow_color's, so the
 ## frame still pops on the bright light-orange wood backdrop.
 const MINIGAME_CARD_SHADOW_ALPHA_BOOST := 0.2
+## Visible wood, px, between MinigameCard's cream rim and its inner face.
+const MINIGAME_CARD_WOOD := 16
 ## The answer button's hard drop shadow (spec 4.1, "brandD hard shadow"):
 ## StyleBoxFlat draws no shadow at a blur of 0, so this is the least blur
 ## that still draws -- a crisp edge under the full shadow_offset drop.
@@ -2208,7 +2210,10 @@ static func _build_minigame_card_family(theme: Theme, tokens: DesignTokens) -> v
 	frame.set_border_width_all(int(tokens.outline_width))
 	frame.border_color = tokens.outline_card
 	frame.set_corner_radius_all(tokens.radius_lg)
-	frame.set_content_margin_all(tokens.space_xs)
+	# The wood shows between the cream rim and the inner face: the rim's
+	# outline_width plus MINIGAME_CARD_WOOD px of brand fill (2026-09-30; at
+	# space_xs the rim covered all but 2 px of it, so the frame read as a line).
+	frame.set_content_margin_all(tokens.outline_width + MINIGAME_CARD_WOOD)
 	var lifted: Color = tokens.shadow_color
 	lifted.a = minf(1.0, tokens.shadow_color.a + MINIGAME_CARD_SHADOW_ALPHA_BOOST)
 	frame.shadow_color = lifted

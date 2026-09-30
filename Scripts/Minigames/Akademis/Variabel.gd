@@ -74,6 +74,10 @@ var active_questions: Array[Dictionary] = []  # list of {eq_text, answer}
 
 ## Measures question text against the SoalCard; shared with Password.
 const SoalFit := preload("res://Scripts/Minigames/Akademis/SoalFit.gd")
+## The question row's height: four lines (two sums, a gap, the ask) at the
+## T2 (45) floor, about 65 px each with line spacing, which the shared card's
+## 200 px row clips (260 still hid the ask, measured live 2026-09-30).
+const EQUATION_MIN_HEIGHT := 300.0
 
 ## What the player has typed so far; the LCD shows it.
 var typed_answer: String = ""
@@ -112,6 +116,9 @@ func _apply_visual_exports() -> void:
 		# The first question is set from _ready(), before the card has its laid-
 		# out size, so fit again whenever the label's real size arrives.
 		equation_label.resized.connect(_refit_equation)
+		# Four lines (two sums, a gap, the ask) at the T2 floor need more than
+		# the shared card's 200 px row; the card hugs whatever this sets.
+		equation_label.custom_minimum_size.y = EQUATION_MIN_HEIGHT
 
 ## Re-runs the font fit on whatever the card currently shows.
 func _refit_equation() -> void:

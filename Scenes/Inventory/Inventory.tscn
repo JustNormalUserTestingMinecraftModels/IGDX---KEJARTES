@@ -30,6 +30,7 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("3_o4jeo")
 expand_mode = 1
+stretch_mode = 6
 
 [node name="MainColumn" type="VBoxContainer" parent="." unique_id=631616734]
 layout_mode = 0

@@ -737,6 +737,11 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     problem, move them back to `compress/mode=2` with
     `compress/high_quality=true`, and flip `test_student_art_is_lossless` and
     the outfit import test in `tests/test_student_skins.gd` with them.
+  - **Android export: why the APK lacks the bus layout is unknown (2026-09-30).**
+    A phone build booted without the BGM and SFX buses. `AudioDirector.ensure_bus()`
+    now covers it, but the preset that builds the APK lives on another machine
+    (`export_presets.cfg` is gitignored and absent here): check its resource
+    filter carries `Assets/Audio/default_bus_layout.tres`.
   - **ETC2 is on but nothing is built for Android yet.** There is no
     `export_presets.cfg`. `import_etc2_astc` is enabled so the committed
     `.import` files stay deterministic across machines; it costs import time

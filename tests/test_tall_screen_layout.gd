@@ -734,3 +734,53 @@ func test_minigame_chrome_is_inside_the_safe_area() -> void:
 		var bottom: String = MINIGAME_BOTTOMS[path]
 		_assert_under_safe_area(screen.get_node_or_null("%MinigameHeader"), path + " strip")
 		_assert_under_safe_area(screen.get_node_or_null(bottom), path + " " + bottom)
+
+# ── Bottom controls on the remaining screens (2026-09-30) ────────────────────
+
+## The Koperasi's wall strip wears the room backdrop's own grade. Ungraded it
+## came out paler than the wall it continues, and the tall-phone band above
+## the counter read as an empty strip.
+func test_koperasi_wall_strip_matches_the_room() -> void:
+	var root := _scene(KOPERASI)
+	var strip := root.get_node_or_null("World/WallFill") as TextureRect
+	var room := root.get_node_or_null("World/Room/Background") as TextureRect
+	assert_true(strip != null and room != null, "the wall strip and the room backdrop exist")
+	if strip == null or room == null:
+		return
+	assert_true(strip.material != null, "the wall strip is graded")
+	assert_eq(strip.material, room.material, "with the room backdrop's own material")
+
+
+## Controls that sat at a fixed y near the bottom of the 1920 design, and so
+## floated mid-screen on a tall phone. Each is [scene, node, its rect at the
+## design size]; it must be anchored to the bottom edge and still land on that
+## rect at 1080x1920.
+const BOTTOM_PINNED := [
+	["res://Scenes/AturJadwal/AturJadwal.tscn", "StartWeek", Rect2(442, 1754, 614, 128)],
+	["res://Scenes/CutScene/CutScene.tscn", "DialogueBox", Rect2(44, 1340, 992, 320)],
+	["res://Scenes/CutScene/CutScene.tscn", "HintLabel", Rect2(110, 1700, 857, 60)],
+	["res://Scenes/EndGame/EndCutscene.tscn", "BtnNext", Rect2(290, 1736, 500, 128)],
+]
+
+
+func test_bottom_controls_ride_the_bottom_edge() -> void:
+	for row in BOTTOM_PINNED:
+		var label: String = "%s %s" % [String(row[0]).get_file(), row[1]]
+		var c := _scene(row[0]).get_node_or_null(row[1]) as Control
+		assert_true(c != null, label + " is missing")
+		if c == null:
+			continue
+		assert_eq(Vector2(c.anchor_top, c.anchor_bottom), Vector2(1, 1),
+			label + " must be anchored to the bottom edge")
+		var want: Rect2 = row[2]
+		var at_design := Rect2(c.offset_left, DESIGN.y + c.offset_top,
+			c.offset_right - c.offset_left, c.offset_bottom - c.offset_top)
+		_assert_rect(at_design, want, label + " at the design size")
+
+
+## Two more full-screen pictures that must cover, not stretch.
+func test_the_remaining_backdrops_fill() -> void:
+	_assert_background_fills(_scene("res://Scenes/Inventory/Inventory.tscn")
+		.get_node_or_null("Background") as TextureRect, "Inventory Background")
+	_assert_background_fills(_scene("res://Scenes/CutScene/CutScene.tscn")
+		.get_node_or_null("BgCutScene") as TextureRect, "CutScene BgCutScene")

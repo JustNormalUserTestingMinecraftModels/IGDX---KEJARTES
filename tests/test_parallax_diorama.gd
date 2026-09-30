@@ -240,6 +240,43 @@ func test_the_driver_moves_offsets_and_reads_tilt_from_the_held_pose() -> void:
 	assert_true(src.contains("_neutral"), "the phone path needs a tracked neutral pose")
 
 
+## Both sensors are off in a fresh project, and a disabled sensor reads zero
+## on the device: the driver then takes the pointer path, which on a phone is
+## the last touch. That is how the parallax shipped dead on handsets.
+func test_the_sensors_the_driver_reads_are_enabled() -> void:
+	for sensor in ["gyroscope", "accelerometer"]:
+		assert_true(bool(ProjectSettings.get_setting(
+				"input_devices/sensors/enable_" + sensor, false)),
+			"%s must be enabled or Input reads zero on a phone" % sensor)
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/ParallaxDiorama.gd")
+	assert_true(src.contains("Input.get_gyroscope()"), "the phone path follows rotation")
+	assert_true(src.contains("Input.get_accelerometer()"),
+		"a phone without a gyroscope still needs the accelerometer path")
+
+
+## The gyroscope gives a turn RATE; the driver adds it up into an angle. A
+## turn must build, a still phone must ease back to rest so any held pose is
+## neutral, and the angle must stop at the limit so turning back answers at
+## once instead of first unwinding the excess.
+func test_the_gyroscope_turn_builds_recentres_and_is_capped() -> void:
+	var driver: GDScript = load("res://Scripts/UI/ParallaxDiorama.gd")
+	var limit := deg_to_rad(12.0)
+	var turn: Vector2 = driver.integrate_turn(
+			Vector2.ZERO, Vector3(0.0, 1.0, 0.0), 0.1, 0.0, limit)
+	assert_true(is_equal_approx(turn.x, 0.1), "y rotation drives x: %s" % turn)
+	assert_true(is_zero_approx(turn.y), "y rotation must not drive y: %s" % turn)
+	turn = driver.integrate_turn(Vector2.ZERO, Vector3(-1.0, 0.0, 0.0), 0.1, 0.0, limit)
+	assert_true(is_equal_approx(turn.y, -0.1), "x rotation drives y: %s" % turn)
+	turn = driver.integrate_turn(Vector2.ZERO, Vector3(0.0, 0.0, 5.0), 0.1, 0.0, limit)
+	assert_true(turn.is_zero_approx(), "spinning flat like a wheel moves nothing: %s" % turn)
+	turn = driver.integrate_turn(Vector2.ZERO, Vector3(0.0, 50.0, 0.0), 0.1, 0.0, limit)
+	assert_true(is_equal_approx(turn.x, limit), "the angle stops at the limit: %s" % turn)
+	var rested := Vector2(0.1, -0.1)
+	for i in 600:
+		rested = driver.integrate_turn(rested, Vector3.ZERO, 1.0 / 60.0, 0.6, limit)
+	assert_true(rested.length() < 0.001, "a still phone eases back to rest: %s" % rested)
+
+
 ## The saved scene must show the authored diorama, with no overscan baked in
 ## by an editor session. The driver grows a band by pushing its offsets out,
 ## so a Full Rect band that was saved mid-growth has negative left/top

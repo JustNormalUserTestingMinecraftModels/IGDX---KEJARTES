@@ -278,10 +278,14 @@ func test_the_blur_layer_draws_above_the_stage() -> void:
 
 func test_the_next_button_sits_in_the_bottom_letterbox_bar() -> void:
 	# The 1536x2048 art letterboxes to 1080x1440 inside 1080x1920, leaving
-	# 240px bars. The button belongs in the bottom bar, clear of the art.
+	# 240px bars. The button belongs in the bottom bar, clear of the art. It
+	# is anchored to the bottom edge (2026-09-30), so on a taller phone, where
+	# the bars only grow, it stays in the bar rather than floating up the art.
 	var btn: Button = _scene().get_node("BtnNext")
-	assert_gt(btn.offset_top, 1680.0, "the button clears the bottom of the art")
-	assert_true(btn.offset_bottom <= 1920.0, "and stays on screen")
+	assert_eq(Vector2(btn.anchor_top, btn.anchor_bottom), Vector2(1, 1),
+		"the button rides the bottom edge")
+	assert_gt(btn.offset_top, -240.0, "the button clears the bottom of the art")
+	assert_true(btn.offset_bottom <= 0.0, "and stays on screen")
 
 
 func test_the_win_path_skips_the_badge() -> void:

@@ -8,6 +8,38 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Thea, Shinta and Citra desk items back to their own size
+
+The 2026-09-29 fit pass below shrank these three below 1x and the owner found
+them wrong, so their pre-shrink scales and offsets are back in all four
+slots. `test_lobby_desk_items_fit` exempts them (`OWNER_SIZED`) from the fit
+check and pins their scales above 1.04x instead; the other students still fit.
+
+## 2026-09-30 — CLAUDE.md context audit
+
+Every claim in `CLAUDE.md` was checked against source on 2026-09-30. Fixed:
+the pass rule's timing, the end-of-grade route (RunResult goes on to
+StudentCard or MainMenu), StudentList's place in the loop, Wirausaha's cost
+(flat, not higher), the efficiency multipliers (0.55/0.85/1.28, not
+0.6/0.85/1.20), two missing autoloads, the debug Scenes tab's reach,
+`ActivityRow` → `ActivityTile`, and the cause of the full-run crash. Two user
+rules joined it: KBBI-natural Indonesian copy, and a screenshot for every
+visual change. Three stale pointers into `CLAUDE.md` were repointed.
+
+Moved out of `CLAUDE.md` as history:
+
+- The test count, rewritten by nearly every pass: 184 suites, 2939 tests (2026-09-29).
+- The superseded full-run explanation: "A full run is 15-20s of near-continuous main-thread work, and the plugin's transport does not survive it (the `test_run` docs warn that a single test blocking for 20s+ can drop the session). It is not memory pressure; that was ruled out." The real cause is the MessageQueue flood from per-test scene instancing.
+
+## 2026-09-30 — The daily verdict's star of the day
+
+The Bintang Hari Ini row on the daily result wore a placeholder crown
+(`Assets/Images/DaySummary/Verdict/crown.svg`, now deleted). It now wears
+`UI/star.png`, the star the end-of-grade StatCheck meter and the verdict's own
+rating already use. Its node is renamed `Crown` -> `StarIcon`, and the slot
+goes from 64x50 to 64x64 so the square star is not squeezed. `star.png`
+already generates mipmaps, so the new draw needs no import change.
+
 ## 2026-09-29–30 — Minigame mobile layout
 
 The eight minigames now share one screen skeleton, taken from three famous
@@ -114,6 +146,13 @@ laughing (4 stars, "Luar biasa!"). They keep the tier-indexed names, now
 sources are 512 px (626 px for the sad face) drawn into the 150 px `Face`
 slot, so each import generates mipmaps and joins `test_texture_mipmaps.gd`'s
 `TARGETS` (57 of the 57 allowed).
+
+## 2026-09-30 — Skin Select's splashes 15% softer
+
+The carousel's splashes are 15% less saturated and 15% less contrasty:
+`skin_card_focus.gdshader` gains `splash_saturation` and `splash_contrast`
+(both 0.85), applied before the neighbour dimming and the 1.25 gain. The
+lower contrast also pulls the gain's clipped highlights back from white.
 
 ## 2026-09-30 — Skin Select's splashes 25% brighter
 

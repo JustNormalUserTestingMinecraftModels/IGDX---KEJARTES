@@ -50,7 +50,6 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_jadwal_activity": 60,
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_minigame_result": 68,
 	"res://Scripts/SchoolSimulation/StudentManager.gd::apply_daily_decay_all": 85,
-	"res://Scripts/StudentCard/StudentCard.gd::_highlight_multiple": 54,
 	"res://Scripts/StudentCard/StudentCard.gd::_populate_default_tutorial_steps": 52,
 	"res://Scripts/StudentCard/StudentCard.gd::_ready": 74,
 	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 58,
@@ -96,7 +95,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 36,
 	"res://Scripts/SchoolSimulation/StudentData.gd": 8,
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 38,
-	"res://Scripts/StudentCard/StudentCard.gd": 144,
+	"res://Scripts/StudentCard/StudentCard.gd": 139,
 	"res://Scripts/StudentCard/StudentCardView.gd": 13,
 	"res://Scripts/StudentList/StudentList.gd": 92,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 17,
@@ -189,7 +188,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Skins/SkinCard.gd": 1,
 	"res://Scripts/Skins/SkinSelect.gd": 1,
 	"res://Scripts/Splashscreen/Splashscreen.gd": 1,
-	"res://Scripts/StudentCard/StudentCard.gd": 140,
+	"res://Scripts/StudentCard/StudentCard.gd": 136,
 	"res://Scripts/StudentCard/StudentCardView.gd": 37,
 	"res://Scripts/StudentList/StudentList.gd": 37,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 28,
@@ -227,7 +226,7 @@ const LARGE_SCRIPTS: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 1576,
 	"res://Scripts/Debug/DebugManager.gd": 1745,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1637,
-	"res://Scripts/StudentCard/StudentCard.gd": 1447,
+	"res://Scripts/StudentCard/StudentCard.gd": 1444,
 }
 
 ## Must reach zero: .gd/.tscn names that are not PascalCase.

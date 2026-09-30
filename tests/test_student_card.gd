@@ -351,3 +351,21 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 			out.append(node.name)
 	for child in node.get_children():
 		_collect_overrides(child, out)
+
+
+# ------------------------------------------------ the arrow's size and side
+
+## StudentCard clamped its arrow with a hard-coded 320px picture, so the
+## smaller arrow still kept 320px away from every edge. The arrow now sizes
+## itself from its own arrow_size and stands its tip beside the hole, inside
+## the overlay; only this screen's card placement is still its own.
+func test_the_arrow_is_placed_from_its_own_size_not_a_hard_coded_clamp() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_highlight_multiple")
+	assert_false(body.is_empty(), "_highlight_multiple was found")
+	assert_true(body.contains(
+			"_tutorial_arrow.point_at(Rect2(local_pos, size_with_padding), Rect2(Vector2.ZERO, color_rect.size))"),
+		"the arrow points at the padded hole, within the overlay")
+	assert_false(src.contains("320.0"), "no hard-coded 320px arrow is left")
+	assert_false(src.contains("var W =") or src.contains("var H ="),
+		"no local arrow width and height either")

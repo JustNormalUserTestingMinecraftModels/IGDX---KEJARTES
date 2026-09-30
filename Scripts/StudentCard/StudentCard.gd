@@ -534,14 +534,11 @@ func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 		_highlight_tween.kill()
 		
 	var current_size = mat.get_shader_parameter("hole_size")
-	var arrow_pos = Vector2(local_pos.x + size_with_padding.x / 2.0, local_pos.y - 35.0)
+	# The arrow sizes itself from its own arrow_size and stands its tip beside the
+	# hole (above it, or below when there is no room above), inside the overlay.
+	var arrow_pos := Vector2.ZERO
 	if _tutorial_arrow:
-		var viewport_size = get_viewport_rect().size
-		var W = 320.0
-		var H = 320.0
-		var margin = 20.0
-		arrow_pos.x = clamp(arrow_pos.x, W/2.0 + margin, viewport_size.x - W/2.0 - margin)
-		arrow_pos.y = clamp(arrow_pos.y, H + margin, viewport_size.y - margin)
+		arrow_pos = _tutorial_arrow.point_at(Rect2(local_pos, size_with_padding), Rect2(Vector2.ZERO, color_rect.size))
 	if current_size == null or (current_size is Vector2 and current_size.length_squared() < 1.0):
 		# If coming from a cleared state, warp the position to center immediately to avoid swiping across screen
 		var center = local_pos + size_with_padding / 2.0

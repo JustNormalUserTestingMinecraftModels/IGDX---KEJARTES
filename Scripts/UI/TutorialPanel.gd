@@ -24,18 +24,34 @@ extends MarginContainer
 ## parent in the real hierarchy, not a sibling inside it, so it stays
 ## owned by the caller.
 ##
-## The root MarginContainer's own margin_* constants are zeroed in the
-## .tscn (layout-only overrides): the baked theme gives every
-## MarginContainer the screen margin (48px a side, ThemeFactory.gd) by
-## default, and with no override the root silently added 96px to the
-## panel's width and height on top of Frame's own size -- 1036px on a
-## 1080px screen for StudentCard's shipped numbers (fix round 2, F3). The
-## inner `Frame/Margin` needs no such override: _apply_geometry() already
-## sets its margin_* explicitly every time, which masks the theme default
-## even at content_margin == 0.
+## The screens that spotlight a control (AturJadwal, StudentList, Lobby) share
+## a handful of static helpers from here instead of each carrying its own
+## copy. mount() puts the card into the spotlight overlay; cut_hole() cuts the
+## hole; place_step() seats the card and the tutorial arrow for a step --
+## against the half of the screen opposite the spotlit control, so the arrow
+## has room and never lies across the card; and answer_wrong_tap() is what a
+## forced step does with a tap on the wrong control, which used to be nothing
+## at all. rect_in() and spot_in() turn controls into the rectangles those
+## work from.
 
 ## What the pill reads: the step number, then how many steps there are.
 const STEP_PILL_FORMAT := "Langkah %d / %d"
+
+## What the prompt says when a step gives it no line of its own.
+const DEFAULT_PROMPT := "CLICK DIMANA SAJA UNTUK LANJUT"
+## The tutorial arrow's script, for the geometry placement() shares with it.
+const ArrowScript := preload("res://Scripts/TutorialArrow.gd")
+## How far the spotlight hole stands off the control it frames, in pixels.
+const SPOT_PADDING := 12.0
+## The share of its own alpha a control keeps while a wrong tap dims it.
+const DIM_ALPHA := 0.4
+## Meta on a control a wrong tap has dimmed: the modulate it had before, which
+## the dim returns to. Kept so a second wrong tap in mid-dim restores the real
+## colour, not the dimmed one.
+const DIM_ORIGIN_META := &"tutorial_dim_origin"
+## Meta on the control a wrong tap shook, for as long as that answer plays, so
+## a second tap cannot start another shake from the first one's offset.
+const ANSWERING_META := &"tutorial_answering"
 
 ## Which badge heads the card.
 enum Mode {
@@ -261,3 +277,168 @@ func _play_step_change() -> void:
 		var reveal := _step_tween.tween_property(node, "modulate:a", 1.0, fade)
 		reveal.set_ease(Tween.EASE_OUT).set_delay(float(index) * gap)
 		index += 1
+
+
+## A control's rectangle in the coordinate space of `space`, a Control with no
+## scale or rotation of its own -- a screen's spotlight overlay.
+static func rect_in(node: Control, space: Control) -> Rect2:
+	return Rect2(node.global_position - space.global_position, node.size)
+
+
+## The spot a step highlights, in `space`'s coordinates: the rectangle that
+## holds every control in `targets`, grown by `padding` (the spotlight hole
+## stands that far off the control). A control's four corners go through its
+## own transform, so a tilted or scaled one is framed whole. Anything that is
+## not a live Control is skipped; an empty Rect2 means nothing is highlighted.
+static func spot_in(targets: Array, space: Control, padding: float = SPOT_PADDING) -> Rect2:
+	var spot := Rect2()
+	var found := false
+	for target: Variant in targets:
+		if not is_instance_valid(target) or not (target is Control):
+			continue
+		var control := target as Control
+		var corners: Array[Vector2] = [Vector2.ZERO, Vector2(control.size.x, 0.0),
+				Vector2(0.0, control.size.y), control.size]
+		for corner: Vector2 in corners:
+			var point := control.get_global_transform() * corner - space.global_position
+			spot = spot.expand(point) if found else Rect2(point, Vector2.ZERO)
+			found = true
+	return spot.grow(padding) if found else spot
+
+
+## Cuts the spotlight hole around `controls` in `overlay`'s shader: hole_pos
+## and hole_size, in the overlay's own space, `padding` off the controls.
+## Returns false, touching nothing, when `controls` holds no live Control or
+## the overlay has no spotlight material, so the caller can clear the hole.
+static func cut_hole(overlay: Control, controls: Array, padding: float = SPOT_PADDING) -> bool:
+	var hole := spot_in(controls, overlay, padding)
+	var spotlight := overlay.material as ShaderMaterial
+	if not hole.has_area() or spotlight == null:
+		return false
+	spotlight.set_shader_parameter("hole_pos", hole.position)
+	spotlight.set_shader_parameter("hole_size", hole.size)
+	return true
+
+
+## Instances the coach-mark `scene` into `overlay`, just under `before` (the
+## overlay's click catcher, so a tap still reaches it), and empties it: with
+## no step yet, show_step() keeps the scene's sample pill ("Langkah 1 / 3")
+## hidden until the first real step writes its own. Returns the card.
+static func mount(scene: PackedScene, overlay: Control, before: Control) -> TutorialPanel:
+	var panel: TutorialPanel = scene.instantiate()
+	panel.name = "TutorialPanel"
+	overlay.add_child(panel)
+	overlay.move_child(panel, before.get_index())
+	panel.show_step("", "", DEFAULT_PROMPT)
+	return panel
+
+
+## Where the card's top-left corner goes, in the space `bounds` and `spot`
+## share (`bounds` is the screen's Safe/UI, so the card keeps to the safe
+## area). The card is centred across `bounds` and sits against the half of it
+## opposite `spot`: the bottom when the spot's centre is in the top half, the
+## top otherwise. That leaves the tutorial arrow room beside the spot -- and
+## when the spot is so big that the arrow would then have nowhere to go but
+## across the card (a whole card stack, a splash), the card takes the other
+## half instead. A step with no spot (an empty Rect2) centres the card.
+static func placement(bounds: Rect2, panel_size: Vector2, spot: Rect2, arrow_size: Vector2) -> Vector2:
+	var centred := bounds.position + (bounds.size - panel_size) / 2.0
+	if not spot.has_area():
+		return centred
+	var top := Vector2(centred.x, bounds.position.y)
+	var bottom := Vector2(centred.x, bounds.end.y - panel_size.y)
+	var spot_above_middle := spot.get_center().y < bounds.get_center().y
+	var sides: Array[Vector2] = [top, bottom]
+	if spot_above_middle:
+		sides = [bottom, top]
+	for side: Vector2 in sides:
+		var fit: Dictionary = ArrowScript.fit(spot, bounds, arrow_size, Rect2(side, panel_size))
+		if fit["clear"]:
+			return side
+	return sides[0]
+
+
+## Puts one spotlit step's card and arrow where they belong, for the screens
+## that dim everything but a spot. Waits a frame so the card is as big as its
+## new text makes it, then places it inside `bounds_node` (the screen's Safe/UI)
+## and points `arrow` at the spot `targets` make, clear of the card. `overlay`
+## is the spotlight's own Control, the space the card and arrow are children
+## of. A step with no targets centres the card and hides the arrow.
+static func place_step(panel: TutorialPanel, bounds_node: Control, overlay: Control,
+		targets: Array, arrow: Control) -> void:
+	if not is_instance_valid(panel) or not panel.is_inside_tree():
+		return
+	panel.reset_size()
+	await panel.get_tree().process_frame
+	if not is_instance_valid(panel) or not is_instance_valid(bounds_node):
+		return
+	var bounds := rect_in(bounds_node, overlay)
+	var spot := spot_in(targets, overlay)
+	var arrow_size := Vector2.ZERO
+	if is_instance_valid(arrow):
+		arrow_size = arrow.arrow_size
+	panel.position = placement(bounds, panel.size, spot, arrow_size)
+	panel.pivot_offset = panel.size / 2.0
+	if not is_instance_valid(arrow):
+		return
+	arrow.visible = spot.has_area()
+	if arrow.visible:
+		arrow.position = arrow.point_at(spot, bounds, Rect2(panel.position, panel.size))
+
+
+## What a forced step does with a tap on the wrong control: the error cue, the
+## control the step wants shakes, and `others` -- the controls the tap could
+## have meant, by default the target's sibling buttons -- dim for a moment.
+## The card stays up and says nothing; the motion says "not that one, this
+## one." A second tap while the answer still plays only repeats the cue.
+static func answer_wrong_tap(target: Control, others: Array = []) -> void:
+	AudioDirector.play_sfx(&"error")
+	if not is_instance_valid(target) or target.has_meta(ANSWERING_META):
+		return
+	target.set_meta(ANSWERING_META, true)
+	Juice.shake(target)
+	var dimmed: Array = others if not others.is_empty() else sibling_buttons(target)
+	dim_others(dimmed, target)
+	var release := target.create_tween()
+	release.tween_interval(dim_seconds())
+	release.tween_callback(target.remove_meta.bind(ANSWERING_META))
+
+
+## `target`'s siblings that are visible buttons: the controls a tap aimed at
+## `target` could most likely have landed on instead.
+static func sibling_buttons(target: Control) -> Array[Control]:
+	var out: Array[Control] = []
+	var parent := target.get_parent()
+	if parent == null:
+		return out
+	for child: Node in parent.get_children():
+		if child is BaseButton and child != target and (child as Control).visible:
+			out.append(child as Control)
+	return out
+
+
+## How long one dim lasts, from the first fade to the colour back: the fade in,
+## the hold and the fade out.
+static func dim_seconds() -> float:
+	var tokens := Juice.tokens()
+	return tokens.dur_fast + tokens.dur_slow + tokens.dur_normal
+
+
+## Dims each control in `others` to DIM_ALPHA of its own alpha, holds it, and
+## fades it back to the modulate it had. `spare` (the control the step wants)
+## and anything that is not a live CanvasItem are skipped.
+static func dim_others(others: Array, spare: Control = null) -> void:
+	var tokens := Juice.tokens()
+	for other: Variant in others:
+		if not is_instance_valid(other) or other == spare or not (other is CanvasItem):
+			continue
+		var node := other as CanvasItem
+		var origin: Color = node.get_meta(DIM_ORIGIN_META, node.modulate)
+		node.set_meta(DIM_ORIGIN_META, origin)
+		var dimmed := origin
+		dimmed.a = origin.a * DIM_ALPHA
+		var tween := node.create_tween()
+		tween.tween_property(node, "modulate", dimmed, tokens.dur_fast)
+		tween.tween_interval(tokens.dur_slow)
+		tween.tween_property(node, "modulate", origin, tokens.dur_normal)
+		tween.tween_callback(node.remove_meta.bind(DIM_ORIGIN_META))

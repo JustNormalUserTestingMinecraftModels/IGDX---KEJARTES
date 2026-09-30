@@ -381,3 +381,284 @@ func test_every_caller_instances_the_arrow_scene() -> void:
 		assert_contains(src, ARROW_SCENE_PATH, "%s should preload the arrow scene" % path)
 		assert_false(src.contains("TutorialArrow.new("),
 			"%s still builds the arrow from its script" % path)
+
+
+# --------------------------------------- where the card and the arrow sit
+#
+# The three screens that spotlight a control (AturJadwal, StudentList, Lobby)
+# seat their card and arrow through TutorialPanel.place_step(): the card
+# against the half of the Safe/UI opposite the spot, the arrow beside the
+# spot and never across the card. The geometry is pure, so it is tested here
+# with the real numbers of those screens at the 1080 x 1920 design size.
+
+## A screen's Safe/UI at 1080 x 1920: (48, 48) to (1032, 1872).
+const SAFE_UI := Rect2(48, 48, 984, 1824)
+## The card with a few lines of body text.
+const CARD := Vector2(993, 520)
+## The arrow's default picture.
+const ARROW := Vector2(180, 180)
+## Spots the tutorials really highlight, padded by the hole's 12px.
+const REAL_SPOTS := {
+	"AturJadwal stat bars": Rect2(668, 100, 348, 400),
+	"AturJadwal Senin": Rect2(38, 988, 295, 291),
+	"AturJadwal student splash": Rect2(-88, 33, 724, 1268),
+	"StudentList card stack": Rect2(38, 340, 1004, 1434),
+	"StudentList roster strip": Rect2(58, 163, 964, 174),
+	"StudentList right arrow": Rect2(838, 1760, 184, 152),
+	"Lobby Inventory": Rect2(560, 1640, 290, 190),
+}
+
+
+func _make_arrow() -> Control:
+	var arrow := (load(ARROW_SCENE_PATH) as PackedScene).instantiate() as Control
+	Engine.get_main_loop().root.add_child(arrow)
+	track(arrow)
+	return arrow
+
+
+## A Control parked under the editor's root (or under `parent`), freed with the test.
+func _make_control(at: Vector2, extent: Vector2, parent: Node = null) -> Control:
+	var control := Control.new()
+	control.position = at
+	control.size = extent
+	if parent == null:
+		Engine.get_main_loop().root.add_child(control)
+		track(control)
+	else:
+		parent.add_child(control)
+	return control
+
+
+## The source of `func_name`, plain or static, up to the next function.
+func _function_source(src: String, func_name: String) -> String:
+	var start := src.find("func %s(" % func_name)
+	if start == -1:
+		return ""
+	var stop := src.length()
+	for marker: String in ["\nfunc ", "\nstatic func "]:
+		var at := src.find(marker, start + 1)
+		if at != -1:
+			stop = mini(stop, at)
+	return src.substr(start, stop - start)
+
+
+## The arrow's placement for `spot` with the card at `card_at`, as the screens get it, plus its picture.
+func _arrow_picture(spot: Rect2, card_at: Vector2) -> Dictionary:
+	var fit: Dictionary = TutorialPanel.ArrowScript.fit(spot, SAFE_UI, ARROW, Rect2(card_at, CARD))
+	fit["picture"] = TutorialPanel.ArrowScript.picture_rect(fit["tip"], ARROW, fit["pointing_up"])
+	return fit
+
+
+func test_a_step_with_no_spot_centres_the_card() -> void:
+	var at := TutorialPanel.placement(SAFE_UI, CARD, Rect2(), ARROW)
+	assert_eq(at, SAFE_UI.position + (SAFE_UI.size - CARD) / 2.0, "no spot, no half to avoid")
+
+
+func test_the_card_sits_on_the_half_opposite_the_spot() -> void:
+	var high := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS["AturJadwal stat bars"], ARROW)
+	assert_eq(high.y, SAFE_UI.end.y - CARD.y, "a spot in the top half puts the card at the bottom")
+	var low := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS["Lobby Inventory"], ARROW)
+	assert_eq(low.y, SAFE_UI.position.y, "a spot in the bottom half puts the card at the top")
+	assert_eq(high.x, low.x, "both are centred across the safe area")
+
+
+func test_the_card_always_stays_inside_the_safe_area_vertically() -> void:
+	for label: String in REAL_SPOTS:
+		var at := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS[label], ARROW)
+		assert_true(at.y >= SAFE_UI.position.y and at.y + CARD.y <= SAFE_UI.end.y,
+			"%s: the card at y=%d leaves the safe area" % [label, int(at.y)])
+
+
+## A spot that takes most of the screen leaves the arrow nowhere but across the
+## card on the card's usual half, so the card takes the other half.
+func test_a_huge_spot_moves_the_card_to_the_half_where_the_arrow_can_be_clear() -> void:
+	var stack := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS["StudentList card stack"], ARROW)
+	assert_eq(stack.y, SAFE_UI.end.y - CARD.y,
+		"the card stack's arrow goes above it, so the card goes to the bottom")
+	var splash := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS["AturJadwal student splash"], ARROW)
+	assert_eq(splash.y, SAFE_UI.position.y,
+		"the splash's arrow goes below it, so the card goes to the top")
+
+
+func test_the_arrow_is_beside_the_spot_and_off_the_card_in_every_real_step() -> void:
+	for label: String in REAL_SPOTS:
+		var spot: Rect2 = REAL_SPOTS[label]
+		var card_at := TutorialPanel.placement(SAFE_UI, CARD, spot, ARROW)
+		var placed := _arrow_picture(spot, card_at)
+		var picture: Rect2 = placed["picture"]
+		assert_true(placed["clear"], "%s: the arrow found a clear side" % label)
+		assert_false(picture.intersects(Rect2(card_at, CARD)),
+			"%s: the arrow lies across the card" % label)
+		assert_false(picture.intersects(spot), "%s: the arrow lies across the spot" % label)
+		assert_true(SAFE_UI.encloses(picture), "%s: the arrow leaves the safe area" % label)
+
+
+func test_the_arrow_stands_above_the_spot_when_there_is_room_and_below_when_not() -> void:
+	var roomy: Dictionary = TutorialPanel.ArrowScript.fit(Rect2(400, 900, 200, 100), SAFE_UI, ARROW)
+	assert_false(roomy["pointing_up"], "room above: the arrow hangs above, pointing down")
+	var roomy_tip: Vector2 = roomy["tip"]
+	assert_eq(roomy_tip.y, 900.0 - TutorialPanel.ArrowScript.TIP_GAP, "its tip stops short of the spot's top edge")
+	var cramped: Dictionary = TutorialPanel.ArrowScript.fit(Rect2(400, 100, 200, 100), SAFE_UI, ARROW)
+	assert_true(cramped["pointing_up"], "no room above: it moves below the spot, pointing up")
+	var cramped_tip: Vector2 = cramped["tip"]
+	assert_eq(cramped_tip.y, 200.0 + TutorialPanel.ArrowScript.TIP_GAP, "its tip stops short of the bottom edge")
+	assert_true(cramped["clear"])
+
+
+func test_a_spot_bigger_than_the_screen_squeezes_the_arrow_in_unclear() -> void:
+	var fit: Dictionary = TutorialPanel.ArrowScript.fit(Rect2(0, 0, 1080, 1920), SAFE_UI, ARROW)
+	assert_false(fit["clear"], "nothing is beside a spot that fills the screen")
+	var picture: Rect2 = TutorialPanel.ArrowScript.picture_rect(fit["tip"], ARROW, fit["pointing_up"])
+	assert_true(SAFE_UI.grow(-TutorialPanel.ArrowScript.EDGE_MARGIN).encloses(picture),
+		"it still stays on screen")
+
+
+## The arrow sizes from its own arrow_size knob, not from a number the caller
+## carries: the picture is the knob's size and ends short of the spot.
+func test_point_at_reads_the_arrows_own_size_and_turns_the_picture() -> void:
+	var arrow := _make_arrow()
+	arrow.arrow_size = Vector2(100, 120)
+	var visual := arrow.get_node("Visual") as TextureRect
+	var spot := Rect2(400, 900, 200, 100)
+	var tip: Vector2 = arrow.point_at(spot, SAFE_UI)
+	var picture: Rect2 = TutorialPanel.ArrowScript.picture_rect(tip, arrow.arrow_size, false)
+	assert_eq(picture.size, Vector2(100, 120), "the picture is the knob's size")
+	assert_eq(picture.end.y, spot.position.y - TutorialPanel.ArrowScript.TIP_GAP, "and ends short of the spot")
+	assert_eq(visual.rotation_degrees, 0.0, "pointing down")
+	arrow.point_at(Rect2(400, 100, 200, 100), SAFE_UI)
+	assert_eq(visual.rotation_degrees, 180.0, "a spot at the top turns it over, below the spot")
+
+
+func test_point_at_keeps_off_the_rectangle_it_is_told_to_avoid() -> void:
+	var arrow := _make_arrow()
+	var spot := Rect2(400, 900, 200, 100)
+	var card := Rect2(0, 600, 1080, 280)
+	var tip: Vector2 = arrow.point_at(spot, SAFE_UI, card)
+	var picture: Rect2 = TutorialPanel.ArrowScript.picture_rect(tip, arrow.arrow_size, true)
+	assert_false(picture.intersects(card), "the card is in the way above, so the arrow goes below")
+	assert_eq(tip.y, spot.end.y + TutorialPanel.ArrowScript.TIP_GAP)
+
+
+func test_spot_in_frames_the_controls_in_the_overlays_space() -> void:
+	var overlay := _make_control(Vector2(10, 20), Vector2(1080, 1920))
+	var first := _make_control(Vector2(100, 200), Vector2(50, 40), overlay)
+	var second := _make_control(Vector2(300, 100), Vector2(20, 30), overlay)
+	assert_eq(TutorialPanel.spot_in([first, second], overlay, 0.0), Rect2(100, 100, 220, 140),
+		"the rectangle that holds both, in the overlay's own coordinates")
+	assert_eq(TutorialPanel.spot_in([first], overlay, 12.0), Rect2(88, 188, 74, 64),
+		"the hole stands the padding off the control")
+	assert_eq(TutorialPanel.spot_in([first], overlay).size,
+		Vector2(50, 40) + Vector2(2, 2) * TutorialPanel.SPOT_PADDING,
+		"the padding defaults to SPOT_PADDING")
+
+
+func test_spot_in_frames_a_tilted_control_whole() -> void:
+	var overlay := _make_control(Vector2.ZERO, Vector2(1080, 1920))
+	var tilted := _make_control(Vector2(100, 200), Vector2(50, 40), overlay)
+	tilted.rotation = PI / 2.0
+	var spot := TutorialPanel.spot_in([tilted], overlay, 0.0)
+	assert_true(spot.position.is_equal_approx(Vector2(60, 200)),
+		"a quarter turn about the corner puts the control left of it: %s" % spot.position)
+	assert_true(spot.size.is_equal_approx(Vector2(40, 50)),
+		"and swaps its width and height: %s" % spot.size)
+
+
+func test_spot_in_skips_what_is_not_a_live_control_and_is_empty_for_none() -> void:
+	var overlay := _make_control(Vector2.ZERO, Vector2(1080, 1920))
+	var gone := Control.new()
+	gone.free()
+	var not_a_control := Node.new()
+	track(not_a_control)
+	assert_false(TutorialPanel.spot_in([], overlay).has_area(), "no targets, no spot")
+	assert_false(TutorialPanel.spot_in([gone, not_a_control, null], overlay).has_area(),
+		"a freed control, a plain node and null are skipped")
+
+
+func test_cut_hole_writes_the_hole_into_the_overlays_spotlight() -> void:
+	var overlay := ColorRect.new()
+	var spotlight := ShaderMaterial.new()
+	spotlight.shader = load("res://Scripts/Shaders/spotlight.gdshader") as Shader
+	overlay.material = spotlight
+	Engine.get_main_loop().root.add_child(overlay)
+	track(overlay)
+	var control := _make_control(Vector2(100, 200), Vector2(50, 40), overlay)
+	assert_true(TutorialPanel.cut_hole(overlay, [control], 12.0))
+	assert_eq(spotlight.get_shader_parameter("hole_pos"), Vector2(88, 188))
+	assert_eq(spotlight.get_shader_parameter("hole_size"), Vector2(74, 64))
+	assert_false(TutorialPanel.cut_hole(overlay, [], 12.0), "nothing to frame: nothing cut")
+	var bare := ColorRect.new()
+	Engine.get_main_loop().root.add_child(bare)
+	track(bare)
+	assert_false(TutorialPanel.cut_hole(bare, [control], 12.0), "no spotlight material: nothing cut")
+
+
+func test_mount_seats_the_card_under_the_click_catcher_and_empties_it() -> void:
+	var overlay := _make_control(Vector2.ZERO, Vector2(1080, 1920))
+	var other := _make_control(Vector2.ZERO, Vector2(10, 10), overlay)
+	var catcher := Button.new()
+	overlay.add_child(catcher)
+	var panel := TutorialPanel.mount(load(SCENE_PATH) as PackedScene, overlay, catcher)
+	assert_eq(String(panel.name), "TutorialPanel")
+	assert_eq(panel.get_parent(), overlay)
+	assert_eq(panel.get_index(), other.get_index() + 1, "the card joins just after the other children")
+	assert_eq(catcher.get_index(), panel.get_index() + 1, "and the click catcher stays above it")
+	assert_false(panel.step_pill.visible, "the scene's sample pill stays hidden until a real step")
+	assert_eq(panel.prompt_label.text, TutorialPanel.DEFAULT_PROMPT)
+
+
+# ---------------------------------------------------- the wrong-tap answer
+
+func test_a_wrong_tap_plays_the_error_cue_shakes_the_target_and_dims_the_others() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	var body := _function_source(src, "answer_wrong_tap")
+	assert_false(body.is_empty(), "answer_wrong_tap was found")
+	assert_contains(body, 'AudioDirector.play_sfx(&"error")', "the error cue plays")
+	assert_contains(body, "Juice.shake(target)", "the control the step wants shakes")
+	assert_contains(body, "dim_others(", "the others dim")
+	assert_contains(body, "ANSWERING_META",
+		"a second tap mid-answer repeats the cue but does not start a second shake")
+	assert_false(body.contains(".text"), "no text scolding: the motion says it")
+
+
+func test_the_dim_returns_each_control_to_the_colour_it_had() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	var body := _function_source(src, "dim_others")
+	assert_contains(body, 'tween_property(node, "modulate", origin,',
+		"the last leg of the dim is back to the remembered colour")
+	assert_contains(body, "remove_meta", "and the memory is dropped once it is restored")
+
+
+func test_dim_others_remembers_the_true_colour_and_spares_the_target() -> void:
+	var row := _make_control(Vector2.ZERO, Vector2(400, 100))
+	var target := Button.new()
+	var near := Button.new()
+	row.add_child(target)
+	row.add_child(near)
+	var gone := Button.new()
+	gone.free()
+	var real := Color(1.0, 0.5, 0.25, 0.8)
+	near.modulate = real
+	TutorialPanel.dim_others([target, near, gone, null], target)
+	assert_false(target.has_meta(TutorialPanel.DIM_ORIGIN_META), "the control the step wants is spared")
+	assert_eq(near.get_meta(TutorialPanel.DIM_ORIGIN_META), real, "the real colour is remembered")
+	near.modulate = Color(0.1, 0.1, 0.1, 0.1)  # a second wrong tap, mid-dim
+	TutorialPanel.dim_others([near])
+	assert_eq(near.get_meta(TutorialPanel.DIM_ORIGIN_META), real,
+		"a dim begun mid-dim still restores the real colour, not the dimmed one")
+
+
+func test_sibling_buttons_are_the_visible_other_buttons() -> void:
+	var row := _make_control(Vector2.ZERO, Vector2(400, 100))
+	var target := Button.new()
+	var near := Button.new()
+	var hidden := Button.new()
+	hidden.visible = false
+	var label := Label.new()
+	for child: Control in [target, near, hidden, label]:
+		row.add_child(child)
+	var found := TutorialPanel.sibling_buttons(target)
+	assert_eq(found.size(), 1, "the hidden button and the label are not candidates")
+	assert_true(found.has(near))
+	var lone := Button.new()
+	assert_eq(TutorialPanel.sibling_buttons(lone).size(), 0, "a control with no parent has no siblings")
+	lone.free()

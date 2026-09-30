@@ -8,6 +8,21 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Phone audio sliders and tall-phone stragglers
+
+- **Musik and Efek Suara did nothing on a phone build.** They work in the
+  editor; with the BGM and SFX buses absent (removed in a running game to
+  reproduce it) every player falls back to Master and `set_bus_volume()` finds
+  nothing to turn, while Suara Utama keeps working. `AudioDirector` now
+  creates any bus in `MIXER_BUSES` the loaded layout lacks
+  (`ensure_bus()`), before it makes its players. Not yet confirmed on a
+  device: no export preset or templates exist on the dev PC, so why the APK
+  lacks the layout is still open (DEBT.md, "Android export").
+- **Koperasi's tall-phone band** read as an empty strip: `WallFill` lacked the
+  room backdrop's grade and came out paler than the wall. Same material now.
+- **Bottom controls pinned to the bottom edge**: AturJadwal's START WEEK,
+  CutScene's dialogue box and hint, EndCutscene's Lanjut. Inventory's and
+  CutScene's backdrops cover instead of stretching.
 ## 2026-09-30 — Parallax follows the phone's rotation
 
 `ParallaxDiorama` reads the gyroscope first (owner's ask). The gyroscope gives

@@ -743,11 +743,15 @@ autowrap_mode = 3
 
 [node name="StartWeek" type="Button" parent="." unique_id=288288757]
 custom_minimum_size = Vector2(0, 128)
-layout_mode = 0
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 1.0
+anchor_bottom = 1.0
 offset_left = 442.0
-offset_top = 1754.0
+offset_top = -166.0
 offset_right = 1056.0
-offset_bottom = 1882.0
+offset_bottom = -38.0
+grow_vertical = 0
 theme_type_variation = &"PrimaryButtonM"
 text = "START WEEK"
 

@@ -467,3 +467,60 @@ func test_the_grade_stays_subtle() -> void:
 		assert_true(contrast <= GRADE_CONTRAST_CEILING,
 			"%s: contrast %s darkens the plates past the agreed ceiling %s"
 				% [path, contrast, GRADE_CONTRAST_CEILING])
+
+
+# ── Grafis HD (2026-09-30 mobile performance pass) ───────────────────────────
+#
+# One Settings switch, on by default, for the two things a slow phone pays
+# most for on every screen: 2x MSAA and the bloom's screen copy. Off means
+# neither runs anywhere.
+
+func test_hd_off_turns_msaa_off_and_on_restores_the_projects_own() -> void:
+	var look: GDScript = load("res://Scripts/Look/LookLayer.gd")
+	assert_eq(look.call("msaa_for", false), Viewport.MSAA_DISABLED, "Grafis HD off: no MSAA")
+	assert_eq(look.call("msaa_for", true),
+		int(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_2d")),
+		"on: whatever project.godot asks for, so the setting stays the one place it is tuned")
+
+
+func test_the_global_bloom_needs_both_switches() -> void:
+	var look: GDScript = load("res://Scripts/Look/LookLayer.gd")
+	var was_look: bool = GameSettings.look_layer_enabled
+	var was_hd: bool = GameSettings.hd_graphics_enabled
+	GameSettings.look_layer_enabled = true
+	GameSettings.hd_graphics_enabled = true
+	assert_true(look.call("wants_bloom"), "Efek Visual and Grafis HD both on: bloom")
+	GameSettings.hd_graphics_enabled = false
+	assert_false(look.call("wants_bloom"), "Grafis HD off: no bloom, so no screen copy")
+	GameSettings.hd_graphics_enabled = true
+	GameSettings.look_layer_enabled = false
+	assert_false(look.call("wants_bloom"), "Efek Visual off: no bloom either")
+	GameSettings.look_layer_enabled = was_look
+	GameSettings.hd_graphics_enabled = was_hd
+
+
+func test_the_layer_follows_the_hd_switch() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/LookLayer.gd")
+	assert_true(src.contains("GameSettings.hd_graphics_changed.connect("),
+		"a flip takes effect at once, not on the next launch")
+	assert_true(src.contains("_bloom.visible = GameSettings.hd_graphics_enabled"),
+		"a bloom that is only transparent would still copy the screen; it must leave the draw list")
+
+
+## The Lobby's glow is a plain WorldEnvironment, not an AmbientGlow, so it
+## wears HdEnvironmentGlow to follow the switch. Driven through the script's
+## own _apply on a throwaway Environment: the script is not @tool, so the
+## runner cannot stand it up live.
+func test_the_lobby_glow_follows_grafis_hd() -> void:
+	var lobby := FileAccess.get_file_as_string("res://Scenes/Lobby/Lobby.tscn")
+	var node_at := lobby.find('[node name="WorldEnvironment" type="WorldEnvironment"')
+	assert_true(node_at >= 0, "the Lobby has its WorldEnvironment")
+	var block := lobby.substr(node_at, lobby.find("
+
+", node_at) - node_at)
+	assert_true(block.contains('script = ExtResource("hd_env_glow")'), "and it wears HdEnvironmentGlow")
+	assert_true(lobby.contains('path="res://Scripts/Look/HdEnvironmentGlow.gd" id="hd_env_glow"'))
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/HdEnvironmentGlow.gd")
+	assert_true(src.contains("GameSettings.hd_graphics_changed.connect("), "it hears the flip")
+	assert_true(src.contains("environment.glow_enabled = GameSettings.hd_graphics_enabled"))
+

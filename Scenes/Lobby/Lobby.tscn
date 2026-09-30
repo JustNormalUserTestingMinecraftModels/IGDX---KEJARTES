@@ -37,6 +37,7 @@
 [ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="40_2xndu"]
 [ext_resource type="Texture2D" uid="uid://bedjpscelrj33" path="res://Assets/Images/UI/DailyLogin/streak_flame.svg" id="40_hp3mh"]
 [ext_resource type="Environment" uid="uid://1ib2ar7qdbjh" path="res://Scenes/Lobby/lobby_environment.tres" id="41_7qlaa"]
+[ext_resource type="Script" path="res://Scripts/Look/HdEnvironmentGlow.gd" id="hd_env_glow"]
 [ext_resource type="PackedScene" uid="uid://0cdrfw471jnq" path="res://Scenes/Lobby/DailyRewardReveal.tscn" id="41_slwnx"]
 [ext_resource type="PackedScene" uid="uid://ckv3ev7addti4" path="res://Scenes/Lobby/DapatkanUang.tscn" id="49_7sr8a"]
 [ext_resource type="Script" uid="uid://b7vwvw12t4yux" path="res://Scripts/UI/IdleFade.gd" id="52_rsfel"]
@@ -1578,6 +1579,7 @@ bubble_path = NodePath("../ChatBubble")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2049146762]
 environment = ExtResource("41_7qlaa")
+script = ExtResource("hd_env_glow")
 
 [node name="IdleFade" type="Node" parent="." unique_id=880756292 node_paths=PackedStringArray("targets")]
 script = ExtResource("52_rsfel")

@@ -65,6 +65,23 @@ var ambient_effects_enabled: bool = true:
 ## Emitted when ambient_effects_enabled flips.
 signal ambient_effects_changed(enabled: bool)
 
+## Grafis HD (2026-09-30 mobile performance pass): the two things a slow phone
+## pays most for on every screen. On, the game antialiases 2D (MSAA) and
+## blooms; off, it does neither: LookLayer drops the viewport's MSAA and its
+## own bloom, and every ScreenGlow and AmbientGlow switches off (AmbientKit.
+## wants_bloom). DEFAULT ON, so nobody loses either without asking; the
+## vignette and grain stay with look_layer_enabled, the rest of the ambient
+## kit with ambient_effects_enabled.
+var hd_graphics_enabled: bool = true:
+	set(value):
+		if hd_graphics_enabled == value:
+			return
+		hd_graphics_enabled = value
+		hd_graphics_changed.emit(value)
+
+## Emitted when hd_graphics_enabled flips.
+signal hd_graphics_changed(enabled: bool)
+
 ## Premium-look pass (2026-09-22): whether the global look layer -- the
 ## vignette and film grain LookLayer draws over every screen -- is on.
 ##
@@ -100,6 +117,7 @@ func save_settings() -> void:
 	config.set_value("pengaturan", "minigame_tutorial", minigame_tutorial_enabled)
 	config.set_value("pengaturan", "skip_dialog", skip_event_dialogue)
 	config.set_value("pengaturan", "look_layer", look_layer_enabled)
+	config.set_value("pengaturan", "hd_graphics", hd_graphics_enabled)
 	config.set_value("pengaturan", "ambient_effects", ambient_effects_enabled)
 	config.set_value("pengaturan", "haptics", haptics_enabled)
 	config.set_value("pengaturan", "reduce_motion", reduce_motion)
@@ -114,6 +132,7 @@ func load_settings() -> void:
 		minigame_tutorial_enabled = config.get_value("pengaturan", "minigame_tutorial", true)
 		skip_event_dialogue = config.get_value("pengaturan", "skip_dialog", false)
 		look_layer_enabled = config.get_value("pengaturan", "look_layer", false)
+		hd_graphics_enabled = config.get_value("pengaturan", "hd_graphics", true)
 		ambient_effects_enabled = config.get_value("pengaturan", "ambient_effects", true)
 		haptics_enabled = config.get_value("pengaturan", "haptics", true)
 		reduce_motion = config.get_value("pengaturan", "reduce_motion", false)

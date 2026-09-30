@@ -23,6 +23,7 @@ extends Control
 @onready var _sfx: HSlider = %SfxSlider
 @onready var _tutorial: CheckButton = %TutorialRow.toggle
 @onready var _skip_dialog: CheckButton = %SkipDialogRow.toggle
+@onready var _hd_graphics: CheckButton = %HdGraphicsRow.toggle
 @onready var _look_layer: CheckButton = %LookLayerRow.toggle
 @onready var _ambient: CheckButton = %AmbientRow.toggle
 @onready var _haptics: CheckButton = %HapticsRow.toggle
@@ -58,6 +59,7 @@ func _ready() -> void:
 	_sfx.value = AudioDirector.get_bus_volume(&"SFX")
 	_tutorial.button_pressed = GameSettings.minigame_tutorial_enabled
 	_skip_dialog.button_pressed = GameSettings.skip_event_dialogue
+	_hd_graphics.button_pressed = GameSettings.hd_graphics_enabled
 	_look_layer.button_pressed = GameSettings.look_layer_enabled
 	_ambient.button_pressed = GameSettings.ambient_effects_enabled
 	_haptics.button_pressed = GameSettings.haptics_enabled
@@ -68,6 +70,7 @@ func _ready() -> void:
 	_sfx.value_changed.connect(_on_volume_changed.bind(&"SFX"))
 	_tutorial.toggled.connect(_on_tutorial_toggled)
 	_skip_dialog.toggled.connect(_on_skip_dialog_toggled)
+	_hd_graphics.toggled.connect(_on_hd_graphics_toggled)
 	_look_layer.toggled.connect(_on_look_layer_toggled)
 	_ambient.toggled.connect(_on_ambient_toggled)
 	_haptics.toggled.connect(_on_haptics_toggled)
@@ -135,6 +138,16 @@ func _on_tutorial_toggled(pressed: bool) -> void:
 ## EventDialogue line before each minigame. Saved like the tutorial switch.
 func _on_skip_dialog_toggled(pressed: bool) -> void:
 	GameSettings.skip_event_dialogue = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Grafis HD": antialiasing (MSAA) and every bloom. On by default; off is
+## the switch for a phone that struggles. Setting the property emits
+## hd_graphics_changed, which LookLayer and the glow pieces follow at once.
+## Saved.
+func _on_hd_graphics_toggled(pressed: bool) -> void:
+	GameSettings.hd_graphics_enabled = pressed
 	if not Engine.is_editor_hint():
 		GameSettings.save_settings()
 

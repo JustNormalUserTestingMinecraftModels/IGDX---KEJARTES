@@ -73,6 +73,8 @@ static func _build_screen_section(vbox: VBoxContainer) -> void:
 		"ambient_effects_enabled")
 	_add_setting_switch(vbox, " Efek Visual (vignette, grain, bloom global) ",
 		"look_layer_enabled")
+	_add_setting_switch(vbox, " Grafis HD (MSAA, semua bloom) ",
+		"hd_graphics_enabled")
 
 	var count := Label.new()
 	count.add_theme_font_size_override("font_size", CAPTION_FONT)

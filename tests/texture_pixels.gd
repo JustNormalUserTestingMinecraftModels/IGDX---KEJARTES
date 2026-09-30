@@ -17,5 +17,9 @@ static func of(tex: Texture2D) -> Image:
 		return null
 	var img := tex.get_image()
 	if img != null and img.is_compressed():
+		# A copy: an editor build hands every caller the same cached Image, so
+		# unpacking it in place left the texture reading as uncompressed to
+		# every later test in the run.
+		img = img.duplicate()
 		img.decompress()
 	return img

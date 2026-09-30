@@ -1,6 +1,6 @@
 # Lobby seating to the owner's picture, and planks on tall phones — design
 
-**Date:** 2026-09-30 · **Branch:** `feat/lobby-match-mockup` · **Status:** approved in chat
+**Date:** 2026-09-30 · **Branch:** `feat/lobby-match-mockup` · **Status:** approved in chat; seating rule revised in build (section 2)
 
 Reference picture: `docs/superpowers/mockups/lobby-seating-reference-2026-09-30.jpg`
 (1080x1920, attached by the owner in chat).
@@ -61,25 +61,40 @@ his `Hand_Marcel` in that seat is flipped (`flip_h`).
 
 ### The rule
 
-For each seat, with its pictured student:
+As first approved, each seat's other five students were to take the pictured
+student's scale ratio and shift. **Revised in build, 2026-09-30**, on what
+the measurements showed:
 
-1. Measure, in the picture, the desk's visible rect and the student's head
-   and hands-and-items boxes. Measure the same desk's rect in the game.
-2. Map the picture's boxes through the desk-to-desk transform (uniform scale
-   = game desk width / picture desk width, anchored on the desk's top-left),
-   giving where the portrait and the hand texture must draw in the game.
-3. **Portrait:** set the seat's `Portrait` offsets so the pictured student's
-   portrait art lands on the mapped head box. Every student in that seat
-   shares the box. `ChatAnchor` moves by the portrait's shift.
-4. **Hands:** set the pictured student's `Hand_<Name>` in that seat to land
-   on the mapped box. Compute that node's change as a scale ratio and a
-   position shift of its pivot, and apply **the same ratio and shift to the
-   other five `Hand_*` nodes in that seat** (owner's pick "A"). The by-eye
-   proportions between students, including the owner-sized Citra, Shinta and
-   Thea, are therefore kept.
+- **The picture's desks are other art** (tops 429 px wide and 155 deep against
+  the game's 448 and 223), so there is no exact "same place on the desk".
+  Picture pixels map to game pixels by `K = 448 / 429`, anchored vertically
+  on each desk's back edge, where the body meets it.
+- **One item scale per row.** The picture draws both back-row students' items
+  at 0.80 of the native art and both front-row students' at 1.00. Today's
+  scales differ by student (Andi 0.79, Citra 1.10 in the same row), so a
+  per-seat ratio would have left Andi at 0.61 in Citra's seat and 0.84 in his
+  own. Every `Hand_*` in a row therefore wears that row's picture scale times
+  K (0.835 back, 1.044 front), uniform on both axes. This supersedes the
+  2026-09-29 by-eye sizes of Citra, Shinta and Thea: the picture is newer and
+  shows Citra and Thea at the row scale.
+- **The pictured four are matched exactly** (scale and drawn centre). Marcel
+  in the front-left seat is mirrored, as pictured.
+- **The other students keep their own place along the desk** and their
+  mirroring, and rise by their row's shift (the mean of its two pictured
+  students' rise: 72 px back, 80 px front). In the front row an item wider
+  than its desk is pushed to run off the screen's edge, as the picture's
+  Marcel does, never over the aisle.
+- **Portraits.** Each seat's `Portrait` becomes exactly the pictured square
+  (0.20 of 1280 px in the back row, 0.25 in the front, times K); `ChatAnchor`
+  moves with it. Back-row students stay centred on their desk's top, the
+  owner's 2026-09-29 rule that `test_lobby_layout` pins: the picture's Citra
+  sits 11 px off her (other) desk's centre, which is not carried over, and
+  her hands keep the picture's offset from her body. Andi's and Marcel's
+  heads are occluded in the picture, so their seats mirror Citra's and
+  Thea's.
 
-Students come out smaller against their desks than today (first estimate
-10-15%), and the back row sits fully in view.
+Students come out smaller than before (back row 365 px to 267, front 365 to
+334), and the back row sits fully in view.
 
 Every measured number (picture boxes, game desk rects, resulting ratios and
 shifts per seat) is recorded in the plan and in the changelog entry, so the
@@ -89,18 +104,19 @@ placement can be re-derived.
 
 - `tests/test_lobby_desk_items_fit.gd`: the picture is the new reference.
   The "inside the desk's width" rule and its `OWNER_SIZED` exception are
-  replaced by the placements the picture produces, pinned per seat (the
-  pictured student's scale and position, and that the other five share the
-  seat's ratio and shift). Kept: 24 hands exist, and no hand item is clipped
-  by the classroom's edges.
+  replaced by: each seat's portrait square; the pictured four's scale,
+  mirroring and drawn centre; every hand wearing its row's scale, keeping its
+  old x (off the aisle in the front row) and rising with its row, against a
+  recorded table of the old placements; and no item more than a quarter
+  outside the classroom.
 - `tests/test_tall_screen_layout.gd`: `test_lobby_backdrop_is_black_and_full_rect`
   becomes the plank colour and Full Rect; new checks that the two edge
   strips meet the room's top and bottom at 1080x2400 and are off screen at
   1080x1920. The Lobby's other tall and design-size rects are re-pinned only
   where a portrait or hand moved.
-- Any other suite pinning the old portrait or hand numbers
-  (`lobby`, `lobby_layout`, `lobby_skins`, `lobby_look`, `student_face`,
-  `face_rig_roster`) is updated to the new ones, not loosened.
+- `tests/test_lobby_layout.gd`: the header-clears-the-hair test now passes a
+  back seat that never reaches the header's keep-out by geometry (the smaller
+  squares stop short of it); a seat that does reach it must still scan.
 
 ## 4. Verification
 

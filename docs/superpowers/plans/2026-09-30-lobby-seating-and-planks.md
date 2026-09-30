@@ -16,6 +16,17 @@
 - No `theme_override_*`; suites stay `@tool` with no coroutine tests.
 - Plank wood is `#B07A45`; edges are that colour darkened 35% (8 px, against the room) and lightened 12% (6 px).
 
+## Revised in build
+
+The per-seat "ratio and shift" rule of Task 3 was replaced (spec, section 2):
+one item scale per row, the pictured four exact, the rest keep their x (off
+the aisle in the front row) and rise with their row. The back-row x anchors
+became the student's centre line (picture portrait centre 253.8 / 826.2 to
+the game's desk-top centre 271.26 / 803.74), which keeps the back seats
+centred on their desks; the back-right desk plate is offset -8 px in the
+scene. The tables below are the first pass; the final numbers are the
+constants in `tests/test_lobby_desk_items_fit.gd`.
+
 ## Measurements (2026-09-30)
 
 Taken by masked template matching of the game's own textures in the picture, and by wood-colour bounding boxes.

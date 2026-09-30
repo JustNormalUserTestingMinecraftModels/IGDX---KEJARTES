@@ -534,6 +534,18 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Texture memory follow-ons (2026-09-30).** Rule and numbers:
+  `tests/test_texture_memory.gd`.
+  - **Not checked on a phone.** The compressed art was judged on desktop
+    (BPTC); a phone gets ASTC 4x4 from the same import. Look at the splashes
+    and the desk plates on a device before a release.
+  - **The face bases are the largest textures left**: 1280x1280 lossless
+    (8.3 MB each with mips), drawn at about 400 px. All six load in the
+    Lobby whatever the roster is. Halving the art, or loading only the
+    roster's faces, is the next saving.
+  - **About 100 MB in the Lobby is not art**: probably render targets, MSAA,
+    fonts and the theme. Not investigated.
+
 - **Minigame hierarchy follow-ons (2026-09-30).** Spec:
   `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`.
   - **Stray key outline in the calculator art (artist).**

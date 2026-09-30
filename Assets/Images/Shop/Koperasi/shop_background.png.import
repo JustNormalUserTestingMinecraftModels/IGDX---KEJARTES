@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c508i2o3te6ur"
-path="res://.godot/imported/shop_background.png-633fcb4033dd69ad1315116150ba9fbd.ctex"
+path.bptc="res://.godot/imported/shop_background.png-633fcb4033dd69ad1315116150ba9fbd.bptc.ctex"
+path.astc="res://.godot/imported/shop_background.png-633fcb4033dd69ad1315116150ba9fbd.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Shop/Koperasi/shop_background.png"
-dest_files=["res://.godot/imported/shop_background.png-633fcb4033dd69ad1315116150ba9fbd.ctex"]
+dest_files=["res://.godot/imported/shop_background.png-633fcb4033dd69ad1315116150ba9fbd.bptc.ctex", "res://.godot/imported/shop_background.png-633fcb4033dd69ad1315116150ba9fbd.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

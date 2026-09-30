@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dtug1ivs68vyr"
-path="res://.godot/imported/splash_shinta_batik.png-379072abd61cd5fc700a81fb588ef594.ctex"
+path.bptc="res://.godot/imported/splash_shinta_batik.png-379072abd61cd5fc700a81fb588ef594.bptc.ctex"
+path.astc="res://.godot/imported/splash_shinta_batik.png-379072abd61cd5fc700a81fb588ef594.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_batik.png"
-dest_files=["res://.godot/imported/splash_shinta_batik.png-379072abd61cd5fc700a81fb588ef594.ctex"]
+dest_files=["res://.godot/imported/splash_shinta_batik.png-379072abd61cd5fc700a81fb588ef594.bptc.ctex", "res://.godot/imported/splash_shinta_batik.png-379072abd61cd5fc700a81fb588ef594.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

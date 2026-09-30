@@ -1,6 +1,9 @@
 @tool
 extends McpTestSuite
 
+## Reads pixels from textures the import may have compressed.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+
 ## Every Lobby desk item (the Hand_<Name> nodes) stays inside its desk's
 ## width, in every skin's table art, except the OWNER_SIZED students, whose
 ## by-eye scales are pinned instead. An item wider than its desk hangs off both edges and reads as
@@ -95,7 +98,7 @@ static func widest_hand_art(student: String) -> float:
 ## The x-range of a desk plate's opaque pixels, through its scale and
 ## pivot, clipped to the classroom.
 static func desk_span(desk: Dictionary) -> Vector2:
-	var used: Rect2i = (desk["texture"] as Texture2D).get_image().get_used_rect()
+	var used: Rect2i = TexturePixels.of(desk["texture"] as Texture2D).get_used_rect()
 	var sx: float = (desk.get("scale", Vector2.ONE) as Vector2).x
 	var px: float = (desk.get("pivot_offset", Vector2.ZERO) as Vector2).x
 	var ox: float = desk.get("offset_left", 0.0)

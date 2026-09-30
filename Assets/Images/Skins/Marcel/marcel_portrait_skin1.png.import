@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://m1pylsp1u8my"
-path="res://.godot/imported/marcel_portrait_skin1.png-114a6c0487262f7f964560d59c09b8a6.ctex"
+path.bptc="res://.godot/imported/marcel_portrait_skin1.png-114a6c0487262f7f964560d59c09b8a6.bptc.ctex"
+path.astc="res://.godot/imported/marcel_portrait_skin1.png-114a6c0487262f7f964560d59c09b8a6.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/Skins/Marcel/marcel_portrait_skin1.png"
-dest_files=["res://.godot/imported/marcel_portrait_skin1.png-114a6c0487262f7f964560d59c09b8a6.ctex"]
+dest_files=["res://.godot/imported/marcel_portrait_skin1.png-114a6c0487262f7f964560d59c09b8a6.bptc.ctex", "res://.godot/imported/marcel_portrait_skin1.png-114a6c0487262f7f964560d59c09b8a6.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

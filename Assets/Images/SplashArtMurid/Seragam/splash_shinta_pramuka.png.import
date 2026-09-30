@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://wur54vsbl8oc"
-path="res://.godot/imported/splash_shinta_pramuka.png-c1bb7a298337c6a34f484f390f6e68ca.ctex"
+path.bptc="res://.godot/imported/splash_shinta_pramuka.png-c1bb7a298337c6a34f484f390f6e68ca.bptc.ctex"
+path.astc="res://.godot/imported/splash_shinta_pramuka.png-c1bb7a298337c6a34f484f390f6e68ca.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/Seragam/splash_shinta_pramuka.png"
-dest_files=["res://.godot/imported/splash_shinta_pramuka.png-c1bb7a298337c6a34f484f390f6e68ca.ctex"]
+dest_files=["res://.godot/imported/splash_shinta_pramuka.png-c1bb7a298337c6a34f484f390f6e68ca.bptc.ctex", "res://.godot/imported/splash_shinta_pramuka.png-c1bb7a298337c6a34f484f390f6e68ca.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

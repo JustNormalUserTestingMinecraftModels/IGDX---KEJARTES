@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bpayde6glp1hm"
-path="res://.godot/imported/papantulis.png-b98e06cdf5f345ed03099cddbc1f03fa.ctex"
+path.bptc="res://.godot/imported/papantulis.png-b98e06cdf5f345ed03099cddbc1f03fa.bptc.ctex"
+path.astc="res://.godot/imported/papantulis.png-b98e06cdf5f345ed03099cddbc1f03fa.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/UI/papantulis.png"
-dest_files=["res://.godot/imported/papantulis.png-b98e06cdf5f345ed03099cddbc1f03fa.ctex"]
+dest_files=["res://.godot/imported/papantulis.png-b98e06cdf5f345ed03099cddbc1f03fa.bptc.ctex", "res://.godot/imported/papantulis.png-b98e06cdf5f345ed03099cddbc1f03fa.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bvc6vlo87qpl0"
-path="res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.ctex"
+path.bptc="res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.bptc.ctex"
+path.astc="res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SplashArtMurid/splash_marcel.png"
-dest_files=["res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.ctex"]
+dest_files=["res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.bptc.ctex", "res://.godot/imported/splash_marcel.png-574bb9e6b18b7478400dcaacaeb44bcf.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

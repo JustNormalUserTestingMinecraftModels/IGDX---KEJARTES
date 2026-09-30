@@ -3,20 +3,22 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b8j5e5pqt2hr8"
-path="res://.godot/imported/transition_background.png-f41193914f17035d6bff0094d2e8a03c.ctex"
+path.bptc="res://.godot/imported/transition_background.png-f41193914f17035d6bff0094d2e8a03c.bptc.ctex"
+path.astc="res://.godot/imported/transition_background.png-f41193914f17035d6bff0094d2e8a03c.astc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Assets/Images/SchoolDay/transition_background.png"
-dest_files=["res://.godot/imported/transition_background.png-f41193914f17035d6bff0094d2e8a03c.ctex"]
+dest_files=["res://.godot/imported/transition_background.png-f41193914f17035d6bff0094d2e8a03c.bptc.ctex", "res://.godot/imported/transition_background.png-f41193914f17035d6bff0094d2e8a03c.astc.ctex"]
 
 [params]
 
-compress/mode=0
-compress/high_quality=false
+compress/mode=2
+compress/high_quality=true
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0

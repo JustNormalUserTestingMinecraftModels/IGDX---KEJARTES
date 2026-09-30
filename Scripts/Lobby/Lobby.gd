@@ -730,6 +730,10 @@ func _on_student_pressed():
 	Transition.change_scene("res://Scenes/StudentCard/StudentCard.tscn")
 
 func _on_jadwal_pressed():
+	# Phase 2's last step has no tap-anywhere to finish it: this press is what
+	# ends the tutorial, so the Lobby never replays it.
+	if tutorial_active:
+		_end_tutorial()
 	_animate_button_click_bounce(jadwal_button)
 	print("Tombol Jadwal ditekan, pindah ke atur_jadwal")
 	Transition.change_scene("res://Scenes/AturJadwal/AturJadwal.tscn")
@@ -839,13 +843,14 @@ func _show_step(index: int) -> void:
 
 	await tween_in.finished
 
-	if not GameState.returned_from_student_card and index == current_phase_steps.size() - 1:
+	if index == current_phase_steps.size() - 1:
+		# The last step of either phase names the button that leaves the Lobby
+		# (Student, then Jadwal): taps pass through the overlay to it, so its
+		# first press works, as its prompt says.
 		color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		if student_button is BaseButton:
-			student_button.disabled = false
-		else:
-			student_button.mouse_filter = Control.MOUSE_FILTER_STOP
+		if not _step_targets.is_empty() and _step_targets[0] is BaseButton:
+			(_step_targets[0] as BaseButton).disabled = false
 	else:
 		color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP

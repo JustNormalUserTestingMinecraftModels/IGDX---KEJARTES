@@ -719,3 +719,66 @@ func _check_step_target(row: Array, book: Control) -> void:
 	var spoken := ("%s %s %s" % [row[0], row[1], row[3]]).to_lower()
 	assert_true(caption != "" and spoken.contains(caption),
 		"%s wears the caption \"%s\", which its step never mentions" % [target_name, button.text])
+
+
+## Each phase's last step names the button that leaves the Lobby, and the overlay lets
+## a tap through to it, in either phase. Phase 2 once kept the overlay catching taps,
+## so the first press on JADWAL only ended the tutorial and the prompt ("Tekan tombol
+## 'Jadwal' untuk lanjut!") was wrong about it.
+func test_the_last_step_of_either_phase_passes_taps_through_to_its_button() -> void:
+	var step := _function_body("_show_step")
+	assert_false(step.contains("returned_from_student_card"),
+		"the last-step branch does not ask which phase it is")
+	var last_at := step.find("if index == current_phase_steps.size() - 1:")
+	var else_at := step.find("\telse:", last_at)
+	assert_true(last_at >= 0 and else_at > last_at, "a branch for the last step, then the rest")
+	var last_step := step.substr(last_at, else_at - last_at)
+	assert_true(last_step.contains("color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE"),
+		"the overlay passes the tap on")
+	assert_true(last_step.contains("click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE"),
+		"and so does its click catcher")
+	assert_true(last_step.contains("(_step_targets[0] as BaseButton).disabled = false"),
+		"the step's own first target is enabled, whichever button that is")
+	assert_false(last_step.contains("student_button"), "no button is hard-coded into it")
+	var other_steps := step.substr(else_at, step.find("\n\n", else_at) - else_at)
+	assert_true(other_steps.contains("color_rect.mouse_filter = Control.MOUSE_FILTER_STOP")
+			and other_steps.contains("click_area.mouse_filter = Control.MOUSE_FILTER_STOP"),
+		"every earlier step still takes the tap to advance")
+
+
+## Pressing JADWAL during the tutorial ends it (phase 2's last step has no tap-anywhere
+## to do it), before leaving for AturJadwal. Pressing STUDENT does not: phase 1 ends on
+## the trip to StudentCard and phase 2 follows it.
+func test_pressing_jadwal_ends_an_active_tutorial_and_student_does_not() -> void:
+	var jadwal := _function_body("_on_jadwal_pressed")
+	var gate_at := jadwal.find("if tutorial_active:")
+	assert_true(gate_at >= 0, "JADWAL's press asks whether the tutorial is still on")
+	var ends_at := jadwal.find("_end_tutorial()", gate_at)
+	assert_true(ends_at > gate_at, "and ends it if so")
+	assert_true(ends_at < jadwal.find("Transition.change_scene("), "before the scene changes")
+	assert_false(_function_body("_on_student_pressed").contains("_end_tutorial()"),
+		"STUDENT's press leaves phase 2 still to come")
+
+
+## `_start_tutorial` makes the last step's button visible in its own phase: Student in
+## phase 1, Jadwal in phase 2 (the two share a spot on the book's page, and the script
+## shows one and hides the other). The scene alone cannot show that, since it authors
+## both visible.
+func test_each_phase_shows_the_button_its_last_step_points_at() -> void:
+	var start := _function_body("_start_tutorial")
+	var phase2_at := start.find("if GameState.returned_from_student_card:")
+	var phase1_at := start.find("\telse:", phase2_at)
+	var phase1_end := start.find("_connect_hud_buttons()", phase1_at)
+	assert_true(phase2_at >= 0 and phase1_at > phase2_at and phase1_end > phase1_at,
+		"phase 2's branch, then phase 1's, then the shared wiring")
+	var phase_one_part := start.substr(phase1_at, phase1_end - phase1_at)
+	var phase_two_part := start.substr(phase2_at, phase1_at - phase2_at)
+	var phases: Array = _default_steps()
+	var phase_one: Array = phases[0]
+	var phase_two: Array = phases[1]
+	var last_one: Array = phase_one[phase_one.size() - 1]
+	var last_two: Array = phase_two[phase_two.size() - 1]
+	assert_eq(last_one[2], "Student", "phase 1 ends on the button that leaves for StudentCard")
+	assert_eq(last_two[2], "Jadwal", "phase 2 ends on the button that leaves for AturJadwal")
+	assert_true(phase_one_part.contains("student_button.visible = true"), "phase 1 shows Student")
+	assert_true(phase_two_part.contains("jadwal_button.visible = true"), "phase 2 shows Jadwal")

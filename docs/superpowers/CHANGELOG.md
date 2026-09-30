@@ -8,6 +8,26 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Grafis HD switch (mobile performance 3 of 3)
+
+Settings gains **Grafis HD** at the top of TAMPILAN, on by default (owner's
+ask: off means no bloom and no MSAA). `GameSettings.hd_graphics_enabled`,
+saved as `hd_graphics`.
+
+- **Off drops the root viewport's 2D MSAA**; on restores whatever
+  `project.godot` asks for (`LookLayer.msaa_for`).
+- **Off switches every bloom off**: the look layer's bloom leaves the draw
+  list (a transparent one would still copy the screen), every `ScreenGlow`
+  and `AmbientGlow` follows `AmbientKit.wants_bloom()`, and the Lobby
+  disables its own Environment glow.
+- Vignette and grain stay with Efek Visual; the rest of the ambient kit
+  stays with Efek Suasana. The debug Look panel carries the switch too.
+- In the Lobby with Efek Visual on, on the dev PC: 2.3 ms of GPU time per
+  frame with Grafis HD on, 1.4 ms off; 249 MB of textures on, 223 MB off.
+- The bloom was not moved to a lower resolution, as first proposed: a
+  screen-reading shader always copies the whole screen, so there is no
+  cheaper bloom short of a SubViewport pipeline. The switch is the saving.
+
 ## 2026-09-30 — Texture memory pass (mobile performance 1 of 3)
 
 Measured in the running game before the pass: 128 MB of textures at boot,

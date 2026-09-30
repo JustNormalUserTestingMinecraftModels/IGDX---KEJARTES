@@ -48,4 +48,4 @@ func _refresh() -> void:
 	environment.glow_hdr_threshold = glow_threshold
 	environment.glow_intensity = glow_intensity
 	environment.glow_strength = glow_strength
-	environment.glow_enabled = AmbientKit.is_enabled()
+	environment.glow_enabled = AmbientKit.wants_bloom()

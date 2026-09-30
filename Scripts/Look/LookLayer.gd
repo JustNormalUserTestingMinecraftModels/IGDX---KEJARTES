@@ -28,6 +28,11 @@ extends CanvasLayer
 ## one switch, so this answers to GameSettings.look_layer_enabled and starts
 ## off. It listens to that setting's signal rather than polling it.
 ##
+## GRAFIS HD. This layer also owns the player's Grafis HD switch
+## (GameSettings.hd_graphics_enabled), because it is the one node that is
+## always in the tree: off, it takes the bloom out of the draw list and drops
+## the root viewport's MSAA; on, it restores whatever project.godot asks for.
+##
 ## Must be @tool: as an autoload it is instantiated by the editor process
 ## itself, and a non-@tool autoload is a placeholder whose every property
 ## access throws (the failure GameSettings.gd documents at length). Its only
@@ -81,6 +86,8 @@ func _ready() -> void:
 		return
 	get_viewport().size_changed.connect(_push_viewport_size)
 	GameSettings.look_layer_changed.connect(_on_setting_changed)
+	GameSettings.hd_graphics_changed.connect(_on_hd_changed)
+	_apply_msaa()
 	GameSettings.ambient_effects_changed.connect(_push_glint.unbind(1))
 	GameSettings.reduce_motion_changed.connect(_push_glint.unbind(1))
 	_push_glint()
@@ -103,6 +110,28 @@ func _push_viewport_size() -> void:
 
 func _on_setting_changed(_enabled: bool) -> void:
 	_refresh()
+
+
+func _on_hd_changed(_enabled: bool) -> void:
+	_apply_msaa()
+	_refresh()
+
+
+## The 2D MSAA level for a Grafis HD setting: off is none, on is whatever
+## project.godot asks for, so that setting stays the one place it is tuned.
+static func msaa_for(hd: bool) -> Viewport.MSAA:
+	if not hd:
+		return Viewport.MSAA_DISABLED
+	return int(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_2d", 0)) as Viewport.MSAA
+
+
+## True while the global bloom may draw: Efek Visual on and Grafis HD on.
+static func wants_bloom() -> bool:
+	return GameSettings.look_layer_enabled and GameSettings.hd_graphics_enabled
+
+
+func _apply_msaa() -> void:
+	get_tree().root.msaa_2d = msaa_for(GameSettings.hd_graphics_enabled)
 
 
 ## 1.0 while the glint may sweep -- Efek Suasana on and Kurangi Gerakan off --
@@ -133,6 +162,11 @@ func _refresh(instant: bool = false) -> void:
 	_tween = null
 	if want:
 		visible = true
+	# Grafis HD off hides the bloom, not just fades it: a transparent bloom
+	# still copies the screen every frame. Efek Visual's own fade is the
+	# layer's, above and below.
+	if _bloom != null:
+		_bloom.visible = GameSettings.hd_graphics_enabled
 	if instant or fade_seconds <= 0.0:
 		_cover.modulate.a = target
 		if _bloom != null:

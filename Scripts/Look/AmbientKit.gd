@@ -21,13 +21,21 @@ static func is_still() -> bool:
 	return GameSettings.reduce_motion
 
 
-## Calls `apply` now, and again whenever either switch flips. `apply` must be a
+## True while a bloom may run: Efek Suasana on and Grafis HD on. ScreenGlow
+## and AmbientGlow ask this instead of is_enabled(), so Grafis HD off takes
+## every per-screen bloom out without touching the rest of the kit.
+static func wants_bloom() -> bool:
+	return GameSettings.ambient_effects_enabled and GameSettings.hd_graphics_enabled
+
+
+## Calls `apply` now, and again whenever any of the three switches flips. `apply` must be a
 ## method of the calling node, never a lambda: a bound method's connections
 ## are dropped when its node is freed (pinned by test_ambient_kit), a
 ## lambda's are not.
 static func follow_settings(apply: Callable) -> void:
 	GameSettings.ambient_effects_changed.connect(apply.unbind(1))
 	GameSettings.reduce_motion_changed.connect(apply.unbind(1))
+	GameSettings.hd_graphics_changed.connect(apply.unbind(1))
 	apply.call()
 
 

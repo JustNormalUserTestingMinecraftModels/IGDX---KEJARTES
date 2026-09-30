@@ -716,7 +716,8 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
   `timeout 600 "$GODOT" --headless --path . res://ci/project_check.tscn > check.log 2>&1`.
 - **Premium-look leftovers (2026-09-22, PRs 2-6).** The programme in
   `.superpowers/gamecode/premium-look/` shipped items 1-10 and 12; item 11
-  (the Lobby's black bands at 20:9) was cut by the brief. What was
+  (the Lobby's black bands at 20:9) was cut by the brief and landed on
+  2026-09-30 as desk-wood planks. What was
   deliberately left:
   - **SchoolDay has no parallax.** Its two bands (SkyBackground,
     SchoolForeground) live inside BookClockWidget, whose root already runs

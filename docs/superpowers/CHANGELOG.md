@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Lobby seating to the owner's picture; planks on tall phones
+
+Spec `docs/superpowers/specs/2026-09-30-lobby-seating-and-planks-design.md`,
+plan `docs/superpowers/plans/2026-09-30-lobby-seating-and-planks.md`,
+reference `docs/superpowers/mockups/lobby-seating-reference-2026-09-30.jpg`.
+
+- **Planks.** `World/Backdrop` is desk wood (`#B07A45`, the owner's pick over
+  flat, edge-carried, fade, blurred-room and two other plank tones), with
+  `PlankEdgeTop` / `PlankEdgeBottom` lines where it meets the room. Anchored
+  off the screen's centre, so 1080x1920 is unchanged.
+- **Seating.** Measured by matching the game's own textures in the picture:
+  portraits 0.20 (back) and 0.25 (front) of 1280 px, items 0.80 and 1.00 of
+  native, mapped by `K = 448 / 429` from each desk's back edge. Each seat's
+  `Portrait` is that square; every `Hand_*` wears its row's scale; the
+  pictured four (Andi, Citra, Marcel mirrored, Thea) are exact; the others
+  keep their x, stay off the aisle in the front row, and rise 72 / 80 px.
+- **Superseded:** the 2026-09-29 by-eye item sizes of Citra, Shinta and Thea,
+  and the rule that an item stays inside its desk's width.
+  `test_lobby_desk_items_fit` is rewritten around the picture.
 ## 2026-09-30 — Efek Visual loses its own bloom
 
 Owner's call: with Efek Visual on, the look layer's full-screen bloom stacked

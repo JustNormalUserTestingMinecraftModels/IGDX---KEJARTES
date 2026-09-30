@@ -249,8 +249,9 @@ const BREATH_PEAK := Vector2(1.01, 1.02)
 ## StudentFace.canvas_size: the square every face rig's layers draw on.
 const RIG_CANVAS := Vector2(1280, 1280)
 ## Every nth row and column of the art is checked, to keep the suite fast.
-## 2 art pixels are about 0.57 screen px at the rig's 0.285 scale, so the
-## step misses nothing that matters; do not raise it to speed the suite up.
+## 2 art pixels are about 0.42 screen px at the back-row rig's 0.209 scale
+## (0.57 px at 0.285 until the 2026-09-30 seating pass), so the step misses
+## nothing that matters; do not raise it to speed the suite up.
 const HAIR_SAMPLE_STEP := 2
 
 
@@ -482,8 +483,9 @@ func _first_hair_in(keep_out: Rect2, tex: Texture2D, portrait: Rect2, bob: float
 ## The owner's rule for the tag (spec §2): it clears every back-row student's
 ## hair and face, for every student and skin, in both back seats, breathing,
 ## bobbing with Lobby.idle_bob_pixels and swaying with the parallax. The seats
-## are mapped onto the design screen (_design_rect), and each slot must have
-## scanned at least one pixel, so an empty scan cannot pass for a clear one.
+## are mapped onto the design screen (_design_rect), and each slot whose seat
+## reaches the keep-out must have scanned at least one pixel, so an empty scan
+## cannot pass for a clear one.
 func test_the_progress_tag_clears_every_back_row_head() -> void:
 	var tag := _hud("ProgressHeader")
 	if tag == null:
@@ -506,6 +508,15 @@ func test_the_progress_tag_clears_every_back_row_head() -> void:
 				assert_eq(result["hit"], Vector2.INF,
 					"%s (%s) in %s reaches the tag's keep-out %s at %s"
 						% [student, id, slot, str(keep_out), str(result["hit"])])
+		# Since 2026-09-30 the back seats are the reference picture's smaller
+		# squares, which can stop short of the tag altogether. That is a clear
+		# seat by geometry, and the only case a scan of nothing may pass: the
+		# seat's whole reach (bobbed up, breathing out) must miss the keep-out.
+		var reach := portrait.grow_individual(portrait.size.x * (BREATH_PEAK.x - 1.0),
+			bob + portrait.size.y * (BREATH_PEAK.y - 1.0), portrait.size.x * (BREATH_PEAK.x - 1.0), 0.0)
+		if not keep_out.intersects(reach):
+			assert_eq(scanned, 0, "%s's seat %s never reaches the keep-out %s" % [slot, str(reach), str(keep_out)])
+			continue
 		assert_true(scanned > 0,
 			"%s scanned no pixels: the keep-out %s misses its portrait %s"
 				% [slot, str(keep_out), str(portrait)])

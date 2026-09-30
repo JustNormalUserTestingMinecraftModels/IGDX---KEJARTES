@@ -257,11 +257,11 @@ func test_a_raw_newline_in_a_signature_default_keeps_later_functions() -> void:
 
 
 ## tests/test_sky_life.gd splits `src.find("` and `func "` over two lines,
-## twice; every one of its 20 functions must still be found.
+## twice; every one of its 24 functions must still be found.
 func test_a_real_file_with_multiline_strings_parses_whole() -> void:
 	var src := FileAccess.get_file_as_string("res://tests/test_sky_life.gd")
-	assert_eq(Scan.parse_functions(src).size(), 20,
-		"tests/test_sky_life.gd has 20 functions (update this if it gains one)")
+	assert_eq(Scan.parse_functions(src).size(), 24,
+		"tests/test_sky_life.gd has 24 functions (update this if it gains one)")
 
 
 ## A `->` inside a lambda default is the lambda's, not the function's.

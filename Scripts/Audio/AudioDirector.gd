@@ -17,9 +17,10 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## chose (a debug-build BGM mute, saved on quit), so a version-1 "0" music
 ## volume loads as full volume, once.
 const VOLUME_SAVE_FORMAT := 2
-## The buses the players sit on, below Master. _ensure_mixer_buses() creates
-## any that the loaded bus layout lacks.
-const MIXER_BUSES: Array[StringName] = [&"BGM", &"SFX"]
+## Every bus the game mixes on: what the Settings sliders turn, what is saved
+## to and loaded from user://audio.cfg, and what _ensure_mixer_buses() creates
+## when the loaded bus layout lacks it (Master always exists).
+const MIXER_BUSES: Array[StringName] = [&"Master", &"BGM", &"SFX"]
 
 @export_group("SFX")
 ## `play_sfx(&"tap")`: generic button/tile taps across most screens
@@ -766,8 +767,8 @@ func _save_volumes() -> void:
 	_save_count += 1
 	var cfg := ConfigFile.new()
 	cfg.set_value("meta", "format", VOLUME_SAVE_FORMAT)
-	for bus in ["Master", "BGM", "SFX"]:
-		cfg.set_value("volume", bus, get_bus_volume(bus))
+	for bus in MIXER_BUSES:
+		cfg.set_value("volume", String(bus), get_bus_volume(bus))
 	cfg.save(SETTINGS_PATH)
 
 
@@ -823,8 +824,8 @@ func _load_volumes() -> void:
 	if cfg.load(SETTINGS_PATH) != OK:
 		return
 	var old_format := int(cfg.get_value("meta", "format", 1)) < VOLUME_SAVE_FORMAT
-	for bus in ["Master", "BGM", "SFX"]:
-		var volume := float(cfg.get_value("volume", bus, 1.0))
-		if old_format and bus == "BGM" and is_zero_approx(volume):
+	for bus in MIXER_BUSES:
+		var volume := float(cfg.get_value("volume", String(bus), 1.0))
+		if old_format and bus == &"BGM" and is_zero_approx(volume):
 			volume = 1.0
 		set_bus_volume(bus, volume)

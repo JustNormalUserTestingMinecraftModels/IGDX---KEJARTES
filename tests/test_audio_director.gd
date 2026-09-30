@@ -5,6 +5,8 @@ func suite_name() -> String:
 	return "audio_director"
 
 const _MIXER_BUSES := ["Master", "BGM", "SFX"]
+## A throwaway bus name for the ensure_bus() test; teardown removes it.
+const _PROBE_BUS := &"KejarTesProbeBus"
 
 var _director: Node
 var _saved_bus_state: Array[Dictionary] = []
@@ -37,6 +39,13 @@ func teardown() -> void:
 	if is_instance_valid(_director):
 		_director.queue_free()
 	_director = null
+
+	# The probe bus test_a_missing_bus_is_created_and_sent_to_master adds. It
+	# is removed here, not only in the test, so a run aborted part-way can
+	# never leave it in the editor's mixer to be saved into the bus layout.
+	var probe := AudioServer.get_bus_index(_PROBE_BUS)
+	if probe >= 0:
+		AudioServer.remove_bus(probe)
 
 	for state in _saved_bus_state:
 		AudioServer.set_bus_volume_db(state["idx"], state["db"])
@@ -760,7 +769,7 @@ func test_the_players_volume_is_the_source_of_truth() -> void:
 ## an export), set_bus_volume() finds no bus and every player falls back to
 ## Master. The director now makes any bus it needs.
 func test_a_missing_bus_is_created_and_sent_to_master() -> void:
-	var probe := &"KejarTesProbeBus"
+	var probe := _PROBE_BUS
 	assert_eq(AudioServer.get_bus_index(probe), -1, "the probe bus does not exist yet")
 	var before := AudioServer.bus_count
 	var idx: int = _director.ensure_bus(probe)

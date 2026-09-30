@@ -222,6 +222,8 @@ static func widest_hand_art(student: String) -> float:
 
 ## Where `student`'s arms and items sit on its own body, in OWN_PLACE's
 ## frame: read from the picture for the four it shows, else OWN_PLACE.
+## A student in neither returns INF, so its hands fail the placement check
+## by name instead of erroring.
 func _place_on_body(student: String) -> Vector2:
 	for name: String in SEATS:
 		var seat: Dictionary = SEATS[name]
@@ -232,7 +234,7 @@ func _place_on_body(student: String) -> Vector2:
 		var centre: Vector2 = pictured_target(seat)[1]
 		var mirror := -1.0 if bool(seat["mirrored"]) else 1.0
 		return Vector2((centre.x - top_left.x - side / 2.0) / side * mirror, (centre.y - top_left.y) / side)
-	return OWN_PLACE[student]
+	return OWN_PLACE.get(student, Vector2.INF)
 
 
 func test_each_seats_portrait_sits_where_the_picture_puts_it() -> void:
@@ -326,6 +328,8 @@ func test_each_seat_is_anchored_on_its_desks_back_edge() -> void:
 		var plate := _node(seat["desk"])
 		assert_eq((plate.get("scale", Vector2.ONE) as Vector2).y, 1.0,
 			"%s is not stretched vertically" % seat["desk"])
+		assert_eq(float(plate.get("anchor_top", 0.0)), 0.0,
+			"%s is anchored to the classroom's top, as the edge reading assumes" % seat["desk"])
 		assert_true(absf((seat["anchor_game"] as Vector2).y - float(_edges[name])) < 0.01,
 			"%s is anchored at y=%.3f, its desk's back edge is at %.3f"
 				% [name, (seat["anchor_game"] as Vector2).y, _edges[name]])

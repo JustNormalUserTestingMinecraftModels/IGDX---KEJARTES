@@ -721,6 +721,26 @@ func _check_step_target(row: Array, book: Control) -> void:
 		"%s wears the caption \"%s\", which its step never mentions" % [target_name, button.text])
 
 
+## The Lobby tutorial now shows to every new player, so its copy is one voice
+## ("kamu" / "-mu", never "anda" or "kalian") in standard words: "di mana" apart,
+## "barang" for items, "rapor" (the button's own caption) for the report, "statistik"
+## for stats, and no "customisasi".
+func test_the_tutorial_copy_is_one_voice_in_standard_indonesian() -> void:
+	var spoken := ""
+	for rows: Array in _default_steps():
+		for row: Array in rows:
+			spoken += " %s %s %s" % [row[0], row[1], row[3]]
+	spoken = spoken.to_lower()
+	var drift := RegEx.create_from_string("\\b(anda|kalian|dimana|disini|silahkan|items?|raport|stats?|customisasi|ampu)\\b")
+	var found := drift.search(spoken)
+	assert_true(found == null, "the Lobby tutorial still says \"%s\"" % (found.get_string() if found != null else ""))
+	assert_true(spoken.contains("muridmu") and spoken.contains("barangmu"),
+		"and it speaks to the player as -mu (the rows were read from the source)")
+	var first: String = _default_steps()[0][0][1]
+	assert_true(first.contains("Sebelum mulai mengajar") and first.contains("mari kita kenali dulu fasilitasnya"),
+		"step 1 is a whole sentence: its \"Sebelum ...\" clause has its main clause")
+
+
 ## Each phase's last step names the button that leaves the Lobby, and the overlay lets
 ## a tap through to it, in either phase. Phase 2 once kept the overlay catching taps,
 ## so the first press on JADWAL only ended the tutorial and the prompt ("Tekan tombol

@@ -512,7 +512,7 @@ func _start_idle_bob(container: Control, delay: float = 0.0) -> void:
 func _populate_default_tutorial_steps():
 	if tutorial_phase1_steps.is_empty():
 		var p1 = [
-			["Selamat Datang!", "Halo! Sebelum anda terjun untuk mengajar generasi muda di sekolah ini.\n\nMari kita mengenali fasilitas untuk menunjang perjalananmu!", "", ""],
+			["Selamat Datang!", "Halo! Sebelum mulai mengajar generasi muda di sekolah ini, mari kita kenali dulu fasilitasnya.\n\nFasilitas ini akan menunjang perjalananmu!", "", ""],
 			["Pilih Muridmu", "Hmmm, kepikiran kalau kelasmu masih sepi, belum ada murid?\n\nAyo, kita langsung saja pilih muridmu!", "Student", "Tekan tombol 'Student' untuk lanjut!"]
 		]
 		for entry in p1:
@@ -526,9 +526,9 @@ func _populate_default_tutorial_steps():
 	if tutorial_phase2_steps.is_empty():
 		var p2 = [
 			["Pilihan Bagus!", "Pilihan yang sangat bagus!", "", ""],
-			["Inventory", "Inventory adalah tempat dimana seluruh items kalian berada!", "Inventory", ""],
-			["Raport Murid", "Raport adalah untuk melihat secara keseluruhan stats murid anda!", "ReportStudent", ""],
-			["Koperasi Sekolah", "Koperasi adalah dimana kalian dapat belanja item dan customisasi untuk murid-murid ampu kalian!", "Koperasi", ""],
+			["Inventory", "Inventory adalah tempat semua barangmu disimpan!", "Inventory", ""],
+			["Rapor Murid", "Rapor dipakai untuk melihat statistik muridmu secara keseluruhan!", "ReportStudent", ""],
+			["Koperasi Sekolah", "Di Koperasi, kamu bisa membeli barang dan kostum untuk murid-muridmu!", "Koperasi", ""],
 			["Jadwal Sekolah", "Ahh, sepertinya bel sekolah sudah berbunyi.", "Jadwal", "Tekan tombol 'Jadwal' untuk lanjut!"]
 		]
 		for entry in p2:

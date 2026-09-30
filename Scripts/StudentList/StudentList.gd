@@ -627,7 +627,7 @@ func _setup_tutorial():
 
 func _populate_default_tutorial_steps():
 	var defaults = [
-		["Muridmu", "Disini kalian bebas memilih murid-murid yang belum terjadwalkan untuk belajar selama seminggu!", "CardContainer"],
+		["Muridmu", "Di sini kalian bebas memilih murid-murid yang belum terjadwalkan untuk belajar selama seminggu!", "CardContainer"],
 		["Status Jadwal", "Hijau berarti sudah terjadwal, merah berarti belum. Ketuk untuk langsung ke murid itu!", "RosterStrip"],
 		["Navigasi Card", "Geser layar atau tekan tombol panah kanan untuk melihat murid lainnya!", "RightArrow"],
 		["Pilih Murid", "Bagus! Sekarang tekan kertas dokumen murid ini untuk mulai mengatur jadwal belajarnya!", ""]

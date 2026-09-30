@@ -874,3 +874,12 @@ func test_the_tap_prompt_is_one_line_in_standard_indonesian() -> void:
 	assert_contains(FileAccess.get_file_as_string(SCHOOL_DAY_PATH),
 		"@export var end_tutorial_prompt: String = \"KETUK DI MANA SAJA UNTUK MELANJUTKAN\"",
 		"SchoolDay's end-of-week card says the same, in its longer form")
+
+
+## The tutorial bodies shipped with "Disini" and "Silahkan" (standard: "di sini",
+## "silakan"), and the Lobby's with "dimana".
+func test_no_tutorial_text_says_disini_silahkan_or_dimana() -> void:
+	for path: String in PROMPT_SCREENS:
+		var src := FileAccess.get_file_as_string(path)
+		for drift: String in ["Disini", "disini", "Silahkan", "silahkan", "dimana", "Dimana"]:
+			assert_false(src.contains(drift), "%s still says \"%s\"" % [path, drift])

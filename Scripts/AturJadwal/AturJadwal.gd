@@ -269,7 +269,7 @@ func _setup_gameplay():
 func _populate_default_tutorial_steps():
 	if tutorial_phase1_steps.is_empty():
 		var p1_data = [
-			["Penjadwalan Murid", "Disini dimana kalian akan harus menjadwalkan murid mata pelajaran apa yang perlu mereka tingkatkan lebih untuk lolos ujian!", "", ""],
+			["Penjadwalan Murid", "Di sini kamu akan menjadwalkan mata pelajaran apa yang perlu ditingkatkan tiap murid agar lolos ujian!", "", ""],
 			["Pilih Murid", "Anda memilih \"Nama Murid\" untuk dijadwalkan terlebih dahulu.", "TextureButton", "Tekan kartu murid untuk lanjut!"]
 		]
 		for entry in p1_data:
@@ -308,7 +308,7 @@ func _populate_default_tutorial_steps():
 			["Penjadwalan Berhasil", "Kerja bagus!\n\nSekarang, kita perhatikan 2 unsur yang akan berubah jikalau anda meng-input sebuah hari dengan mata pelajaran.", "", ""],
 			["Warna Hari", "Pertama, hari akan berganti warna sesuai dengan warna mata pelajaran.\nBiru: Akademis, Hijau: Seni Budaya, dan Merah: Olahraga", "BGHari/Senin", ""],
 			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "BGStat/Akademis/ValueLabel,BGStat/SeniBudaya/ValueLabel,BGStat/Olahraga/ValueLabel,BGStat/Mood/ValueLabel,BGStat/Energy/ValueLabel", ""],
-			["Siap Mengajar!", "Wow, dirimu sangat cepat untuk beradaptasi di lingkungan sekolah ini.\nKamu punya potensi besar untuk sukses mendidik lebih jauh disini!", "", ""]
+			["Siap Mengajar!", "Wow, dirimu sangat cepat untuk beradaptasi di lingkungan sekolah ini.\nKamu punya potensi besar untuk sukses mendidik lebih jauh di sini!", "", ""]
 		]
 		for entry in p3_data:
 			var step = TutorialStepData.new()

@@ -535,3 +535,53 @@ func test_opening_the_daily_reward_refreshes_for_today() -> void:
 	var refresh_at: int = body.find("daily_reward.refresh(Time.get_date_string_from_system())")
 	assert_true(refresh_at >= 0, "opening refreshes the panel with today's date")
 	assert_true(refresh_at < body.find("daily_reward.open()"), "and does so before open()")
+
+
+# ------------------------------------------- the tutorial on the shared panel
+#
+# 2026-10-01 tutorial unification. The Lobby built a fifth runtime copy of the
+# coach-mark (a PanelContainer, three Labels, two separators, "(n/N)" titles)
+# and clamped its arrow with a hard-coded 320px picture. It is now
+# TutorialPanel.tscn, mounted into the overlay and seated inside the HUD's
+# Safe/UI. (Unlike AturJadwal and StudentList it has no forced step that drops
+# a wrong tap: the overlay either takes the tap to advance or lets it through
+# to the real button, so there is nothing to answer.)
+
+## The source of one function, from its `func` line to the next.
+func _function_body(name: String) -> String:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	return src.get_slice("func %s(" % name, 1).get_slice("\nfunc ", 0)
+
+
+func test_the_tutorial_card_is_the_shared_panel_not_a_runtime_build() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_body("_build_tutorial_panel").contains(
+			"TutorialPanel.mount(tutorial_panel_scene, color_rect, click_area)"),
+		"the card is the shared TutorialPanel scene, mounted in the overlay")
+	for gone: String in ["PanelContainer.new(", "HSeparator.new(", "_tutorial_title_label",
+			"_tutorial_body_label", "_tutorial_panel_should_center"]:
+		assert_false(src.contains(gone), "Lobby.gd still carries %s" % gone)
+	assert_true(src.contains(
+			'@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")'),
+		"the scene is an export, so it can be swapped in the inspector")
+
+
+func test_every_step_goes_through_the_panel_with_its_number_and_count() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_body("_show_step").contains(
+			"_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, current_phase_steps.size())"),
+		"each step fills the card via show_step with its 1-based number and the phase's step count")
+	assert_false(src.contains("(%d/%d)"),
+		"the panel's pill is the step counter; a title prefix would count the steps twice")
+
+
+func test_the_card_and_arrow_are_seated_inside_the_huds_safe_ui() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("@onready var tutorial_safe_ui: Control = $Safe/UI"),
+		"the bounds are the HUD's own Safe/UI")
+	assert_true(_lobby.get_node_or_null("Safe/UI") is Control, "and the scene has one")
+	var seating := _function_body("_position_tutorial_panel")
+	assert_true(seating.contains(
+			"TutorialPanel.place_step(_tutorial_panel, tutorial_safe_ui, color_rect, _step_targets, _tutorial_arrow)"),
+		"the card and the arrow are seated by the shared placement")
+	assert_false(seating.contains("get_viewport_rect"), "with no raw viewport math")

@@ -662,3 +662,28 @@ func test_sibling_buttons_are_the_visible_other_buttons() -> void:
 	var lone := Button.new()
 	assert_eq(TutorialPanel.sibling_buttons(lone).size(), 0, "a control with no parent has no siblings")
 	lone.free()
+
+
+# ----------------------------------------------- the arrow callers' sizing
+
+func test_no_arrow_caller_hard_codes_the_arrow_size() -> void:
+	for path: String in ARROW_CALLERS:
+		var src := FileAccess.get_file_as_string(path)
+		assert_false(src.contains("320.0"), "%s still clamps with a 320 arrow" % path)
+		assert_false(src.contains("var W =") or src.contains("var H ="),
+			"%s still carries its own arrow width and height" % path)
+
+
+func test_every_arrow_caller_places_the_arrow_from_its_own_size() -> void:
+	var panel_src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	var place := _function_source(panel_src, "place_step")
+	assert_contains(place, "arrow.arrow_size", "place_step reads the arrow's own size")
+	assert_contains(place, "arrow.point_at(spot, bounds, Rect2(panel.position, panel.size))",
+		"and points it clear of the card")
+	for path: String in ["res://Scripts/AturJadwal/AturJadwal.gd",
+			"res://Scripts/StudentList/StudentList.gd", "res://Scripts/Lobby/Lobby.gd"]:
+		var src := FileAccess.get_file_as_string(path)
+		assert_contains(src, "TutorialPanel.place_step(_tutorial_panel, tutorial_safe_ui, color_rect,",
+			"%s seats its card and arrow through place_step" % path)
+	var card_src := FileAccess.get_file_as_string(STUDENT_CARD_PATH)
+	assert_contains(card_src, "_tutorial_arrow.point_at(", "StudentCard points its arrow the same way")

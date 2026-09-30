@@ -55,6 +55,8 @@ const SettingsScript := preload("res://Scripts/UI/Settings.gd")
 
 @onready var color_rect = $ColorRect
 @onready var click_area: Button = $ColorRect/ClickArea
+## The HUD's Safe/UI: the area the tutorial's card and arrow keep to.
+@onready var tutorial_safe_ui: Control = $Safe/UI
 # The HUD sits in Safe/UI/Hud/BookHud and the diorama in Classroom since the
 # 2026-09-15 tall-phone pass; unique names find them wherever they sit.
 @onready var student_button: Button = %Student
@@ -103,17 +105,19 @@ const BLUR_OUT_SECONDS := 0.15
 ## Steps shown when returning to the Lobby from StudentCard
 ## (GameState.returned_from_student_card), instead of phase1's steps.
 @export var tutorial_phase2_steps: Array[TutorialStepData] = []
+## The shared onboarding coach-mark the steps show on: the look StudentCard
+## ships (its component defaults), so the tutorial has one voice on every screen.
+@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")
 
 const TutorialArrow: PackedScene = preload("res://Scenes/UI/TutorialArrow.tscn")
 
 var current_step := 0
 var current_phase_steps: Array[TutorialStepData] = []
 var tutorial_active := true
-var _tutorial_panel: PanelContainer
-var _tutorial_title_label: Label
-var _tutorial_body_label: Label
+var _tutorial_panel: TutorialPanel
 var _tutorial_prompt_label: Label
-var _tutorial_panel_should_center: bool = false
+## The controls the current step highlights; the card and the arrow are placed from them.
+var _step_targets: Array[Control] = []
 var _blink_tween: Tween
 var _tutorial_arrow: Control = null
 
@@ -522,58 +526,12 @@ func _populate_default_tutorial_steps():
 			step.prompt_text = entry[3]
 			tutorial_phase2_steps.append(step)
 
-func _build_tutorial_panel():
-	var viewport_size = get_viewport_rect().size
-
-	_tutorial_panel = PanelContainer.new()
-	_tutorial_panel.name = "TutorialPanel"
-	_tutorial_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	# Was: a three-way branch between an inspector StyleBox, a PNG
-	# nine-patch, and a hand-rolled dark-teal "blackboard" StyleBoxFlat.
-	# All three are now the project's Card surface, matching Task 12/13's
-	# identical treatment of this same shared tutorial-panel code.
-	_tutorial_panel.theme_type_variation = &"Card"
-
-	var panel_width = min(viewport_size.x * 0.92, 1000)
-	_tutorial_panel.custom_minimum_size = Vector2(panel_width, 0)
-
-	var vbox = VBoxContainer.new()
-	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_theme_constant_override("separation", 10)
-	_tutorial_panel.add_child(vbox)
-
-	_tutorial_title_label = Label.new()
-	_tutorial_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_title_label.theme_type_variation = &"H1Label"
-	vbox.add_child(_tutorial_title_label)
-
-	var sep = HSeparator.new()
-	sep.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(sep)
-
-	_tutorial_body_label = Label.new()
-	_tutorial_body_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_body_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_tutorial_body_label.theme_type_variation = &"TitleLabel"
-	_tutorial_body_label.add_theme_constant_override("line_spacing", 8)
-	_tutorial_body_label.custom_minimum_size = Vector2(panel_width - 60, 0)
-	vbox.add_child(_tutorial_body_label)
-
-	var sep2 = HSeparator.new()
-	sep2.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	vbox.add_child(sep2)
-
-	_tutorial_prompt_label = Label.new()
-	_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
-	_tutorial_prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_tutorial_prompt_label.theme_type_variation = &"TitleLabel"
-	vbox.add_child(_tutorial_prompt_label)
-
-	color_rect.add_child(_tutorial_panel)
-	var click_idx = click_area.get_index()
-	color_rect.move_child(_tutorial_panel, click_idx)
-
+## Mounts the shared TutorialPanel in the spotlight overlay. Keeps its prompt
+## label, which _start_prompt_blink fades; every step's text goes through
+## TutorialPanel.show_step() in _show_step.
+func _build_tutorial_panel() -> void:
+	_tutorial_panel = TutorialPanel.mount(tutorial_panel_scene, color_rect, click_area)
+	_tutorial_prompt_label = _tutorial_panel.prompt_label
 	_start_prompt_blink()
 	call_deferred("_position_tutorial_panel")
 
@@ -587,29 +545,10 @@ func _start_prompt_blink():
 	_blink_tween.tween_property(_tutorial_prompt_label, "modulate:a", 1.0, 0.65) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
-func _position_tutorial_panel(force_center: bool = false):
-	if not _tutorial_panel or not is_instance_valid(_tutorial_panel):
-		return
-	var viewport_size = get_viewport_rect().size
-	_tutorial_panel.reset_size()
-	await get_tree().process_frame
-	if not is_instance_valid(_tutorial_panel):
-		return
-	var panel_size = _tutorial_panel.size
-
-	var target_y: float
-	if force_center or _tutorial_panel_should_center:
-		target_y = (viewport_size.y - panel_size.y) / 2.0
-	else:
-		var min_y = viewport_size.y * 0.55
-		var ideal_y = viewport_size.y - panel_size.y - 40
-		target_y = max(min_y, ideal_y)
-
-	_tutorial_panel.position = Vector2(
-		(viewport_size.x - panel_size.x) / 2.0,
-		target_y
-	)
-	_tutorial_panel.pivot_offset = panel_size / 2.0
+## Seats the card and the arrow for the current step's targets, inside the
+## HUD's Safe/UI (TutorialPanel.place_step).
+func _position_tutorial_panel() -> void:
+	TutorialPanel.place_step(_tutorial_panel, tutorial_safe_ui, color_rect, _step_targets, _tutorial_arrow)
 
 func _fit_color_rect_to_viewport():
 	var viewport_size = get_viewport_rect().size
@@ -846,61 +785,41 @@ func _next_step():
 		return
 	_show_step(current_step)
 
-func _show_step(index: int):
+func _show_step(index: int) -> void:
 	if index < 0 or index >= current_phase_steps.size():
 		return
-	var step = current_phase_steps[index]
+	var step := current_phase_steps[index]
 
 	click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	if _tutorial_panel and _tutorial_panel.modulate.a > 0.1:
-		var tween_out = create_tween().set_parallel(true)
+		var tween_out := create_tween().set_parallel(true)
 		tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.15)\
 			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 		tween_out.tween_property(_tutorial_panel, "modulate:a", 0.0, 0.15)
 		await tween_out.finished
 
-	_tutorial_title_label.text = "(%d/%d) %s" % [index + 1, current_phase_steps.size(), step.title]
-	_tutorial_body_label.text = step.text
-
-	# Move to center specifically for Inventory, ReportStudent, Koperasi, and Jadwal tutorial steps in Lobby
-	_tutorial_panel_should_center = (step.target_node_path in ["Inventory", "ReportStudent", "Koperasi", "Jadwal", "Jadwalkan", "Student"]) or (step.prompt_text != "" and ("jadwal" in step.prompt_text.to_lower() or "student" in step.prompt_text.to_lower()))
-	var center_for_lobby_buttons := _tutorial_panel_should_center
-
-	var targets: Array[Control] = []
-	if step.target_node_path != "":
-		var paths = step.target_node_path.split(",")
-		for p in paths:
-			var trimmed = p.strip_edges()
-			if trimmed != "":
-				# A bare name ("Jadwal") is a HUD button, found by unique name
-				# wherever it sits; anything else is a path from the root.
-				var target = get_node_or_null("%" + trimmed)
-				if target == null:
-					target = get_node_or_null(trimmed)
-				if target and target is Control:
-					targets.append(target)
-		if not targets.is_empty():
-			_highlight_multiple(targets)
-		else:
-			_clear_highlight()
-	else:
+	_step_targets = _resolve_step_targets(step)
+	if _step_targets.is_empty():
 		_clear_highlight()
+	else:
+		_highlight_multiple(_step_targets)
 
 	# Dynamic Prompt Text
-	var requires_button_press = (!GameState.returned_from_student_card and index == current_phase_steps.size() - 1) or (GameState.returned_from_student_card and index == current_phase_steps.size() - 1)
+	var requires_button_press := index == current_phase_steps.size() - 1
+	var prompt := TutorialPanel.DEFAULT_PROMPT
 	if step.prompt_text != "":
-		_tutorial_prompt_label.text = step.prompt_text
-	elif requires_button_press and not targets.is_empty():
-		var btn_name = _get_button_display_name(targets[0])
-		_tutorial_prompt_label.text = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
-	else:
-		_tutorial_prompt_label.text = "CLICK DIMANA SAJA UNTUK LANJUT"
+		prompt = step.prompt_text
+	elif requires_button_press and not _step_targets.is_empty():
+		var btn_name := _get_button_display_name(_step_targets[0])
+		prompt = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
 
-	_position_tutorial_panel(center_for_lobby_buttons)
+	# The panel's own step pill is this screen's one counter ("Langkah n / N").
+	_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, current_phase_steps.size())
+	_position_tutorial_panel()
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 
-	var tween_in = create_tween().set_parallel(true)
+	var tween_in := create_tween().set_parallel(true)
 	tween_in.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.3)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.2)
@@ -918,6 +837,22 @@ func _show_step(index: int):
 		color_rect.mouse_filter = Control.MOUSE_FILTER_STOP
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
 
+## The controls a step highlights: each comma-separated path in its
+## target_node_path. A bare name ("Jadwal") is a HUD button, found by unique
+## name wherever it sits; anything else is a path from the root.
+func _resolve_step_targets(step: TutorialStepData) -> Array[Control]:
+	var targets: Array[Control] = []
+	for path in step.target_node_path.split(","):
+		var trimmed := path.strip_edges()
+		if trimmed == "":
+			continue
+		var target: Node = get_node_or_null("%" + trimmed)
+		if target == null:
+			target = get_node_or_null(trimmed)
+		if target is Control:
+			targets.append(target)
+	return targets
+
 func _get_button_display_name(node: Node) -> String:
 	if not node:
 		return ""
@@ -928,51 +863,13 @@ func _get_button_display_name(node: Node) -> String:
 			return child.text.strip_edges().split("\n")[0]
 	return node.name
 
-func _highlight_multiple(controls: Array, padding: float = 12.0):
+## Cuts the spotlight hole around `controls`. The arrow is not placed here: it
+## needs the card's rectangle to stay off it, so _position_tutorial_panel
+## places both once the card has sized itself.
+func _highlight_multiple(controls: Array, padding: float = TutorialPanel.SPOT_PADDING):
 	await get_tree().process_frame
-	var valid_controls: Array[Control] = []
-	for c in controls:
-		if c and is_instance_valid(c) and c is Control:
-			valid_controls.append(c)
-	if valid_controls.is_empty():
+	if not TutorialPanel.cut_hole(color_rect, controls, padding):
 		_clear_highlight()
-		return
-	var mat := color_rect.material as ShaderMaterial
-	if not mat:
-		return
-	var min_pos = Vector2(INF, INF)
-	var max_pos = Vector2(-INF, -INF)
-	for c in valid_controls:
-		var trans = c.get_global_transform()
-		var local_corners = [
-			Vector2.ZERO,
-			Vector2(c.size.x, 0),
-			Vector2(0, c.size.y),
-			Vector2(c.size.x, c.size.y)
-		]
-		for corner in local_corners:
-			var global_corner = trans * corner
-			var local_corner = global_corner - color_rect.global_position
-			min_pos.x = min(min_pos.x, local_corner.x)
-			min_pos.y = min(min_pos.y, local_corner.y)
-			max_pos.x = max(max_pos.x, local_corner.x)
-			max_pos.y = max(max_pos.y, local_corner.y)
-
-	var local_pos = min_pos - Vector2(padding, padding)
-	var size_with_padding = (max_pos - min_pos) + Vector2(padding, padding) * 2
-
-	mat.set_shader_parameter("hole_pos", local_pos)
-	mat.set_shader_parameter("hole_size", size_with_padding)
-	if _tutorial_arrow:
-		var arrow_pos = Vector2(local_pos.x + size_with_padding.x / 2.0, local_pos.y - 35.0)
-		var viewport_size = get_viewport_rect().size
-		var W = 320.0
-		var H = 320.0
-		var margin = 20.0
-		arrow_pos.x = clamp(arrow_pos.x, W/2.0 + margin, viewport_size.x - W/2.0 - margin)
-		arrow_pos.y = clamp(arrow_pos.y, H + margin, viewport_size.y - margin)
-		_tutorial_arrow.position = arrow_pos
-		_tutorial_arrow.show()
 
 func _clear_highlight():
 	var mat := color_rect.material as ShaderMaterial

@@ -830,3 +830,5 @@ func test_the_remaining_backdrops_fill() -> void:
 		.get_node_or_null("Background") as TextureRect, "Inventory Background")
 	_assert_background_fills(_scene("res://Scenes/CutScene/CutScene.tscn")
 		.get_node_or_null("BgCutScene") as TextureRect, "CutScene BgCutScene")
+	_assert_background_fills(_scene("res://Scenes/CutScene/CutScene.tscn")
+		.get_node_or_null("CgOverlay") as TextureRect, "CutScene CgOverlay")

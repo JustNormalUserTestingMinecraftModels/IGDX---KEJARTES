@@ -390,7 +390,10 @@ func test_school_day_uncovers_its_picture_only_when_the_last_host_closes() -> vo
 		"the day's picture fades out as the minigame fades in")
 	assert_true(src.contains("tween_close.tween_property(current_minigame, \"modulate:a\", 0.0, 0.4)\n\t_day_cover.uncover(true)"),
 		"and back in as it fades out")
-	assert_true(src.contains("add_child(dialogue)\n\t_day_cover.cover(false)"), "EventDialogue covers the day")
+	# The 2026-09-30 VN pass also hides the day screen under the dialogue, so
+	# the avatar strip cannot draw over its featured splash.
+	assert_true(src.contains("add_child(dialogue)\n\t_day_cover.cover(false, day_screen)"),
+		"EventDialogue covers the day, day screen included")
 	assert_true(src.contains("dialogue.queue_free()\n\t_day_cover.uncover(false)"), "and uncovers it on close")
 
 

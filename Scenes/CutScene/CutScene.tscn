@@ -50,6 +50,7 @@ layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
+expand_mode = 1
 stretch_mode = 6
 
 [node name="DialogueBox" type="Panel" parent="." unique_id=1079685626]

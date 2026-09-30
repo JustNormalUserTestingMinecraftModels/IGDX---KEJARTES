@@ -722,8 +722,13 @@ func test_the_envelope_seal_glints() -> void:
 func test_cutscene_gets_a_soft_sun_and_sparkles() -> void:
 	var c := _census("res://Scenes/CutScene/CutScene.tscn")
 	var kids := _children_of(c, ".")
-	assert_eq(kids[0], "BgCutScene", "the picture is still the first thing drawn")
-	assert_eq(kids[1], "DialogueBox", "DialogueBox still follows it")
+	# Since the 2026-09-30 VN pass a flat Backdrop tone sits under the picture
+	# (the CGs cross-dissolve over it instead of flashing grey) and CgOverlay,
+	# the incoming CG, sits on it; the dialogue box still draws over both.
+	assert_eq(kids[0], "Backdrop", "the flat tone the CGs dissolve over is drawn first")
+	assert_eq(kids[1], "BgCutScene", "then the picture")
+	assert_eq(kids[2], "CgOverlay", "then the incoming CG it cross-dissolves to")
+	assert_eq(kids[3], "DialogueBox", "DialogueBox still follows them")
 	assert_eq(_children_of(c, "BgCutScene"), ["Sun", "Sparkles"] as Array[String],
 		"they ride the picture, so its fades take them too")
 	assert_eq(_entry(c, "BgCutScene/Sun").get("instance"), LIGHT_POOL, "Sun is a LightPool")

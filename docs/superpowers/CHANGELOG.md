@@ -8,6 +8,25 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Parallax follows the phone's rotation
+
+`ParallaxDiorama` reads the gyroscope first (owner's ask). The gyroscope gives
+a turn rate, so `integrate_turn()` adds it up into an angle from the held
+pose, eases it back to zero at `tilt_recenter` and caps it at
+`tilt_angle_degrees` (12, full deflection). A phone with no gyroscope keeps
+the accelerometer path; desktop keeps the pointer. Knobs on the driver:
+`use_gyroscope`, `tilt_angle_degrees`, `gyro_direction` (flip a sign to
+reverse an axis).
+
+**The parallax had been dead on handsets.** Godot ships every sensor disabled
+(`input_devices/sensors/enable_*`), and a disabled sensor reads zero, so the
+driver took the pointer path and followed the last touch. `project.godot` now
+enables the gyroscope and the accelerometer, pinned by
+`test_the_sensors_the_driver_reads_are_enabled`.
+
+Not checked on a device: the default `gyro_direction` of (-1, -1) is derived
+from the sensor's axis convention, not from a handset in hand.
+
 ## 2026-09-30 — Minigame text hierarchy, spacing and fixes
 
 Spec `docs/superpowers/specs/2026-09-30-minigame-hierarchy-design.md`, plan

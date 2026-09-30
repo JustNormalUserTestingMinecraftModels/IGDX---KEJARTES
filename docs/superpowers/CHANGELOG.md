@@ -8,6 +8,30 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Skin Select stops drawing the Lobby (mobile performance 2 of 3)
+
+Skin Select was the costliest screen in the game: the whole Lobby kept
+rendering under an opaque screen, the backdrop blur copied the screen and
+rebuilt its mip chain every frame, and the neighbour card's blur took 48
+texture samples per pixel. GPU time per frame on the dev PC, which shows the
+ratio and not what a phone will do: 2.7 ms at rest and 3.8 ms mid-swipe
+before, about 1.2 ms after (4.1 to 1.4 with Efek Visual on).
+
+- **The backdrop is a still.** `SkinSelect.open()` shrinks the last frame
+  drawn to an eighteenth of its size (`backdrop_shrink`), which is the blur,
+  and shows it on `Frozen`, dimmed by `skin_select_backdrop_material.tres`'s
+  own darkness. `Blur` stays as the fallback for a frame that cannot be
+  read. The room behind no longer animates while the picker is open.
+- **The Lobby stops drawing the room** between the picker's `covered` and
+  `uncovering` signals (`Lobby._set_room_drawn`): `World` is hidden, and the
+  Environment glow goes with it and comes back.
+- **The neighbour blur reads the splash's mip chain**: five taps instead of
+  48, through its own linear sampler (`blur_source`). The six skin splashes
+  gained mipmaps for it.
+- With Efek Visual on, the still is taken with the vignette already on it,
+  so the vignette reaches the backdrop twice. On a capture the two were not
+  told apart (mean brightness of the carousel area 68.1 before, 68.5 after).
+
 ## 2026-09-30 — Texture memory pass (mobile performance 1 of 3)
 
 Measured in the running game before the pass: 128 MB of textures at boot,

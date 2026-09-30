@@ -54,6 +54,10 @@ func show_skin(who: String, id: String, locked: bool) -> void:
 	var path := StudentSkins.layer_path(who, id, "splash")
 	var art := get_node(^"Art") as TextureRect
 	art.texture = load(path) if path != "" and ResourceLoader.exists(path) else null
+	# The focus blur reads the splash through its own smooth sampler.
+	var mat := art.material as ShaderMaterial
+	if mat != null:
+		mat.set_shader_parameter(&"blur_source", art.texture)
 	(get_node(^"Lock") as Control).visible = locked
 
 

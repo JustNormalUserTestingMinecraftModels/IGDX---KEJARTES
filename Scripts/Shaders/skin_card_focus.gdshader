@@ -19,6 +19,11 @@ uniform float splash_gain = 1.25;
 // mid-grey, both before the brightness and the gain.
 uniform float splash_saturation = 0.85;
 uniform float splash_contrast = 0.85;
+// The card's own splash again, read smoothly for the blur. The project draws
+// canvas textures with a nearest filter, which is what the sharp centred card
+// wants and what makes a mip read blocky; this sampler reads the same texture
+// through a linear, mipmapped one. SkinCard.show_skin binds it.
+uniform sampler2D blur_source : filter_linear_mipmap, repeat_disable;
 
 // Rec. 709 luma, for a saturation that does not shift hues.
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
@@ -30,40 +35,47 @@ const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 // `splash_saturation` / `splash_contrast` touch the splash;
 // tests/test_skin_card.gd pins that.
 
-// Golden-angle spiral taps covering ~3 sigma. A 2D Gaussian truncated at
-// 2 sigma under-blurs (effective sigma ~0.83x what was asked for); 3 sigma
-// keeps it close to the true value (~0.97x). TAPS is raised to keep the
-// wider disk dense.
-const int TAPS = 48;
-const float GOLDEN_ANGLE = 2.39996323;
-// Spiral reach in sigmas (see the TAPS comment above): how far the taps
-// extend before the Gaussian is truncated. Coupled to the weight formula
-// below -- change one, change the other.
-const float REACH = 3.0;
+// THE BLUR IS THE SPLASH'S OWN MIP CHAIN (2026-09-30 mobile performance
+// pass). It was a 48-tap golden-angle spiral: on a neighbour card, which
+// covers most of the screen, that is tens of millions of texture reads a
+// frame, the kind of cost a phone GPU feels most. A mip level is already the
+// art averaged over a square of texels, so reading the level whose texel is
+// about as wide as the blur does the same job in one tap; four more, half a
+// footprint out on the diagonals, hide the mip's blockiness. Five taps,
+// whatever the radius. Every splash the carousel shows must carry mipmaps
+// (tests/test_skin_card.gd pins that), or this reads level 0 and blurs
+// nothing.
+//
+// How many texels wide the chosen mip's texel is, per texel of sigma. A box
+// that wide, read bilinearly with the diagonal taps below, was matched by eye
+// to the old Gaussian at 1.0 on a side-by-side capture (2.0 was visibly
+// softer). Judge a change the same way.
+const float FOOTPRINT_PER_SIGMA = 1.0;
 
 void fragment() {
 	vec4 c;
 	if (sigma_texels < 0.05) {
 		c = texture(TEXTURE, UV);
 	} else {
+		float footprint = max(sigma_texels * FOOTPRINT_PER_SIGMA, 1.0);
+		float lod = log2(footprint);
+		vec2 d = TEXTURE_PIXEL_SIZE * footprint * 0.5;
 		// Premultiplied, so transparent texels' colour never bleeds into
 		// the silhouette.
-		vec4 acc = vec4(0.0);
-		float wsum = 0.0;
-		for (int i = 0; i < TAPS; i++) {
-			float r = sqrt((float(i) + 0.5) / float(TAPS)) * sigma_texels * REACH;
-			float a = float(i) * GOLDEN_ANGLE;
-			vec2 off = vec2(cos(a), sin(a)) * r * TEXTURE_PIXEL_SIZE;
-			// r = sqrt((i+0.5)/TAPS) * REACH*sigma, so r^2/(2*sigma^2) reduces to
-			// 0.5*REACH*REACH*(i+0.5)/TAPS regardless of sigma; skip the
-			// redundant division.
-			float w = exp(-0.5 * REACH * REACH * (float(i) + 0.5) / float(TAPS));
-			vec4 s = texture(TEXTURE, UV + off);
-			acc += vec4(s.rgb * s.a, s.a) * w;
-			wsum += w;
-		}
-		acc /= wsum;
-		c = vec4(acc.rgb / max(acc.a, 0.0001), acc.a);
+		vec4 s0 = textureLod(blur_source, UV, lod);
+		vec4 s1 = textureLod(blur_source, UV + vec2(d.x, d.y), lod);
+		vec4 s2 = textureLod(blur_source, UV + vec2(-d.x, d.y), lod);
+		vec4 s3 = textureLod(blur_source, UV + vec2(d.x, -d.y), lod);
+		vec4 s4 = textureLod(blur_source, UV + vec2(-d.x, -d.y), lod);
+		vec4 acc = vec4(s0.rgb * s0.a, s0.a) * 0.4
+			+ (vec4(s1.rgb * s1.a, s1.a) + vec4(s2.rgb * s2.a, s2.a)
+			+ vec4(s3.rgb * s3.a, s3.a) + vec4(s4.rgb * s4.a, s4.a)) * 0.15;
+		vec4 soft = vec4(acc.rgb / max(acc.a, 0.0001), acc.a);
+		// Eased in over the first texel of sigma. The sharp read above goes
+		// through the project's nearest filter and this one is linear, so a
+		// hard switch would soften the centred card by a visible step the
+		// moment a drag begins.
+		c = mix(texture(TEXTURE, UV), soft, smoothstep(0.05, 1.0, sigma_texels));
 	}
 	// * COLOR reapplies the node's (and every inherited parent's) modulate,
 	// which canvas_item shaders otherwise discard; SkinSelect fades cards by

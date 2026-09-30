@@ -177,7 +177,23 @@ func _ready() -> void:
 				child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	_apply_visual_exports()
+	_apply_tool_names()
 	_update_progress_label()
+
+## B4 (2026-09-30): writes the name each slot's export promises under its
+## picture, matched by node name like the art.
+func _apply_tool_names() -> void:
+	var tool_names := {
+		"Tool0": tool0_display_name,
+		"Tool1": tool1_display_name,
+		"Tool2": tool2_display_name,
+		"Tool3": tool3_display_name,
+	}
+	for tool_node in tools_container.get_children():
+		var name_label := tool_node.get_node_or_null("NameLabel") as Label
+		if name_label:
+			name_label.text = tool_names.get(str(tool_node.name), name_label.text)
+
 
 func _apply_visual_exports() -> void:
 	# Background
@@ -225,22 +241,12 @@ func _apply_visual_exports() -> void:
 		"Tool2": tool2_texture,
 		"Tool3": tool3_texture,
 	}
-	var tool_names := {
-		"Tool0": tool0_display_name,
-		"Tool1": tool1_display_name,
-		"Tool2": tool2_display_name,
-		"Tool3": tool3_display_name,
-	}
 	for tool_node in tools_container.get_children():
 		var tool_tex: Texture2D = tool_texs.get(str(tool_node.name))
 		var tex_rect := tool_node.get_node_or_null("ToolTextureRect") as TextureRect
 		if tool_tex and tex_rect:
 			tex_rect.texture = tool_tex
-		# B4 (2026-09-30): the name each slot's export promises, under its
-		# picture, matched by node name like the art.
-		var name_label := tool_node.get_node_or_null("NameLabel") as Label
-		if name_label:
-			name_label.text = tool_names.get(str(tool_node.name), name_label.text)
+
 
 	# Tooltip style
 	if tooltip_panel and tooltip_bg_texture:

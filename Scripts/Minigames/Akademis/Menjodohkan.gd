@@ -354,11 +354,17 @@ func _fit_card_text(card: Control, label: Label) -> void:
 		SoalFit.font_size(label, badge, label.text, TILE_TEXT_MAX, TILE_TEXT_MIN))
 
 
+## One wheel card from `scene`, card_width wide.
+func _new_card(scene: PackedScene) -> Control:
+	var card := scene.instantiate() as Control
+	card.custom_minimum_size.x = card_width
+	return card
+
+
 func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 	# Question cards
 	for i in range(questions.size()):
-		var card = question_card_scene.instantiate() as Control
-		card.custom_minimum_size.x = card_width
+		var card := _new_card(question_card_scene)
 		q_wheel_parent.add_child(card)
 		question_cards.append(card)
 		
@@ -402,8 +408,7 @@ func _instantiate_cards(q_order: Array[int], a_order: Array[int]) -> void:
 			
 	# Answer cards
 	for i in range(answers.size()):
-		var card = answer_card_scene.instantiate() as Control
-		card.custom_minimum_size.x = card_width
+		var card := _new_card(answer_card_scene)
 		a_wheel_parent.add_child(card)
 		answer_cards.append(card)
 		

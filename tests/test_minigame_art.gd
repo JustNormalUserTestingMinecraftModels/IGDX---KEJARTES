@@ -175,17 +175,16 @@ func test_choice_buttons_animate_on_both_style_paths() -> void:
 	btn.pivot_offset = Vector2("),
 		"the pivot is set once for the press squash")
 
+## The buttons are disabled before the flash lands. Since 2026-09-30 the
+## flash is a theme variation whose disabled state is its normal one, ink
+## included, so the dark resting ink can no longer survive on the colour.
 func test_flash_keeps_white_ink_on_the_coloured_fill() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Akademis/PilihanGanda.gd")
-	var at := src.find("func _flash_button_box")
-	assert_true(at != -1, "_flash_button_box should exist")
-	if at == -1:
-		return
-	var next_func := src.find("\nfunc ", at + 10)
-	var body := src.substr(at, next_func - at) if next_func > at else src.substr(at)
-	assert_true(body.contains("font_disabled_color"),
-		"choice buttons are disabled before the flash lands, so the flash must "
-		+ "set font_disabled_color as well or the dark resting ink survives")
+	var theme := load("res://Assets/Theme/kejartes_theme.tres") as Theme
+	for name in ["MinigameChoiceButtonCorrect", "MinigameChoiceButtonWrong"]:
+		var ink := theme.get_color("font_color", name)
+		assert_true(theme.get_color("font_disabled_color", name).is_equal_approx(ink),
+			name + ": a disabled (answered) button keeps the flash's ink")
+		assert_true(ink.get_luminance() > 0.7, name + ": the ink is light on the colour")
 
 func test_every_question_image_resolves() -> void:
 	for data_path in ["res://Assets/Data/pilihanganda_questions.json",

@@ -25,9 +25,12 @@ const MIN_SHADOW_SIZE := 8
 func _panel_box(scene_path: String) -> StyleBoxFlat:
 	var card = load(scene_path).instantiate()
 	# Since 2026-09-30 the cards' boxes come from the theme (MinigameCard,
-	# MinigameAnswerCard), so the card needs the baked theme to resolve them.
+	# MinigameAnswerCard): the card needs the baked theme, and a theme only
+	# resolves for a Control inside the tree.
 	card.theme = load("res://Assets/Theme/kejartes_theme.tres")
+	Engine.get_main_loop().root.add_child(card)
 	var box := card.get_theme_stylebox("panel") as StyleBoxFlat
+	card.get_parent().remove_child(card)
 	card.free()
 	return box
 

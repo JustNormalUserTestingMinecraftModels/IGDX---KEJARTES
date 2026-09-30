@@ -1,58 +1,81 @@
-# res://Scripts/TutorialArrow.gd
+@tool
+extends Control
 
 ## A bouncing arrow pointing at whatever the current tutorial step is
 ## highlighting.
 ##
-## Not an autoload -- StudentCard.gd instantiates it by script (`const
-## TutorialArrow = preload(...)`) as part of its per-step onboarding
-## highlight, positions it itself, and calls `set_direction()` to flip
-## which way it points and restart the bounce.
+## Not an autoload: every tutorial screen (StudentCard, StudentList,
+## AturJadwal, Lobby) instances Scenes/UI/TutorialArrow.tscn as part of its
+## per-step onboarding highlight, positions it itself and calls
+## set_direction() to flip which way it points and restart the bounce.
+##
+## The picture is the scene's authored `Visual` TextureRect; this script
+## only sizes it (arrow_size), flips it and bounces it. The Control's own
+## origin is the arrow's tip: the picture hangs above that point, centred,
+## so a caller positions the Control at the spot to indicate.
 
-extends Control
+## How far the arrow bounces away from the spot it points at, in pixels.
+const BOUNCE_DISTANCE := 50.0
+## How long one leg of the bounce takes, in seconds.
+const BOUNCE_LEG_SECONDS := 0.45
+## How far the picture turns to point up instead of down, in degrees.
+const UP_ROTATION_DEGREES := 180.0
 
-var visual_arrow: TextureRect
+## Size of the arrow picture, in pixels. The tip stays at this Control's
+## origin whatever the size.
+@export var arrow_size: Vector2 = Vector2(180, 180):
+	set(value):
+		arrow_size = value
+		_apply_arrow_size()
+
+## The arrow picture, the scene's authored `Visual` child.
+@onready var visual_arrow: TextureRect = $Visual
+
 var bounce_tween: Tween
+var _pointing_up := false
 
-func _ready():
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	# Create visual TextureRect child
-	visual_arrow = TextureRect.new()
-	visual_arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	visual_arrow.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	visual_arrow.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	visual_arrow.texture = preload("res://Assets/Images/UI/Placeholders/arrow.png")
-	
-	# Set size
-	var arrow_size := Vector2(320, 320)
-	visual_arrow.size = arrow_size
-	# Center the bottom point at (0, 0) of the parent Control
-	visual_arrow.position = Vector2(-arrow_size.x / 2.0, -arrow_size.y)
-	visual_arrow.pivot_offset = Vector2(arrow_size.x / 2.0, arrow_size.y)
-	
-	add_child(visual_arrow)
-	
+
+func _ready() -> void:
+	_apply_arrow_size()
+	if Engine.is_editor_hint():
+		return
 	_start_bounce()
 
-var _pointing_up := false
+
+## Sizes the picture and hangs it from the tip at the origin. Safe before
+## _ready(), when the picture is not bound yet; _ready() calls it again.
+func _apply_arrow_size() -> void:
+	if visual_arrow == null:
+		return
+	visual_arrow.size = arrow_size
+	visual_arrow.position = _rest_position()
+	visual_arrow.pivot_offset = Vector2(arrow_size.x / 2.0, arrow_size.y)
+	if bounce_tween != null:
+		_start_bounce()
+
+
+## Where the picture sits between bounces: centred on the tip, hanging above.
+func _rest_position() -> Vector2:
+	return Vector2(-arrow_size.x / 2.0, -arrow_size.y)
+
 
 func set_direction(pointing_up: bool) -> void:
 	if _pointing_up == pointing_up:
 		return
 	_pointing_up = pointing_up
-	if _pointing_up:
-		visual_arrow.rotation_degrees = 180.0
-	else:
-		visual_arrow.rotation_degrees = 0.0
+	visual_arrow.rotation_degrees = UP_ROTATION_DEGREES if _pointing_up else 0.0
+	if Engine.is_editor_hint():
+		return
 	_start_bounce()
 
-func _start_bounce():
-	if bounce_tween and bounce_tween.is_valid():
+
+func _start_bounce() -> void:
+	if bounce_tween != null and bounce_tween.is_valid():
 		bounce_tween.kill()
+	var start_pos: Vector2 = _rest_position()
+	visual_arrow.position = start_pos
+	var away: Vector2 = Vector2(0.0, BOUNCE_DISTANCE if _pointing_up else -BOUNCE_DISTANCE)
 	bounce_tween = create_tween().set_loops()
 	bounce_tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	# Bounce visual_arrow up and down by 50 pixels
-	var start_pos = visual_arrow.position
-	var bounce_offset = Vector2(0, 50) if _pointing_up else Vector2(0, -50)
-	bounce_tween.tween_property(visual_arrow, "position", start_pos + bounce_offset, 0.45)
-	bounce_tween.tween_property(visual_arrow, "position", start_pos, 0.45)
+	bounce_tween.tween_property(visual_arrow, "position", start_pos + away, BOUNCE_LEG_SECONDS)
+	bounce_tween.tween_property(visual_arrow, "position", start_pos, BOUNCE_LEG_SECONDS)

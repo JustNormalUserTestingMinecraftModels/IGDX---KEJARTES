@@ -115,7 +115,7 @@ var _picked_category := ""
 static var tutorial_phase1_done := false
 static var tutorial_phase3_done := false
 # Tutorial UI variables
-const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
+const TutorialArrow: PackedScene = preload("res://Scenes/UI/TutorialArrow.tscn")
 var current_step := 0
 var current_phase_steps: Array[TutorialStepData] = []
 var tutorial_active := true
@@ -236,7 +236,7 @@ func _setup_gameplay():
 	call_deferred("_fit_color_rect_to_viewport")
 	get_tree().root.size_changed.connect(_fit_color_rect_to_viewport)
 
-	_tutorial_arrow = TutorialArrow.new()
+	_tutorial_arrow = TutorialArrow.instantiate()
 	_tutorial_arrow.visible = false
 	color_rect.add_child(_tutorial_arrow)
 

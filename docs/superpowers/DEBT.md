@@ -173,6 +173,13 @@ how-to step pictures `howto_tap`, `howto_swipe`, `howto_drag`, `howto_read`,
 `Assets/Images/UI/Icons/README.md`'s rules; `tests/test_minigame_layout_kit.gd`
 checks only that each file exists.
 
+**Tutorial name-plate glyph (2026-10-01).** `Assets/Images/UI/Icons/school.svg`
+is a hand-written placeholder (256x256, light fill and dark outline, per that
+folder's README), drop-replaceable by the owner's school icon at the same
+path with no code change. `TutorialPanel`'s `NamePlate/Row/Icon` shows it at
+40x40 beside the speaker's name; `test_ui_icons` and `test_tutorial_panel`
+pin it.
+
 **MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Four
 hand-written SVGs in `Assets/Images/UI/StudentList/`, drop-replaceable at the
 same paths, wired into `RosterCard.tscn` as of Task 3 (`Paper/WeekHeader/Band`,

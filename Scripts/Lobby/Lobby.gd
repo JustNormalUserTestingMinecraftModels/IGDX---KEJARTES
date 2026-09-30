@@ -104,7 +104,7 @@ const BLUR_OUT_SECONDS := 0.15
 ## (GameState.returned_from_student_card), instead of phase1's steps.
 @export var tutorial_phase2_steps: Array[TutorialStepData] = []
 
-const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
+const TutorialArrow: PackedScene = preload("res://Scenes/UI/TutorialArrow.tscn")
 
 var current_step := 0
 var current_phase_steps: Array[TutorialStepData] = []
@@ -162,7 +162,7 @@ func _ready() -> void:
 	call_deferred("_fit_color_rect_to_viewport")
 	get_tree().root.size_changed.connect(_fit_color_rect_to_viewport)
 
-	_tutorial_arrow = TutorialArrow.new()
+	_tutorial_arrow = TutorialArrow.instantiate()
 	_tutorial_arrow.visible = false
 	color_rect.add_child(_tutorial_arrow)
 

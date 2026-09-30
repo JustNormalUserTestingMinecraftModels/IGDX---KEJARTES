@@ -163,7 +163,7 @@ var current_card_index: int = 0
 var _dots_tween: Tween
 
 # Tutorial UI variables
-const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
+const TutorialArrow: PackedScene = preload("res://Scenes/UI/TutorialArrow.tscn")
 
 ## Schedule category -> week-strip glyph, keyed by every spelling the
 ## day_schedules data can carry. Anything unresolved (an empty category,
@@ -598,7 +598,7 @@ func _setup_tutorial():
 	_fit_color_rect_to_viewport()
 	get_tree().root.size_changed.connect(_fit_color_rect_to_viewport)
 
-	_tutorial_arrow = TutorialArrow.new()
+	_tutorial_arrow = TutorialArrow.instantiate()
 	_tutorial_arrow.visible = false
 	color_rect.add_child(_tutorial_arrow)
 

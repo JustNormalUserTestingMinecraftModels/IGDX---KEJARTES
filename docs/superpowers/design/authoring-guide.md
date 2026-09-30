@@ -354,8 +354,7 @@ entries, as candidates for a future pass:
   `MainBola.gd` 2, `Variabel.gd` and `LombaMenari.gd` 1 each; `Menjodohkan.gd`
   reached 0 in the same pass) and screens (`Lobby.gd`, `Inventory.gd`,
   `KoperasiStage.gd`, `StudentList.gd`, `StudentCardView.gd`,
-  `DailyDecayOverview.gd`, `SchoolDay.gd`, `StudentCard.gd`,
-  `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
+  `DailyDecayOverview.gd`, `SchoolDay.gd`, `StudentCard.gd`) — smaller counts, mostly single-purpose chrome
   (a background swap, a fallback drawer) not yet surveyed for whether a
   scene conversion is worthwhile. The 2026-09-04 reward pass converted the
   one piece of chrome shared across all seven scoring minigames — the

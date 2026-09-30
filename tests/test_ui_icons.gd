@@ -18,6 +18,7 @@ const NAMES := [
 	"nav_jadwal", "nav_students", "nav_koperasi", "nav_inventory", "nav_rapor",
 	"chevron_left", "chevron_right", "exit", "close", "home",
 	"info", "music", "sound", "vibrate", "cat_istirahat", "cat_wirausaha",
+	"school",
 ]
 ## Minimum side, px.
 const MIN_SIDE := 256

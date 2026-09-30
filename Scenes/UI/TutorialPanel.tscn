@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cx4jdatm5v8i" path="res://Scripts/UI/TutorialPanel.gd" id="1_v0ojc"]
 [ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/Icons/school.svg" id="3_school"]
 
 [node name="TutorialPanel" type="MarginContainer" unique_id=221373627]
 mouse_filter = 2
@@ -25,6 +26,46 @@ layout_mode = 2
 [node name="Layout" type="VBoxContainer" parent="Frame/Margin" unique_id=1522478353]
 layout_mode = 2
 mouse_filter = 2
+
+[node name="StepPill" type="PanelContainer" parent="Frame/Margin/Layout"]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"TutorialStepPill"
+
+[node name="StepLabel" type="Label" parent="Frame/Margin/Layout/StepPill"]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"TutorialStepPillLabel"
+text = "Langkah 1 / 3"
+horizontal_alignment = 1
+
+[node name="NamePlate" type="PanelContainer" parent="Frame/Margin/Layout"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+theme_type_variation = &"TutorialNamePlate"
+
+[node name="Row" type="HBoxContainer" parent="Frame/Margin/Layout/NamePlate"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="Icon" type="TextureRect" parent="Frame/Margin/Layout/NamePlate/Row"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("3_school")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SpeakerLabel" type="Label" parent="Frame/Margin/Layout/NamePlate/Row"]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"TutorialNamePlateLabel"
+text = "Pak Kepala Sekolah"
 
 [node name="TitleLabel" type="Label" parent="Frame/Margin/Layout" unique_id=1551616205]
 layout_mode = 2

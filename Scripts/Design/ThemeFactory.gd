@@ -47,6 +47,7 @@ static func build(tokens: DesignTokens) -> Theme:
 	_build_settings(theme, tokens)
 	_build_lobby_hud(theme, tokens)
 	_build_koperasi_chrome(theme, tokens)
+	_build_tutorial_coach(theme, tokens)
 	_build_base_overrides(theme, tokens)
 
 	return theme
@@ -1161,6 +1162,55 @@ static func _build_achievement_status_pill(theme: Theme, tokens: DesignTokens) -
 	seg_empty.bg_color = tokens.surface_sunken
 	seg_empty.set_corner_radius_all(2)
 	theme.set_stylebox("panel", "AchievementDashSegmentEmpty", seg_empty)
+
+
+## The rim a coach-mark name plate wears, in pixels. The step pill is flat;
+## the plate is the same mint with this rim so it reads as a plate.
+const TUTORIAL_PLATE_RIM := 3
+## How much darker than the mint fill the plate's rim is drawn.
+const TUTORIAL_PLATE_RIM_DARKEN := 0.25
+
+
+## The coach-mark's head badge (2026-10-01 tutorial unification): two mint
+## pills that take turns in TutorialPanel's header slot, each with the label
+## variation that reads on it.
+##
+##   TutorialStepPill        "Langkah 2 / 5", flat mint.
+##   TutorialStepPillLabel   its text, display face, cream on the mint.
+##   TutorialNamePlate       the headmaster beat's speaker, mint with a rim.
+##   TutorialNamePlateLabel  its text, same face and colour.
+##
+## Mint is state_success (the prompt's tint and the status pill already use
+## it), never gold: gold is not the main action.
+static func _build_tutorial_coach(theme: Theme, tokens: DesignTokens) -> void:
+	_add_tutorial_badge(theme, tokens, "TutorialStepPill", "TutorialStepPillLabel", false)
+	_add_tutorial_badge(theme, tokens, "TutorialNamePlate", "TutorialNamePlateLabel", true)
+
+
+## One mint pill variation and its label variation. `rimmed` adds the
+## plate's darker rim.
+static func _add_tutorial_badge(theme: Theme, tokens: DesignTokens, box_name: String,
+		label_name: String, rimmed: bool) -> void:
+	theme.add_type(box_name)
+	theme.set_type_variation(box_name, "PanelContainer")
+	var box := StyleBoxFlat.new()
+	box.bg_color = tokens.state_success
+	box.set_corner_radius_all(tokens.radius_pill)
+	box.content_margin_left = tokens.space_md
+	box.content_margin_right = tokens.space_md
+	box.content_margin_top = tokens.space_xs
+	box.content_margin_bottom = tokens.space_xs
+	if rimmed:
+		box.set_border_width_all(TUTORIAL_PLATE_RIM)
+		box.border_color = tokens.state_success.darkened(TUTORIAL_PLATE_RIM_DARKEN)
+	theme.set_stylebox("panel", box_name, box)
+
+	theme.add_type(label_name)
+	theme.set_type_variation(label_name, "Label")
+	theme.set_font_size("font_size", label_name, tokens.font_body_size)
+	theme.set_color("font_color", label_name, tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", label_name, tokens.font_display)
 
 
 ## The slide warning (2026-09-12 event-cards spec, 2.1): a flat mustard

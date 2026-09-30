@@ -101,7 +101,6 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/StudentList/StudentList.gd": 92,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 17,
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 7,
-	"res://Scripts/TutorialArrow.gd": 4,
 }
 
 ## Bare numeric literals in function bodies, per script.
@@ -196,7 +195,6 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 28,
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 2,
 	"res://Scripts/Transition/Transition.gd": 7,
-	"res://Scripts/TutorialArrow.gd": 7,
 	"res://Scripts/UI/StatBar.gd": 1,
 }
 

@@ -53,7 +53,7 @@ var _tutorial_badge_cleanup: Callable
 ## Edit this array in the Inspector to customize each tutorial step.
 @export var tutorial_steps: Array[TutorialStepData] = []
 
-const TutorialArrow = preload("res://Scripts/TutorialArrow.gd")
+const TutorialArrow: PackedScene = preload("res://Scenes/UI/TutorialArrow.tscn")
 
 ## Shared onboarding coach-mark (title/separator/body/separator/prompt on
 ## the Card surface). This screen's per-step tutorial keeps StudentCard's
@@ -128,7 +128,7 @@ func _ready():
 	color_rect.get_parent().remove_child(color_rect)
 	tut_canvas.add_child(color_rect)
 
-	_tutorial_arrow = TutorialArrow.new()
+	_tutorial_arrow = TutorialArrow.instantiate()
 	_tutorial_arrow.visible = false
 	color_rect.add_child(_tutorial_arrow)
 

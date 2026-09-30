@@ -82,7 +82,6 @@ const BASELINE: Dictionary = {
 	"res://Scripts/StudentCard/StudentCardView.gd": 5,
 	"res://Scripts/StudentCard/StudentCard.gd": 1,
 	"res://Scripts/StudentList/StudentList.gd": 7,
-	"res://Scripts/TutorialArrow.gd": 1,
 }
 
 ## Per-file count of runtime visual construction judged permanent, not

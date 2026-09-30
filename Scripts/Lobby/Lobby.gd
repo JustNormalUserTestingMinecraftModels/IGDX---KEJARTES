@@ -635,7 +635,7 @@ func _update_money_display(from_amount: int = -1) -> void:
 		AudioDirector.play_sfx(&"coin")
 
 func _on_daily_login_pressed():
-	if reward_popup_open:
+	if reward_popup_open or _tutorial_refuses(daily_login_btn):
 		return
 	_show_daily_reward()
 
@@ -717,7 +717,7 @@ func _animate_button_click_bounce(btn: Control):
 func _on_settings_pressed() -> void:
 	# A press Transition would drop must not leave Settings' return_scene
 	# pointing at the Lobby for a later visit from the title (bug sweep 2026-09-30).
-	if Transition.is_busy():
+	if Transition.is_busy() or _tutorial_refuses(settings_button):
 		return
 	AudioDirector.play_sfx(&"tap")
 	SettingsScript.return_scene = "res://Scenes/Lobby/Lobby.tscn"
@@ -740,6 +740,8 @@ func _on_jadwal_pressed():
 
 
 func _on_koperasi_pressed() -> void:
+	if _tutorial_refuses(koperasi_button):
+		return
 	AudioDirector.play_sfx(&"tap")
 	# The shop button lands on the hub, which forks to the item shop or
 	# the cosmetic shop, rather than dropping straight into the Koperasi.
@@ -747,13 +749,15 @@ func _on_koperasi_pressed() -> void:
 
 
 func _on_inventory_pressed() -> void:
+	if _tutorial_refuses(inventory_button):
+		return
 	AudioDirector.play_sfx(&"tap")
 	Transition.change_scene("res://Scenes/Inventory/Inventory.tscn", Transition.Style.WIPE)
 
 ## Opens the skin picker over the Lobby. Skins apply the moment one is
 ## picked; closing re-seats the diorama so its faces and desks wear them.
 func _on_skin_switch_pressed() -> void:
-	if GameState.approved_students.is_empty():
+	if GameState.approved_students.is_empty() or _tutorial_refuses(skin_switch_button):
 		return
 	var screen := skin_select_scene.instantiate() as SkinSelect
 	_skin_select_open = true
@@ -788,12 +792,32 @@ func _chatter_allowed() -> bool:
 
 
 func _on_achievement_pressed() -> void:
+	if _tutorial_refuses(achievement_button):
+		return
 	AudioDirector.play_sfx(&"tap")
 	Transition.change_scene("res://Scenes/Achievements/AchievementsScreen.tscn", Transition.Style.WIPE)
 
 func _on_report_student_pressed() -> void:
+	if _tutorial_refuses(report_student_button):
+		return
 	AudioDirector.play_sfx(&"tap")
 	Transition.change_scene("res://Scenes/ReportCard/ReportCard.tscn", Transition.Style.WIPE)
+
+## A HUD tap while the tutorial is up, on a button its step does not point at.
+## The last step of either phase lets taps through to its button (Student, then
+## Jadwal), which lets every other HUD button through as well: one of those
+## would leave the Lobby mid-tutorial and replay the phase on return. So the tap
+## gets the forced steps' answer (TutorialPanel.answer_wrong_tap: the error cue,
+## the step's button shakes, the tapped one dims) and goes nowhere. True when
+## the tap was refused.
+func _tutorial_refuses(button: Control) -> bool:
+	if not tutorial_active or _step_targets.has(button):
+		return false
+	if _step_targets.is_empty():
+		AudioDirector.play_sfx(&"error")
+	else:
+		TutorialPanel.answer_wrong_tap(_step_targets[0], [button])
+	return true
 
 func _next_step():
 	current_step += 1

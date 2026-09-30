@@ -543,9 +543,9 @@ func test_opening_the_daily_reward_refreshes_for_today() -> void:
 # coach-mark (a PanelContainer, three Labels, two separators, "(n/N)" titles)
 # and clamped its arrow with a hard-coded 320px picture. It is now
 # TutorialPanel.tscn, mounted into the overlay and seated inside the HUD's
-# Safe/UI. (Unlike AturJadwal and StudentList it has no forced step that drops
-# a wrong tap: the overlay either takes the tap to advance or lets it through
-# to the real button, so there is nothing to answer.)
+# Safe/UI. The overlay either takes the tap to advance or, at the last step of
+# a phase, lets it through to the real button -- and to every other HUD button,
+# which then answers it as a wrong tap (_tutorial_refuses).
 
 ## The source of one function, from its `func` line to the next.
 func _function_body(name: String) -> String:
@@ -778,6 +778,46 @@ func test_pressing_jadwal_ends_an_active_tutorial_and_student_does_not() -> void
 	assert_true(ends_at < jadwal.find("Transition.change_scene("), "before the scene changes")
 	assert_false(_function_body("_on_student_pressed").contains("_end_tutorial()"),
 		"STUDENT's press leaves phase 2 still to come")
+
+
+## The HUD buttons the tutorial never points at, by handler. The last step of
+## either phase lets taps through the overlay, so these are reachable then.
+const _TUTORIAL_GATED_HANDLERS := {
+	"_on_koperasi_pressed": "koperasi_button",
+	"_on_inventory_pressed": "inventory_button",
+	"_on_report_student_pressed": "report_student_button",
+	"_on_achievement_pressed": "achievement_button",
+	"_on_settings_pressed": "settings_button",
+	"_on_skin_switch_pressed": "skin_switch_button",
+	"_on_daily_login_pressed": "daily_login_btn",
+}
+## What each of those handlers does once it lets a tap through.
+const _HANDLER_ACTIONS := ["Transition.change_scene(", "_show_daily_reward()", "instantiate()"]
+
+## At the last step of either phase every HUD button can be tapped, not just the
+## one the step names; Koperasi, say, left the Lobby with the tutorial unfinished,
+## and phase 2 replayed on return. Each such button asks _tutorial_refuses first,
+## which answers the tap as the forced steps do and drops it.
+func test_other_hud_buttons_refuse_a_tap_while_the_tutorial_is_up() -> void:
+	for handler: String in _TUTORIAL_GATED_HANDLERS:
+		var body := _function_body(handler)
+		var gate_at := body.find("_tutorial_refuses(%s)" % _TUTORIAL_GATED_HANDLERS[handler])
+		assert_true(gate_at >= 0, "%s asks the tutorial before acting" % handler)
+		var acted := false
+		for action: String in _HANDLER_ACTIONS:
+			var action_at := body.find(action)
+			if action_at >= 0:
+				acted = true
+				assert_true(gate_at < action_at, "%s asks before %s" % [handler, action])
+		assert_true(acted, "%s still does something once allowed (not vacuous)" % handler)
+	var refuses := _function_body("_tutorial_refuses")
+	assert_true(refuses.contains("if not tutorial_active or _step_targets.has(button):"),
+		"only a tap during the tutorial, on a button its step does not point at, is refused")
+	assert_true(refuses.contains("TutorialPanel.answer_wrong_tap(_step_targets[0], [button])"),
+		"with the shared wrong-tap answer: the step's button shakes, the tapped one dims")
+	for target_handler: String in ["_on_student_pressed", "_on_jadwal_pressed"]:
+		assert_false(_function_body(target_handler).contains("_tutorial_refuses"),
+			"%s is a step's own button; it is never refused" % target_handler)
 
 
 ## `_start_tutorial` makes the last step's button visible in its own phase: Student in

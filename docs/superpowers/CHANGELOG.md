@@ -27,8 +27,9 @@ rules; Task 4 was added at the owner's request). Four tasks and a review wave.
    opposite the spotlight so the arrow has room and never lies across it, and
    no control of the card takes a tap (a step advances by the caller's own
    catcher or the real control). A wrong tap on a forced step now answers:
-   the error cue, the wanted control shakes, its siblings dim.
-   StudentCard's steps count through the pill and its arrow keeps off the card.
+   the error cue, the wanted control shakes, its siblings dim. The Lobby's
+   other HUD buttons answer the same way while its tutorial is up, so a phase
+   can no longer be left half done. StudentCard's steps count through the pill and its arrow keeps off the card.
 3. **The headmaster's beat.** Every promotion (Kelas 8, Kelas 9) opens with
    Pak Kepala Sekolah's congratulation, a short run of cards on the same panel
    in name-plate mode, one per tap; it is a story beat, never a lesson, so it

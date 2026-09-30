@@ -816,12 +816,12 @@ func _on_skin_switch_pressed() -> void:
 	screen.open(names)
 
 
-<<<<<<< HEAD
 ## Grafis HD off takes the room's glow with it. The Lobby's glow is a plain
 ## WorldEnvironment rather than an AmbientGlow, so nothing else switches it.
 func _apply_hd_graphics() -> void:
 	($WorldEnvironment as WorldEnvironment).environment.glow_enabled = GameSettings.hd_graphics_enabled
-=======
+
+
 ## Draws the room, or stops drawing it while the skin picker covers the whole
 ## screen with its own still of it. The room is the costly part of this
 ## screen (every plate is shaded, and the glow runs over all of it), and
@@ -830,7 +830,6 @@ func _apply_hd_graphics() -> void:
 ## here and comes back with the layer.
 func _set_room_drawn(drawn: bool) -> void:
 	($World as CanvasLayer).visible = drawn
->>>>>>> origin/Textures
 
 
 ## LobbyChatter's gate: nobody talks over the tutorial, the daily reward,

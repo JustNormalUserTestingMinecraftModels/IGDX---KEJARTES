@@ -263,12 +263,12 @@ func _populate_default_tutorial_steps() -> void:
 			["Akademis", "Bar Akademis menunjukkan kemampuan murid dalam pelajaran akademis.\n\nSemakin tinggi nilainya, semakin mudah murid memahami pelajaran.", "KertasMurid1/Akademis", ""],
 			["Seni Budaya", "Bar Seni Budaya menunjukkan kemampuan murid dalam bidang seni dan kebudayaan.", "KertasMurid1/SeniBudaya", ""],
 			["Olahraga", "Bar Olahraga menunjukkan kemampuan fisik dan ketangkasan murid dalam bidang olahraga.", "KertasMurid1/Olahraga", ""],
-			["Quirk Murid", "Setiap murid punya Quirk — sifat unik yang mempengaruhi cara mereka berkembang!\n\nQuirk bisa jadi keunggulan atau tantangan tersendiri saat menyusun jadwal belajar.", "KertasMurid1/KutuBuku", ""],
+			["Quirk Murid", "Setiap murid punya Quirk — sifat unik yang memengaruhi cara mereka berkembang!\n\nQuirk bisa jadi keunggulan atau tantangan tersendiri saat menyusun jadwal belajar.", "KertasMurid1/KutuBuku", ""],
 			["Coba Quirk!", "Sekarang coba sentuh badge Quirk milik murid ini untuk melihat langsung efeknya pada gameplay!", "KertasMurid1/KutuBuku", "TEKAN BADGE QUIRK UNTUK LIHAT EFEKNYA!"],
-			["Efek Quirk", "Pop-up ini menjelaskan efek dari Quirk yang akan mempengaruhi gameplay ke depannya.\n\nSilakan baca efeknya lalu tutup pop-up ini untuk melanjutkan.", "KertasMurid1/PopupCanvas/TraitOverlay/TraitPopupPanel", "TUTUP POP-UP UNTUK LANJUT!"],
+			["Efek Quirk", "Pop-up ini menjelaskan efek dari Quirk yang akan memengaruhi gameplay ke depannya.\n\nSilakan baca efeknya lalu tutup pop-up ini untuk melanjutkan.", "KertasMurid1/PopupCanvas/TraitOverlay/TraitPopupPanel", "TUTUP POP-UP UNTUK LANJUT!"],
 			["Persona Murid", "Persona adalah kepribadian dasar murid yang menentukan kebutuhan mereka setiap minggu.\n\nPilih jadwal yang cocok dengan Persona murid agar mereka tetap semangat!", "KertasMurid1/KutuBuku2", ""],
 			["Coba Persona!", "Sekarang sentuh badge Persona untuk melihat efeknya pada jadwal mingguan murid!", "KertasMurid1/KutuBuku2", "TEKAN BADGE PERSONA UNTUK LIHAT EFEKNYA!"],
-			["Efek Persona", "Sama seperti Quirk, pop-up ini menjelaskan efek Persona yang mempengaruhi gameplay.\n\nSilakan baca dan tutup pop-up ini untuk melanjutkan.", "KertasMurid1/PopupCanvas/TraitOverlay/TraitPopupPanel", "TUTUP POP-UP UNTUK LANJUT!"],
+			["Efek Persona", "Sama seperti Quirk, pop-up ini menjelaskan efek Persona yang memengaruhi gameplay.\n\nSilakan baca dan tutup pop-up ini untuk melanjutkan.", "KertasMurid1/PopupCanvas/TraitOverlay/TraitPopupPanel", "TUTUP POP-UP UNTUK LANJUT!"],
 			["Memilih Murid", "Kamu bisa memilih hingga 2 murid untuk diajar.\n\nGunakan tombol panah untuk melihat murid lainnya dan pilih dengan bijak!", "NextButtonKanan", "Tekan tombol panah Kanan untuk lanjut!"],
 			["Approve Murid", "Tekan tombol APPROVE untuk memilih murid ini.\n\nSetelah memilih 2 murid, tombol BELAJAR akan muncul untuk melanjutkan!", "KertasMurid1/Aprove", "Tekan tombol 'APPROVE' untuk lanjut!"]
 		]

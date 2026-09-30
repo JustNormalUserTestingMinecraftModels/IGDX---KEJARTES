@@ -298,7 +298,7 @@ func _populate_default_tutorial_steps():
 	if not tutorial_phase2_alt_step:
 		var alt = TutorialStepData.new()
 		alt.title = "Perhatian Akademis"
-		alt.text = "Wah, sepertinya \"Nama Murid\" perlu nilai akademisnya untuk dinaikan lebih lagi."
+		alt.text = "Wah, sepertinya \"Nama Murid\" perlu nilai akademisnya untuk dinaikkan lebih lagi."
 		alt.target_node_path = "BGStat/Akademis"
 		alt.prompt_text = ""
 		tutorial_phase2_alt_step = alt

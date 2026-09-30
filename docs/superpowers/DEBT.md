@@ -568,8 +568,10 @@ widget via `project_run` instead, which exercises it fine.
     fix is one `_end_tutorial()` in the bypass branch.
   - **`StudentCard.gd` sits at its 1444-line ceiling** (`LARGE_SCRIPTS`): the
     next change there moves something out first.
-  - **Tutorial copy still carries English words**: AturJadwal's "Perubahan
-    Stats & Energy" card ("stats", "Energy"), and the Lobby's "Inventory" and
+  - **Tutorial copy still carries English and non-standard words**:
+    AturJadwal's "Perubahan Stats & Energy" card ("stats", "Energy") and its
+    alt step's "terfokuskan ... apa yang ketertinggalan"; StudentCard's
+    "gameplay", "badge", "pop-up" and "Approve"; the Lobby's "Inventory" and
     'Student', which name those buttons' own captions (a `test_lobby` pin
     keeps each step's words on its button). The voice is one "kamu" now,
     pinned by `test_tutorial_panel`.

@@ -17,6 +17,9 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## chose (a debug-build BGM mute, saved on quit), so a version-1 "0" music
 ## volume loads as full volume, once.
 const VOLUME_SAVE_FORMAT := 2
+## The buses the players sit on, below Master. _ensure_mixer_buses() creates
+## any that the loaded bus layout lacks.
+const MIXER_BUSES: Array[StringName] = [&"BGM", &"SFX"]
 
 @export_group("SFX")
 ## `play_sfx(&"tap")`: generic button/tile taps across most screens
@@ -299,6 +302,7 @@ func _ready() -> void:
 
 	_setup_ran = true
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_ensure_mixer_buses()
 
 	for i in SFX_POOL_SIZE:
 		var p := AudioStreamPlayer.new()
@@ -321,6 +325,29 @@ func _ready() -> void:
 	_bgm_minigame.finished.connect(_on_minigame_bgm_finished)
 
 	_load_volumes()
+
+
+## Makes sure every bus the players and the Settings sliders use exists.
+## default_bus_layout.tres normally provides them, but a build that does not
+## carry or load that file boots with Master alone: every player then falls
+## back to Master and set_bus_volume() finds nothing to turn, so the Musik and
+## Efek Suara sliders did nothing on a phone (2026-09-30).
+func _ensure_mixer_buses() -> void:
+	for bus in MIXER_BUSES:
+		ensure_bus(bus)
+
+
+## The index of `bus`, adding it (sent to Master) if the AudioServer has none
+## by that name.
+func ensure_bus(bus: StringName) -> int:
+	var idx := AudioServer.get_bus_index(bus)
+	if idx >= 0:
+		return idx
+	AudioServer.add_bus()
+	idx = AudioServer.bus_count - 1
+	AudioServer.set_bus_name(idx, bus)
+	AudioServer.set_bus_send(idx, &"Master")
+	return idx
 
 
 func _make_bgm_player() -> AudioStreamPlayer:

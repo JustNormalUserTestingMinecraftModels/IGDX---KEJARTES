@@ -59,6 +59,7 @@ transparent (an empty card showed at the overlay's corner for a frame, and
 each screen's exit tween played on it); each screen's step entrance fades it
 in.
 
+## 2026-10-01 — Lobby students sit at the desk, not on the chair
 
 Branch `fix/lobby-seat-desk-edge`; spec and plan
 `2026-10-01-lobby-seat-on-desk-edge`. Every desk plate carries a chair back

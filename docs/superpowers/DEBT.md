@@ -571,6 +571,12 @@ widget via `project_run` instead, which exercises it fine.
   - **The older tutorial bodies still mix "anda" and "kalian" with "kamu"**
     (StudentCard, AturJadwal, StudentList); only the Lobby's was put in one
     voice, and the review wave fixed "Disini" and "Silahkan" elsewhere.
+    StudentCard's welcome step also says "performance".
+  - **The promotion beat's card runs 1045 px wide, edge to edge** (the other
+    screens' is 994): `TitleLabel` (`H1Label`) does not wrap, and "Selamat,
+    naik ke Kelas 8!" sets the card's minimum width. Wrapping it strands "8!"
+    on its own line; a shorter title in `HeadmasterBeat.HEADMASTER_BEATS`
+    (the collaborator's copy) is the clean fix.
 
 - **Texture memory follow-ons (2026-09-30).** Rule and numbers:
   `tests/test_texture_memory.gd`.

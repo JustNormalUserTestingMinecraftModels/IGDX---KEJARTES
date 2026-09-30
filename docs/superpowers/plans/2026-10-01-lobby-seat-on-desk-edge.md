@@ -281,6 +281,101 @@ git add Scenes/Lobby/Lobby.tscn
 git commit -F <scratchpad>/msg_t3.txt
 ```
 
+### Task 3b: Hands sit the same on each body in every seat (added 2026-10-01)
+
+Owner review after Task 4: Citra, Doni and Shinta were "still inaccurate". The 2026-09-30 rule kept an unpictured student's old x and only raised it with its row, so after the bodies shrank and moved, the hands drifted off the body by up to 17% of a body width, differently per seat. The owner picked option A and approved a preview: every student's arms and items sit at ONE place on its own body in every seat, mirrored with the art. That place comes from the picture for Andi, Citra, Marcel and Thea, and from Doni's and Shinta's mean placement before the picture pass (`4ec87bc0^`), where each already sat the same in every seat. The row scale, the mirroring and the front-row aisle rule are unchanged.
+
+**Files:**
+- Modify: `Scenes/Lobby/Lobby.tscn` (the 24 `Hand_*` nodes' four offsets; done by the controller with the editor closed)
+- Modify: `tests/test_lobby_desk_items_fit.gd`
+
+- [ ] **Step 1 (controller): move the hands.** Done with the editor closed by a scratchpad script (`hands_rel.py --apply`). The diff is only `offset_*` lines, and a second run leaves a zero residual.
+- [ ] **Step 2: the test.** In `tests/test_lobby_desk_items_fit.gd`:
+  - Delete `const ROWS` and its doc line, `const BEFORE` and its doc lines, and `func _row_rise` and its doc line. Grep that nothing else uses them.
+  - In the file header, replace the sentence that begins `so every student in a row now` so it says the row shares one scale, and every student's arms and items sit at one place on its own body in every seat.
+  - After `const FRONT_INNER_EDGE`, add:
+
+```gdscript
+## Where Doni's and Shinta's arms and items sit on their own body, in body
+## sides: x from the body's centre in the art's own frame (a mirrored hand
+## flips it), y from the body's top. Neither is in the owner's picture; this
+## is each one's mean placement in the scene before the picture pass
+## (4ec87bc0^), where each already sat the same in every seat.
+const OWN_PLACE := {"Doni": Vector2(0.010120, 1.166307), "Shinta": Vector2(0.041973, 1.071228)}
+## The Hand_* nodes drawn mirrored, by hands slot: the picture mirrors
+## Marcel in Slot3; the rest keep the mirroring they always had.
+const MIRRORED := {
+	"StudentHandsContainer_Back/Slot2": ["Andi"],
+	"StudentHandsContainer_Front/Slot3": ["Marcel"],
+	"StudentHandsContainer_Front/Slot4": ["Andi", "Doni", "Marcel"],
+}
+```
+
+  - After `widest_hand_art`, add:
+
+```gdscript
+## Where `student`'s arms and items sit on its own body, in OWN_PLACE's
+## frame: read from the picture for the four it shows, else OWN_PLACE.
+func _place_on_body(student: String) -> Vector2:
+	for name: String in SEATS:
+		var seat: Dictionary = SEATS[name]
+		if seat["student"] != student:
+			continue
+		var side: float = PORTRAIT_SIDE * float(seat["portrait_scale"]) * K
+		var top_left := to_game(seat, seat["portrait_origin"])
+		var centre: Vector2 = pictured_target(seat)[1]
+		var mirror := -1.0 if bool(seat["mirrored"]) else 1.0
+		return Vector2((centre.x - top_left.x - side / 2.0) / side * mirror, (centre.y - top_left.y) / side)
+	return OWN_PLACE[student]
+```
+
+  - Replace the whole of `test_every_student_wears_its_rows_scale_and_rises_with_it` (and its three-line doc comment) with:
+
+```gdscript
+## The picture draws both students of a row at one scale, so the whole row
+## wears it. Every student's arms and items sit at one place on its own body
+## in every seat, mirrored with the art. Until 2026-10-01 an unpictured
+## student kept its old x and only rose with its row, so its hands drifted
+## off the smaller bodies. In the front row an item wider than its desk is
+## still pushed off the screen's edge, never over the aisle. The pictured
+## student in its own seat sits exactly where the picture puts it.
+func test_every_student_wears_its_rows_scale_and_sits_the_same_on_its_body() -> void:
+	var checked := 0
+	for name: String in SEATS:
+		var seat: Dictionary = SEATS[name]
+		var row_scale: float = float(seat["hand_scale"]) * K
+		var body := _portrait_rect(seat["portraits"])
+		var prefix := "%s/%s/Hand_" % [CLASSROOM, seat["hands"]]
+		for path: String in _props:
+			if not path.begins_with(prefix):
+				continue
+			checked += 1
+			var student := path.trim_prefix(prefix)
+			var hand: Dictionary = _props[path]
+			var scale: Vector2 = hand.get("scale", Vector2.ONE)
+			assert_true(absf(absf(scale.x) - row_scale) < SCALE_TOLERANCE and absf(scale.y - row_scale) < SCALE_TOLERANCE,
+				"%s in %s is scaled %s, its row wears %.4f" % [student, name, str(scale), row_scale])
+			var mirrored: bool = (MIRRORED.get(seat["hands"], []) as Array).has(student)
+			assert_eq(scale.x < 0.0, mirrored, "%s in %s is mirrored only where it always was" % [student, name])
+			var place := _place_on_body(student)
+			var want := Vector2(body.get_center().x + place.x * body.size.x * (-1.0 if mirrored else 1.0),
+				body.position.y + place.y * body.size.y)
+			var half: float = (hand["texture"] as Texture2D).get_width() * row_scale / 2.0
+			assert_eq(widest_hand_art(student), float((hand["texture"] as Texture2D).get_width()),
+				"%s has a skin whose table art is another width: place it for the widest" % student)
+			# The picture governs its own student's seat, aisle included.
+			if FRONT_INNER_EDGE.has(name) and student != seat["student"]:
+				var edge: float = FRONT_INNER_EDGE[name]
+				want.x = minf(want.x, edge - half) if edge < CLASSROOM_SIZE.x / 2.0 else maxf(want.x, edge + half)
+			var centre := _hand_centre(seat["hands"], hand)
+			assert_true(centre.distance_to(want) < TOLERANCE,
+				"%s in %s draws at %s, expected %s (its place on its body, kept off the aisle)" % [student, name, str(centre), str(want)])
+	assert_eq(checked, EXPECTED_HANDS, "every slot's Hand_* nodes were found")
+```
+
+- [ ] **Step 3 (controller):** relaunch the worktree editor and run `lobby_desk_items_fit`, `lobby_layout`, `tall_screen_layout`, `student_chatter` and `parallax_diorama`. Expected: all pass.
+- [ ] **Step 4:** commit the scene and the test together: `fix(lobby): each student's hands sit the same on its body in every seat`, with the trailer.
+
 ### Task 4: Visual verification (owner-facing)
 
 **Files:** none tracked; all images go to the session scratchpad.

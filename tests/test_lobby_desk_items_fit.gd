@@ -10,8 +10,10 @@ extends McpTestSuite
 ## with three owner-sized exceptions. The picture replaced that rule: it
 ## draws both pictured students of a row at ONE scale (0.80 of the native
 ## art in the back row, 1.00 in the front), so every student in a row now
-## wears that scale, and the front row's wider items run past their desks
-## and off the screen's edge exactly as the picture's do.
+## wears that scale, and every student's arms and items sit at one place on
+## its own body in every seat (since 2026-10-01); the front row's wider items
+## still run past their desks and off the screen's edge exactly as the
+## picture's do.
 ##
 ## The picture's numbers are mapped through K = 448 / 429 (game desk width
 ## over the picture's), anchored on each desk's back edge: spec and plan
@@ -90,37 +92,21 @@ const SEATS := {
 ## The front desks' inner edges, classroom px: a front-row item stays on its
 ## desk's side of this line, so the aisle stays clear.
 const FRONT_INNER_EDGE := {"Slot3": 462.0, "Slot4": 622.0}
-## The two seats of each row, which share one item scale and one upward shift.
-const ROWS := [["Slot1", "Slot2"], ["Slot3", "Slot4"]]
 
-## Every hand before the picture pass: [scale, drawn centre]. An unpictured
-## student keeps this x and mirroring, and rises by its row's shift.
-const BEFORE := {
-	"StudentHandsContainer_Back/Slot1/Hand_Andi": [Vector2(0.7850, 0.8400), Vector2(277.69, 472.00)],
-	"StudentHandsContainer_Back/Slot1/Hand_Citra": [Vector2(1.1007, 1.1007), Vector2(309.97, 458.14)],
-	"StudentHandsContainer_Back/Slot1/Hand_Doni": [Vector2(1.0000, 1.0000), Vector2(273.00, 464.00)],
-	"StudentHandsContainer_Back/Slot1/Hand_Marcel": [Vector2(0.7500, 1.0000), Vector2(287.88, 433.00)],
-	"StudentHandsContainer_Back/Slot1/Hand_Shinta": [Vector2(1.1498, 1.1498), Vector2(297.08, 436.50)],
-	"StudentHandsContainer_Back/Slot1/Hand_Thea": [Vector2(1.0494, 1.0494), Vector2(246.73, 463.40)],
-	"StudentHandsContainer_Back/Slot2/Hand_Andi": [Vector2(-0.8050, 0.8600), Vector2(809.00, 480.00)],
-	"StudentHandsContainer_Back/Slot2/Hand_Citra": [Vector2(1.1037, 1.1037), Vector2(837.53, 460.27)],
-	"StudentHandsContainer_Back/Slot2/Hand_Doni": [Vector2(1.0000, 1.1700), Vector2(807.00, 470.00)],
-	"StudentHandsContainer_Back/Slot2/Hand_Marcel": [Vector2(0.8680, 0.9355), Vector2(818.50, 437.00)],
-	"StudentHandsContainer_Back/Slot2/Hand_Shinta": [Vector2(1.1529, 1.1529), Vector2(824.60, 438.57)],
-	"StudentHandsContainer_Back/Slot2/Hand_Thea": [Vector2(1.0523, 1.0523), Vector2(774.11, 465.55)],
-	"StudentHandsContainer_Front/Slot3/Hand_Andi": [Vector2(0.8786, 0.8786), Vector2(231.57, 844.00)],
-	"StudentHandsContainer_Front/Slot3/Hand_Citra": [Vector2(1.2062, 1.2062), Vector2(247.64, 817.72)],
-	"StudentHandsContainer_Front/Slot3/Hand_Doni": [Vector2(1.0850, 1.4200), Vector2(229.68, 836.66)],
-	"StudentHandsContainer_Front/Slot3/Hand_Marcel": [Vector2(0.8837, 0.9452), Vector2(231.57, 791.00)],
-	"StudentHandsContainer_Front/Slot3/Hand_Shinta": [Vector2(1.2600, 1.2600), Vector2(233.51, 794.01)],
-	"StudentHandsContainer_Front/Slot3/Hand_Thea": [Vector2(1.1500, 1.1500), Vector2(178.33, 823.49)],
-	"StudentHandsContainer_Front/Slot4/Hand_Andi": [Vector2(-0.8708, 0.8708), Vector2(850.47, 841.00)],
-	"StudentHandsContainer_Front/Slot4/Hand_Citra": [Vector2(1.2063, 1.2063), Vector2(867.23, 817.73)],
-	"StudentHandsContainer_Front/Slot4/Hand_Doni": [Vector2(-0.9900, 1.4200), Vector2(838.00, 839.00)],
-	"StudentHandsContainer_Front/Slot4/Hand_Marcel": [Vector2(-0.8400, 1.0000), Vector2(841.23, 787.00)],
-	"StudentHandsContainer_Front/Slot4/Hand_Shinta": [Vector2(1.2600, 1.2600), Vector2(853.10, 794.01)],
-	"StudentHandsContainer_Front/Slot4/Hand_Thea": [Vector2(1.1500, 1.1500), Vector2(797.92, 823.49)],
+## Where Doni's and Shinta's arms and items sit on their own body, in body
+## sides: x from the body's centre in the art's own frame (a mirrored hand
+## flips it), y from the body's top. Neither is in the owner's picture; this
+## is each one's mean placement in the scene before the picture pass
+## (4ec87bc0^), where each already sat the same in every seat.
+const OWN_PLACE := {"Doni": Vector2(0.010120, 1.166307), "Shinta": Vector2(0.041973, 1.071228)}
+## The Hand_* nodes drawn mirrored, by hands slot: the picture mirrors
+## Marcel in Slot3; the rest keep the mirroring they always had.
+const MIRRORED := {
+	"StudentHandsContainer_Back/Slot2": ["Andi"],
+	"StudentHandsContainer_Front/Slot3": ["Marcel"],
+	"StudentHandsContainer_Front/Slot4": ["Andi", "Doni", "Marcel"],
 }
+
 
 ## Written properties per node, keyed by path under the scene root.
 var _props: Dictionary
@@ -233,14 +219,19 @@ static func widest_hand_art(student: String) -> float:
 	return widest
 
 
-## How far a row's hands rose: the mean of its two pictured students' rise.
-func _row_rise(row: Array) -> float:
-	var total := 0.0
-	for name: String in row:
+## Where `student`'s arms and items sit on its own body, in OWN_PLACE's
+## frame: read from the picture for the four it shows, else OWN_PLACE.
+func _place_on_body(student: String) -> Vector2:
+	for name: String in SEATS:
 		var seat: Dictionary = SEATS[name]
-		var key := "%s/Hand_%s" % [seat["hands"], seat["student"]]
-		total += (pictured_target(seat)[1] as Vector2).y - (BEFORE[key][1] as Vector2).y
-	return total / row.size()
+		if seat["student"] != student:
+			continue
+		var side: float = PORTRAIT_SIDE * float(seat["portrait_scale"]) * K
+		var top_left := to_game(seat, seat["portrait_origin"])
+		var centre: Vector2 = pictured_target(seat)[1]
+		var mirror := -1.0 if bool(seat["mirrored"]) else 1.0
+		return Vector2((centre.x - top_left.x - side / 2.0) / side * mirror, (centre.y - top_left.y) / side)
+	return OWN_PLACE[student]
 
 
 func test_each_seats_portrait_sits_where_the_picture_puts_it() -> void:
@@ -268,41 +259,43 @@ func test_the_pictured_students_match_the_picture() -> void:
 
 
 ## The picture draws both students of a row at one scale, so the whole row
-## wears it; an unpictured student keeps its place along the desk (pushed
-## off the aisle in the front row) and its mirroring, and rises with the row.
-func test_every_student_wears_its_rows_scale_and_rises_with_it() -> void:
+## wears it. Every student's arms and items sit at one place on its own body
+## in every seat, mirrored with the art. Until 2026-10-01 an unpictured
+## student kept its old x and only rose with its row, so its hands drifted
+## off the smaller bodies. In the front row an item wider than its desk is
+## still pushed off the screen's edge, never over the aisle. The pictured
+## student in its own seat sits exactly where the picture puts it.
+func test_every_student_wears_its_rows_scale_and_sits_the_same_on_its_body() -> void:
 	var checked := 0
-	for row: Array in ROWS:
-		var rise := _row_rise(row)
-		for name: String in row:
-			var seat: Dictionary = SEATS[name]
-			var row_scale: float = float(seat["hand_scale"]) * K
-			var prefix := "%s/%s/Hand_" % [CLASSROOM, seat["hands"]]
-			for path: String in _props:
-				if not path.begins_with(prefix):
-					continue
-				checked += 1
-				var student := path.trim_prefix(prefix)
-				var hand: Dictionary = _props[path]
-				var scale: Vector2 = hand.get("scale", Vector2.ONE)
-				assert_true(absf(absf(scale.x) - row_scale) < SCALE_TOLERANCE and absf(scale.y - row_scale) < SCALE_TOLERANCE,
-					"%s in %s is scaled %s, its row wears %.4f" % [student, name, str(scale), row_scale])
-				if student == seat["student"]:
-					continue
-				var before: Array = BEFORE["%s/Hand_%s" % [seat["hands"], student]]
-				assert_eq(scale.x < 0.0, (before[0] as Vector2).x < 0.0, "%s in %s keeps its mirroring" % [student, name])
-				var want := (before[1] as Vector2) + Vector2(0, rise)
-				# Front row: wider than the desk means off the screen's edge,
-				# as the picture's Marcel is, never over the aisle.
-				var half: float = (hand["texture"] as Texture2D).get_width() * row_scale / 2.0
-				assert_eq(widest_hand_art(student), float((hand["texture"] as Texture2D).get_width()),
-					"%s has a skin whose table art is another width: place it for the widest" % student)
-				if FRONT_INNER_EDGE.has(name):
-					var edge: float = FRONT_INNER_EDGE[name]
-					want.x = minf(want.x, edge - half) if edge < CLASSROOM_SIZE.x / 2.0 else maxf(want.x, edge + half)
-				var centre := _hand_centre(seat["hands"], hand)
-				assert_true(centre.distance_to(want) < TOLERANCE,
-					"%s in %s draws at %s, expected %s (its old x kept off the aisle, risen %.1f)" % [student, name, str(centre), str(want), rise])
+	for name: String in SEATS:
+		var seat: Dictionary = SEATS[name]
+		var row_scale: float = float(seat["hand_scale"]) * K
+		var body := _portrait_rect(seat["portraits"])
+		var prefix := "%s/%s/Hand_" % [CLASSROOM, seat["hands"]]
+		for path: String in _props:
+			if not path.begins_with(prefix):
+				continue
+			checked += 1
+			var student := path.trim_prefix(prefix)
+			var hand: Dictionary = _props[path]
+			var scale: Vector2 = hand.get("scale", Vector2.ONE)
+			assert_true(absf(absf(scale.x) - row_scale) < SCALE_TOLERANCE and absf(scale.y - row_scale) < SCALE_TOLERANCE,
+				"%s in %s is scaled %s, its row wears %.4f" % [student, name, str(scale), row_scale])
+			var mirrored: bool = (MIRRORED.get(seat["hands"], []) as Array).has(student)
+			assert_eq(scale.x < 0.0, mirrored, "%s in %s is mirrored only where it always was" % [student, name])
+			var place := _place_on_body(student)
+			var want := Vector2(body.get_center().x + place.x * body.size.x * (-1.0 if mirrored else 1.0),
+				body.position.y + place.y * body.size.y)
+			var half: float = (hand["texture"] as Texture2D).get_width() * row_scale / 2.0
+			assert_eq(widest_hand_art(student), float((hand["texture"] as Texture2D).get_width()),
+				"%s has a skin whose table art is another width: place it for the widest" % student)
+			# The picture governs its own student's seat, aisle included.
+			if FRONT_INNER_EDGE.has(name) and student != seat["student"]:
+				var edge: float = FRONT_INNER_EDGE[name]
+				want.x = minf(want.x, edge - half) if edge < CLASSROOM_SIZE.x / 2.0 else maxf(want.x, edge + half)
+			var centre := _hand_centre(seat["hands"], hand)
+			assert_true(centre.distance_to(want) < TOLERANCE,
+				"%s in %s draws at %s, expected %s (its place on its body, kept off the aisle)" % [student, name, str(centre), str(want)])
 	assert_eq(checked, EXPECTED_HANDS, "every slot's Hand_* nodes were found")
 
 

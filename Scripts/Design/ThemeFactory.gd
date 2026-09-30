@@ -1918,6 +1918,48 @@ static func _add_cutscene_dialogue(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_font_size("normal_font_size", NAME, tokens.font_title)
 	theme.set_color("default_color", NAME, tokens.text_primary)
 
+	# The intro's "Buku Catatan" note surface (2026-09-30): cream paper with a
+	# tomato ruled-margin down its left edge and the standard card shadow. The
+	# faint blue rule lines and the spiral binding are authored TextureRects in
+	# CutScene.tscn (note_rule.svg / note_spiral.svg), not part of this box --
+	# a StyleBox cannot draw them. Left content margin clears the margin line so
+	# the text starts past it, like writing in a real ruled book.
+	var note := StyleBoxFlat.new()
+	note.bg_color = tokens.surface_card
+	note.set_corner_radius_all(tokens.radius_md)
+	note.border_color = tokens.accent_tomato
+	note.border_width_left = 8
+	note.shadow_color = tokens.shadow_color
+	note.shadow_size = tokens.shadow_size
+	note.shadow_offset = tokens.shadow_offset
+	note.content_margin_left = tokens.space_lg
+	note.content_margin_right = tokens.space_md
+	note.content_margin_top = tokens.space_md
+	note.content_margin_bottom = tokens.space_sm
+	theme.add_type("CutsceneNotePanel")
+	theme.set_type_variation("CutsceneNotePanel", "Panel")
+	theme.set_stylebox("panel", "CutsceneNotePanel", note)
+
+	# The "Catatan Guru" name plate that tabs up from the note's top-left, a
+	# visual-novel speaker label (2026-09-30): a brand-brown bookmark with cream
+	# letters on the display face, its top corners rounded like a tab.
+	var tab := StyleBoxFlat.new()
+	tab.bg_color = tokens.brand_primary
+	tab.corner_radius_top_left = tokens.radius_sm
+	tab.corner_radius_top_right = tokens.radius_sm
+	tab.content_margin_left = tokens.space_sm
+	tab.content_margin_right = tokens.space_sm
+	tab.content_margin_top = tokens.space_xs
+	tab.content_margin_bottom = tokens.space_xs
+	theme.add_type("CutsceneNoteTab")
+	theme.set_type_variation("CutsceneNoteTab", "Label")
+	theme.set_stylebox("normal", "CutsceneNoteTab", tab)
+	theme.set_font_size("font_size", "CutsceneNoteTab", tokens.font_caption)
+	theme.set_color("font_color", "CutsceneNoteTab", tokens.text_on_brand)
+	if tokens.font_display != null:
+		theme.set_font("font", "CutsceneNoteTab", tokens.font_display)
+
+
 
 # ----------------------------------------------------------------- labels
 

@@ -1575,7 +1575,7 @@ func _show_event_dialogue(key: String) -> bool:
 	var day_name: String = DAYS[current_day] if current_day < DAYS.size() else ""
 	var dialogue = dialogue_scene.instantiate()
 	add_child(dialogue)
-	_day_cover.cover(false)
+	_day_cover.cover(false, day_screen)
 	dialogue.open(e, featured, GameState.minggu_ke, GameState.get_max_weeks(), day_name)
 	var accepted: bool = await dialogue.closed
 	dialogue.queue_free()

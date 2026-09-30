@@ -387,8 +387,7 @@ func _build_general_panel(parent: Control) -> void:
 	btn_seed.pressed.connect(_seed_playtest_state)
 	vbox.add_child(btn_seed)
 
-	var sep_seed = HSeparator.new()
-	vbox.add_child(sep_seed)
+	vbox.add_child(HSeparator.new())
 
 	var btn_forget = Button.new()
 	btn_forget.text = " 🧹 Forget Session (hapus save, ke MainMenu) "
@@ -654,6 +653,7 @@ func _build_general_panel(parent: Control) -> void:
 	_btn_tutorial_minigames.add_theme_font_size_override("font_size", 21)
 	_btn_tutorial_minigames.pressed.connect(_toggle_minigames_tutorial)
 	v_tut_btns.add_child(_btn_tutorial_minigames)
+	v_tut_btns.add_child(preload("res://Scripts/Debug/DebugLevelSelectToggle.gd").new())
 
 func _modify_week(delta: int) -> void:
 	GameState.minggu_ke = clampi(GameState.minggu_ke + delta, 1, GameState.max_minggu)

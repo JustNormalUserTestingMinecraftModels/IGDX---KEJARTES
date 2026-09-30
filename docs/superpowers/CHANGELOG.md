@@ -8,6 +8,30 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Intro VN polish and two bug fixes land (collaborator's PR #160)
+
+The collaborator's PR #160 (branch `feat/intro-vn-and-bugfixes`), merged with
+Textures and landed through `feat/land-intro-vn-and-bugfixes`.
+
+- **Intro cutscene as a visual novel.** A persistent `Backdrop` tone and a true
+  cross-dissolve (`BgCutScene/CgOverlay`) replace the grey flash between CGs;
+  the dialogue box is a "Catatan Guru" notebook note (ruled margin, spiral,
+  name plate, breathing advance chevron) instead of the tap caption; cg0–cg4
+  read in one first-person "aku" voice; the top bar keeps only a compact
+  **Lewati**.
+- **Koperasi:** a returned shelf item, and a slot whose add the per-frame cap
+  refused, get their price tag back instead of a stuck "Beli".
+- **SchoolDay:** the day screen hides under an event dialogue, so the avatar
+  strip no longer draws over the featured splash.
+- **Landing fixes (local review):** the saved Debug Level Select flag has a
+  switch again, in the debug overlay's General tab
+  (`Scripts/Debug/DebugLevelSelectToggle.gd`); the ambient sun and sparkles
+  sit above the dissolve layer, so a CG change no longer hides them; the
+  chevron SVG is authored at 96 px; the dissolve, both bug fixes and the
+  cover's extra node are pinned by tests; the dead debug button code and its
+  emoji exception are gone. The dialogue box stays anchored to the bottom
+  edge for tall phones.
+
 ## 2026-09-30 — Lobby seating to the owner's picture; planks on tall phones
 
 Spec `docs/superpowers/specs/2026-09-30-lobby-seating-and-planks-design.md`,

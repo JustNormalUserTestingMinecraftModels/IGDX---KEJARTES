@@ -805,7 +805,6 @@ func test_koperasi_wall_strip_matches_the_room() -> void:
 const BOTTOM_PINNED := [
 	["res://Scenes/AturJadwal/AturJadwal.tscn", "StartWeek", Rect2(442, 1754, 614, 128)],
 	["res://Scenes/CutScene/CutScene.tscn", "DialogueBox", Rect2(44, 1340, 992, 320)],
-	["res://Scenes/CutScene/CutScene.tscn", "HintLabel", Rect2(110, 1700, 857, 60)],
 	["res://Scenes/EndGame/EndCutscene.tscn", "BtnNext", Rect2(290, 1736, 500, 128)],
 ]
 
@@ -831,3 +830,5 @@ func test_the_remaining_backdrops_fill() -> void:
 		.get_node_or_null("Background") as TextureRect, "Inventory Background")
 	_assert_background_fills(_scene("res://Scenes/CutScene/CutScene.tscn")
 		.get_node_or_null("BgCutScene") as TextureRect, "CutScene BgCutScene")
+	_assert_background_fills(_scene("res://Scenes/CutScene/CutScene.tscn")
+		.get_node_or_null("BgCutScene/CgOverlay") as TextureRect, "CutScene CgOverlay")

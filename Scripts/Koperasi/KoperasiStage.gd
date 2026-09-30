@@ -189,8 +189,33 @@ func _refresh_shelf_visibility() -> void:
 		var on_sale: bool = i < _stock_names.size() and not _taken_slots.has(i)
 		var was_hidden := not btn.visible
 		btn.visible = on_sale
-		if on_sale and was_hidden and btn.is_visible_in_tree():
-			AnimUtils.squash_bounce(btn)
+		if on_sale and was_hidden:
+			# The slot is coming back (a hold-to-return or tap-return). Its tag
+			# was left reading "Beli" by play_buy(); reset it to the price, or
+			# a returned item stays stuck showing "Beli" with no cost. set_price
+			# also brings the promo dress back for the week's promo item.
+			_reset_tag_to_price(i)
+			if btn.is_visible_in_tree():
+				AnimUtils.squash_bounce(btn)
+
+## Returns a returned slot's price tag to its resting price (undoing the "Beli"
+## that play_buy() left), re-dressing it as the week's promo item when it is
+## one. Mirrors setup_shelf()'s per-slot tag setup so a returned item reads the
+## same as it did before it was tapped. Two callers: _refresh_shelf_visibility()
+## when a hidden slot comes back, and _on_barang_pressed()'s refused-add
+## rollback, where the button never hid and so never "came back".
+func _reset_tag_to_price(index: int) -> void:
+	if index >= _price_tags.size() or index >= item_data_list.size():
+		return
+	if not is_instance_valid(_price_tags[index]):
+		return
+	var item: ItemData = item_data_list[index]
+	_price_tags[index].set_price(Cart.price_of(item))
+	if item.item_name == GameState.shop_promo_item:
+		_price_tags[index].set_promo(Cart.list_price_of(item), GameState.shop_promo_percent)
+	else:
+		_price_tags[index].clear_promo()
+	_price_tags[index].set_affordable(GameState.player_money >= Cart.price_of(item))
 
 ## Copies of `item_name` on this week's shelf. Reads _stock_names once
 ## setup_shelf() has populated it; falls back to GameState.shop_stock so
@@ -343,6 +368,10 @@ func _on_barang_pressed(index: int):
 		_taken_slots.erase(index)
 		tray.release_hold(item.item_name)
 		_refresh_shelf_visibility()
+		# The button never hid, so the refresh above saw nothing "coming back"
+		# and skipped the tag reset: give the slot's tag its price (and promo
+		# dress and affordability) back, or it stays reading "Beli".
+		_reset_tag_to_price(index)
 		if is_instance_valid(life):
 			life.on_flight_finished()
 		return

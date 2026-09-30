@@ -722,10 +722,15 @@ func test_the_envelope_seal_glints() -> void:
 func test_cutscene_gets_a_soft_sun_and_sparkles() -> void:
 	var c := _census("res://Scenes/CutScene/CutScene.tscn")
 	var kids := _children_of(c, ".")
-	assert_eq(kids[0], "BgCutScene", "the picture is still the first thing drawn")
-	assert_eq(kids[1], "DialogueBox", "DialogueBox still follows it")
-	assert_eq(_children_of(c, "BgCutScene"), ["Sun", "Sparkles"] as Array[String],
-		"they ride the picture, so its fades take them too")
+	# Since the 2026-09-30 VN pass a flat Backdrop tone sits under the picture
+	# (the CGs cross-dissolve over it instead of flashing grey), and CgOverlay,
+	# the incoming CG, is the picture's FIRST child: it draws over the picture
+	# but under the sun and sparkles, so a dissolve never hides them.
+	assert_eq(kids[0], "Backdrop", "the flat tone the CGs dissolve over is drawn first")
+	assert_eq(kids[1], "BgCutScene", "then the picture")
+	assert_eq(kids[2], "DialogueBox", "DialogueBox still follows it")
+	assert_eq(_children_of(c, "BgCutScene"), ["CgOverlay", "Sun", "Sparkles"] as Array[String],
+		"the incoming CG sits under the sun and sparkles, so a dissolve never hides them; all three ride the picture, so its fades take them too")
 	assert_eq(_entry(c, "BgCutScene/Sun").get("instance"), LIGHT_POOL, "Sun is a LightPool")
 	assert_eq(_prop(_entry(c, "BgCutScene/Sparkles"), "preset"), AmbientParticles.Preset.KILAU, "sparkles, not dust")
 	assert_true(_entry(c, "World").is_empty(), "no World layer: the picture changes slide to slide")

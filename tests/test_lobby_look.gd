@@ -390,7 +390,10 @@ func test_school_day_uncovers_its_picture_only_when_the_last_host_closes() -> vo
 		"the day's picture fades out as the minigame fades in")
 	assert_true(src.contains("tween_close.tween_property(current_minigame, \"modulate:a\", 0.0, 0.4)\n\t_day_cover.uncover(true)"),
 		"and back in as it fades out")
-	assert_true(src.contains("add_child(dialogue)\n\t_day_cover.cover(false)"), "EventDialogue covers the day")
+	# The 2026-09-30 VN pass also hides the day screen under the dialogue, so
+	# the avatar strip cannot draw over its featured splash.
+	assert_true(src.contains("add_child(dialogue)\n\t_day_cover.cover(false, day_screen)"),
+		"EventDialogue covers the day, day screen included")
 	assert_true(src.contains("dialogue.queue_free()\n\t_day_cover.uncover(false)"), "and uncovers it on close")
 
 
@@ -415,6 +418,49 @@ func test_the_day_cover_is_counted_and_restores_each_alpha() -> void:
 	assert_true(is_equal_approx((host.get_node("Motes") as CanvasItem).modulate.a, 0.45), "the motes keep their own alpha")
 	cover.uncover(false)
 	assert_eq(cover.covers, 0, "an extra uncover does nothing")
+	host.free()
+
+
+## Behaviour of cover()'s `extra` node (SchoolDay's day screen under an event
+## dialogue), on the same stand-in host: hidden and not processing while the day
+## is covered, put back by the matching uncover() to exactly what it was (a node
+## that started hidden stays hidden; its own process mode is not assumed to be
+## inherit), and ignored when it arrives on a nested cover.
+func test_the_day_cover_hides_its_extra_node_and_puts_it_back_exactly() -> void:
+	var host := Control.new()
+	var sky := ColorRect.new()
+	sky.name = "Background"
+	host.add_child(sky)
+	var screen := Control.new()
+	screen.process_mode = Node.PROCESS_MODE_PAUSABLE
+	host.add_child(screen)
+	var other := Control.new()
+	host.add_child(other)
+	var cover = (load("res://Scripts/SchoolSimulation/DayPictureCover.gd") as GDScript).new(host)
+
+	cover.cover(false, screen)
+	assert_false(screen.visible, "the extra node is hidden while the day is covered")
+	assert_eq(screen.process_mode, Node.PROCESS_MODE_DISABLED, "and stops processing")
+	cover.uncover(false)
+	assert_true(screen.visible, "the matching uncover shows it again")
+	assert_eq(screen.process_mode, Node.PROCESS_MODE_PAUSABLE,
+		"with its own process mode back, not an assumed inherit")
+
+	screen.hide()
+	cover.cover(false, screen)
+	cover.uncover(false)
+	assert_false(screen.visible, "a node that started hidden comes back hidden")
+
+	screen.show()
+	cover.cover(false, screen)
+	cover.cover(false, other)
+	assert_true(other.visible, "a nested cover's extra is ignored, not hidden")
+	assert_eq(other.process_mode, Node.PROCESS_MODE_INHERIT, "nor switched off")
+	cover.uncover(false)
+	assert_false(screen.visible, "the first extra stays hidden while a cover is still open")
+	cover.uncover(false)
+	assert_true(screen.visible, "and comes back with the last uncover")
+	assert_true(other.visible, "the ignored extra never changed")
 	host.free()
 
 

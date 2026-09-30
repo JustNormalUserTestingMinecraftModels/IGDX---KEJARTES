@@ -71,8 +71,13 @@ static func _build_screen_section(vbox: VBoxContainer) -> void:
 	_add_heading(vbox, "Efek layar ini (semua layar, live):")
 	_add_setting_switch(vbox, " Efek Suasana (cahaya, berkas, bloom layar) ",
 		"ambient_effects_enabled")
-	_add_setting_switch(vbox, " Efek Visual (vignette, grain, bloom global) ",
+	_add_setting_switch(vbox, " Efek Visual (vignette, grain) ",
 		"look_layer_enabled")
+	# Efek Visual's own full-screen bloom, off by default; it shows only while
+	# Efek Visual and Grafis HD are both on.
+	var look: Node = (Engine.get_main_loop() as SceneTree).root.get_node_or_null("LookLayer")
+	if look != null:
+		_add_setting_switch(vbox, " Bloom global Efek Visual (bawaan mati) ", "bloom_enabled", look)
 	_add_setting_switch(vbox, " Grafis HD (MSAA, semua bloom) ",
 		"hd_graphics_enabled")
 
@@ -91,14 +96,16 @@ static func _build_screen_section(vbox: VBoxContainer) -> void:
 		_add_node_slider(vbox, spec[0], spec[1], spec[2], spec[3], spec[4], spec[5], spec[6])
 
 
-## A switch bound to one of the player's GameSettings booleans. Setting it
-## emits that setting's signal, so every kit piece follows at once.
-static func _add_setting_switch(vbox: VBoxContainer, caption: String, property: String) -> void:
+## A switch bound to a boolean on `target`: one of the player's GameSettings
+## by default, whose setter emits that setting's signal so every kit piece
+## follows at once.
+static func _add_setting_switch(vbox: VBoxContainer, caption: String, property: String,
+		target: Object = GameSettings) -> void:
 	var toggle := CheckButton.new()
 	toggle.text = caption
-	toggle.button_pressed = bool(GameSettings.get(property))
+	toggle.button_pressed = bool(target.get(property))
 	toggle.add_theme_font_size_override("font_size", CAPTION_FONT)
-	toggle.toggled.connect(func(on: bool): GameSettings.set(property, on))
+	toggle.toggled.connect(func(on: bool): target.set(property, on))
 	vbox.add_child(toggle)
 
 

@@ -483,28 +483,25 @@ func test_hd_off_turns_msaa_off_and_on_restores_the_projects_own() -> void:
 		"on: whatever project.godot asks for, so the setting stays the one place it is tuned")
 
 
-func test_the_global_bloom_needs_both_switches() -> void:
-	var look: GDScript = load("res://Scripts/Look/LookLayer.gd")
-	var was_look: bool = GameSettings.look_layer_enabled
-	var was_hd: bool = GameSettings.hd_graphics_enabled
-	GameSettings.look_layer_enabled = true
-	GameSettings.hd_graphics_enabled = true
-	assert_true(look.call("wants_bloom"), "Efek Visual and Grafis HD both on: bloom")
-	GameSettings.hd_graphics_enabled = false
-	assert_false(look.call("wants_bloom"), "Grafis HD off: no bloom, so no screen copy")
-	GameSettings.hd_graphics_enabled = true
-	GameSettings.look_layer_enabled = false
-	assert_false(look.call("wants_bloom"), "Efek Visual off: no bloom either")
-	GameSettings.look_layer_enabled = was_look
-	GameSettings.hd_graphics_enabled = was_hd
+## Efek Visual's own bloom is off (2026-09-30, owner's call). Stacked on the
+## glow each screen already carries it read as overwhelming, so Efek Visual is
+## the vignette and the grain. The bloom stays in the scene behind one export,
+## and it still needs Grafis HD when it is switched on.
+func test_the_global_bloom_is_off_unless_asked_for() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/LookLayer.gd")
+	assert_true(RegEx.create_from_string("@export var bloom_enabled: bool = false").search(src) != null,
+		"the switch exists and defaults to off")
+	assert_true(src.contains("_bloom.visible = bloom_enabled and GameSettings.hd_graphics_enabled"),
+		"hidden, not transparent: a transparent bloom would still copy the screen")
+	var scene := FileAccess.get_file_as_string("res://Scenes/Look/LookLayer.tscn")
+	assert_false(scene.contains("bloom_enabled = true"), "and the autoload's scene does not turn it on")
 
 
 func test_the_layer_follows_the_hd_switch() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Look/LookLayer.gd")
 	assert_true(src.contains("GameSettings.hd_graphics_changed.connect("),
 		"a flip takes effect at once, not on the next launch")
-	assert_true(src.contains("_bloom.visible = GameSettings.hd_graphics_enabled"),
-		"a bloom that is only transparent would still copy the screen; it must leave the draw list")
+	assert_true(src.contains("GameSettings.hd_graphics_enabled"), "the bloom reads the switch")
 
 
 ## The Lobby's glow is a plain WorldEnvironment, not an AmbientGlow, so it

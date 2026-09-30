@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-09-30 — Efek Visual loses its own bloom
+
+Owner's call: with Efek Visual on, the look layer's full-screen bloom stacked
+on the glow each screen already carries and read as overwhelming; the glow
+that is always there is the one to keep. `LookLayer.bloom_enabled` (an
+export, default off) now gates it, so Efek Visual is the vignette and the
+grain, and no longer copies the screen. The debug Look tab has the switch
+("Bloom global Efek Visual"); strength and threshold are still
+`bloom_material.tres`'s. Nothing else changed: the Lobby, shop and end-game
+glow and the minigames' `ScreenGlow` measured the same before and after
+today's three performance PRs (Lobby frame mean 141.97 and 141.48).
+
 ## 2026-09-30 — Grafis HD switch (mobile performance 3 of 3)
 
 Settings gains **Grafis HD** at the top of TAMPILAN, on by default (owner's

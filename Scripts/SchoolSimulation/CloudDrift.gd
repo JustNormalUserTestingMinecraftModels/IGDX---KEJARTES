@@ -15,7 +15,8 @@ extends Control
 ## new day, which starts under the full night. An own-clock spin with no ride
 ## was built first and dropped the same day: the sky turns a full circle in a
 ## few seconds of play, so by midday the dusk clouds hung over the noon sky.
-## This replaced three SVG clouds that slid sideways (2026-09-24 pass).
+## This replaced three SVG clouds that slid sideways (2026-09-24 pass); it
+## sits behind the sun and moon, which it would otherwise all but hide.
 ##
 ## The creep runs in the game only, unless preview_in_editor is on, and never
 ## under GameSettings.reduce_motion. Before a scene save the creep is cleared,

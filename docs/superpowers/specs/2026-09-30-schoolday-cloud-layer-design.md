@@ -1,6 +1,6 @@
 # SchoolDay cloud layer — design
 
-**Date:** 2026-09-30 · **Branch:** `feat/schoolday-cloud-layer` · **Status:** approved in chat
+**Date:** 2026-09-30 · **Branch:** `feat/schoolday-cloud-layer` · **Status:** approved in chat; revised in build (see Goal)
 
 ## Goal
 
@@ -11,10 +11,15 @@ transparency), both 3998×3997, from the team Drive folder
 
 - the new sky replaces the current rotating sky, same behaviour;
 - the new cloud painting replaces the three drifting SVG clouds and keeps
-  their behaviour, except that instead of sliding sideways it **turns slowly
-  and constantly on its own clock**, independent of the sky (owner's pick
-  "B", 2026-09-30, knowing the painted sunset/day colours will drift out of
-  register with the sky over time).
+  their behaviour (night dimming, game-only motion, reduce_motion), but it
+  **rides the sky's angle and creeps slowly on top** (owner's pick "A").
+
+**Revised in build, 2026-09-30.** The first pick, an own-clock spin
+("B"), was built and screenshotted: the sky turns a full circle in a few
+seconds of play, so by every midday the dusk clouds hung over the noon
+sky. The owner switched to A. The first render also showed the cloud
+painting all but hiding the sun, so the owner put the sun and moon in
+front of it ("A" again).
 
 ## Art
 
@@ -38,8 +43,9 @@ placeholder.
 
 ## Scene (`BookClockWidget.tscn`)
 
-`CloudLayer` keeps its name, its place in the draw order (above `SkyBodies`,
-below `SchoolForeground`) and the `CloudDrift` script. Its three
+`CloudLayer` keeps its name and the `CloudDrift` script, and moves in the
+draw order to just above `Stars` and below `SkyBodies`, so the sun and
+moon shine in front of it. Its three
 TextureRect children are replaced by one:
 
 - `CloudLayer/Clouds` — TextureRect, `cloud_layer.png`, `expand_mode = 1`,
@@ -51,51 +57,36 @@ TextureRect children are replaced by one:
 side, same position, same `pivot_offset`, so the cloud vortex is centred on
 the same pivot (`sky_pivot_ratio`, bottom-centre) at the same scale and no
 screen corner is ever uncovered mid-turn. A `CLOUDS_PATH` const names the
-node. At `_ready()` the clouds' rotation is set to the sky's
-`dawn_rotation_degrees`, so a visit starts in register with the sky; from
-then on the widget never touches the clouds' rotation again.
+node. `_apply_rotation()` hands every sky angle to
+`CloudLayer.follow_sky()`, and `set_day()` calls `reset_drift()` -- SchoolDay
+starts each day under the full night, where the snap is hidden.
 
 Night dimming is unchanged: `set_night()` already modulates `CloudLayer` by
 `night_cloud_dim`, and that reaches the new child.
 
 ## Motion (`CloudDrift.gd`, rewritten)
 
-The header comment is rewritten for the one-painting layer. Exports:
-
-- `spin_degrees_per_second: float = -2.0` — how fast the clouds turn;
-  negative is counter-clockwise, the sky's direction; 0 stops it. At 2°/s a
-  full turn takes 3 minutes.
-- `base_opacity: float = 0.85` — the layer's alpha (kept; `opacity_step` and
-  the per-child parallax `base_speed` / `speed_step` go, having no meaning
-  with one child).
-- `preview_in_editor: bool = false` — spins in the editor viewport too.
-
-Behaviour:
-
-- `_process` spins only in the game, or in the editor when
-  `preview_in_editor` is on; never under `GameSettings.reduce_motion`.
-- `step(delta)` is public (the suite drives it): adds
-  `spin_degrees_per_second * delta` to every Control child's
-  `rotation_degrees`.
-- `NOTIFICATION_EDITOR_PRE_SAVE` puts each child back to the rotation it had
-  when the preview started, so a scene save never bakes a random angle.
-
-Every `@export` keeps its `##` line (`test_script_documentation`).
-
+- `follow_sky(degrees)` sets the angle the clouds ride on; `step(delta)` adds
+  `spin_degrees_per_second * delta` to a creep; every child's rotation is
+  sky + creep. `reset_drift()` clears the creep; `drift_degrees()` reads it.
+- `spin_degrees_per_second: float = -2.0` -- the creep; negative is the
+  sky's direction; 0 leaves the clouds riding the sky alone.
+- `base_opacity: float = 0.85` -- the layer's alpha.
+- `preview_in_editor: bool = false` -- creeps in the editor viewport too.
+- `_process` creeps only in the game, or in the editor under the preview;
+  never under `GameSettings.reduce_motion`. `NOTIFICATION_EDITOR_PRE_SAVE`
+  clears the creep, so a save never bakes an angle.
 ## Tests (`tests/test_sky_life.gd`)
 
-- Replace `test_clouds_drift_at_parallax_speeds_and_wrap` with
-  `test_clouds_spin_on_their_own_clock`: `step(1.0)` changes the child's
-  rotation by `spin_degrees_per_second`; the sky's rotation is unchanged
-  by it; the source gates `_process` on `reduce_motion`.
-- New `test_cloud_layer_matches_the_sky_square`: after `_fit_layers()` at
-  1080×1920 and 1080×2400, `Clouds` has the sky's size, position and
-  pivot offset.
-- New `test_clouds_start_in_register_with_the_sky`: a fresh widget's clouds
-  rotation equals `dawn_rotation_degrees`.
-- Keep the draw-order and night-dim tests as they are.
-- Scan: no `.tscn`/`.gd` references `cloud_a/b/c.svg`.
-
+- `test_clouds_ride_the_sky_and_creep`: in register at progress 0 / 0.5 / 1;
+  `step(1.0)` creeps them `spin_degrees_per_second` past the sky, and the
+  creep survives the sky moving.
+- `test_a_new_day_puts_the_clouds_back_in_register`.
+- `test_cloud_layer_matches_the_sky_square` at 1080x1920 and 1080x2400.
+- `test_clouds_start_in_register_with_the_sky`.
+- `test_the_old_svg_clouds_are_retired`.
+- The draw-order test now pins tint < clouds < sun/moon < school.
+- `test_clean_code`'s pinned function count for this file goes 20 -> 24.
 ## Verification
 
 Targeted `test_run` of `test_sky_life`, `test_book_clock_phases`,

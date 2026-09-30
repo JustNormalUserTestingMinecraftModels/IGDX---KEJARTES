@@ -64,6 +64,29 @@ mouse_filter = 2
 texture = ExtResource("k_stars")
 stretch_mode = 1
 
+[node name="CloudLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("s_clouds")
+
+[node name="Clouds" type="TextureRect" parent="CloudLayer"]
+layout_mode = 0
+offset_left = -1494.3823
+offset_top = -114.382324
+offset_right = 2574.3823
+offset_bottom = 3954.3823
+rotation = 1.0471976
+pivot_offset = Vector2(2034.3823, 2034.3823)
+mouse_filter = 2
+texture = ExtResource("k_cloud_layer")
+expand_mode = 1
+stretch_mode = 6
+
 [node name="SkyBodies" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -92,29 +115,6 @@ mouse_filter = 2
 texture = ExtResource("k_moon")
 expand_mode = 1
 stretch_mode = 5
-
-[node name="CloudLayer" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("s_clouds")
-
-[node name="Clouds" type="TextureRect" parent="CloudLayer"]
-layout_mode = 0
-offset_left = -1494.3823
-offset_top = -114.382324
-offset_right = 2574.3823
-offset_bottom = 3954.3823
-rotation = 1.0471976
-pivot_offset = Vector2(2034.3823, 2034.3823)
-mouse_filter = 2
-texture = ExtResource("k_cloud_layer")
-expand_mode = 1
-stretch_mode = 6
 
 [node name="SchoolForeground" type="TextureRect" parent="." unique_id=792585029]
 layout_mode = 0

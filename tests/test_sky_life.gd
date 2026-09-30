@@ -151,9 +151,11 @@ func test_the_night_layers_sit_between_the_sky_and_the_header() -> void:
 	var fg: int = idx.call(^"SchoolForeground")
 	assert_true(sky < tint, "the tint darkens the sky")
 	assert_true(tint < idx.call(BookClockWidget.STARS_PATH), "the stars shine over the tint")
-	assert_true(tint < bodies, "and so does the moon")
-	assert_true(bodies < clouds, "clouds drift in front of the sun and moon")
-	assert_true(clouds < fg, "the school stands in front of everything in the sky")
+	assert_true(tint < clouds, "the clouds dim themselves over the tint")
+	# 2026-09-30: the cloud painting covers most of the sky, so the sun and
+	# moon sit in front of it, as they sat in front of the painted sky.
+	assert_true(clouds < bodies, "the sun and moon shine in front of the clouds")
+	assert_true(bodies < fg, "the school stands in front of everything in the sky")
 	assert_true(fg < idx.call(BookClockWidget.SCHOOL_NIGHT_PATH), "the silhouette darkens the school")
 	assert_true(idx.call(BookClockWidget.SCHOOL_NIGHT_PATH) < idx.call(BookClockWidget.WINDOW_GLOW_PATH),
 		"the windows glow through it")

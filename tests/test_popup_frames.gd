@@ -39,7 +39,9 @@ const POPUPS := {
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["Peringatan/Safe/Center/Frame", "dialog", "safe"],
 	"res://Scenes/EndGame/TesNotice.tscn": ["Safe/Center/NoticeCard", "dialog", "safe"],
 	"res://Scenes/EndGame/StatCheck.tscn": ["Safe/Center/Frame", "dialog", "safe"],
-	# free: StudentCard and SchoolDay each place the panel themselves.
+	# free: every screen places the panel itself -- StudentCard and SchoolDay
+	# by hand, AturJadwal, StudentList and the Lobby through
+	# TutorialPanel.place_step().
 	"res://Scenes/UI/TutorialPanel.tscn": ["Frame", "dialog", "free"],
 	"res://Scenes/Minigames/UI/MinigameTutorial.tscn": ["Safe/Center/Frame", "dialog", "safe"],
 	"res://Scenes/Minigames/UI/PauseMenu.tscn": ["Safe/Center/Frame", "dialog", "safe"],

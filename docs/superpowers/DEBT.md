@@ -659,12 +659,6 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
   `SettingButton` and the Lobby rail's gear still wear
   `Assets/Images/UI/setting.png`; the rail's four icons were left as finished
   art on purpose, so a gear in the chunky set is the owner's call.
-- **Three screens still build their tutorial panel at runtime**, not from
-  `Scenes/UI/TutorialPanel.tscn`, so Phase 2 did not move them into the
-  frame: `Scripts/AturJadwal/AturJadwal.gd`, `Scripts/Lobby/Lobby.gd` and
-  `Scripts/StudentList/StudentList.gd` each build their own
-  `_tutorial_panel: PanelContainer` in code (a follow-up; Phase 3 did not
-  take it).
 - **Review minors, deferred:**
   - Nothing pins `NotebookFrame`'s Chrome/Close control to a 96px touch
     target (a geometry test would catch a future regression). (Phase 2)

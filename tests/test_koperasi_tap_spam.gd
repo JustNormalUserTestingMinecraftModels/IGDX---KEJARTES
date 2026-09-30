@@ -61,6 +61,10 @@ func _live_shelf_item() -> Array:
 	return [life, btn]
 
 const ShelfItemScript := preload("res://Scripts/Koperasi/ShelfItem.gd")
+## KoperasiStage.gd declares no class_name; a bare, untree'd instance is enough
+## for the tag-reset behaviour test.
+const RakScript := preload("res://Scripts/Koperasi/KoperasiStage.gd")
+const PriceTagScene := preload("res://Scenes/Koperasi/PriceTag.tscn")
 
 
 ## Array counter: a plain int captured by a lambda in GDScript is captured
@@ -173,6 +177,68 @@ func test_rakbarang_press_handler_rolls_back_a_refused_add() -> void:
 		"a refused add must refresh shelf visibility after rolling back")
 	assert_true(rollback.contains(".on_flight_finished()"),
 		"a refused add must still report the flight as finished")
+
+
+## The tag's "Beli" (play_buy) must never outlive the tap. A slot that hides
+## and comes back is reset by _refresh_shelf_visibility(); a refused add never
+## hid the button, so that refresh sees nothing coming back and skips the
+## reset -- the rollback must do it itself, or the item stays on the shelf
+## reading "Beli" with no price.
+func test_a_returning_slot_and_a_refused_add_both_reset_the_price_tag() -> void:
+	var src := FileAccess.get_file_as_string(RAK_PATH)
+	var refresh := _body(src, "func _refresh_shelf_visibility()")
+	var back_at := refresh.find("if on_sale and was_hidden:")
+	assert_true(back_at >= 0 and refresh.find("_reset_tag_to_price(i)", back_at) > back_at,
+		"a slot coming back onto the shelf resets its tag to the price")
+	var body := _body(src, "func _on_barang_pressed(")
+	var buy_at := body.find("play_buy()")
+	var add_at := body.find("if not Cart.add_item(item):")
+	assert_true(buy_at >= 0 and add_at > buy_at,
+		"the tag reads Beli before the cart hears of the tap")
+	var rollback := body.substr(add_at)
+	var reset_at := rollback.find("_reset_tag_to_price(index)")
+	assert_true(reset_at >= 0, "a refused add puts the tag back to its price")
+	assert_true(reset_at > rollback.find("_refresh_shelf_visibility()"),
+		"after the shelf refresh, which leaves a never-hidden slot's tag alone")
+	assert_true(reset_at < rollback.find("return"),
+		"and before the handler returns")
+
+
+## Behaviour of the reset both paths lean on: a tag play_buy() left reading
+## "Beli" gets the item's price back, and the week's promo item its struck
+## list price and badge too. Bare stage, bare tag -- neither enters the tree.
+func test_reset_tag_to_price_undoes_beli_and_redresses_the_promo() -> void:
+	var item: ItemData = ItemDatabase.get_item(ITEM_NAME)
+	var was_promo_item := GameState.shop_promo_item
+	var was_promo_percent := GameState.shop_promo_percent
+	var stage = RakScript.new()
+	stage.item_data_list.append(item)
+	var tag: PanelContainer = PriceTagScene.instantiate()
+	stage._price_tags = [tag]
+
+	GameState.shop_promo_item = ""
+	GameState.shop_promo_percent = 0
+	tag.set_price(Cart.price_of(item))
+	tag.play_buy()
+	assert_eq(tag.get_label_text(), "Beli", "play_buy() leaves the tag reading Beli")
+	stage._reset_tag_to_price(0)
+	assert_eq(tag.get_label_text(), str(Cart.price_of(item)), "the reset puts the price back")
+	assert_false(tag.is_promo(), "a plain item wears no promo dress")
+
+	GameState.shop_promo_item = item.item_name
+	GameState.shop_promo_percent = 20
+	tag.play_buy()
+	stage._reset_tag_to_price(0)
+	assert_eq(tag.get_label_text(), str(Cart.price_of(item)), "the promo item gets its price back too")
+	assert_true(tag.is_promo(), "and is dressed as the week's promo again")
+	assert_eq(tag.get_old_price_text(), str(Cart.list_price_of(item)), "with its list price struck")
+	assert_eq(tag.get_badge_text(), "-20%", "and the badge")
+	assert_true((tag.get_node("Row/OldPrice") as Control).visible, "the struck price shows again")
+
+	GameState.shop_promo_item = was_promo_item
+	GameState.shop_promo_percent = was_promo_percent
+	tag.free()
+	stage.free()
 
 
 const _TRAY_SCENE := "res://Scenes/Koperasi/BasketTray.tscn"

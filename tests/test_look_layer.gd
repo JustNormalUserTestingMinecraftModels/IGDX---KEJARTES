@@ -507,10 +507,20 @@ func test_the_layer_follows_the_hd_switch() -> void:
 		"a bloom that is only transparent would still copy the screen; it must leave the draw list")
 
 
-## The Lobby's glow is a plain WorldEnvironment, not an AmbientGlow, so the
-## Lobby switches it itself.
+## The Lobby's glow is a plain WorldEnvironment, not an AmbientGlow, so it
+## wears HdEnvironmentGlow to follow the switch. Driven through the script's
+## own _apply on a throwaway Environment: the script is not @tool, so the
+## runner cannot stand it up live.
 func test_the_lobby_glow_follows_grafis_hd() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
-	assert_true(src.contains("GameSettings.hd_graphics_changed.connect(_apply_hd_graphics.unbind(1))"))
+	var lobby := FileAccess.get_file_as_string("res://Scenes/Lobby/Lobby.tscn")
+	var node_at := lobby.find('[node name="WorldEnvironment" type="WorldEnvironment"')
+	assert_true(node_at >= 0, "the Lobby has its WorldEnvironment")
+	var block := lobby.substr(node_at, lobby.find("
+
+", node_at) - node_at)
+	assert_true(block.contains('script = ExtResource("hd_env_glow")'), "and it wears HdEnvironmentGlow")
+	assert_true(lobby.contains('path="res://Scripts/Look/HdEnvironmentGlow.gd" id="hd_env_glow"'))
+	var src := FileAccess.get_file_as_string("res://Scripts/Look/HdEnvironmentGlow.gd")
+	assert_true(src.contains("GameSettings.hd_graphics_changed.connect("), "it hears the flip")
 	assert_true(src.contains("environment.glow_enabled = GameSettings.hd_graphics_enabled"))
 

@@ -143,8 +143,6 @@ func _ready() -> void:
 
 	GameState.initialize_grade_targets()
 	progress_header.refresh()
-	GameSettings.hd_graphics_changed.connect(_apply_hd_graphics.unbind(1))
-	_apply_hd_graphics()
 
 	if chatter:
 		chatter.can_speak = _chatter_allowed
@@ -814,12 +812,6 @@ func _on_skin_switch_pressed() -> void:
 	# itself, so the rail shows this class, not every character.
 	var names: Array[String] = SkinSelect.roster_names(GameState.approved_students)
 	screen.open(names)
-
-
-## Grafis HD off takes the room's glow with it. The Lobby's glow is a plain
-## WorldEnvironment rather than an AmbientGlow, so nothing else switches it.
-func _apply_hd_graphics() -> void:
-	($WorldEnvironment as WorldEnvironment).environment.glow_enabled = GameSettings.hd_graphics_enabled
 
 
 ## Draws the room, or stops drawing it while the skin picker covers the whole

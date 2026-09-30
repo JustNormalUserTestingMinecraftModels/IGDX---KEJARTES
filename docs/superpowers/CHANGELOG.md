@@ -18,8 +18,8 @@ saved as `hd_graphics`.
   `project.godot` asks for (`LookLayer.msaa_for`).
 - **Off switches every bloom off**: the look layer's bloom leaves the draw
   list (a transparent one would still copy the screen), every `ScreenGlow`
-  and `AmbientGlow` follows `AmbientKit.wants_bloom()`, and the Lobby
-  disables its own Environment glow.
+  and `AmbientGlow` follows `AmbientKit.wants_bloom()`, and the Lobby's
+  WorldEnvironment wears `HdEnvironmentGlow` for its own glow.
 - Vignette and grain stay with Efek Visual; the rest of the ambient kit
   stays with Efek Suasana. The debug Look panel carries the switch too.
 - In the Lobby with Efek Visual on, on the dev PC: 2.3 ms of GPU time per

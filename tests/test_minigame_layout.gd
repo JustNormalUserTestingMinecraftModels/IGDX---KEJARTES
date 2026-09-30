@@ -59,10 +59,23 @@ func _under_safe(node: Node) -> bool:
 	return p != null
 
 
+## Instanced minigame scenes, one per path, shared by every test (they are
+## only read) and freed in suite_teardown(): instancing big scenes test after
+## test floods the editor's MessageQueue on a full run (CLAUDE.md).
+var _scenes := {}
+
+
+func suite_teardown() -> void:
+	for root: Node in _scenes.values():
+		if is_instance_valid(root):
+			root.free()
+	_scenes.clear()
+
+
 func _scene(path: String) -> Node:
-	var root := (load(path) as PackedScene).instantiate()
-	track(root)
-	return root
+	if not _scenes.has(path) or not is_instance_valid(_scenes[path]):
+		_scenes[path] = (load(path) as PackedScene).instantiate()
+	return _scenes[path]
 
 
 func test_pilihan_ganda_is_laid_out_in_three_bands() -> void:

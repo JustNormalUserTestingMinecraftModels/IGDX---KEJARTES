@@ -215,7 +215,7 @@ on the owning `@tool` script.
   a new `MinigameToolNameLabel` (T2, `text_primary`) under the icon (**B4**).
   The blue `StyleBoxFlat_6wcp2` goes (**B2**).
 - **Menjodohkan's arrows** wear a **new** `WoodNavArrow` variation (named in
-  Part 1, never built: a brown lipped square, `radius_md`), sit in the 48px edge
+  Part 1, never built: a brown lipped square at the house `radius_button`), sit in the 48px edge
   lanes with 28 clear of the card. The cards are 736 wide
   (1080 − 2 × (48 + 96 + 28)). The dead style exports (`nav_btn_style`,
   `submit_btn_active_style`, `submit_btn_disabled_style`, `correct_color`,

@@ -17,11 +17,35 @@ const EDGE := 48.0
 const TRAY_GAP := 72.0
 
 
+## Stood-up minigame scenes, one per path and screen size, built on first use
+## and freed in suite_teardown(): a full run dies when suites instance big
+## scenes test after test (CLAUDE.md, "A full test_run drops the bridge").
+var _frames := {}
+
+
 func suite_name() -> String:
 	return "minigame_hierarchy"
 
 
+func suite_teardown() -> void:
+	for frame: Node in _frames.values():
+		if is_instance_valid(frame):
+			frame.free()
+	_frames.clear()
+
+
+## The scene at `path`, stood up at `screen`, shared by every test that asks
+## for the same pair. Tests only read it (the calculator's zero-key toggle
+## is set explicitly by each test that depends on it).
 func _stand(path: String, screen: Vector2) -> Node:
+	var key := "%s@%s" % [path, screen]
+	if not _frames.has(key) or not is_instance_valid(_frames[key]):
+		_frames[key] = LayoutFrame.stand_up(path, screen)
+	return (_frames[key] as Control).get_child(0)
+
+
+## A fresh, per-test instance, for the small header whose tests change it.
+func _stand_fresh(path: String, screen: Vector2) -> Node:
 	return (track(LayoutFrame.stand_up(path, screen)) as Control).get_child(0)
 
 
@@ -81,7 +105,7 @@ const HEADER := "res://Scenes/Minigames/UI/MinigameHeader.tscn"
 
 
 func _header() -> MinigameHeader:
-	return _stand(HEADER, Vector2(1080, 1920)) as MinigameHeader
+	return _stand_fresh(HEADER, Vector2(1080, 1920)) as MinigameHeader
 
 
 func test_the_header_is_one_row_with_the_bar_inside_the_plaque() -> void:

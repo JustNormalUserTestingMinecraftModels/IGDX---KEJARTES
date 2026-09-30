@@ -2443,8 +2443,9 @@ static func _build_minigame_hierarchy_buttons(theme: Theme, tokens: DesignTokens
 	_add_button_variation(theme, tokens, "MinigameSecondaryButton",
 		tokens.brand_primary_light, tokens.brand_primary_dark)
 	theme.set_font_size("font_size", "MinigameSecondaryButton", MinigameType.T2)
+	# radius_button like every button (tests/test_button_geometry.gd).
 	_add_button_variation(theme, tokens, "WoodNavArrow",
-		tokens.brand_primary_light, tokens.brand_primary_dark, tokens.radius_md)
+		tokens.brand_primary_light, tokens.brand_primary_dark)
 
 
 ## The answer card, lock veil, badge, tool tile and tool ring.

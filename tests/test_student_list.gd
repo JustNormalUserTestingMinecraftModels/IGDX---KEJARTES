@@ -58,17 +58,20 @@ func suite_name() -> String:
 var _list: Control
 
 
-func setup() -> void:
+## One StudentList for the whole suite, built in suite_setup() and freed in
+## suite_teardown(): every test only reads it, and building it 61 times with
+## no frame between floods the editor's MessageQueue on a full run
+## (CLAUDE.md, "A full test_run drops the bridge"; 2026-09-30).
+func suite_setup(_ctx: Dictionary) -> void:
 	var scene: PackedScene = load(_SCENE_PATH)
 	_list = scene.instantiate()
 	_list.theme = load(_THEME_PATH)
 	Engine.get_main_loop().root.add_child(_list)
-	track(_list)
 
 
-func teardown() -> void:
+func suite_teardown() -> void:
 	if is_instance_valid(_list):
-		_list.queue_free()
+		_list.free()
 	_list = null
 
 

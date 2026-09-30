@@ -46,7 +46,7 @@ eight `BarFill/fill_*` motif tiles, the 2026-09-10 cream-pass assets
 `penjadwalan_card_bg.png` was part of this pass too, but Phase 2 left it
 unreferenced -- see the UI depth pass entry below),
 the 2026-09-24 SchoolDay liveliness set (the sky's `Assets/Images/SchoolDay/Sky/`
-sun, moon, three clouds, star field and rain streak; the avatar rings in
+sun, moon, star field and rain streak -- its clouds are now the artist's final `Sky/cloud_layer.png`, 2026-09-30; the avatar rings in
 `SchoolDay/Avatar/`; the weekday motif tiles in `SchoolDay/Motifs/`; the event
 band's `caution_tape.svg`; and `night_windows.png`, generated from
 `transition_foreground.png` -- regenerate it if that painting changes),

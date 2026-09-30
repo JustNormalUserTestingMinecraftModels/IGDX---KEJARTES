@@ -2,7 +2,7 @@
 extends McpTestSuite
 
 ## The SchoolDay sky's ambient life (2026-09-24 liveliness pass, layers 4, 6
-## and 8): a sun and moon riding the rotating sky, drifting clouds, the deep
+## and 8): a sun and moon riding the rotating sky, a slowly turning cloud layer, the deep
 ## night beat between days, and rain on a Hujan day.
 ##
 ## Suite is @tool and no test is a coroutine, per the runner constraints.
@@ -170,24 +170,87 @@ func test_the_clouds_dim_at_night() -> void:
 	_w.set_night(0.0)
 
 
-func test_clouds_drift_at_parallax_speeds_and_wrap() -> void:
+## 2026-09-30: one cloud painting that rides the sky's angle and creeps a
+## little on its own clock on top -- the owner's pick after an own-clock spin
+## left the dusk clouds over the noon sky.
+func test_clouds_ride_the_sky_and_creep() -> void:
 	var layer := _w.get_node("CloudLayer") as CloudDrift
 	assert_true(layer != null, "CloudLayer carries the CloudDrift driver")
 	if layer == null:
 		return
-	assert_true(layer.get_child_count() >= 2, "at least two drifting clouds")
-	assert_true(layer.speed_for(1) > layer.speed_for(0), "later clouds drift faster")
-	var c := layer.get_child(0) as Control
-	var x0 := c.position.x
+	var clouds := _w.get_node(BookClockWidget.CLOUDS_PATH) as TextureRect
+	assert_true(clouds != null and clouds.texture != null, "the cloud painting is authored")
+	if clouds == null:
+		return
+	assert_eq(clouds.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the clouds never eat a tap")
+	assert_true(layer.spin_degrees_per_second != 0.0, "the clouds creep by default")
+	var sky := _w.get_node(BookClockWidget.SKY_NODE) as Control
+	layer.reset_drift()
+	for p in [0.0, 0.5, 1.0]:
+		_w.set_progress(p)
+		assert_true(absf(clouds.rotation_degrees - sky.rotation_degrees) < 0.001,
+			"in register with the sky at progress %.1f" % p)
+	_w.set_progress(0.5)
 	layer.step(1.0)
-	assert_true(absf(c.position.x - (x0 + layer.speed_for(0))) < 0.01, "one second moves it its speed")
-	c.position.x = layer.size.x + 1.0
-	layer.step(0.0)
-	assert_eq(c.position.x, -c.size.x, "a cloud leaving the right edge re-enters from the left")
+	assert_true(absf(clouds.rotation_degrees - (sky.rotation_degrees + layer.spin_degrees_per_second)) < 0.001,
+		"one second creeps them spin_degrees_per_second past the sky")
+	_w.set_progress(0.6)
+	assert_true(absf(layer.drift_degrees() - layer.spin_degrees_per_second) < 0.001,
+		"the sky moving keeps the creep")
+	assert_true(absf(clouds.rotation_degrees - (sky.rotation_degrees + layer.drift_degrees())) < 0.001,
+		"and the clouds keep riding it")
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/CloudDrift.gd")
 	assert_true(src.contains("Engine.is_editor_hint() or GameSettings.reduce_motion"),
-		"drift never runs in the editor or under reduce_motion")
+		"the creep never runs in the game under reduce_motion, nor unasked in the editor")
+	assert_true(src.contains("NOTIFICATION_EDITOR_PRE_SAVE"), "an editor preview never bakes its angle")
+	layer.reset_drift()
+	_w.set_progress(0.0)
 
+
+## Each new day puts the crept clouds back in register.
+func test_a_new_day_puts_the_clouds_back_in_register() -> void:
+	var layer := _w.get_node("CloudLayer") as CloudDrift
+	layer.step(5.0)
+	assert_true(layer.drift_degrees() != 0.0, "they have crept")
+	_w.set_day("Selasa")
+	assert_eq(layer.drift_degrees(), 0.0, "set_day clears the creep")
+	var sky := _w.get_node(BookClockWidget.SKY_NODE) as Control
+	var clouds := _w.get_node(BookClockWidget.CLOUDS_PATH) as Control
+	assert_true(absf(clouds.rotation_degrees - sky.rotation_degrees) < 0.001, "back on the sky's angle")
+
+## The cloud painting is the sky's twin: same square, same pivot, so the two
+## vortices share one eye and no corner uncovers, on any phone.
+func test_cloud_layer_matches_the_sky_square() -> void:
+	var sky := _w.get_node(BookClockWidget.SKY_NODE) as Control
+	var clouds := _w.get_node(BookClockWidget.CLOUDS_PATH) as Control
+	for h in [1920.0, 2400.0]:
+		_w.size = Vector2(1080, h)
+		_w._fit_layers()
+		assert_eq(clouds.size, sky.size, "same side at %d" % int(h))
+		assert_eq(clouds.position, sky.position, "same place at %d" % int(h))
+		assert_eq(clouds.pivot_offset, sky.pivot_offset, "same pivot at %d" % int(h))
+	_w.size = Vector2(1080, 1920)
+	_w._fit_layers()
+
+
+## A visit starts with the clouds in register with the dawn sky.
+func test_clouds_start_in_register_with_the_sky() -> void:
+	var fresh := (load(SCENE_PATH) as PackedScene).instantiate() as BookClockWidget
+	Engine.get_main_loop().root.add_child(fresh)
+	var clouds := fresh.get_node(BookClockWidget.CLOUDS_PATH) as Control
+	assert_true(absf(clouds.rotation_degrees - fresh.dawn_rotation_degrees) < 0.001,
+		"clouds open at the dawn angle, %.2f" % clouds.rotation_degrees)
+	fresh.get_parent().remove_child(fresh)
+	fresh.free()
+
+## The three SVG clouds the painting replaced are gone for good.
+func test_the_old_svg_clouds_are_retired() -> void:
+	for svg in ["cloud_a", "cloud_b", "cloud_c"]:
+		assert_false(FileAccess.file_exists("res://Assets/Images/SchoolDay/Sky/%s.svg" % svg),
+			"%s.svg is deleted" % svg)
+	var scene := FileAccess.get_file_as_string(SCENE_PATH)
+	assert_false(scene.contains("cloud_a.svg") or scene.contains("cloud_b.svg") or scene.contains("cloud_c.svg"),
+		"and the widget no longer loads them")
 
 func test_school_day_plays_the_night_beat_and_the_rain() -> void:
 	var src := FileAccess.get_file_as_string(SCHOOL_DAY_SCRIPT)

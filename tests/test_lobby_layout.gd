@@ -249,8 +249,9 @@ const BREATH_PEAK := Vector2(1.01, 1.02)
 ## StudentFace.canvas_size: the square every face rig's layers draw on.
 const RIG_CANVAS := Vector2(1280, 1280)
 ## Every nth row and column of the art is checked, to keep the suite fast.
-## 2 art pixels are about 0.57 screen px at the rig's 0.285 scale, so the
-## step misses nothing that matters; do not raise it to speed the suite up.
+## 2 art pixels are about 0.42 screen px at the back-row rig's 0.209 scale
+## (0.57 px at 0.285 until the 2026-09-30 seating pass), so the step misses
+## nothing that matters; do not raise it to speed the suite up.
 const HAIR_SAMPLE_STEP := 2
 
 

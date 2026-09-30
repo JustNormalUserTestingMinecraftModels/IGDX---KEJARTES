@@ -177,6 +177,17 @@ static func pictured_target(seat: Dictionary) -> Array:
 	return [scale, to_game(seat, seat["hand_origin"]) + tex.get_size() * scale / 2.0]
 
 
+## The widest desk art `student` can wear: the Lobby swaps each skin's table
+## image onto the same node, at the same transform, so a placement made for
+## the scene's texture only holds while every skin's art is that width.
+static func widest_hand_art(student: String) -> float:
+	var widest := 0.0
+	for id: String in StudentSkins.SKINS[student]:
+		var tex := load(StudentSkins.layer_path(student, id, "hand")) as Texture2D
+		widest = maxf(widest, tex.get_width())
+	return widest
+
+
 ## How far a row's hands rose: the mean of its two pictured students' rise.
 func _row_rise(row: Array) -> float:
 	var total := 0.0
@@ -243,6 +254,8 @@ func test_every_student_wears_its_rows_scale_and_rises_with_it() -> void:
 				# Front row: wider than the desk means off the screen's edge,
 				# as the picture's Marcel is, never over the aisle.
 				var half: float = (hand["texture"] as Texture2D).get_width() * row_scale / 2.0
+				assert_eq(widest_hand_art(student), float((hand["texture"] as Texture2D).get_width()),
+					"%s has a skin whose table art is another width: place it for the widest" % student)
 				if FRONT_INNER_EDGE.has(name):
 					var edge: float = FRONT_INNER_EDGE[name]
 					want.x = minf(want.x, edge - half) if edge < CLASSROOM_SIZE.x / 2.0 else maxf(want.x, edge + half)

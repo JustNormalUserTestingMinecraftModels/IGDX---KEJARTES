@@ -89,3 +89,18 @@
 - [ ] `StudentCard.gd`: remove the grade-8/9 branches; keep the grade-7 teaching steps and the single "pilih N murid" instruction step (tutorial-gated); add `_maybe_play_headmaster_beat()` from `_ready()` that, when `current_grade` is 8 or 9 and not yet seen, shows the panel via `show_beat("Pak Kepala Sekolah", …)` for each of that grade's lines in order (tap to advance), independent of `tutorials_bypassed`, reusing the tutorial CanvasLayer, then marks the grade seen.
 - [ ] SchoolDay's end-of-week panel: one step, so the pill stays hidden; keep `school_day` green.
 - [ ] Commit.
+
+### Task 4: The Lobby tutorial overlay shows again
+
+**Added 2026-10-01 at the owner's request.** `Scenes/Lobby/Lobby.tscn`'s tutorial overlay `ColorRect` has been saved `visible = false` since 09f0d3ca (2026-09-10, "give each student their own hand and desk props" — an editor save while the overlay was hidden to see the desks), and no code ever shows it, so the Lobby tutorial (phase 1 before StudentCard, phase 2 after) has been invisible to every new player since. The HUD stays usable, so nothing strands; the teaching just never appears.
+
+**Consumes:** Task 2's Lobby adoption (`TutorialPanel.mount(...)`, `TutorialPanel.place_step(...)`, the Lobby's `_show_step`).
+
+**Files:**
+- Modify: `Scripts/Lobby/Lobby.gd`
+- Test: `tests/test_lobby.gd` (or the Lobby suite that owns tutorial checks)
+
+- [ ] Tests first: the tutorial path of `Lobby._ready` (the branch where `GameState.lobby_tutorial_completed` is false and `minggu_ke == 1`) shows the overlay explicitly (`color_rect.show()` or equivalent) before the first step, so the authored `visible = false` in the scene no longer decides it; the completed path still hides it; the finish path still hides it.
+- [ ] Show the overlay in code at the start of the tutorial path, with a `##`/`#` note on why (the scene keeps it hidden so the classroom is visible in the editor; an editor save once baked that hidden state and the tutorial vanished for three weeks). Do not change the scene's authored visibility.
+- [ ] Walk every phase-1 and phase-2 step target against the current Lobby HUD (the book HUD and icon rail were redesigned on 2026-09-27/28 while the overlay was invisible): each step's target must resolve to a live, visible node; fix any stale path, and pin the list in a test.
+- [ ] Commit.

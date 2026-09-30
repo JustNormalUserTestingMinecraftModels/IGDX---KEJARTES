@@ -574,10 +574,11 @@ func _roll_weights(counts: Dictionary, roster: Array = [], schedules: Dictionary
 	return weights
 
 
-## One of SchoolDay.gd's ROLL_WEIGHT_* tuning constants.
+## One of the day roll's ROLL_WEIGHT_* tuning constants (DayRoll.gd since
+## 2026-09-30; SchoolDay.day_roll_weights() forwards there).
 func _roll_tuning(const_name: String) -> int:
-	var school_day = load(_SCHOOL_DAY_SCRIPT)
-	return int(school_day.get(const_name))
+	var day_roll = load("res://Scripts/SchoolSimulation/DayRoll.gd")
+	return int(day_roll.get(const_name))
 
 
 ## A roster student carrying `quirk`, for the day-roll tests.

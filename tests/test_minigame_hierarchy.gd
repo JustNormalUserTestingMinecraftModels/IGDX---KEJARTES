@@ -316,11 +316,16 @@ const BADMINTON := "res://Scenes/Minigames/Olahraga/Badminton.tscn"
 const COURT_BASELINE_ROW := 1794.0
 
 
+## The court lives in the World CanvasLayer (2026-09-30 lighting pass), whose
+## rects follow the editor's viewport rather than a test frame, so its rect is
+## computed from its full-rect anchors and offsets at the screen size.
 func test_the_court_baseline_clears_the_hint_pill() -> void:
 	for screen: Vector2 in [Vector2(1080, 1920), Vector2(1080, 2400)]:
 		var root := _stand(BADMINTON, screen)
-		var bg := root.get_node("Background") as TextureRect
-		var r := bg.get_global_rect()
+		var bg := root.get_node("%Background") as TextureRect
+		var r := Rect2(bg.offset_left, bg.offset_top,
+			screen.x + bg.offset_right - bg.offset_left,
+			screen.y + bg.offset_bottom - bg.offset_top)
 		var tex := bg.texture.get_size()
 		var s := maxf(r.size.x / tex.x, r.size.y / tex.y)
 		var baseline := r.position.y + (r.size.y - tex.y * s) / 2.0 + COURT_BASELINE_ROW * s
@@ -329,7 +334,7 @@ func test_the_court_baseline_clears_the_hint_pill() -> void:
 			"B5: baseline %.0f vs pill top %.0f at %s" % [baseline, pill.position.y, screen])
 		var surround := bg.get_node_or_null("Surround") as Control
 		assert_true(surround != null and surround.show_behind_parent
-			and surround.get_global_rect().end.y >= screen.y,
+			and r.end.y + surround.offset_bottom >= screen.y,
 			"the uncovered strip is filled to the screen bottom")
 	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd")
 	assert_true(src.contains('"Capai %d poin"'), "one score: the bar names the goal")

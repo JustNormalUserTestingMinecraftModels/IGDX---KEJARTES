@@ -197,7 +197,7 @@ func _apply_tool_names() -> void:
 
 func _apply_visual_exports() -> void:
 	# Background
-	var bg_node = get_node_or_null("Background")
+	var bg_node = get_node_or_null("%Background")
 	if bg_node:
 		if background_texture:
 			if bg_node is ColorRect:

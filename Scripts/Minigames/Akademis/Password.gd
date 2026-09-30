@@ -86,7 +86,7 @@ func _ready() -> void:
 
 func _apply_visual_exports() -> void:
 	# Apply background texture if provided
-	var bg = get_node_or_null("Background") as TextureRect
+	var bg = get_node_or_null("%Background") as TextureRect
 	if bg and background_texture:
 		bg.texture = background_texture
 	if problem_label:

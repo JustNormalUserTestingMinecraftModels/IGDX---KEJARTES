@@ -172,7 +172,7 @@ func _fit_font_size(text: String) -> int:
 
 
 func _apply_visual_exports() -> void:
-	var bg = get_node_or_null("Background") as TextureRect
+	var bg = get_node_or_null("%Background") as TextureRect
 	if bg and background_texture:
 		bg.texture = background_texture
 

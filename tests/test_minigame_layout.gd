@@ -178,7 +178,7 @@ func test_badminton_has_the_strip_the_pill_and_a_covering_court() -> void:
 	var root := _scene(BADMINTON)
 	assert_true(_under_safe(root.get_node_or_null("%MinigameHeader")))
 	assert_true(_under_safe(root.get_node_or_null("%MinigameHintPill")))
-	assert_eq((root.get_node("Background") as TextureRect).stretch_mode,
+	assert_eq((root.get_node("World/Room/Background") as TextureRect).stretch_mode,
 		TextureRect.STRETCH_KEEP_ASPECT_COVERED, "the court covers, never stretches")
 	assert_contains(FileAccess.get_file_as_string("res://Scripts/Minigames/Olahraga/Badminton.gd"),
 		"\"Capai %d poin\"")

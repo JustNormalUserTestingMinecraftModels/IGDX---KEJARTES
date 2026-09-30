@@ -151,7 +151,7 @@ func test_each_arrow_leans_the_camera_its_own_way() -> void:
 func test_the_backdrop_reaches_past_every_edge_a_lean_uncovers() -> void:
 	var scene: Node = (load(MENARI_SCENE) as PackedScene).instantiate()
 	track(scene)
-	var bg := scene.get_node_or_null("Background") as Control
+	var bg := scene.get_node_or_null("World/Room/Background") as Control
 	assert_true(bg != null, "LombaMenari needs its Background")
 	var distance: Variant = scene.get("camera_look_distance")
 	assert_true(distance is float, "LombaMenari exposes camera_look_distance, got %s" % distance)

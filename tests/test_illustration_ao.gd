@@ -226,7 +226,7 @@ func test_the_lobby_cutout_differs_only_in_its_light() -> void:
 ## five taps per pixel for nothing. Percentages are transparent pixels.
 const CUTOUTS := {
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman", "World/Room/Foreground"],
-	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["Splash"],
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
 	# 2026-09-25: the minigame win screen's speaker, the same splash art.
 	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
@@ -249,14 +249,14 @@ const CUTOUTS := {
 const BACKDROPS := {
 	"res://Scenes/Lobby/Lobby.tscn": ["World/Classroom/BGLayer"],
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Background"],
-	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["Background"],
-	"res://Scenes/Minigames/Akademis/Password.tscn": ["Background"],
-	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["Background"],
-	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["Background"],
-	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["Background"],
-	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["Background"],
-	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["FieldBG"],
-	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["Background"],
+	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/Akademis/Password.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/Akademis/PilihanGanda.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/Akademis/Variabel.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn": ["World/Room/Background"],
+	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["World/Room/FieldBG"],
+	"res://Scenes/Minigames/Olahraga/Badminton.tscn": ["World/Room/Background"],
 	"res://Scenes/Koperasi/ShopHub.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/Koperasi/CosmeticShop.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/EndGame/TesNotice.tscn": ["World/Room/Backdrop"],

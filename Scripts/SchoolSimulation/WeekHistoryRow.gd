@@ -54,7 +54,7 @@ var _won: bool = false
 func set_entry(entry: Dictionary) -> void:
 	var t := Juice.tokens()
 	var category: String = entry.get("category", "")
-	var is_event: bool = category == EVENT_CATEGORY
+	var is_event: bool = category == EVENT_CATEGORY or category == StudentManager.IZIN_CATEGORY
 	var won: bool = entry.get("won", false)
 	_is_event = is_event
 	_won = won

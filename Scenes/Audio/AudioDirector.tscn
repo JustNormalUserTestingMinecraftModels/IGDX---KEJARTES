@@ -6,7 +6,6 @@
 [ext_resource type="AudioStream" uid="uid://cyxuwgj11alxf" path="res://Assets/Audio/SFX/cancel.ogg" id="4_ikp5m"]
 [ext_resource type="AudioStream" uid="uid://csri8fxh0qq60" path="res://Assets/Audio/SFX/success.ogg" id="5_rxfkv"]
 [ext_resource type="AudioStream" uid="uid://bsc361pdf1jv8" path="res://Assets/Audio/SFX/fail.ogg" id="6_psmar"]
-[ext_resource type="AudioStream" uid="uid://cfrupfphlvi8x" path="res://Assets/Audio/SFX/coin.ogg" id="7_hhe06"]
 [ext_resource type="AudioStream" uid="uid://ukjf7fho680s" path="res://Assets/Audio/SFX/whoosh.ogg" id="8_5se8n"]
 [ext_resource type="AudioStream" uid="uid://dsqymqh5huu84" path="res://Assets/Audio/SFX/pop.ogg" id="9_o62ei"]
 [ext_resource type="AudioStream" uid="uid://ccpyy412s2jta" path="res://Assets/Audio/SFX/swipe.ogg" id="10_uow0o"]
@@ -40,7 +39,6 @@ sfx_confirm = ExtResource("3_tr563")
 sfx_cancel = ExtResource("4_ikp5m")
 sfx_success = ExtResource("5_rxfkv")
 sfx_fail = ExtResource("6_psmar")
-sfx_coin = ExtResource("7_hhe06")
 sfx_whoosh = ExtResource("8_5se8n")
 sfx_pop = ExtResource("9_o62ei")
 sfx_swipe = ExtResource("10_uow0o")

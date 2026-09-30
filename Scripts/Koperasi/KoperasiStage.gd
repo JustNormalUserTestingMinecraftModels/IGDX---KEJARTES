@@ -62,7 +62,13 @@ const ShelfItemScript := preload("res://Scripts/Koperasi/ShelfItem.gd")
 ## ShelfItem helper per shelf button, parallel to shelf_buttons.
 var _shelf_items: Array = []
 
+## Every visit opens on an empty basket. Back clears Cart before its wipe, but
+## the shelf still takes taps while the cover sweeps in, so a late tap could
+## carry one unit out of the shop and into the next visit (possibly one whose
+## shelf does not stock it). Cleared before setup_shelf(), whose shelf
+## visibility and stock pips already read Cart.
 func _ready():
+	Cart.clear()
 	setup_shelf()
 
 	if not Cart.cart_changed.is_connected(_on_cart_changed):

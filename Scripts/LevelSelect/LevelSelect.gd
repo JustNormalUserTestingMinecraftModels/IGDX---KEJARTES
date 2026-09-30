@@ -414,7 +414,9 @@ func _on_cancel() -> void:
 
 ## The player took the assignment: set the grade, then wipe into the intro.
 func _on_accept(grade: int) -> void:
-	if _committed:
+	# Transition refuses a change while its wipe is still out; latching
+	# _committed then would leave the envelope stuck (bug sweep 2026-09-30).
+	if _committed or Transition.is_busy():
 		return
 	_committed = true
 	AudioDirector.play_sfx(&"confirm")

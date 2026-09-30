@@ -243,7 +243,7 @@ var rhythm_patterns: Array = [
 var active_pattern_index: int = 0
 var pattern_step_index: int = 0
 
-@onready var background_rect: TextureRect = $Background
+@onready var background_rect: TextureRect = %Background
 @onready var score_hud: MinigameHeader = %MinigameHeader
 @onready var hit_zone: Control = $HitZone
 @onready var notes_parent: Control = $NotesParent
@@ -355,7 +355,9 @@ func _breath_sway(t: float, rate: float, radians: float) -> float:
 func _process(delta: float) -> void:
 	super._process(delta)
 	
-	if not is_game_active:
+	# is_paused stays true through the resume countdown, while swipes are
+	# off: the notes hold still until it ends, or each would count a miss.
+	if not is_game_active or is_paused:
 		return
 		
 	time_elapsed += delta

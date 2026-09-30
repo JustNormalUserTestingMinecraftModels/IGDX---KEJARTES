@@ -287,11 +287,12 @@ func test_the_scene_is_authored_and_themed() -> void:
 		if n != null:
 			assert_eq(n.theme_type_variation, want[path], path)
 	assert_eq(d.mouse_filter, Control.MOUSE_FILTER_STOP, "the root takes the taps")
-	for path in ["Background", "Blur", "Splash", "Desaturate", "Light", "Shafts", "Bloom", "Header",
+	for path in ["World/Room", "World/Room/Background", "World/Room/Blur", "World/Room/Splash",
+			"World/Room/Desaturate", "World/Room/Light", "World/Room/Shafts", "Header",
 			"DialogueBox", "DialogueBox/Content/Line"]:
 		assert_eq((d.get_node(path) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
 			path + " must let taps through to the root")
-	assert_eq((d.get_node("Blur") as ColorRect).material.resource_path,
+	assert_eq((d.get_node("World/Room/Blur") as ColorRect).material.resource_path,
 		"res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres")
 	assert_eq((d.get_node("Header/Calendar") as TextureRect).texture.resource_path,
 		EventDialogueCatalog.CALENDAR_BADGE)
@@ -304,39 +305,49 @@ func test_the_scene_is_authored_and_themed() -> void:
 
 # ── look ─────────────────────────────────────────────────────────────────────
 
-## The dialogue wears the Lobby look under its UI (2026-09-29): a screen-read
-## desaturation of 30% grades the backdrop and the speaker, then the Lobby's
-## light, shafts and the art-only bloom sit over that. Everything the player
-## reads (header, dialogue box, buttons) is drawn after all of it, so it is
-## never desaturated, lit or bloomed.
+## The dialogue wears the Lobby look under its UI: a screen-read desaturation
+## of 30% grades the backdrop and the speaker, then the Lobby's light and
+## shafts sit over that, all in a `World` CanvasLayer at -1, and the Lobby's
+## own WorldEnvironment glow (an AmbientGlow, the root's second child) blooms
+## that layer only (2026-09-30; it replaced a screen-read ScreenGlow at the
+## same 0.85 threshold, and measured the same: +0.0004 mean against +0.0005).
+## Everything the player reads (header, dialogue box, buttons) stays on layer
+## 0, so it is never desaturated, lit or bloomed.
 func test_the_dialogue_wears_the_lobby_look_under_its_ui() -> void:
-	var kids := Census.children_of(Census.of(_SCENE), ".")
-	assert_eq(kids, ["Background", "Blur", "Splash", "GradeCopy", "Desaturate", "Light", "Shafts",
-			"BloomCopy", "Bloom", "Header", "DialogueBox"] as Array[String],
-		"art, then the grade, the light and the bloom, then the UI")
 	var c := Census.of(_SCENE)
-	assert_eq(Census.entry(c, "Desaturate").get("instance"), "res://Scenes/Look/ScreenSaturation.tscn")
-	assert_eq(Census.entry(c, "Light").get("instance"), "res://Scenes/Look/LightPool.tscn")
-	assert_eq(Census.entry(c, "Shafts").get("instance"), "res://Scenes/Look/SunShafts.tscn")
-	assert_eq(Census.entry(c, "Bloom").get("instance"), "res://Scenes/Look/ScreenGlow.tscn")
+	assert_eq(Census.children_of(c, "."), ["World", "Glow", "Header", "DialogueBox"] as Array[String],
+		"the lit room, its bloom, then the UI")
+	var world := Census.entry(c, "World")
+	assert_eq(world.get("type"), "CanvasLayer", "World is a CanvasLayer")
+	assert_eq(Census.prop(world, "layer"), -1, "World draws at -1, under the UI")
+	assert_eq(Census.children_of(c, "World/Room"), ["Background", "Blur", "Splash", "GradeCopy",
+			"Desaturate", "Light", "Shafts"] as Array[String], "art, then the grade and the light")
+	assert_eq(Census.entry(c, "World/Room/Desaturate").get("instance"), "res://Scenes/Look/ScreenSaturation.tscn")
+	assert_eq(Census.entry(c, "World/Room/Light").get("instance"), "res://Scenes/Look/LightPool.tscn")
+	assert_eq(Census.entry(c, "World/Room/Shafts").get("instance"), "res://Scenes/Look/SunShafts.tscn")
+	assert_eq(Census.entry(c, "Glow").get("instance"), "res://Scenes/Look/AmbientGlow.tscn")
+	for e in c:
+		assert_ne(e["instance"], "res://Scenes/Look/ScreenGlow.tscn", "no screen-read bloom left")
 	## The school backdrop is bright sky and paper: at 0.8 a fifth of the art
 	## bloomed, at 0.85 about a tenth with the median untouched (measured
 	## 2026-09-29 at 1080x1920); the rain scene is too dark to bloom at all.
-	assert_eq(float(Census.prop(Census.entry(c, "Bloom"), "threshold", 0.7)), 0.85, "the bloom's threshold")
+	assert_eq(float(Census.prop(Census.entry(c, "Glow"), "glow_threshold", 0.7)), 0.85, "the bloom's threshold")
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/EventDialogue.gd")
+	for node_name in ["Background", "Blur", "Splash"]:
+		assert_true(src.contains("= %" + node_name), "EventDialogue.gd finds %" + node_name + " by unique name")
 
 
 ## Godot copies the screen texture ONCE and shares it between screen-reading
 ## nodes, so without a BackBufferCopy the grade read the frame as it was after
 ## the Background: it dropped the blur and the speaker entirely (found live,
-## 2026-09-29; an offscreen capture showed the same and was misread). Each
-## reader here -- the grade, then the bloom -- gets a fresh copy of the whole
-## viewport right before it.
+## 2026-09-29; an offscreen capture showed the same and was misread). The
+## grade gets a fresh copy of the whole viewport right before it.
 func test_each_screen_reader_gets_a_fresh_copy_of_the_frame() -> void:
 	var c := Census.of(_SCENE)
-	var kids := Census.children_of(c, ".")
-	for pair in [["GradeCopy", "Desaturate"], ["BloomCopy", "Bloom"]]:
+	var kids := Census.children_of(c, "World/Room")
+	for pair in [["GradeCopy", "Desaturate"]]:
 		assert_eq(kids.find(pair[1]) - kids.find(pair[0]), 1, "%s sits right before %s" % pair)
-		var copy := Census.entry(c, pair[0])
+		var copy := Census.entry(c, "World/Room/" + pair[0])
 		assert_eq(copy.get("type"), "BackBufferCopy", pair[0] + " is a BackBufferCopy")
 		assert_eq(int(Census.prop(copy, "copy_mode", 1)), BackBufferCopy.COPY_MODE_VIEWPORT,
 			pair[0] + " copies the whole viewport")
@@ -345,7 +356,7 @@ func test_each_screen_reader_gets_a_fresh_copy_of_the_frame() -> void:
 ## "Reduce the saturation by 30%": the pass keeps 0.7 of the colour, at the
 ## piece's own default so the scene carries no override to drift from it.
 func test_the_dialogue_keeps_seventy_percent_of_its_colour() -> void:
-	var node := Census.entry(Census.of(_SCENE), "Desaturate")
+	var node := Census.entry(Census.of(_SCENE), "World/Room/Desaturate")
 	assert_false(node.get("props", {}).has("saturation"), "the scene leaves the default")
 	var piece := (load("res://Scenes/Look/ScreenSaturation.tscn") as PackedScene).instantiate() as ScreenSaturation
 	track(piece)
@@ -364,7 +375,7 @@ func test_the_dialogue_keeps_seventy_percent_of_its_colour() -> void:
 ## larger so it reads against a photographic backdrop. It follows the splash's
 ## rect and stretch, so it stays under the art on a tall phone.
 func test_the_speakers_shadow_is_a_visible_contact_glow() -> void:
-	var shadow := Census.entry(Census.of(_SCENE), "Splash/Shadow")
+	var shadow := Census.entry(Census.of(_SCENE), "World/Room/Splash/Shadow")
 	assert_eq(Census.prop(shadow, "shadow_offset", Vector2.ZERO), Vector2.ZERO,
 		"still outer AO: no drop shadow")
 	assert_true(float(Census.prop(shadow, "shadow_alpha", 0.34)) >= 0.6, "dense enough to read")
@@ -503,7 +514,7 @@ func test_the_event_list_exists_once() -> void:
 func test_the_speaker_hangs_off_the_bottom_edge_where_the_mockup_has_them() -> void:
 	var d = (load(_SCENE) as PackedScene).instantiate()
 	track(d)
-	var s := d.get_node("Splash") as TextureRect
+	var s := d.get_node("World/Room/Splash") as TextureRect
 	assert_eq(Vector4(s.anchor_left, s.anchor_top, s.anchor_right, s.anchor_bottom),
 		Vector4(0, 1, 1, 1), "the splash hangs off the bottom edge")
 	assert_eq(Vector4(s.offset_left, s.offset_top, s.offset_right, s.offset_bottom),
@@ -516,8 +527,15 @@ func test_the_speaker_hangs_off_the_bottom_edge_where_the_mockup_has_them() -> v
 func test_the_speaker_keeps_its_place_above_the_box_on_a_tall_phone() -> void:
 	for screen in [Vector2(1080, 1920), Vector2(1080, 2400)]:
 		var frame := track(preload("res://tests/layout_frame.gd").stand_up(_SCENE, screen)) as Control
-		var s := frame.get_child(0).get_node("Splash") as TextureRect
-		var r := s.get_global_rect()
+		# The splash lives in the World room (2026-09-30). A Control under a
+		# CanvasLayer anchors to the editor's own viewport in a test frame, not
+		# to the frame, so the room is sized to the phone by hand and the
+		# splash is measured inside it.
+		var room := frame.get_child(0).get_node("World/Room") as Control
+		room.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+		room.size = screen
+		var s := room.get_node("Splash") as TextureRect
+		var r := s.get_rect()
 		assert_eq(r.size, Vector2(1080, 1920), "the box is the art's own size at %s" % screen)
 		assert_eq(r.position, Vector2(-30, screen.y - 1920 + 276), "placed from the bottom at %s" % screen)
 

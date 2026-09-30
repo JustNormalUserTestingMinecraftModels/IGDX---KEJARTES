@@ -36,20 +36,11 @@ var _last_staggered_student_id = -1
 var _has_staggered_once := false
 
 
-# National Holidays definition
+## National holidays: week -> {day: {title, desc}}. _check_and_lock_holidays()
+## rests every student on them.
 const HOLIDAYS = {
-	3: {
-		"Rabu": {
-			"title": "Hari Kemerdekaan RI",
-			"desc": "Kemerdekaan Republik Indonesia (17 Agustus)"
-		}
-	},
-	6: {
-		"Senin": {
-			"title": "Maulid Nabi Muhammad SAW",
-			"desc": "Kelahiran Nabi Muhammad SAW"
-		}
-	}
+	3: {"Rabu": {"title": "Hari Kemerdekaan RI", "desc": "Kemerdekaan Republik Indonesia (17 Agustus)"}},
+	6: {"Senin": {"title": "Maulid Nabi Muhammad SAW", "desc": "Kelahiran Nabi Muhammad SAW"}},
 }
 
 @onready var color_rect = $ColorRect
@@ -1452,26 +1443,33 @@ func _on_objective_strip_pressed() -> void:
 		Juice.pop_in(objective_hint)
 	AudioDirector.play_sfx(&"tap")
 
+## Locks this week's national holidays to Istirahat for every student, and gives
+## a past holiday's day back the player's own entry (lock_holidays()).
 func _check_and_lock_holidays() -> void:
-	var week = GameState.minggu_ke
-	if HOLIDAYS.has(week):
-		var week_holidays = HOLIDAYS[week]
-		for day_name in week_holidays.keys():
-			# Lock schedule to Istirahat / DayOff for all approved students on this holiday
-			for student in GameState.approved_students:
-				var student_id = student.get("id", null)
-				if student_id != null:
-					if not GameState.day_schedules.has(student_id):
-						GameState.day_schedules[student_id] = {}
+	var week_holidays: Dictionary = HOLIDAYS.get(GameState.minggu_ke, {})
+	var rest := {"category": "Istirahat", "holiday": true, "mood_cost": int(ActivityPreview.mood_cost("Istirahat")),
+		"energy_cost": int(ActivityPreview.energy_cost("Istirahat"))}
+	for student in GameState.approved_students:
+		var student_id: Variant = student.get("id", null)
+		var plan: Dictionary = lock_holidays(GameState.day_schedules.get(student_id, {}), week_holidays, rest)
+		if student_id != null and not plan.is_empty():
+			GameState.day_schedules[student_id] = plan
 
-					# Assign Istirahat with standard mood/energy gain cost delta
-					var mood_cost = int(ActivityPreview.mood_cost("Istirahat"))
-					var energy_cost = int(ActivityPreview.energy_cost("Istirahat"))
-					GameState.day_schedules[student_id][day_name] = {
-						"category": "Istirahat",
-						"mood_cost": mood_cost,
-						"energy_cost": energy_cost
-					}
+## One student's `plan` for a week whose holidays are `week_holidays`: each one
+## becomes `rest`, keeping the player's entry under "pre_holiday", and a day a
+## past week locked gets that entry back -- or empties, so the incomplete-
+## schedule warning catches it -- instead of resting again. Static for tests.
+static func lock_holidays(plan: Dictionary, week_holidays: Dictionary, rest: Dictionary) -> Dictionary:
+	for day_name in plan.keys():
+		if plan[day_name].get("holiday", false) and not week_holidays.has(day_name):
+			plan[day_name] = plan[day_name].get("pre_holiday", {})
+			if plan[day_name].is_empty():
+				plan.erase(day_name)
+	for day_name in week_holidays:
+		var own: Dictionary = plan.get(day_name, {})
+		var kept: Dictionary = own.get("pre_holiday", {}) if own.get("holiday", false) else own
+		plan[day_name] = rest.merged({"pre_holiday": kept})
+	return plan
 
 func _show_holiday_warning(holiday_title: String) -> void:
 	_holiday_active = true

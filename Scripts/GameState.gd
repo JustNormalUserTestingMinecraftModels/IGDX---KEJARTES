@@ -604,6 +604,16 @@ func _ready():
 	print("GameState siap")
 	load_inventory()
 
+## Flushes the inventory when the window closes or the app goes to the
+## background, where no scene change is coming to save it: a phone may kill a
+## backgrounded app without warning, and a desktop close skips Transition
+## entirely. Only WHEN the save runs changes; what reaches disk is still the
+## inventory alone (Transition.change_scene stays the usual flush), and
+## save_inventory() is a no-op in the editor.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
+		save_inventory()
+
 # --- Converter: Dictionary → StudentData (for simulation) ---
 ## One roster entry as a simulation StudentData. The single conversion rule:
 ## convert_to_student_data_array() and the item screen's student cards both

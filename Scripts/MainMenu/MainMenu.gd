@@ -102,7 +102,9 @@ const _INTRO_WIPE_SEC := 1.1
 ## Buttons call accept_event() on their own presses, so those taps never
 ## reach here and cannot double-fire alongside their handlers.
 func _unhandled_input(event: InputEvent) -> void:
-	if _started:
+	# A tap during the intro wipe would latch _started while Transition
+	# still refuses the change, leaving the title stuck (bug sweep 2026-09-30).
+	if _started or Transition.is_busy():
 		return
 	if event is InputEventScreenTouch and event.pressed:
 		_start_game()

@@ -34,12 +34,25 @@ const TAB_SUARA := 0
 ## The MAIN tab: the gameplay and display switches.
 const TAB_MAIN := 1
 
+## Where Back goes unless the opener says otherwise, and the one opening whose
+## music this screen starts itself.
+const MAIN_MENU_SCENE := "res://Scenes/MainMenu/MainMenu.tscn"
+
 ## The screen Back returns to. MainMenu by default; the Lobby's Settings gear
-## sets it to the Lobby before opening this screen, and Back resets it.
-static var return_scene: String = "res://Scenes/MainMenu/MainMenu.tscn"
+## sets it to the Lobby before opening this screen. _ready() copies it into
+## _destination and resets it at once, so a Back that Transition drops cannot
+## lose it and a later visit never inherits it.
+static var return_scene: String = MAIN_MENU_SCENE
+
+## Where this visit's Back goes: return_scene as it stood when the screen
+## opened. Never cleared, so a Back that Transition drops (tapped while the
+## arrival wipe is still retracting) is retried to the same place.
+var _destination: String = MAIN_MENU_SCENE
 
 
 func _ready() -> void:
+	_destination = return_scene
+	return_scene = MAIN_MENU_SCENE
 	_master.value = AudioDirector.get_bus_volume(&"Master")
 	_bgm.value = AudioDirector.get_bus_volume(&"BGM")
 	_sfx.value = AudioDirector.get_bus_volume(&"SFX")
@@ -76,7 +89,7 @@ func _ready() -> void:
 
 	Juice.stagger_in(_collect_entry_nodes())
 	# Opened from the Lobby, its music keeps playing.
-	if return_scene == "res://Scenes/MainMenu/MainMenu.tscn":
+	if _destination == MAIN_MENU_SCENE:
 		AudioDirector.play_bgm(&"titlescreen")
 
 
@@ -169,10 +182,12 @@ func _notification(what: int) -> void:
 		_on_back_pressed()
 
 
+## Leaves for _destination. A press while a scene change is still running
+## (this screen's own arrival wipe) would be dropped by Transition, so it is
+## ignored here without the cancel cue; _destination is kept for the next one.
 func _on_back_pressed() -> void:
+	if Transition.is_busy():
+		return
 	if not Engine.is_editor_hint():
 		AudioDirector.play_sfx(&"cancel")
-	var destination := return_scene
-	return_scene = "res://Scenes/MainMenu/MainMenu.tscn"
-	Transition.change_scene(destination,
-		Transition.Style.FADE)
+	Transition.change_scene(_destination, Transition.Style.FADE)

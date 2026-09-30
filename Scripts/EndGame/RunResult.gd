@@ -278,6 +278,9 @@ func _on_selesai_pressed() -> void:
 const FIRST_GRADE: int = 7
 ## The last grade: passing it beats the game.
 const FINAL_GRADE: int = 9
+## The one grade whose own new picks GameState locks in a list of their own
+## (grade8_student_ids). Kelas 9 keeps no such list, so its pick is free.
+const OWN_PICKS_LOCKED_GRADE: int = 8
 ## Where a full restart, or a beaten game, ends up.
 const MENU_SCENE := "res://Scenes/MainMenu/MainMenu.tscn"
 ## Where the next grade, or a retry of this one, picks its roster.
@@ -305,6 +308,18 @@ static func exit_label(run_failed: bool, grade: int) -> String:
 	return "Ulangi Kelas %d" % grade if run_failed else "Lanjut ke Kelas %d" % (grade + 1)
 
 
+## A retry of `grade` re-opens that grade's own new pick. StudentCard locks
+## every id in grade7_student_ids and grade8_student_ids, so a Kelas 8 retry
+## clears the Kelas 8 list (StudentCard rebuilds it on Belajar) while the
+## Kelas 7 locks stay; a Kelas 9 retry has no list to clear.
+##
+## Affects: GameState.grade8_student_ids. Static so a test can call it with
+## no instance.
+static func unlock_retry_picks(grade: int) -> void:
+	if grade == OWN_PICKS_LOCKED_GRADE:
+		GameState.grade8_student_ids.clear()
+
+
 func _apply_progression() -> String:
 	var destination := destination_for(GameState.run_failed, GameState.current_grade)
 	if GameState.run_failed:
@@ -327,6 +342,7 @@ func _apply_progression() -> String:
 			# Grade 8/9 loss: retry the same grade at StudentCard. Keep the
 			# roster and grade7_student_ids so locked students stay locked and
 			# the player only needs to re-pick the new-grade slot(s).
+			unlock_retry_picks(GameState.current_grade)
 			GameState.returned_from_student_card = false
 			return destination
 

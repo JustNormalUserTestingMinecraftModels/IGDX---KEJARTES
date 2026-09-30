@@ -63,7 +63,7 @@ const LONG_FUNCTIONS: Dictionary = {
 const UNTYPED: Dictionary = {
 	"res://Scripts/AnimUtils.gd": 27,
 	"res://Scripts/AturJadwal/AturJadwal.gd": 193,
-	"res://Scripts/CutScene/CutScene.gd": 14,
+	"res://Scripts/CutScene/CutScene.gd": 13,
 	"res://Scripts/CutScene/HintLabel.gd": 3,
 	"res://Scripts/Debug/DebugManager.gd": 168,
 	"res://Scripts/Debug/EndGameRehearsal.gd": 2,
@@ -115,7 +115,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/AturJadwal/ObjectiveHint.gd": 4,
 	"res://Scripts/AturJadwal/SpecialtyMatchBurst.gd": 1,
 	"res://Scripts/Audio/AudioDirector.gd": 10,
-	"res://Scripts/CutScene/CutScene.gd": 7,
+	"res://Scripts/CutScene/CutScene.gd": 6,
 	"res://Scripts/CutScene/HintLabel.gd": 4,
 	"res://Scripts/Debug/DebugLookPanel.gd": 19,
 	"res://Scripts/Debug/DebugManager.gd": 309,

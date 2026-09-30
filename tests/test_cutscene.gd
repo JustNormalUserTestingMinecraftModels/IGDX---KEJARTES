@@ -120,16 +120,26 @@ func test_no_hardcoded_colors_remain_in_the_script() -> void:
 	assert_eq(re.search_all(src).size(), 0, "script must read colors from DesignTokens, not Color() literals")
 
 
-## The mockup's panel art is gone: the box is now a themed rounded panel
-## on the Card variation, so a colour or radius change in design_tokens
-## reaches it like every other surface. It also no longer hangs 100px off
-## the bottom of a 1920-tall screen, which the art-backed version did.
+## The mockup's panel art is gone: the box is the themed "Buku Catatan"
+## note panel (2026-09-30) on the CutsceneNotePanel variation, so a colour or
+## radius change in design_tokens reaches it like every other surface. It also
+## no longer hangs 100px off the bottom of a 1920-tall screen, which the
+## art-backed version did. The ruled-paper background and spiral binding are
+## authored TextureRects that must never swallow the advance tap.
 func test_dialogue_box_is_a_themed_rounded_panel() -> void:
 	var box := _scene.find_child("DialogueBox", true, false) as Panel
 	assert_true(box != null,
 		"DialogueBox is missing or is no longer a Panel")
-	assert_eq(box.theme_type_variation, &"Card",
+	assert_eq(box.theme_type_variation, &"CutsceneNotePanel",
 		"DialogueBox must take its rounded chrome from the theme")
+	var rule := box.get_node_or_null("RuleBg") as Control
+	var spiral := box.get_node_or_null("SpiralStrip") as Control
+	assert_true(rule != null and spiral != null,
+		"the note keeps its ruled-paper and spiral-binding chrome")
+	assert_eq(rule.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"RuleBg must not intercept the advance tap")
+	assert_eq(spiral.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"SpiralStrip must not intercept the advance tap")
 	assert_true(box.offset_bottom <= 1920.0,
 		"the panel must sit inside the screen, got bottom %f" % box.offset_bottom)
 	assert_true(box.offset_left >= 44.0,
@@ -167,20 +177,24 @@ func test_dialogue_text_sits_inside_its_panel() -> void:
 		"and before its bottom")
 
 
-## The old panel art had a hardcoded-position guard for HintLabel that
-## pinned it against superseded geometry. That test went away with the art,
-## leaving the hint unguarded. This replaces it by asserting the semantic
-## relationships that survive re-tuning: the hint sits below the new themed
-## panel and stays within the screen.
-func test_hint_label_sits_below_dialogue_box_within_screen() -> void:
+## The 2026-09-30 VN pass dropped the "Ketuk untuk melanjutkan" caption for a
+## visual-novel advance chevron and a "Catatan Guru" name plate. The chevron
+## carries the advance cue (breathed by _pulse_chevron()) and must not swallow
+## the tap; the name plate is the speaker label. Both live inside the box.
+func test_name_plate_and_advance_chevron_replace_the_caption() -> void:
 	var box := _scene.find_child("DialogueBox", true, false) as Control
-	var hint := _scene.find_child("HintLabel", true, false) as Control
-	assert_true(box != null and hint != null,
-		"both DialogueBox and HintLabel must exist")
-	assert_true(hint.offset_top >= box.offset_bottom,
-		"HintLabel must start below DialogueBox, got hint top %f vs box bottom %f" % [hint.offset_top, box.offset_bottom])
-	assert_true(hint.offset_bottom <= 1920.0,
-		"HintLabel must stay within the 1920-tall screen, got bottom %f" % hint.offset_bottom)
+	assert_true(box != null, "DialogueBox must exist")
+	assert_true(_scene.find_child("HintLabel", true, false) == null,
+		"the old text caption is gone -- the chevron carries the advance cue")
+	var tab := box.get_node_or_null("NameTab") as Label
+	assert_true(tab != null, "the Catatan Guru name plate must exist")
+	assert_eq(tab.text, "Catatan Guru", "the name plate names the speaker")
+	assert_eq(tab.theme_type_variation, &"CutsceneNoteTab",
+		"the name plate takes its chrome from the theme")
+	var chev := box.get_node_or_null("Chevron") as Control
+	assert_true(chev != null, "the advance chevron must exist")
+	assert_eq(chev.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"the chevron must not intercept the advance tap")
 
 
 ## Both were authored as hardcoded rects that miss 1080x1920 -- the CG

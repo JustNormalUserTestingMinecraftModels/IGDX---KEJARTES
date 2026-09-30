@@ -435,6 +435,8 @@ const DISPLAY_ROSTER := [
 	# 2026-09-28 koperasi-top-band-promo Task 4 fix round 1: the price tag's
 	# struck list price, same face and outline approach as PriceTagLabel.
 	"PromoOldPriceLabel",
+	# 2026-09-30 intro VN pass: the "Catatan Guru" name plate on the note.
+	"CutsceneNoteTab",
 ]
 
 

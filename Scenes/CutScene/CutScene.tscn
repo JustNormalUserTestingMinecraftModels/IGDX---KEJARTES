@@ -2,9 +2,11 @@
 
 [ext_resource type="Script" uid="uid://24smcyuyiq8j" path="res://Scripts/CutScene/CutScene.gd" id="1_88s7j"]
 [ext_resource type="Texture2D" uid="uid://cfe2yal5hh4dl" path="res://Assets/Images/UI/BG.jpg" id="2_w1y33"]
-[ext_resource type="Script" uid="uid://bqpiy0bobcloa" path="res://Scripts/CutScene/HintLabel.gd" id="3_hint_lbl"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
+[ext_resource type="Texture2D" uid="uid://b0lfedr5g2w8d" path="res://Assets/Images/CutScene/note_rule.svg" id="5_5fgpu"]
+[ext_resource type="Texture2D" uid="uid://nlr4jlv30knd" path="res://Assets/Images/CutScene/note_spiral.svg" id="6_ads1x"]
+[ext_resource type="Texture2D" uid="uid://5ncwuw4egus" path="res://Assets/Images/CutScene/note_chevron.svg" id="7_5fgpu"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="amb_particles"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
 
 [node name="CutScene" type="Control" unique_id=1283265698]
 layout_mode = 3
@@ -15,6 +17,13 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_88s7j")
 
+[node name="Backdrop" type="ColorRect" parent="." unique_id=557145918]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.18039216, 0.12941177, 0.09411765, 1)
+
 [node name="BgCutScene" type="TextureRect" parent="." unique_id=599505676]
 layout_mode = 0
 anchor_right = 1.0
@@ -22,15 +31,25 @@ anchor_bottom = 1.0
 texture = ExtResource("2_w1y33")
 stretch_mode = 6
 
-[node name="Sun" parent="BgCutScene" instance=ExtResource("amb_pool")]
+[node name="Sun" parent="BgCutScene" unique_id=1135639279 instance=ExtResource("amb_pool")]
+anchors_preset = 0
 center = Vector2(0.8, 0.08)
 pool_size = Vector2(1100, 1100)
 intensity = 0.06
 
-[node name="Sparkles" parent="BgCutScene" instance=ExtResource("amb_particles")]
+[node name="Sparkles" parent="BgCutScene" unique_id=549535552 instance=ExtResource("amb_particles")]
+anchors_preset = 0
 preset = 1
 density = 0.6
 drift = Vector2(1, -0.2)
+
+[node name="CgOverlay" type="TextureRect" parent="." unique_id=827945534]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+stretch_mode = 6
 
 [node name="DialogueBox" type="Panel" parent="." unique_id=1079685626]
 layout_mode = 0
@@ -39,7 +58,20 @@ offset_top = 1340.0
 offset_right = 1036.0
 offset_bottom = 1660.0
 mouse_filter = 2
-theme_type_variation = &"Card"
+theme_type_variation = &"CutsceneNotePanel"
+
+[node name="RuleBg" type="TextureRect" parent="DialogueBox" unique_id=254940542]
+texture_repeat = 2
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 40.0
+offset_top = 46.0
+offset_right = -30.0
+offset_bottom = -22.0
+mouse_filter = 2
+texture = ExtResource("5_5fgpu")
+stretch_mode = 1
 
 [node name="DialogueLabel" type="RichTextLabel" parent="DialogueBox" unique_id=1999021895]
 layout_mode = 0
@@ -50,20 +82,47 @@ offset_bottom = 276.0
 theme_type_variation = &"CutsceneDialogue"
 bbcode_enabled = true
 
+[node name="SpiralStrip" type="TextureRect" parent="DialogueBox" unique_id=1779320769]
+texture_repeat = 2
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 260.0
+offset_top = -8.0
+offset_right = -16.0
+offset_bottom = 28.0
+mouse_filter = 2
+texture = ExtResource("6_ads1x")
+stretch_mode = 1
+
+[node name="NameTab" type="Label" parent="DialogueBox" unique_id=1254523568]
+layout_mode = 0
+offset_left = 24.0
+offset_top = -46.0
+offset_right = 238.0
+offset_bottom = -2.0
+theme_type_variation = &"CutsceneNoteTab"
+text = "Catatan Guru"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Chevron" type="TextureRect" parent="DialogueBox" unique_id=1727086286]
+layout_mode = 0
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -74.0
+offset_top = -72.0
+offset_right = -30.0
+offset_bottom = -30.0
+mouse_filter = 2
+texture = ExtResource("7_5fgpu")
+expand_mode = 1
+stretch_mode = 5
+
 [node name="FadeOverlay" type="ColorRect" parent="." unique_id=469784982]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 color = Color(0, 0, 0, 0)
-
-[node name="HintLabel" type="Label" parent="." unique_id=910481723]
-layout_mode = 0
-offset_left = 110.0
-offset_top = 1700.0
-offset_right = 967.0
-offset_bottom = 1760.0
-theme_type_variation = &"CaptionLabel"
-text = "Ketuk untuk melanjutkan"
-horizontal_alignment = 1
-script = ExtResource("3_hint_lbl")

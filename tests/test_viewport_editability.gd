@@ -64,7 +64,7 @@ const EXEMPT: Array[String] = [
 ## docs/superpowers/design/authoring-guide.md for what each one needs.
 const BASELINE: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 17,
-	"res://Scripts/CutScene/CutScene.gd": 4,
+	"res://Scripts/CutScene/CutScene.gd": 3,
 	"res://Scripts/Koperasi/KoperasiStage.gd": 1,
 	"res://Scripts/Lobby/Lobby.gd": 8,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 0,

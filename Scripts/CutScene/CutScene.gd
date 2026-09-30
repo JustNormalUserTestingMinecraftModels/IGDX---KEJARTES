@@ -27,9 +27,20 @@ extends Control
 
 @onready var dialogue_label: RichTextLabel = $DialogueBox/DialogueLabel
 @onready var dialogue_box: Control = $DialogueBox
+## The dark tone the intro fades up from and, if a CG ever went transparent,
+## would show behind it -- the theme's warm overlay ink, not a placeholder
+## image. Set from the token in _ready so it tracks the design system.
+@onready var backdrop: ColorRect = $Backdrop
 @onready var bg_cutscene: TextureRect = $BgCutScene
+## The incoming CG for a cross-dissolve: it fades in over BgCutScene so the
+## swap never dips to the bare Backdrop (which itself sits behind BgCutScene
+## so the entrance reveal is the academy backdrop, never the gray window).
+@onready var cg_overlay: TextureRect = $CgOverlay
 @onready var fade_overlay: ColorRect = $FadeOverlay
-@onready var hint_label: Label = $HintLabel
+## The advance chevron in the note's bottom-right corner; _pulse_chevron()
+## breathes it so the player reads the box as waiting on a tap (2026-09-30 VN
+## pass, replacing the old "Ketuk untuk melanjutkan" caption).
+@onready var chevron: TextureRect = $DialogueBox/Chevron
 @onready var _tokens: DesignTokens = DesignTokens.load_default()
 
 ## Typewriter speed, tunable in the inspector without touching code.
@@ -46,15 +57,15 @@ var cg_data = [
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg2.jpg"),
-		"text": "Formulir pengajuan yang diterima dan ditandatangani resmi dari guru yang akan menjadi karakter kita ini"
+		"text": "Surat penerimaannya sudah ditandatangani dan resmi. Namaku benar-benar tercantum sebagai guru di sini."
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg3.jpg"),
-		"text": "Karakter kita ini senang atau bangga besar."
+		"text": "Rasanya seperti mimpi. Semua kerja kerasku selama ini akhirnya terbayar!"
 	},
 	{
 		"image": preload("res://Assets/Images/CG/cg4.jpg"),
-		"text": "Lokasi halaman depan Akademi, yang akan menjadi latar kita nanti untuk mengajar."
+		"text": "Dan inilah Akademi tempatku mengabdi mulai sekarang. Megah sekali... Baiklah, saatnya mulai bekerja!"
 	}
 ]
 
@@ -74,12 +85,14 @@ var _exiting := false
 
 func _ready():
 	fade_overlay.color.a = 0.0
+	backdrop.color = _tokens.surface_overlay
 	_setup_top_bar_buttons()
 
 	if Engine.is_editor_hint():
 		return
 
 	_update_debug_button_text()
+	_pulse_chevron()
 
 	# With the picker on, the grade was chosen on the Level Select already.
 	if not GameState.is_level_select_enabled():
@@ -93,24 +106,11 @@ func _setup_top_bar_buttons() -> void:
 	top_bar.size = Vector2(1020, _tokens.touch_target_min + 20)
 	add_child(top_bar)
 
-	# Debug level select toggle button. Text is a static placeholder here
-	# -- reading GameState.debug_level_select_enabled happens later, in
-	# _update_debug_button_text(), which only runs at real runtime (see
-	# the Engine.is_editor_hint() guard in _ready()).
-	btn_debug_toggle = Button.new()
-	btn_debug_toggle.theme_type_variation = &"SecondaryButton"
-	btn_debug_toggle.text = "🐛 Debug Level Select"
-	btn_debug_toggle.custom_minimum_size = Vector2(420, _tokens.touch_target_min)
-	# _update_debug_button_text() swaps this in for a longer runtime string
-	# ("...: ON (Pilih Kelas)"). Without clip_text, a Button's minimum size
-	# grows to fit whatever text it currently holds, so that longer string
-	# pushed this button past 420px wide, widening the whole top_bar HBox
-	# past the 1080px screen and shoving Skip Intro off the right edge
-	# entirely -- clip_text pins it back to custom_minimum_size and
-	# ellipsizes instead.
-	btn_debug_toggle.clip_text = true
-	btn_debug_toggle.pressed.connect(_on_debug_toggle_pressed)
-	top_bar.add_child(btn_debug_toggle)
+	# The "Debug Level Select" toggle is gone from the player-facing intro
+	# (2026-09-30): it was developer chrome, and devs still reach the grade
+	# picker from the Debug overlay's Scenes tab ("Pilih Kelas (LevelSelect)").
+	# btn_debug_toggle stays null; _update_debug_button_text() and
+	# _on_debug_toggle_pressed() are null-guarded / unwired accordingly.
 
 	var spacer = Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -121,16 +121,19 @@ func _setup_top_bar_buttons() -> void:
 	# Skipping a cutscene discards nothing, so it is a quiet opt-out rather
 	# than a warning. It wore DangerButton until the 2026-09-10 pass.
 	btn_skip.theme_type_variation = &"SecondaryButton"
-	btn_skip.text = "Skip Intro"
-	btn_skip.custom_minimum_size = Vector2(260, _tokens.touch_target_min)
-	btn_skip.clip_text = true
+	# Lean and mobile-friendly: a short Indonesian label in a compact pill,
+	# tucked top-right, rather than the wide "Skip Intro" (2026-09-30).
+	btn_skip.text = "Lewati"
+	# No clip_text: with the debug toggle gone the HBox can't overflow, so the
+	# pill simply sizes to the word (min width keeps a comfortable tap target).
+	btn_skip.custom_minimum_size = Vector2(200, _tokens.touch_target_min)
 	btn_skip.pressed.connect(_on_skip_pressed)
 	top_bar.add_child(btn_skip)
 
 func _update_debug_button_text() -> void:
 	if btn_debug_toggle:
 		var mode_str = "ON (Pilih Kelas)" if GameState.debug_level_select_enabled else "OFF (Normal)"
-		btn_debug_toggle.text = "🐛 Debug Level Select: " + mode_str
+		btn_debug_toggle.text = "Debug Level Select: " + mode_str
 
 ## Switched on, the toggle goes back to the Level Select to pick a grade
 ## before the intro, as the old in-scene modal used to pop up.
@@ -180,6 +183,11 @@ func _on_skip_pressed() -> void:
 ## beat of a reveal sequence (fresh game, after grade select, or the
 ## loss-retry cutscene), and it should read as a breath before the
 ## scene commits to its opening image, not a routine page-turn.
+## The advance chevron's breathing pulse: its dimmest alpha and the seconds
+## each half of the loop takes.
+const _CHEVRON_PULSE_MIN_ALPHA := 0.35
+const _CHEVRON_PULSE_SEC := 0.6
+
 const _ENTRANCE_HOLD_SEC := 0.4
 const _ENTRANCE_FADE_SEC := 1.0
 
@@ -207,6 +215,19 @@ func _reveal(text: String) -> void:
 	var tw := dialogue_label.create_tween()
 	tw.tween_property(dialogue_label, "visible_ratio", 1.0, duration)
 	_reveal_tween = tw
+
+## Gently breathes the advance chevron (runtime only, a looping tween) so the
+## note reads as waiting on a tap now that the "Ketuk untuk melanjutkan" caption
+## is gone (2026-09-30 VN pass).
+func _pulse_chevron() -> void:
+	if not is_instance_valid(chevron):
+		return
+	var tween := create_tween().set_loops()
+	tween.tween_property(chevron, "modulate:a", _CHEVRON_PULSE_MIN_ALPHA,
+		_CHEVRON_PULSE_SEC).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(chevron, "modulate:a", 1.0,
+		_CHEVRON_PULSE_SEC).set_trans(Tween.TRANS_SINE)
+
 
 func _input(event):
 	if is_transitioning:
@@ -240,21 +261,25 @@ func advance():
 	else:
 		transition_to_next()
 
-## Cross-fades the CG image instead of hard-cutting it: fade BgCutScene
-## out, swap the texture, fade it back in.
+## True cross-dissolve between CGs: the incoming image fades in on CgOverlay
+## while the current one holds on BgCutScene, then becomes the base layer.
+## The old code faded BgCutScene down to alpha 0 and back with nothing behind
+## it, so every advance dipped through the bare backdrop; this never does.
 func transition_to_next():
 	is_transitioning = true
 
-	var tween_out = create_tween()
-	tween_out.tween_property(bg_cutscene, "modulate:a", 0.0, _tokens.dur_normal)
-	await tween_out.finished
-
-	bg_cutscene.texture = cg_data[cg_index]["image"]
+	cg_overlay.texture = cg_data[cg_index]["image"]
+	cg_overlay.modulate.a = 0.0
 	_reveal(cg_data[cg_index]["text"])
 
 	var tween_in = create_tween()
-	tween_in.tween_property(bg_cutscene, "modulate:a", 1.0, _tokens.dur_normal)
+	tween_in.tween_property(cg_overlay, "modulate:a", 1.0, _tokens.dur_normal)
 	await tween_in.finished
+
+	# Promote the overlay to the base layer and clear it for next time. The
+	# base swap and the overlay clear happen together, so no frame shows a gap.
+	bg_cutscene.texture = cg_overlay.texture
+	cg_overlay.modulate.a = 0.0
 
 	is_transitioning = false
 

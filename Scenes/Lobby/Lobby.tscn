@@ -239,8 +239,9 @@ grow_vertical = 2
 [node name="Slot1" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back" unique_id=1634846153]
 anchors_preset = 0
 offset_left = 50.0
+offset_top = 62.045
 offset_right = 450.0
-offset_bottom = 450.0
+offset_bottom = 512.045
 
 [node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Back/Slot1" unique_id=1112210571]
 layout_mode = 1
@@ -269,8 +270,9 @@ mouse_filter = 2
 [node name="Slot2" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back" unique_id=414336718]
 anchors_preset = 0
 offset_left = 620.0
+offset_top = 62.0
 offset_right = 1020.0
-offset_bottom = 450.0
+offset_bottom = 512.0
 
 [node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Back/Slot2" unique_id=1454500660]
 layout_mode = 1
@@ -309,9 +311,9 @@ mouse_filter = 2
 [node name="Slot1" type="Control" parent="World/Classroom/StudentHandsContainer_Back" unique_id=1309285055]
 anchors_preset = 0
 offset_left = 84.0
-offset_top = -88.0
+offset_top = -25.955
 offset_right = 484.0
-offset_bottom = 362.0
+offset_bottom = 424.045
 
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1069990093]
 layout_mode = 1
@@ -430,9 +432,9 @@ stretch_mode = 3
 [node name="Slot2" type="Control" parent="World/Classroom/StudentHandsContainer_Back" unique_id=616363659]
 anchors_preset = 0
 offset_left = 625.0
-offset_top = -85.0
+offset_top = -23.0
 offset_right = 1025.0
-offset_bottom = 365.0
+offset_bottom = 427.0
 
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=397972223]
 layout_mode = 1
@@ -606,9 +608,9 @@ grow_vertical = 2
 [node name="Slot3" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front" unique_id=858493737]
 anchors_preset = 0
 offset_left = 50.0
-offset_top = 370.0
+offset_top = 453.0
 offset_right = 450.0
-offset_bottom = 820.0
+offset_bottom = 903.0
 
 [node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Front/Slot3" unique_id=1600612014]
 layout_mode = 1
@@ -637,9 +639,9 @@ mouse_filter = 2
 [node name="Slot4" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front" unique_id=85502973]
 anchors_preset = 0
 offset_left = 620.0
-offset_top = 370.0
+offset_top = 453.0
 offset_right = 1020.0
-offset_bottom = 820.0
+offset_bottom = 903.0
 
 [node name="Portrait" type="TextureRect" parent="World/Classroom/StudentPortraitsContainer_Front/Slot4" unique_id=1101838453]
 layout_mode = 1
@@ -678,9 +680,9 @@ mouse_filter = 2
 [node name="Slot3" type="Control" parent="World/Classroom/StudentHandsContainer_Front" unique_id=1517080695]
 anchors_preset = 0
 offset_left = 45.0
-offset_top = 370.0
+offset_top = 453.0
 offset_right = 445.0
-offset_bottom = 820.0
+offset_bottom = 903.0
 
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1515879549]
 layout_mode = 1
@@ -799,9 +801,9 @@ stretch_mode = 3
 [node name="Slot4" type="Control" parent="World/Classroom/StudentHandsContainer_Front" unique_id=1684173298]
 anchors_preset = 0
 offset_left = 620.0
-offset_top = 370.0
+offset_top = 453.0
 offset_right = 1020.0
-offset_bottom = 820.0
+offset_bottom = 903.0
 
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1794435452]
 layout_mode = 1

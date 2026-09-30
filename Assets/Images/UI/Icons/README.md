@@ -31,6 +31,7 @@ Checked 2026-09-29 (UI depth pass, Phase 3). A new caller adds its row.
 | `chevron_left.svg` | Previous page | the `Arrow` child of LevelSelect's `PrevArrow`, StudentCard's `NextButtonKiri`, StudentList's `LeftArrow`, ReportCard's `NextButtonKiri` | `test_paging_arrows` |
 | `chevron_right.svg` | Next page | the `Arrow` child of LevelSelect's `NextArrow`, StudentCard's `NextButtonKanan`, StudentList's `RightArrow`, ReportCard's `NextButtonKanan` | `test_paging_arrows` |
 | `exit.png` (owner art) | Quit the game | MainMenu's `QuitButton` | `test_main_menu` |
+| `school.svg` | The school (the headmaster's name plate) | `TutorialPanel`'s `NamePlate/Row/Icon` | `test_ui_icons`, `test_tutorial_panel` |
 | `close.svg` | Close a popup | `NotebookFrame`'s `Chrome/Close` | — |
 | `cat_istirahat.svg` | Istirahat (rest) | `RosterCard.SPECIALTY_ICONS`, `StudentList.CATEGORY_ICONS`, `DayStickyNote.category_icons` | `test_category_icons`, `test_student_list` |
 | `cat_wirausaha.svg` | Wirausaha (earning) | the same three maps, and Dapatkan Uang's `TipIcon` | `test_category_icons`, `test_student_list` |

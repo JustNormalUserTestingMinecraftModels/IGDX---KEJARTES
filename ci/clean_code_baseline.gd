@@ -16,9 +16,7 @@ extends RefCounted
 
 ## Functions over 50 code lines: "path::function" -> code lines.
 const LONG_FUNCTIONS: Dictionary = {
-	"res://Scripts/AturJadwal/AturJadwal.gd::_build_tutorial_panel": 62,
 	"res://Scripts/AturJadwal/AturJadwal.gd::_show_holiday_warning": 75,
-	"res://Scripts/AturJadwal/AturJadwal.gd::_show_step": 59,
 	"res://Scripts/AturJadwal/AturJadwal.gd::_update_student_display": 64,
 	"res://Scripts/Debug/DebugManager.gd::_build_achievements_panel": 95,
 	"res://Scripts/Debug/DebugManager.gd::_build_general_panel": 240,
@@ -26,8 +24,6 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Debug/DebugManager.gd::_build_scenes_panel": 76,
 	"res://Scripts/Debug/DebugManager.gd::_build_ui": 96,
 	"res://Scripts/Debug/DebugManager.gd::_rebuild_student_stat_editor": 125,
-	"res://Scripts/Lobby/Lobby.gd::_ready": 64,
-	"res://Scripts/Lobby/Lobby.gd::_show_step": 56,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::_instantiate_cards": 64,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::reveal_answers": 60,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::setup_game": 55,
@@ -50,19 +46,16 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_jadwal_activity": 60,
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_minigame_result": 68,
 	"res://Scripts/SchoolSimulation/StudentManager.gd::apply_daily_decay_all": 85,
-	"res://Scripts/StudentCard/StudentCard.gd::_highlight_multiple": 54,
-	"res://Scripts/StudentCard/StudentCard.gd::_populate_default_tutorial_steps": 52,
-	"res://Scripts/StudentCard/StudentCard.gd::_ready": 74,
-	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 60,
+	"res://Scripts/StudentCard/StudentCard.gd::_ready": 71,
+	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 58,
 	"res://Scripts/StudentCard/StudentCard.gd::_transition_page": 61,
 	"res://Scripts/StudentList/StudentList.gd::_setup_students": 55,
-	"res://Scripts/StudentList/StudentList.gd::_show_step": 53,
 }
 
 ## Untyped vars, signatures without ->, untyped parameters, per script.
 const UNTYPED: Dictionary = {
 	"res://Scripts/AnimUtils.gd": 27,
-	"res://Scripts/AturJadwal/AturJadwal.gd": 193,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 150,
 	"res://Scripts/CutScene/CutScene.gd": 12,
 	"res://Scripts/CutScene/HintLabel.gd": 3,
 	"res://Scripts/Debug/DebugManager.gd": 167,
@@ -75,7 +68,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/Koperasi/Koperasi.gd": 9,
 	"res://Scripts/Koperasi/KoperasiStage.gd": 30,
 	"res://Scripts/LevelSelect/AmplopCard.gd": 1,
-	"res://Scripts/Lobby/Lobby.gd": 102,
+	"res://Scripts/Lobby/Lobby.gd": 68,
 	"res://Scripts/Lobby/StudentChatterPicker.gd": 2,
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd": 68,
 	"res://Scripts/Minigames/Akademis/Password.gd": 10,
@@ -96,12 +89,11 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 36,
 	"res://Scripts/SchoolSimulation/StudentData.gd": 8,
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 38,
-	"res://Scripts/StudentCard/StudentCard.gd": 144,
+	"res://Scripts/StudentCard/StudentCard.gd": 128,
 	"res://Scripts/StudentCard/StudentCardView.gd": 13,
-	"res://Scripts/StudentList/StudentList.gd": 92,
+	"res://Scripts/StudentList/StudentList.gd": 59,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 17,
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 7,
-	"res://Scripts/TutorialArrow.gd": 4,
 }
 
 ## Bare numeric literals in function bodies, per script.
@@ -110,7 +102,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Achievements/AchievementsScreen.gd": 1,
 	"res://Scripts/AnimUtils.gd": 126,
 	"res://Scripts/AturJadwal/ActivityPreview.gd": 6,
-	"res://Scripts/AturJadwal/AturJadwal.gd": 90,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 78,
 	"res://Scripts/AturJadwal/DayStickyNote.gd": 10,
 	"res://Scripts/AturJadwal/ObjectiveHint.gd": 4,
 	"res://Scripts/AturJadwal/SpecialtyMatchBurst.gd": 1,
@@ -147,7 +139,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Koperasi/ShelfItem.gd": 5,
 	"res://Scripts/Koperasi/TraySlot.gd": 2,
 	"res://Scripts/LevelSelect/LevelSelect.gd": 2,
-	"res://Scripts/Lobby/Lobby.gd": 43,
+	"res://Scripts/Lobby/Lobby.gd": 32,
 	"res://Scripts/Lobby/LobbyChatter.gd": 2,
 	"res://Scripts/Lobby/StudentChatBubble.gd": 2,
 	"res://Scripts/Lobby/StudentChatterCatalog.gd": 2,
@@ -190,13 +182,12 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Skins/SkinCard.gd": 1,
 	"res://Scripts/Skins/SkinSelect.gd": 1,
 	"res://Scripts/Splashscreen/Splashscreen.gd": 1,
-	"res://Scripts/StudentCard/StudentCard.gd": 140,
+	"res://Scripts/StudentCard/StudentCard.gd": 132,
 	"res://Scripts/StudentCard/StudentCardView.gd": 37,
-	"res://Scripts/StudentList/StudentList.gd": 37,
+	"res://Scripts/StudentList/StudentList.gd": 26,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 28,
 	"res://Scripts/TouchFeedback/TouchFeedbackManager.gd": 2,
 	"res://Scripts/Transition/Transition.gd": 7,
-	"res://Scripts/TutorialArrow.gd": 7,
 	"res://Scripts/UI/StatBar.gd": 1,
 }
 
@@ -219,17 +210,16 @@ const DUPLICATE_GROUPS: Array[String] = [
 	"res://Scripts/ReportCard/ReportCard.gd::_show_bar_popup | res://Scripts/StudentCard/StudentCard.gd::_show_bar_popup",
 	"res://Scripts/ReportCard/ReportCard.gd::_stagger_in_card | res://Scripts/StudentCard/StudentCard.gd::_stagger_in_card",
 	"res://Scripts/SchoolSimulation/DailyDecayOverview.gd::_on_scroll_gui_input | res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd::_on_scroll_gui_input | res://Scripts/SchoolSimulation/ResultCheckup.gd::_on_scroll_gui_input",
-	"res://Scripts/StudentCard/StudentCard.gd::_next_step | res://Scripts/StudentList/StudentList.gd::_next_step",
 	"res://Scripts/UI/StatDetailPopup.gd::close | res://Scripts/UI/TraitDetailPopup.gd::close",
 	"res://Scripts/UI/StatDetailPopup.gd::open | res://Scripts/UI/TraitDetailPopup.gd::open",
 ]
 
 ## Scripts over 1,000 lines -> their line count.
 const LARGE_SCRIPTS: Dictionary = {
-	"res://Scripts/AturJadwal/AturJadwal.gd": 1576,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 1468,
 	"res://Scripts/Debug/DebugManager.gd": 1745,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1637,
-	"res://Scripts/StudentCard/StudentCard.gd": 1451,
+	"res://Scripts/StudentCard/StudentCard.gd": 1444,
 }
 
 ## Must reach zero: .gd/.tscn names that are not PascalCase.

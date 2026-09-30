@@ -1,0 +1,20 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/TutorialArrow.gd" id="1_arrow"]
+[ext_resource type="Texture2D" path="res://Assets/Images/UI/Placeholders/arrow.png" id="2_arrow"]
+
+[node name="TutorialArrow" type="Control"]
+mouse_filter = 2
+script = ExtResource("1_arrow")
+
+[node name="Visual" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -90.0
+offset_top = -180.0
+offset_right = 90.0
+offset_bottom = 0.0
+pivot_offset = Vector2(90, 180)
+mouse_filter = 2
+texture = ExtResource("2_arrow")
+expand_mode = 1
+stretch_mode = 5

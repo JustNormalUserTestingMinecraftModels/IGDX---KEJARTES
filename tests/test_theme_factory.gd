@@ -437,6 +437,9 @@ const DISPLAY_ROSTER := [
 	"PromoOldPriceLabel",
 	# 2026-09-30 intro VN pass: the "Catatan Guru" name plate on the note.
 	"CutsceneNoteTab",
+	# 2026-10-01 tutorial unification: the coach-mark's step pill and the
+	# headmaster beat's name plate.
+	"TutorialStepPillLabel", "TutorialNamePlateLabel",
 ]
 
 
@@ -765,3 +768,51 @@ func test_student_list_week_tally_dots_are_mint_filled_and_ringed_empty() -> voi
 			"an unscheduled dot is ringed in ink that reads on the kraft band")
 		assert_gt(empty.border_width_top, 0, "the ring must actually be visible")
 		assert_eq(empty.corner_radius_top_left, _tokens.radius_pill, "the dot is fully round")
+
+
+## The coach-mark's head badge (2026-10-01 tutorial unification): the step
+## pill and the headmaster's name plate are two mint pills, filled from the
+## tokens rather than a colour of their own, with a display-face label that
+## reads cream on the mint.
+func test_tutorial_badges_are_mint_pills_from_the_tokens() -> void:
+	for box_name: String in ["TutorialStepPill", "TutorialNamePlate"]:
+		assert_true(_theme.get_type_list().has(box_name), box_name + " is declared")
+		assert_eq(_theme.get_type_variation_base(box_name), &"PanelContainer",
+			box_name + " varies PanelContainer, so a Label can sit inside it")
+		var box := _theme.get_stylebox("panel", box_name) as StyleBoxFlat
+		assert_true(box != null, box_name + " has a flat panel")
+		if box == null:
+			continue
+		assert_eq(box.bg_color, _tokens.state_success, box_name + " is the success mint")
+		assert_eq(box.corner_radius_top_left, _tokens.radius_pill, box_name + " is a pill")
+	for label_name: String in ["TutorialStepPillLabel", "TutorialNamePlateLabel"]:
+		assert_true(_theme.get_type_list().has(label_name), label_name + " is declared")
+		assert_eq(_theme.get_type_variation_base(label_name), &"Label")
+		assert_eq(_theme.get_color("font_color", label_name), _tokens.text_on_brand,
+			label_name + " reads cream on the mint")
+		assert_eq(_theme.get_font_size("font_size", label_name), _tokens.font_body_size)
+
+
+## The name plate is the pill with a darker rim, so it reads as a plate and
+## the step pill does not.
+func test_the_name_plate_wears_a_rim_and_the_step_pill_does_not() -> void:
+	var pill := _theme.get_stylebox("panel", "TutorialStepPill") as StyleBoxFlat
+	var plate := _theme.get_stylebox("panel", "TutorialNamePlate") as StyleBoxFlat
+	assert_true(pill != null and plate != null, "both badges are flat panels")
+	if pill == null or plate == null:
+		return
+	assert_eq(pill.border_width_top, 0, "the step pill is flat")
+	assert_gt(plate.border_width_top, 0, "the name plate has a rim")
+	assert_true(plate.border_color.get_luminance() < plate.bg_color.get_luminance(),
+		"and the rim is darker than the mint")
+
+
+## Colour comes from the tokens, not from a literal in the factory.
+func test_changing_the_success_token_changes_the_tutorial_badges() -> void:
+	var custom := DesignTokens.new()
+	custom.state_success = Color("ff0000")
+	var built := ThemeFactory.build(custom)
+	for box_name: String in ["TutorialStepPill", "TutorialNamePlate"]:
+		var box := built.get_stylebox("panel", box_name) as StyleBoxFlat
+		assert_eq(box.bg_color, Color("ff0000"),
+			box_name + " must follow state_success, not a hardcoded mint")

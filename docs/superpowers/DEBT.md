@@ -173,6 +173,13 @@ how-to step pictures `howto_tap`, `howto_swipe`, `howto_drag`, `howto_read`,
 `Assets/Images/UI/Icons/README.md`'s rules; `tests/test_minigame_layout_kit.gd`
 checks only that each file exists.
 
+**Tutorial name-plate glyph (2026-10-01).** `Assets/Images/UI/Icons/school.svg`
+is a hand-written placeholder (256x256, light fill and dark outline, per that
+folder's README), drop-replaceable by the owner's school icon at the same
+path with no code change. `TutorialPanel`'s `NamePlate/Row/Icon` shows it at
+40x40 beside the speaker's name; `test_ui_icons` and `test_tutorial_panel`
+pin it.
+
 **MURIDMU RosterCard week planner (2026-09-29, Task 1 groundwork).** Four
 hand-written SVGs in `Assets/Images/UI/StudentList/`, drop-replaceable at the
 same paths, wired into `RosterCard.tscn` as of Task 3 (`Paper/WeekHeader/Band`,
@@ -544,6 +551,40 @@ widget via `project_run` instead, which exercises it fine.
 
 ## Deferred and pending
 
+- **Tutorial follow-ons (2026-10-01).** Spec
+  `specs/2026-09-30-tutorial-unify-and-headmaster-beat-design.md`, plan
+  `plans/2026-10-01-tutorial-unify-adapted.md`; the pass is in the changelog.
+  - **StudentCard still places its card with viewport math** (40 px above the
+    bottom, the arrow's bounds the whole overlay). Route it through
+    `TutorialPanel.place_step` with its Safe/UI, as AturJadwal, StudentList
+    and the Lobby do.
+  - **The four screens keep hand-rolled 0.8 to 1 step tweens** (exit and
+    entrance) instead of the panel's `play_out` / `play_in`.
+  - **A direct Level Select pick of Kelas 8 or 9 plays the promotion beat**,
+    though nobody was promoted. The owner's call; the gate, if wanted, is
+    `not GameState.approved_students.is_empty()`.
+  - **StudentCard's page arrows stay hidden when tutorials are bypassed**
+    (debug-only): `_show_page` runs while `tutorial_active` is still true. The
+    fix is one `_end_tutorial()` in the bypass branch.
+  - **`StudentCard.gd` sits at its 1444-line ceiling** (`LARGE_SCRIPTS`): the
+    next change there moves something out first.
+  - **Tutorial copy still carries English and non-standard words**:
+    AturJadwal's "Perubahan Stats & Energy" card ("stats", "Energy") and its
+    alt step's "terfokuskan ... apa yang ketertinggalan"; StudentCard's
+    "gameplay", "badge", "pop-up" and "Approve"; the Lobby's "Inventory" and
+    'Student', which name those buttons' own captions (a `test_lobby` pin
+    keeps each step's words on its button). The voice is one "kamu" now,
+    pinned by `test_tutorial_panel`.
+  - **Three step-target resolvers** (AturJadwal and Lobby
+    `_resolve_step_targets`, StudentList `_targets_for_step`) split
+    `target_node_path` the same way with per-screen lookups; one
+    `TutorialPanel` helper could hold it, with the step tweens above.
+  - **The promotion beat's card runs 1045 px wide, edge to edge** (the other
+    screens' is 994): `TitleLabel` (`H1Label`) does not wrap, and "Selamat,
+    naik ke Kelas 8!" sets the card's minimum width. Wrapping it strands "8!"
+    on its own line; a shorter title in `HeadmasterBeat.HEADMASTER_BEATS`
+    (the collaborator's copy) is the clean fix.
+
 - **Texture memory follow-ons (2026-09-30).** Rule and numbers:
   `tests/test_texture_memory.gd`.
   - **Not checked on a phone.** The compressed art was judged on desktop
@@ -647,17 +688,12 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     deleting them means trimming both (the generator's third output,
     `icon_libur_nasional_placeholder.png`, is still the holiday icon).
   - Keep `UI/Nav/return_button.png` (every Back) and
-    `UI/Placeholders/arrow.png` (`TutorialArrow.gd`, `test_texture_mipmaps`).
+    `UI/Placeholders/arrow.png` (`Scenes/UI/TutorialArrow.tscn`,
+    `test_texture_mipmaps`).
 - **`setting.png` has no `Icons/` counterpart yet.** MainMenu's
   `SettingButton` and the Lobby rail's gear still wear
   `Assets/Images/UI/setting.png`; the rail's four icons were left as finished
   art on purpose, so a gear in the chunky set is the owner's call.
-- **Three screens still build their tutorial panel at runtime**, not from
-  `Scenes/UI/TutorialPanel.tscn`, so Phase 2 did not move them into the
-  frame: `Scripts/AturJadwal/AturJadwal.gd`, `Scripts/Lobby/Lobby.gd` and
-  `Scripts/StudentList/StudentList.gd` each build their own
-  `_tutorial_panel: PanelContainer` in code (a follow-up; Phase 3 did not
-  take it).
 - **Review minors, deferred:**
   - Nothing pins `NotebookFrame`'s Chrome/Close control to a 96px touch
     target (a geometry test would catch a future regression). (Phase 2)

@@ -535,3 +535,313 @@ func test_opening_the_daily_reward_refreshes_for_today() -> void:
 	var refresh_at: int = body.find("daily_reward.refresh(Time.get_date_string_from_system())")
 	assert_true(refresh_at >= 0, "opening refreshes the panel with today's date")
 	assert_true(refresh_at < body.find("daily_reward.open()"), "and does so before open()")
+
+
+# ------------------------------------------- the tutorial on the shared panel
+#
+# 2026-10-01 tutorial unification. The Lobby built a fifth runtime copy of the
+# coach-mark (a PanelContainer, three Labels, two separators, "(n/N)" titles)
+# and clamped its arrow with a hard-coded 320px picture. It is now
+# TutorialPanel.tscn, mounted into the overlay and seated inside the HUD's
+# Safe/UI. The overlay either takes the tap to advance or, at the last step of
+# a phase, lets it through to the real button -- and to every other HUD button,
+# which then answers it as a wrong tap (_tutorial_refuses).
+
+## The source of one function, from its `func` line to the next.
+func _function_body(name: String) -> String:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	return src.get_slice("func %s(" % name, 1).get_slice("\nfunc ", 0)
+
+
+func test_the_tutorial_card_is_the_shared_panel_not_a_runtime_build() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_body("_build_tutorial_panel").contains(
+			"TutorialPanel.mount(tutorial_panel_scene, color_rect, click_area)"),
+		"the card is the shared TutorialPanel scene, mounted in the overlay")
+	for gone: String in ["PanelContainer.new(", "HSeparator.new(", "_tutorial_title_label",
+			"_tutorial_body_label", "_tutorial_panel_should_center"]:
+		assert_false(src.contains(gone), "Lobby.gd still carries %s" % gone)
+	assert_true(src.contains(
+			'@export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")'),
+		"the scene is an export, so it can be swapped in the inspector")
+
+
+func test_every_step_goes_through_the_panel_with_its_number_and_count() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_body("_show_step").contains(
+			"_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, current_phase_steps.size())"),
+		"each step fills the card via show_step with its 1-based number and the phase's step count")
+	assert_false(src.contains("(%d/%d)"),
+		"the panel's pill is the step counter; a title prefix would count the steps twice")
+
+
+func test_the_card_and_arrow_are_seated_inside_the_huds_safe_ui() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains("@onready var tutorial_safe_ui: Control = $Safe/UI"),
+		"the bounds are the HUD's own Safe/UI")
+	assert_true(_lobby.get_node_or_null("Safe/UI") is Control, "and the scene has one")
+	var seating := _function_body("_position_tutorial_panel")
+	assert_true(seating.contains(
+			"TutorialPanel.place_step(_tutorial_panel, tutorial_safe_ui, color_rect, _step_targets, _tutorial_arrow)"),
+		"the card and the arrow are seated by the shared placement")
+	assert_false(seating.contains("get_viewport_rect"), "with no raw viewport math")
+
+
+# ----------------------------------- the tutorial shows, and points at the HUD
+#
+# 2026-10-01. The scene authors the tutorial overlay hidden, so the classroom shows
+# in the editor, and an editor save on 2026-09-10 baked that state in while nothing
+# in code ever turned the overlay on: the Lobby tutorial (phase 1 before
+# StudentCard, phase 2 after) ran unseen for three weeks. The first-visit path,
+# Lobby._start_tutorial, now shows it. Lobby.gd is not @tool, so its _ready cannot
+# run in this suite; the path's order is pinned by source scan, as above.
+
+## The first-visit path shows the overlay itself, before it starts step one, so the
+## scene's authored `visible = false` no longer decides whether the tutorial is seen.
+func test_the_first_visit_path_shows_the_overlay_before_step_one() -> void:
+	var start := _function_body("_start_tutorial")
+	var shown_at := start.find("color_rect.show()")
+	var first_step_at := start.find("_show_step(0)")
+	assert_true(shown_at >= 0, "the tutorial path shows the overlay in code")
+	assert_true(first_step_at >= 0, "and starts step one there")
+	assert_true(shown_at < first_step_at, "and shows the overlay before step one, not after it")
+	assert_false(start.contains("color_rect.hide()"), "the path that teaches never hides it")
+	var ready := _function_body("_ready")
+	assert_eq(ready.count("_start_tutorial()"), 1, "_ready takes the first-visit path exactly once")
+	var completed_at := ready.find("GameState.lobby_tutorial_completed or GameState.minggu_ke > 1")
+	assert_true(completed_at >= 0, "_ready still gates on a finished tutorial or a later week")
+	assert_true(ready.find("_start_tutorial()") > ready.find("\t\treturn", completed_at),
+		"and starts the tutorial only once that gate has returned")
+
+
+## The two ways out of the tutorial still hide the overlay: a returning player never
+## sees it, and finishing the last step takes it down.
+func test_the_completed_path_and_the_finish_still_hide_the_overlay() -> void:
+	var ready := _function_body("_ready")
+	var completed_at := ready.find("GameState.lobby_tutorial_completed or GameState.minggu_ke > 1")
+	var completed_path := ready.substr(completed_at, ready.find("_start_tutorial()") - completed_at)
+	assert_true(completed_path.contains("color_rect.hide()"), "a returning player's Lobby hides the overlay")
+	assert_true(completed_path.contains("tutorial_active = false"), "and marks the tutorial over")
+	var finish := _function_body("_end_tutorial")
+	assert_true(finish.contains("color_rect.hide()"), "finishing the last step hides the overlay")
+	assert_true(finish.contains("tutorial_active = false"), "and marks the tutorial over")
+
+
+## A quoted GDScript string: runs of characters that are neither a quote nor a
+## backslash, and backslash escapes. Four of them, comma-separated inside square
+## brackets, are one default step: title, text, target node, prompt.
+const _STEP_ROW := "\\[\"((?:[^\"\\\\]|\\\\.)*)\",\\s*\"((?:[^\"\\\\]|\\\\.)*)\",\\s*\"((?:[^\"\\\\]|\\\\.)*)\",\\s*\"((?:[^\"\\\\]|\\\\.)*)\"\\]"
+## The target of each default step, phase by phase; "" is a step that highlights
+## nothing. Phase 1 ends on the button that leaves for StudentCard, phase 2 on the
+## one that leaves for AturJadwal.
+const _PHASE1_TARGETS := ["", "Student"]
+const _PHASE2_TARGETS := ["", "Inventory", "ReportStudent", "Koperasi", "Jadwal"]
+
+
+## The default steps the Lobby runs, as [title, text, target, prompt] rows, one
+## Array per phase: the rows before `var p2` in _populate_default_tutorial_steps
+## are phase 1's, the rest phase 2's.
+func _default_steps() -> Array:
+	var body := _function_body("_populate_default_tutorial_steps")
+	var split_at := body.find("var p2")
+	var row_pattern := RegEx.create_from_string(_STEP_ROW)
+	var phases: Array = []
+	for chunk: String in [body.substr(0, split_at), body.substr(split_at)]:
+		var rows: Array = []
+		for found: RegExMatch in row_pattern.search_all(chunk):
+			rows.append([found.get_string(1), found.get_string(2), found.get_string(3), found.get_string(4)])
+		phases.append(rows)
+	return phases
+
+
+## True when `node`, or any ancestor up to the Lobby, is authored hidden. The
+## Lobby's own _ready never runs here, so this reads the scene as saved: the
+## Student and Jadwal buttons it shows and hides per phase are not in play.
+func _hidden_in_lobby(node: Node) -> bool:
+	var at: Node = node
+	while at != null:
+		if at is CanvasItem and not (at as CanvasItem).visible:
+			return true
+		if at == _lobby:
+			return false
+		at = at.get_parent()
+	return false
+
+
+## The scene authors no steps of its own, so the defaults in
+## _populate_default_tutorial_steps are the ones a player sees.
+func test_the_scene_authors_no_tutorial_steps() -> void:
+	var scene_src := FileAccess.get_file_as_string(_SCENE_PATH)
+	for exported: String in ["tutorial_phase1_steps", "tutorial_phase2_steps"]:
+		assert_false(scene_src.contains(exported), "Lobby.tscn overrides %s" % exported)
+
+
+## Every step's target resolves to a live button of the redesigned book HUD (the
+## 2026-09-27 scrapbook pass), and is the tile the step's own words are about.
+## Pinned as a list, so a retired or renamed tile fails here instead of quietly
+## leaving a step with no spotlight.
+func test_each_tutorial_step_targets_the_hud_button_its_text_is_about() -> void:
+	var phases: Array = _default_steps()
+	var phase_one: Array = phases[0]
+	var phase_two: Array = phases[1]
+	assert_eq(phase_one.size(), 2, "phase 1 has two steps (the rows were read from the source)")
+	assert_eq(phase_two.size(), 5, "phase 2 has five steps (the rows were read from the source)")
+	var book := _lobby.get_node_or_null("%BookHud") as Control
+	assert_true(book != null, "the book HUD the steps point into exists")
+	if book == null:
+		return
+	var wanted: Array = [_PHASE1_TARGETS, _PHASE2_TARGETS]
+	for phase: int in 2:
+		var rows: Array = phases[phase]
+		var expected: Array = wanted[phase]
+		var targets := PackedStringArray()
+		for row: Array in rows:
+			targets.append(String(row[2]))
+		assert_eq(",".join(targets), ",".join(PackedStringArray(expected)),
+			"phase %d's step targets" % (phase + 1))
+		for row: Array in rows:
+			if row[2] != "":
+				_check_step_target(row, book)
+
+
+## One step row's target: a visible, enabled Button inside the book, whose caption
+## (lower-cased, without a trailing "!") appears in the step's title, text or prompt.
+func _check_step_target(row: Array, book: Control) -> void:
+	var target_name: String = row[2]
+	var button := _lobby.get_node_or_null("%" + target_name) as Button
+	assert_true(button != null, "%s: no Button of that unique name in the Lobby" % target_name)
+	if button == null:
+		return
+	assert_true(book.is_ancestor_of(button), "%s sits in the book HUD" % target_name)
+	assert_false(_hidden_in_lobby(button), "%s and every ancestor are authored visible" % target_name)
+	assert_false(button.disabled, "%s is authored enabled" % target_name)
+	var caption := button.text.to_lower().trim_suffix("!")
+	var spoken := ("%s %s %s" % [row[0], row[1], row[3]]).to_lower()
+	assert_true(caption != "" and spoken.contains(caption),
+		"%s wears the caption \"%s\", which its step never mentions" % [target_name, button.text])
+
+
+## The Lobby tutorial now shows to every new player, so its copy is one voice
+## ("kamu" / "-mu", never "anda" or "kalian") in standard words: "di mana" apart,
+## "barang" for items, "rapor" (the button's own caption) for the report, "statistik"
+## for stats, and no "customisasi".
+func test_the_tutorial_copy_is_one_voice_in_standard_indonesian() -> void:
+	var spoken := ""
+	for rows: Array in _default_steps():
+		for row: Array in rows:
+			spoken += " %s %s %s" % [row[0], row[1], row[3]]
+	spoken = spoken.to_lower()
+	var drift := RegEx.create_from_string("\\b(anda|kalian|dimana|disini|silahkan|items?|raport|stats?|customisasi|ampu)\\b")
+	var found := drift.search(spoken)
+	assert_true(found == null, "the Lobby tutorial still says \"%s\"" % (found.get_string() if found != null else ""))
+	assert_true(spoken.contains("muridmu") and spoken.contains("barangmu"),
+		"and it speaks to the player as -mu (the rows were read from the source)")
+	var first: String = _default_steps()[0][0][1]
+	assert_true(first.contains("Sebelum mulai mengajar") and first.contains("mari kita kenali dulu fasilitasnya"),
+		"step 1 is a whole sentence: its \"Sebelum ...\" clause has its main clause")
+
+
+## Each phase's last step names the button that leaves the Lobby, and the overlay lets
+## a tap through to it, in either phase. Phase 2 once kept the overlay catching taps,
+## so the first press on JADWAL only ended the tutorial and the prompt ("Tekan tombol
+## 'Jadwal' untuk lanjut!") was wrong about it.
+func test_the_last_step_of_either_phase_passes_taps_through_to_its_button() -> void:
+	var step := _function_body("_show_step")
+	assert_false(step.contains("returned_from_student_card"),
+		"the last-step branch does not ask which phase it is")
+	var last_at := step.find("if index == current_phase_steps.size() - 1:")
+	var else_at := step.find("\telse:", last_at)
+	assert_true(last_at >= 0 and else_at > last_at, "a branch for the last step, then the rest")
+	var last_step := step.substr(last_at, else_at - last_at)
+	assert_true(last_step.contains("color_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE"),
+		"the overlay passes the tap on")
+	assert_true(last_step.contains("click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE"),
+		"and so does its click catcher")
+	assert_true(last_step.contains("(_step_targets[0] as BaseButton).disabled = false"),
+		"the step's own first target is enabled, whichever button that is")
+	assert_false(last_step.contains("student_button"), "no button is hard-coded into it")
+	var other_steps := step.substr(else_at, step.find("\n\n", else_at) - else_at)
+	assert_true(other_steps.contains("color_rect.mouse_filter = Control.MOUSE_FILTER_STOP")
+			and other_steps.contains("click_area.mouse_filter = Control.MOUSE_FILTER_STOP"),
+		"every earlier step still takes the tap to advance")
+
+
+## Pressing JADWAL during the tutorial ends it (phase 2's last step has no tap-anywhere
+## to do it), before leaving for AturJadwal. Pressing STUDENT does not: phase 1 ends on
+## the trip to StudentCard and phase 2 follows it.
+func test_pressing_jadwal_ends_an_active_tutorial_and_student_does_not() -> void:
+	var jadwal := _function_body("_on_jadwal_pressed")
+	var gate_at := jadwal.find("if tutorial_active:")
+	assert_true(gate_at >= 0, "JADWAL's press asks whether the tutorial is still on")
+	var ends_at := jadwal.find("_end_tutorial()", gate_at)
+	assert_true(ends_at > gate_at, "and ends it if so")
+	assert_true(ends_at < jadwal.find("Transition.change_scene("), "before the scene changes")
+	assert_false(_function_body("_on_student_pressed").contains("_end_tutorial()"),
+		"STUDENT's press leaves phase 2 still to come")
+
+
+## The HUD buttons the tutorial never points at, by handler. The last step of
+## either phase lets taps through the overlay, so these are reachable then.
+const _TUTORIAL_GATED_HANDLERS := {
+	"_on_koperasi_pressed": "koperasi_button",
+	"_on_inventory_pressed": "inventory_button",
+	"_on_report_student_pressed": "report_student_button",
+	"_on_achievement_pressed": "achievement_button",
+	"_on_settings_pressed": "settings_button",
+	"_on_skin_switch_pressed": "skin_switch_button",
+	"_on_daily_login_pressed": "daily_login_btn",
+}
+## What each of those handlers does once it lets a tap through.
+const _HANDLER_ACTIONS := ["Transition.change_scene(", "_show_daily_reward()", "instantiate()"]
+
+## At the last step of either phase every HUD button can be tapped, not just the
+## one the step names; Koperasi, say, left the Lobby with the tutorial unfinished,
+## and phase 2 replayed on return. Each such button asks _tutorial_refuses first,
+## which answers the tap as the forced steps do and drops it.
+func test_other_hud_buttons_refuse_a_tap_while_the_tutorial_is_up() -> void:
+	for handler: String in _TUTORIAL_GATED_HANDLERS:
+		var body := _function_body(handler)
+		var gate_at := body.find("_tutorial_refuses(%s)" % _TUTORIAL_GATED_HANDLERS[handler])
+		assert_true(gate_at >= 0, "%s asks the tutorial before acting" % handler)
+		var acted := false
+		for action: String in _HANDLER_ACTIONS:
+			var action_at := body.find(action)
+			if action_at >= 0:
+				acted = true
+				assert_true(gate_at < action_at, "%s asks before %s" % [handler, action])
+		assert_true(acted, "%s still does something once allowed (not vacuous)" % handler)
+	var refuses := _function_body("_tutorial_refuses")
+	assert_true(refuses.contains("if not tutorial_active or _step_targets.has(button):"),
+		"only a tap during the tutorial, on a button its step does not point at, is refused")
+	assert_true(refuses.contains("TutorialPanel.answer_wrong_tap(wanted, [button])")
+			and refuses.contains("_step_targets[0]"),
+		"with the shared wrong-tap answer: the step's button shakes, the tapped one dims")
+	assert_false(refuses.contains("play_sfx("),
+		"the answer plays the cue itself; a second local cue would read as a double fire")
+	for target_handler: String in ["_on_student_pressed", "_on_jadwal_pressed"]:
+		assert_false(_function_body(target_handler).contains("_tutorial_refuses"),
+			"%s is a step's own button; it is never refused" % target_handler)
+
+
+## `_start_tutorial` makes the last step's button visible in its own phase: Student in
+## phase 1, Jadwal in phase 2 (the two share a spot on the book's page, and the script
+## shows one and hides the other). The scene alone cannot show that, since it authors
+## both visible.
+func test_each_phase_shows_the_button_its_last_step_points_at() -> void:
+	var start := _function_body("_start_tutorial")
+	var phase2_at := start.find("if GameState.returned_from_student_card:")
+	var phase1_at := start.find("\telse:", phase2_at)
+	var phase1_end := start.find("_connect_hud_buttons()", phase1_at)
+	assert_true(phase2_at >= 0 and phase1_at > phase2_at and phase1_end > phase1_at,
+		"phase 2's branch, then phase 1's, then the shared wiring")
+	var phase_one_part := start.substr(phase1_at, phase1_end - phase1_at)
+	var phase_two_part := start.substr(phase2_at, phase1_at - phase2_at)
+	var phases: Array = _default_steps()
+	var phase_one: Array = phases[0]
+	var phase_two: Array = phases[1]
+	var last_one: Array = phase_one[phase_one.size() - 1]
+	var last_two: Array = phase_two[phase_two.size() - 1]
+	assert_eq(last_one[2], "Student", "phase 1 ends on the button that leaves for StudentCard")
+	assert_eq(last_two[2], "Jadwal", "phase 2 ends on the button that leaves for AturJadwal")
+	assert_true(phase_one_part.contains("student_button.visible = true"), "phase 1 shows Student")
+	assert_true(phase_two_part.contains("jadwal_button.visible = true"), "phase 2 shows Jadwal")

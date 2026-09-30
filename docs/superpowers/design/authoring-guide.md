@@ -339,9 +339,11 @@ converted every shared-across-screens case (popups, cards, rows, panels
 duplicated 2-3 times) but did not attempt every remaining file. Largest
 entries, as candidates for a future pass:
 
-- `Scripts/AturJadwal/AturJadwal.gd` (17) and `Scripts/Pengaturan.gd` (12) —
-  each builds its own settings/tutorial chrome by hand; likely Pattern A/C
-  candidates similar to TutorialPanel.
+- `Scripts/AturJadwal/AturJadwal.gd` (10) and `Scripts/Pengaturan.gd` (12) —
+  each builds its own settings chrome by hand (AturJadwal's is the holiday
+  warning popup; its tutorial card moved onto TutorialPanel on 2026-10-01,
+  with StudentList's and the Lobby's); likely Pattern A/C candidates similar
+  to TutorialPanel.
 - `Scripts/CutScene/CutScene.gd` (4) — the top bar's Skip and Debug
   buttons; its 11-node grade-picker modal moved to the Level Select scene
   (2026-09-25).
@@ -353,9 +355,8 @@ entries, as candidates for a future pass:
 - The remaining minigames (`Badminton.gd` and `BuatBatik.gd` 7 each,
   `MainBola.gd` 2, `Variabel.gd` and `LombaMenari.gd` 1 each; `Menjodohkan.gd`
   reached 0 in the same pass) and screens (`Lobby.gd`, `Inventory.gd`,
-  `KoperasiStage.gd`, `StudentList.gd`, `StudentCardView.gd`,
-  `DailyDecayOverview.gd`, `SchoolDay.gd`, `StudentCard.gd`,
-  `TutorialArrow.gd`) — smaller counts, mostly single-purpose chrome
+  `KoperasiStage.gd`, `StudentCardView.gd`,
+  `DailyDecayOverview.gd`, `SchoolDay.gd`, `StudentCard.gd`) — smaller counts, mostly single-purpose chrome
   (a background swap, a fallback drawer) not yet surveyed for whether a
   scene conversion is worthwhile. The 2026-09-04 reward pass converted the
   one piece of chrome shared across all seven scoring minigames — the

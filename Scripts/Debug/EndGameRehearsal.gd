@@ -146,6 +146,11 @@ const SNAPSHOT_KEYS := [
 	"run_failed", "is_game_beaten",
 	"lobby_tutorial_completed", "tutorials_bypassed",
 	"returned_from_student_card",
+	# The headmaster's beats already played. A rehearsal that runs to
+	# completion reaches StudentCard for the next grade, which plays that
+	# grade's beat and marks it seen; restoring must un-see it, or the real
+	# promotion later would skip the congratulation.
+	"headmaster_beats_seen",
 ]
 
 

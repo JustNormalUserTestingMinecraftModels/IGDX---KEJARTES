@@ -23,6 +23,11 @@ extends McpTestSuite
 const _SCENE_PATH := "res://Scenes/StudentCard/StudentCard.tscn"
 const _SCRIPT_PATH := "res://Scripts/StudentCard/StudentCard.gd"
 const _THEME_PATH := "res://Assets/Theme/kejartes_theme.tres"
+const _BEAT_PATH := "res://Scripts/StudentCard/HeadmasterBeat.gd"
+const _GAME_STATE_PATH := "res://Scripts/GameState.gd"
+const _PANEL_SCENE := "res://Scenes/UI/TutorialPanel.tscn"
+## The card's layout column, where the name plate sits above the title.
+const _LAYOUT := "Frame/Margin/Layout/"
 
 
 func suite_name() -> String:
@@ -275,7 +280,67 @@ func test_tutorial_target_node_paths_are_unchanged() -> void:
 	scene.free()
 
 
+# ------------------------------------------------ the tutorial's one counter
+
+## StudentCard used to write the coach-mark's labels itself, with its own
+## "(n/N) " title prefix, and never called TutorialPanel.show_step(). When the
+## panel grew a "Langkah n / N" pill, the scene's sample pill ("Langkah 1 / 3")
+## therefore showed above every step of the grade-7 tutorial. Now every step
+## goes through show_step() with its number and count, and the pill is this
+## screen's only counter.
+func test_show_step_hands_its_number_and_count_to_the_panels_pill() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_show_step")
+	assert_false(body.is_empty(), "_show_step was found")
+	assert_contains(body,
+		"_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size())",
+		"every step goes through the panel with its 1-based number and the step count")
+
+
+func test_the_title_no_longer_carries_its_own_counter() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("(%d/%d)"),
+		"the panel's pill counts the steps; a title prefix would count them twice")
+	assert_false(src.contains("_tutorial_title_label"),
+		"the title is written by show_step(), not by a label this screen holds")
+	assert_false(src.contains("_tutorial_body_label"),
+		"the body is written by show_step(), not by a label this screen holds")
+
+
+func test_a_fresh_tutorial_panel_shows_no_sample_pill() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_build_tutorial_panel")
+	assert_false(body.is_empty(), "_build_tutorial_panel was found")
+	var added := body.find("color_rect.add_child(_tutorial_panel)")
+	var emptied := body.find('_tutorial_panel.show_step("", "",')
+	assert_true(added != -1, "the panel joins the tree here")
+	assert_true(emptied > added,
+		"once in the tree, an empty show_step() hides the scene's authored sample pill")
+
+
+## StudentCard builds its own card (it does not go through TutorialPanel.mount), so it
+## says the same thing mount() does: transparent until a step or the beat fades it in,
+## or an empty card shows at the overlay's corner for a frame before it is placed.
+func test_the_card_starts_unseen_before_it_joins_the_tree() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_build_tutorial_panel")
+	var hidden := body.find("_tutorial_panel.modulate.a = 0.0")
+	var added := body.find("color_rect.add_child(_tutorial_panel)")
+	assert_true(hidden != -1, "_build_tutorial_panel makes the card transparent")
+	assert_true(hidden < added, "and does it before the card is in the tree")
+
+
 # ----------------------------------------------------------------- helper
+
+## The source of `func_name` in `src`: from its `func` line up to the next
+## column-0 `func`, or the end of the file.
+func _function_source(src: String, func_name: String) -> String:
+	var start := src.find("\nfunc %s(" % func_name)
+	if start == -1:
+		return ""
+	var stop := src.find("\nfunc ", start + 1)
+	return src.substr(start) if stop == -1 else src.substr(start, stop - start)
+
 
 ## Copied verbatim from tests/test_main_menu.gd. Godot 4.6's Control has
 ## no get_theme_*_override_list(); this walks get_property_list() and asks
@@ -303,3 +368,250 @@ func _collect_overrides(node: Node, out: Array[String]) -> void:
 			out.append(node.name)
 	for child in node.get_children():
 		_collect_overrides(child, out)
+
+
+# ------------------------------------------------ the arrow's size and side
+
+## StudentCard clamped its arrow with a hard-coded 320px picture, so the
+## smaller arrow still kept 320px away from every edge. The arrow now sizes
+## itself from its own arrow_size and stands its tip beside the hole, inside
+## the overlay and off the card. This screen still places its card itself
+## (from step 7 on it is centred down the screen), so the arrow is told the
+## rectangle that rule gives, not left to land on it.
+func test_the_arrow_is_placed_from_its_own_size_not_a_hard_coded_clamp() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_highlight_multiple")
+	assert_false(body.is_empty(), "_highlight_multiple was found")
+	assert_true(body.contains("_tutorial_arrow.point_at(Rect2(local_pos, size_with_padding),"),
+		"the arrow points at the padded hole")
+	assert_true(body.contains("Rect2(Vector2.ZERO, color_rect.size)"), "within the overlay")
+	assert_false(src.contains("320.0"), "no hard-coded 320px arrow is left")
+	assert_false(src.contains("var W =") or src.contains("var H ="),
+		"no local arrow width and height either")
+
+
+func test_the_arrow_keeps_off_the_card_this_screen_places() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_function_source(src, "_highlight_multiple").contains("_tutorial_card_rect())"),
+		"the arrow is handed the card's rectangle to avoid")
+	var rect := _function_source(src, "_tutorial_card_rect")
+	assert_false(rect.is_empty(), "_tutorial_card_rect was found")
+	assert_true(rect.contains("get_combined_minimum_size()")
+			and rect.contains("_tutorial_card_position(card_size)"),
+		"it is the placement rule applied to the size the card fits its text to")
+	assert_true(_function_source(src, "_position_tutorial_panel").contains(
+			"_tutorial_panel.position = _tutorial_card_position(_tutorial_panel.size)"),
+		"the card itself is placed by that same rule, so the two cannot drift apart")
+	assert_true(_function_source(src, "_tutorial_card_position").contains("current_step >= 7"),
+		"and the rule still centres the card down the screen from step 7 on")
+
+
+# ----------------------------------------- the headmaster's beat (grades 8, 9)
+
+## The grade-8 and grade-9 congratulation used to be tutorial steps, tutorial-
+## gated, each line wearing a "Kepala Sekolah:" prefix in its body. It is its own
+## beat now (HeadmasterBeat), so none of it is left in the tutorial steps, and
+## what is left of those grades is the one real instruction.
+func test_the_congratulation_is_gone_from_the_tutorial_steps() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var steps := _function_source(src, "_populate_default_tutorial_steps")
+	assert_false(steps.is_empty(), "_populate_default_tutorial_steps was found")
+	for gone: String in ["Selamat Datang di Kelas", "Selamat atas keberhasilanmu",
+			"Tantangan Baru", "Persiapan Ujian Akhir", "Luar biasa", "Kepala Sekolah"]:
+		assert_false(steps.contains(gone), "the tutorial steps still carry: " + gone)
+	assert_false(src.contains("Narator"), "no speaker prefix is left anywhere in StudentCard")
+	assert_false(src.contains("Kepala Sekolah:"), "and no headmaster prefix either")
+	assert_contains(steps, "HeadmasterBeat.PICK_STEPS",
+		"grades 8 and 9 keep their one instruction step")
+
+
+func test_the_pick_step_is_one_unprefixed_instruction_per_promotion() -> void:
+	var picks: Dictionary = HeadmasterBeat.PICK_STEPS
+	var grades: Array = picks.keys()
+	grades.sort()
+	assert_eq(grades, [8, 9], "Kelas 8 and Kelas 9 each pick new students")
+	for grade: int in grades:
+		var step: Array = picks[grade]
+		assert_eq(step.size(), 4, "title, text, target and prompt, as grade 7's table")
+		assert_true(String(step[0]).begins_with("Pilih"), "Kelas %d's step is the pick" % grade)
+		assert_false(String(step[1]).begins_with("Narator"), "no speaker prefix on Kelas %d" % grade)
+		assert_eq(step[2], "", "it spotlights nothing")
+		assert_eq(step[3], "", "and takes the default prompt")
+
+
+func test_the_beat_holds_the_two_cards_of_each_promotion_with_no_speaker_prefix() -> void:
+	var beats: Dictionary = HeadmasterBeat.HEADMASTER_BEATS
+	var grades: Array = beats.keys()
+	grades.sort()
+	assert_eq(grades, [8, 9], "a beat for each grade entered by promotion, none for Kelas 7")
+	for grade: int in grades:
+		var lines: Array = beats[grade]
+		assert_eq(lines.size(), 2, "Kelas %d's beat is a congratulation and a challenge" % grade)
+		for line: Dictionary in lines:
+			assert_true(String(line["title"]).length() > 0 and String(line["body"]).length() > 0,
+				"Kelas %d has an empty card" % grade)
+			for field: String in ["title", "body"]:
+				assert_false(String(line[field]).contains("Kepala Sekolah"),
+					"the name plate names the speaker, not the %s" % field)
+				assert_false(String(line[field]).contains("Narator"))
+	assert_eq(HeadmasterBeat.SPEAKER, "Pak Kepala Sekolah", "the name plate's line")
+	assert_eq(beats[8][0]["title"], "Selamat, naik ke Kelas 8!")
+	assert_eq(beats[8][1]["title"], "Tantangan baru")
+	assert_eq(beats[9][0]["title"], "Naik ke Kelas 9!")
+	assert_eq(beats[9][1]["title"], "Persiapan ujian akhir")
+
+
+func test_a_beat_is_due_once_per_promotion() -> void:
+	assert_true(HeadmasterBeat.is_due(8, {}), "Kelas 8 has a beat, unseen")
+	assert_true(HeadmasterBeat.is_due(9, {}), "and so does Kelas 9")
+	assert_false(HeadmasterBeat.is_due(7, {}), "nobody is promoted into Kelas 7")
+	assert_false(HeadmasterBeat.is_due(8, {8: true}), "a seen grade does not play again (a retry)")
+	assert_true(HeadmasterBeat.is_due(9, {8: true}), "seeing Kelas 8's does not spend Kelas 9's")
+	assert_false(HeadmasterBeat.is_due(10, {}), "there is no Kelas 10")
+
+
+## The seat the test hands a beat: the real one is StudentCard's coroutine.
+func _seat_nothing() -> void:
+	pass
+
+
+func _beat_panel() -> TutorialPanel:
+	var panel: TutorialPanel = (load(_PANEL_SCENE) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	return panel
+
+
+func test_the_beat_plays_its_cards_on_the_name_plate_one_tap_at_a_time() -> void:
+	var panel := _beat_panel()
+	var seen := {}
+	var beat := HeadmasterBeat.new()
+	beat.start(panel, 8, Callable(self, "_seat_nothing"), seen)
+	var lines: Array = HeadmasterBeat.HEADMASTER_BEATS[8]
+	assert_true(beat.is_playing(), "taps belong to the beat from start")
+	assert_eq(panel.mode, TutorialPanel.Mode.HEADMASTER, "the card wears the name plate")
+	assert_eq((panel.get_node(_LAYOUT + "NamePlate/Row/SpeakerLabel") as Label).text, "Pak Kepala Sekolah")
+	assert_eq((panel.get_node(_LAYOUT + "TitleLabel") as Label).text, lines[0]["title"])
+	assert_eq((panel.get_node(_LAYOUT + "BodyLabel") as Label).text, lines[0]["body"])
+	assert_eq((panel.get_node(_LAYOUT + "PromptLabel") as Label).text, HeadmasterBeat.PROMPT)
+	assert_false((panel.get_node(_LAYOUT + "StepPill") as Control).visible, "a beat counts no steps")
+	assert_eq(panel.modulate.a, 0.0, "the card stays unseen until it is seated and springs in")
+	beat.advance()
+	assert_eq((panel.get_node(_LAYOUT + "TitleLabel") as Label).text, lines[1]["title"],
+		"a tap puts the next card on the same panel")
+	assert_true(beat.is_playing())
+	beat.advance()
+	assert_false(seen.has(8), "the grade is marked seen when the card has left, not before")
+	assert_true(beat.is_playing(), "and taps stay the beat's while the last card leaves")
+	beat.advance()
+	assert_eq((panel.get_node(_LAYOUT + "TitleLabel") as Label).text, lines[1]["title"],
+		"a tap while the last card leaves changes nothing")
+
+
+func test_the_beat_marks_its_grade_seen_then_hands_on() -> void:
+	var src := FileAccess.get_file_as_string(_BEAT_PATH)
+	var advance := _function_source(src, "advance")
+	assert_false(advance.is_empty(), "advance was found")
+	var left := advance.find("await _panel.play_out().finished")
+	var marked := advance.find("_seen[_grade] = true")
+	var done := advance.find("finished.emit()")
+	assert_true(left != -1 and marked > left and done > marked,
+		"the card leaves, then the grade is marked, then the tutorial is told to go on")
+
+
+func test_the_beat_never_asks_the_tutorial_toggle() -> void:
+	var beat_src := FileAccess.get_file_as_string(_BEAT_PATH)
+	assert_false(beat_src.contains("tutorials_bypassed"),
+		"the beat is a story every promotion earns, tutorials on or off")
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var trigger := _function_source(src, "_maybe_play_headmaster_beat")
+	assert_false(trigger.is_empty(), "_maybe_play_headmaster_beat was found")
+	assert_false(trigger.contains("tutorials_bypassed"), "the trigger does not read the toggle")
+	assert_contains(trigger, "HeadmasterBeat.is_due(grade, GameState.headmaster_beats_seen)",
+		"it reads only the grade and what has been seen")
+	assert_eq(src.count("GameState.tutorials_bypassed"), 1,
+		"one place reads the toggle: the tutorial's own start")
+	assert_contains(_function_source(src, "_begin_tutorial"), "GameState.tutorials_bypassed")
+
+
+func test_the_beat_comes_first_then_the_tutorial_follows_it() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var on_ready := _function_source(src, "_ready")
+	var beat_at := on_ready.find("_maybe_play_headmaster_beat()")
+	var tutorial_at := on_ready.find("_begin_tutorial()")
+	assert_true(beat_at != -1 and tutorial_at > beat_at,
+		"_ready tries the beat first and begins the tutorial only when there is none")
+	var trigger := _function_source(src, "_maybe_play_headmaster_beat")
+	assert_contains(trigger, "_beat.finished.connect(_begin_tutorial)",
+		"when the beat ends the tutorial (or its bypass) begins")
+	assert_contains(trigger, "_clear_highlight()", "the beat has no spotlight hole and no arrow")
+
+
+func test_a_tap_on_the_overlay_belongs_to_the_beat_while_it_plays() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var step := _function_source(src, "_next_step")
+	var routed := step.find("_beat.advance()")
+	var stepped := step.find("current_step += 1")
+	assert_true(routed != -1 and stepped > routed,
+		"_next_step hands the tap to the beat before it counts a tutorial step")
+	assert_contains(step, "_beat.is_playing()")
+
+
+func test_the_beat_card_is_centred_down_the_screen() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var where := _function_source(src, "_tutorial_card_position")
+	assert_contains(where, "_beat.is_playing()", "the beat's card is centred, with no arrow to make room for")
+	assert_contains(where, "current_step >= 7", "and the tutorial's own rule is still there")
+
+
+# ------------------------------------------ the beat's flag lives on GameState
+
+func test_seen_beats_are_a_session_dictionary_on_game_state() -> void:
+	var value: Variant = GameState.headmaster_beats_seen
+	assert_true(value is Dictionary, "headmaster_beats_seen is a Dictionary, grade -> true")
+	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
+	assert_contains(src, "var headmaster_beats_seen: Dictionary = {}")
+
+
+func test_forgetting_the_session_and_starting_a_run_forget_the_seen_beats() -> void:
+	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
+	var forget := _function_source(src, "forget_session")
+	assert_false(forget.is_empty(), "forget_session was found")
+	assert_contains(forget, "headmaster_beats_seen = {}", "forget_session clears it")
+	var run := _function_source(src, "set_grade")
+	assert_false(run.is_empty(), "set_grade was found")
+	assert_contains(run, "headmaster_beats_seen = {}",
+		"set_grade starts a run (new game, level select, a beaten game's restart), so it clears it")
+
+
+func test_set_grade_clears_the_seen_beats() -> void:
+	var saved_grade: int = GameState.current_grade
+	var saved_week: int = GameState.minggu_ke
+	var saved_seen: Dictionary = GameState.headmaster_beats_seen
+	GameState.headmaster_beats_seen = {8: true}
+	GameState.set_grade(saved_grade)
+	assert_true(GameState.headmaster_beats_seen.is_empty(), "a new run plays its promotions' beats again")
+	GameState.headmaster_beats_seen = saved_seen
+	GameState.minggu_ke = saved_week
+
+
+func test_a_retry_of_the_same_grade_does_not_replay_the_beat() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	var progression := _function_source(src, "_apply_progression")
+	assert_false(progression.is_empty(), "_apply_progression was found")
+	assert_false(progression.contains("headmaster_beats_seen"),
+		"a retry (or a promotion) leaves the seen beats alone: once per promotion, per session")
+	assert_contains(progression, "GameState.set_grade(FIRST_GRADE)",
+		"only a beaten game's restart goes through set_grade, which clears them")
+
+
+func test_seen_beats_are_never_written_to_disk() -> void:
+	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
+	for func_name: String in ["_write_inventory_to", "_read_inventory_from", "save_inventory",
+			"load_inventory", "clear_inventory_save"]:
+		var body := _function_source(src, func_name)
+		assert_false(body.is_empty(), func_name + " was found")
+		assert_false(body.contains("headmaster_beats_seen"), func_name + " must not touch the beats")
+	for path: String in ["res://Scripts/GameSettings.gd", "res://Scripts/Achievements/Achievements.gd"]:
+		assert_false(FileAccess.get_file_as_string(path).contains("headmaster_beats_seen"),
+			path + " persists; the beats are session-scoped")

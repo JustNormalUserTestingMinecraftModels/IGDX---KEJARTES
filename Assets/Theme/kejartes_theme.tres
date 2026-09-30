@@ -5037,6 +5037,33 @@ corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_e6v0j"]
+content_margin_left = 28.0
+content_margin_top = 8.0
+content_margin_right = 28.0
+content_margin_bottom = 8.0
+bg_color = Color(0.20784314, 0.627451, 0.3529412, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.15588236, 0.47058827, 0.2647059, 1)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a7pac"]
+content_margin_left = 28.0
+content_margin_top = 8.0
+content_margin_right = 28.0
+content_margin_bottom = 8.0
+bg_color = Color(0.20784314, 0.627451, 0.3529412, 1)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2jxmk"]
 content_margin_left = 44.0
 content_margin_top = 29.0
 content_margin_right = 44.0
@@ -5051,9 +5078,9 @@ shadow_color = Color(0.75725496, 0.6737255, 0.5890196, 1)
 shadow_size = 1
 shadow_offset = Vector2(0, 3)
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a7pac"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3074f"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2jxmk"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vxklv"]
 content_margin_left = 44.0
 content_margin_top = 27.0
 content_margin_right = 44.0
@@ -5071,7 +5098,7 @@ shadow_color = Color(0.3372549, 0.19607843, 0.105882354, 1)
 shadow_size = 1
 shadow_offset = Vector2(0, 7)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3074f"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ntaja"]
 content_margin_left = 44.0
 content_margin_top = 33.0
 content_margin_right = 44.0
@@ -6889,6 +6916,18 @@ TrayBadgeLabel/font_sizes/font_size = 28
 TrayBadgeLabel/fonts/font = ExtResource("1_c56gm")
 TrayPlank/base_type = &"Panel"
 TrayPlank/styles/panel = SubResource("StyleBoxFlat_u8oex")
+TutorialNamePlate/base_type = &"PanelContainer"
+TutorialNamePlate/styles/panel = SubResource("StyleBoxFlat_e6v0j")
+TutorialNamePlateLabel/base_type = &"Label"
+TutorialNamePlateLabel/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)
+TutorialNamePlateLabel/font_sizes/font_size = 28
+TutorialNamePlateLabel/fonts/font = ExtResource("1_c56gm")
+TutorialStepPill/base_type = &"PanelContainer"
+TutorialStepPill/styles/panel = SubResource("StyleBoxFlat_a7pac")
+TutorialStepPillLabel/base_type = &"Label"
+TutorialStepPillLabel/colors/font_color = Color(1, 0.9647059, 0.9098039, 1)
+TutorialStepPillLabel/font_sizes/font_size = 28
+TutorialStepPillLabel/fonts/font = ExtResource("1_c56gm")
 VBoxContainer/constants/separation = 28
 VerdictHeadlineLabel/base_type = &"Label"
 VerdictHeadlineLabel/colors/font_color = Color(0.23137255, 0.14117648, 0.07058824, 1)
@@ -6915,8 +6954,8 @@ WoodNavArrow/colors/font_pressed_color = Color(1, 0.9647059, 0.9098039, 1)
 WoodNavArrow/constants/outline_size = 8
 WoodNavArrow/font_sizes/font_size = 36
 WoodNavArrow/fonts/font = ExtResource("1_c56gm")
-WoodNavArrow/styles/disabled = SubResource("StyleBoxFlat_e6v0j")
-WoodNavArrow/styles/focus = SubResource("StyleBoxEmpty_a7pac")
-WoodNavArrow/styles/hover = SubResource("StyleBoxFlat_2jxmk")
-WoodNavArrow/styles/normal = SubResource("StyleBoxFlat_2jxmk")
-WoodNavArrow/styles/pressed = SubResource("StyleBoxFlat_3074f")
+WoodNavArrow/styles/disabled = SubResource("StyleBoxFlat_2jxmk")
+WoodNavArrow/styles/focus = SubResource("StyleBoxEmpty_3074f")
+WoodNavArrow/styles/hover = SubResource("StyleBoxFlat_vxklv")
+WoodNavArrow/styles/normal = SubResource("StyleBoxFlat_vxklv")
+WoodNavArrow/styles/pressed = SubResource("StyleBoxFlat_ntaja")

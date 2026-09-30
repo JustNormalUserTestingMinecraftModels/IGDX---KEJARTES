@@ -592,7 +592,7 @@ func _update_hud() -> void:
 
 # ─── Input handling ──────────────────────────────────────────────────────────
 func _input(event: InputEvent) -> void:
-	if not is_game_active or is_resolving:
+	if not is_game_active or is_resolving or _clock_is_out():
 		return
 	if event is InputEventScreenTouch:
 		if event.is_pressed():
@@ -606,6 +606,13 @@ func _input(event: InputEvent) -> void:
 			is_swiping = true
 		else:
 			_end_swipe(event.position)
+
+## True once a timed game's clock has reached zero. lose_game() lets a shot
+## in the air finish past that point; this keeps a swipe in the frame after
+## it lands from starting another.
+func _clock_is_out() -> bool:
+	return has_time_limit and game_time_left <= 0.0
+
 
 func _end_swipe(end_pos: Vector2) -> void:
 	if not is_swiping or is_resolving:
@@ -911,6 +918,13 @@ func get_star_ratio() -> float:
 # ─── Override lose_game to bypass BaseMinigame's score-check shortcut ────────
 func lose_game() -> void:
 	if not is_game_active:
+		return
+	# A shot already in the air is played out first. The clock used to end
+	# the game under it: the loss card went up, the goal landed behind the
+	# card, and a winning goal never reached the win screen. The clock stays
+	# at zero and calls this again every frame, so a shot that does not win
+	# still ends the game the moment it has resolved.
+	if is_resolving:
 		return
 	is_game_active = false
 	is_game_over   = true

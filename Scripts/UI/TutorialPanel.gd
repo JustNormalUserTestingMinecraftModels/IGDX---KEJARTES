@@ -42,7 +42,9 @@ const STEP_PILL_FORMAT := "Langkah %d / %d"
 ## What the prompt says when a step gives it no line of its own, and what every
 ## tap-to-continue card in the game says (the headmaster's beat, each screen's
 ## empty card, the unhighlighted steps): one line, so two cards in a row never
-## ask for the same tap two ways.
+## ask for the same tap two ways. The one exception is SchoolDay's lone
+## end-of-week card, which follows no other and keeps the longer form
+## (SchoolDay.end_tutorial_prompt, "... UNTUK MELANJUTKAN").
 const DEFAULT_PROMPT := "KETUK DI MANA SAJA UNTUK LANJUT"
 ## The tutorial arrow's script, for the geometry placement() shares with it.
 const ArrowScript := preload("res://Scripts/TutorialArrow.gd")
@@ -182,7 +184,8 @@ enum Mode {
 ## Whether the pill shows while mode is STEP: show_step() hides it for a
 ## flow of one step or none. True until then, so the authored pill shows.
 var _pill_wanted := true
-## True once a step or beat has filled the card; only later ones animate.
+## True once a step or beat has filled the card; only later ones animate. An
+## empty fill (mount()'s, before the first step) does not count.
 var _content_shown := false
 ## The step-change fade of the badge, title and body, while it plays.
 var _step_tween: Tween
@@ -318,8 +321,12 @@ func _stop_entering() -> void:
 ## The step change: the badge, title and body fade in one after another
 ## while the card stays put. Skipped for the card's first fill (play_in()
 ## is that entrance) and in the editor. The prompt is left alone on
-## purpose: its alpha belongs to the caller's blink tween.
+## purpose: its alpha belongs to the caller's blink tween. An empty fill is
+## not content, so the first real step or beat card is still the first fill
+## (and its entrance, not this fade, reveals it).
 func _play_step_change() -> void:
+	if title_label.text.is_empty() and body_label.text.is_empty():
+		return
 	var first := not _content_shown
 	_content_shown = true
 	if first or Engine.is_editor_hint() or not is_inside_tree():

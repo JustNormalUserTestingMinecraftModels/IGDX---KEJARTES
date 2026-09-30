@@ -256,7 +256,7 @@ func _populate_default_tutorial_steps() -> void:
 	var defaults: Array = []
 	if GameState.current_grade == 7:
 		defaults = [
-			["Selamat Datang!", "Kita di sini mempunyai beberapa laporan berbagai macam murid yang dapat anda pilih untuk anda ajari!\n\nMereka mempunyai performance dan sifat berbeda-beda, jadi pilihlah dengan bijak!", "", ""],
+			["Selamat Datang!", "Di sini ada laporan tentang berbagai murid yang bisa kamu pilih untuk kamu ajar!\n\nKemampuan dan sifat mereka berbeda-beda, jadi pilihlah dengan bijak!", "", ""],
 			["Mood Murid", "Ini adalah bar Mood murid. Mood menunjukkan tingkat kebahagiaan murid.\n\nJika mood rendah, murid akan sulit untuk belajar dengan baik.", "KertasMurid1/Mood", ""],
 			["Energy Murid", "Ini adalah bar Energy murid. Energy menunjukkan kapasitas seberapa banyak murid untuk dapat diajar berbagai mata pelajaran.", "KertasMurid1/Energy", ""],
 			["Skill Murid", "Sekarang kita lihat bagian Skill. Skill menunjukkan kemampuan murid di berbagai bidang pelajaran.", "KertasMurid1/Akademis,KertasMurid1/SeniBudaya,KertasMurid1/Olahraga", ""],

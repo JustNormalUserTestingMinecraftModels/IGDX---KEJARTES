@@ -568,10 +568,15 @@ widget via `project_run` instead, which exercises it fine.
     fix is one `_end_tutorial()` in the bypass branch.
   - **`StudentCard.gd` sits at its 1444-line ceiling** (`LARGE_SCRIPTS`): the
     next change there moves something out first.
-  - **The older tutorial bodies still mix "anda" and "kalian" with "kamu"**
-    (StudentCard, AturJadwal, StudentList); only the Lobby's was put in one
-    voice, and the review wave fixed "Disini" and "Silahkan" elsewhere.
-    StudentCard's welcome step also says "performance".
+  - **Tutorial copy still carries English words**: AturJadwal's "Perubahan
+    Stats & Energy" card ("stats", "Energy"), and the Lobby's "Inventory" and
+    'Student', which name those buttons' own captions (a `test_lobby` pin
+    keeps each step's words on its button). The voice is one "kamu" now,
+    pinned by `test_tutorial_panel`.
+  - **Three step-target resolvers** (AturJadwal and Lobby
+    `_resolve_step_targets`, StudentList `_targets_for_step`) split
+    `target_node_path` the same way with per-screen lookups; one
+    `TutorialPanel` helper could hold it, with the step tweens above.
   - **The promotion beat's card runs 1045 px wide, edge to edge** (the other
     screens' is 994): `TitleLabel` (`H1Label`) does not wrap, and "Selamat,
     naik ke Kelas 8!" sets the card's minimum width. Wrapping it strands "8!"

@@ -885,6 +885,22 @@ func test_no_tutorial_text_says_disini_silahkan_or_dimana() -> void:
 			assert_false(src.contains(drift), "%s still says \"%s\"" % [path, drift])
 
 
+## The tutorial copy speaks to the player as "kamu", as the Lobby's, the
+## headmaster's and the newer lines do. "Anda" and "kalian" had crept in beside
+## it -- AturJadwal switched voice between two consecutive cards -- and
+## StudentCard's welcome said "performance".
+func test_the_tutorial_copy_addresses_the_player_as_kamu() -> void:
+	var formal := RegEx.create_from_string("\\b(anda|Anda|kalian|Kalian)\\b")
+	for path: String in PROMPT_SCREENS:
+		var found := formal.search(FileAccess.get_file_as_string(path))
+		assert_true(found == null, "%s still says \"%s\""
+			% [path, found.get_string() if found != null else ""])
+	assert_contains(FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd"),
+		"Kamu akan menjadwalkan", "the card after \"Di sini kamu akan\" keeps its voice (not vacuous)")
+	assert_false(FileAccess.get_file_as_string(STUDENT_CARD_PATH).contains("performance"),
+		"StudentCard's welcome says kemampuan, not performance")
+
+
 const NOTEBOOK_FRAME_PATH := "res://Scenes/UI/NotebookFrame.tscn"
 
 ## NotebookFrame.tscn floors every frame at 640 x 520, which suits a popup and
@@ -942,3 +958,17 @@ func test_mount_starts_the_card_unseen() -> void:
 	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
 	assert_contains(_function_source(src, "mount"), "panel.modulate.a = 0.0",
 		"and mount() is what says so, before the card joins the tree")
+
+
+## mount() fills the card with nothing before its first step. That empty fill
+## used to count as the card's first, so the first real step -- and the
+## headmaster beat's first card -- played the step-change fade (badge, title,
+## body dropped to nothing and staggered back) on top of its own entrance.
+func test_an_empty_fill_leaves_the_first_real_fill_to_come() -> void:
+	var overlay := _make_control(Vector2.ZERO, Vector2(1080, 1920))
+	var catcher := Button.new()
+	overlay.add_child(catcher)
+	var panel := TutorialPanel.mount(load(SCENE_PATH) as PackedScene, overlay, catcher)
+	assert_false(panel._content_shown, "mount()'s empty fill is not the card's first fill")
+	panel.show_beat("Pak Kepala Sekolah", "Judul", "Isi", TutorialPanel.DEFAULT_PROMPT)
+	assert_true(panel._content_shown, "the first real fill is")

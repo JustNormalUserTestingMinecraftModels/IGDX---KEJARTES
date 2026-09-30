@@ -83,6 +83,8 @@ func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
 	assert_true(frame != null, "the card is a NotebookFrame")
 	if frame != null:
 		assert_eq(frame.title_text, "TUTORIAL")
+		assert_eq(frame.title_text, root.get("step_sticker_text"),
+			"the scene's authored sticker is the STEP default, so it reads right before any show_step()")
 		assert_false(frame.show_close, "a forced step shows no close")
 
 
@@ -242,6 +244,50 @@ func test_show_beat_shows_the_name_plate_with_the_speaker() -> void:
 	assert_eq(panel.mode, TutorialPanel.Mode.STEP, "a step after a beat is a step again")
 	assert_true(pill.visible)
 	assert_false(plate.visible)
+
+
+## A promotion's congratulation is a story beat, not a lesson (spec 1b), so the
+## frame's sticker must not keep saying TUTORIAL over it: a player with
+## tutorials off would read a story beat labelled as one.
+func test_the_sticker_follows_the_mode() -> void:
+	var panel := _make()
+	var frame := panel.get_node("Frame") as NotebookFrame
+	var sticker := frame.get_node("Chrome/Sticker") as Control
+	var label := frame.get_node("Chrome/Sticker/Title") as Label
+	assert_eq(frame.title_text, "TUTORIAL", "a card starts as a tutorial step")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
+	assert_eq(frame.title_text, "PENGUMUMAN", "a beat is an announcement")
+	assert_eq(label.text, "PENGUMUMAN", "and the sticker's own label says so")
+	assert_true(sticker.visible, "the sticker stays")
+	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
+	assert_eq(frame.title_text, "TUTORIAL", "the next step is a tutorial again")
+	assert_eq(label.text, "TUTORIAL")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
+	panel.mode = TutorialPanel.Mode.STEP
+	assert_eq(frame.title_text, "TUTORIAL", "switching the mode back does it too")
+
+
+func test_the_sticker_texts_are_exports_that_apply_live() -> void:
+	var panel := _make()
+	for export_name: String in ["step_sticker_text", "beat_sticker_text"]:
+		var exported := false
+		for prop: Dictionary in panel.get_property_list():
+			if prop["name"] == export_name and (int(prop["usage"]) & PROPERTY_USAGE_EDITOR) != 0:
+				exported = true
+		assert_true(exported, export_name + " is an @export on the panel root, so a scene can set it")
+	assert_eq(panel.step_sticker_text, "TUTORIAL")
+	assert_eq(panel.beat_sticker_text, "PENGUMUMAN")
+	var frame := panel.get_node("Frame") as NotebookFrame
+	panel.beat_sticker_text = "KABAR"
+	assert_eq(frame.title_text, "TUTORIAL", "changing the beat's text leaves a step's sticker alone")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
+	assert_eq(frame.title_text, "KABAR", "the beat wears its own text")
+	panel.beat_sticker_text = "SAMBUTAN"
+	assert_eq(frame.title_text, "SAMBUTAN", "and a change while it shows lands at once")
+	panel.step_sticker_text = "PANDUAN"
+	assert_eq(frame.title_text, "SAMBUTAN", "a step's text does not touch a beat")
+	panel.show_step("Judul", "Isi", "Ketuk")
+	assert_eq(frame.title_text, "PANDUAN")
 
 
 func test_the_badge_nodes_carry_no_theme_overrides_beyond_layout_constants() -> void:

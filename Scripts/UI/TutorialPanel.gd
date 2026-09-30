@@ -13,7 +13,9 @@ extends MarginContainer
 ## The head badge is one of two authored nodes, chosen by `mode`: the step
 ## pill ("Langkah 2 / 5", shown by show_step() for a multi-step flow) or the
 ## speaker's name plate (shown by show_beat(), the headmaster's beat). Both
-## are scene nodes above the title, not built here. play_in() and
+## are scene nodes above the title, not built here. The frame's sticker
+## follows the mode too (step_sticker_text, beat_sticker_text): a beat is a
+## story, and must not wear the tutorial's label. play_in() and
 ## play_out() are the card's entrance and exit springs; a caller that
 ## positions the card runs them after it has placed it.
 ##
@@ -67,6 +69,24 @@ enum Mode {
 @export var mode: Mode = Mode.STEP:
 	set(value):
 		mode = value
+		if is_inside_tree():
+			_apply_mode()
+
+## The title on the frame's sticker while a tutorial step heads the card
+## (mode STEP). The scene authors the same word on the Frame, so the sticker
+## reads right before the first show_step().
+@export var step_sticker_text: String = "TUTORIAL":
+	set(value):
+		step_sticker_text = value
+		if is_inside_tree():
+			_apply_mode()
+
+## The title on the frame's sticker while the headmaster's beat heads the card
+## (mode HEADMASTER). A promotion's congratulation is a story beat, not a
+## lesson, so its card must not wear the tutorial's label.
+@export var beat_sticker_text: String = "PENGUMUMAN":
+	set(value):
+		beat_sticker_text = value
 		if is_inside_tree():
 			_apply_mode()
 
@@ -216,11 +236,16 @@ func _apply_prompt_tint() -> void:
 	prompt_label.self_modulate = Juice.tokens().state_success if prompt_success_tint else Color.WHITE
 
 
-## Shows the badge `mode` asks for: the pill (only when show_step() was
-## given a count above one) or the name plate.
+## Shows the badge `mode` asks for, the pill (only when show_step() was given
+## a count above one) or the name plate, and titles the frame's sticker to
+## match. The sticker is only written when it changes: each write re-sorts the
+## frame, and show_step() lands here on every step.
 func _apply_mode() -> void:
 	step_pill.visible = mode == Mode.STEP and _pill_wanted
 	name_plate.visible = mode == Mode.HEADMASTER
+	var sticker := step_sticker_text if mode == Mode.STEP else beat_sticker_text
+	if frame.title_text != sticker:
+		frame.title_text = sticker
 
 
 ## Fills all three labels for one tutorial step and shows the step pill.

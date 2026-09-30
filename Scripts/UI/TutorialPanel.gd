@@ -382,10 +382,15 @@ static func cut_hole(overlay: Control, controls: Array, padding: float = SPOT_PA
 ## Instances the coach-mark `scene` into `overlay`, just under `before` (the
 ## overlay's click catcher, so a tap still reaches it), and empties it: with
 ## no step yet, show_step() keeps the scene's sample pill ("Langkah 1 / 3")
-## hidden until the first real step writes its own. Returns the card.
+## hidden until the first real step writes its own. The card starts fully
+## transparent: an empty card would otherwise show at the overlay's corner for
+## a frame before it is placed, and the screens' step exit (which only plays
+## for a card they can see) would animate it. Each screen's step entrance fades
+## it in once it is placed. Returns the card.
 static func mount(scene: PackedScene, overlay: Control, before: Control) -> TutorialPanel:
 	var panel: TutorialPanel = scene.instantiate()
 	panel.name = "TutorialPanel"
+	panel.modulate.a = 0.0
 	overlay.add_child(panel)
 	overlay.move_child(panel, before.get_index())
 	panel.show_step("", "", DEFAULT_PROMPT)

@@ -927,3 +927,18 @@ func test_a_short_step_makes_a_card_shorter_than_the_popup_floor() -> void:
 	LayoutFrame.settle(panel)
 	assert_true(panel.get_combined_minimum_size().y > short_height + 100.0,
 		"a long step's card still grows with its text")
+
+
+## An empty card at the overlay's corner used to show for a frame before its
+## screen placed it, and the screens' step exit (which only plays for a card
+## they can see) animated it. Mounted cards start transparent; each screen's
+## step entrance fades them in.
+func test_mount_starts_the_card_unseen() -> void:
+	var overlay := _make_control(Vector2.ZERO, Vector2(1080, 1920))
+	var catcher := Button.new()
+	overlay.add_child(catcher)
+	var panel := TutorialPanel.mount(load(SCENE_PATH) as PackedScene, overlay, catcher)
+	assert_eq(panel.modulate.a, 0.0, "the mounted card is fully transparent until a step fades it in")
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_contains(_function_source(src, "mount"), "panel.modulate.a = 0.0",
+		"and mount() is what says so, before the card joins the tree")

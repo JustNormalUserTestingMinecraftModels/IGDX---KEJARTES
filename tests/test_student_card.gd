@@ -318,6 +318,18 @@ func test_a_fresh_tutorial_panel_shows_no_sample_pill() -> void:
 		"once in the tree, an empty show_step() hides the scene's authored sample pill")
 
 
+## StudentCard builds its own card (it does not go through TutorialPanel.mount), so it
+## says the same thing mount() does: transparent until a step or the beat fades it in,
+## or an empty card shows at the overlay's corner for a frame before it is placed.
+func test_the_card_starts_unseen_before_it_joins_the_tree() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var body := _function_source(src, "_build_tutorial_panel")
+	var hidden := body.find("_tutorial_panel.modulate.a = 0.0")
+	var added := body.find("color_rect.add_child(_tutorial_panel)")
+	assert_true(hidden != -1, "_build_tutorial_panel makes the card transparent")
+	assert_true(hidden < added, "and does it before the card is in the tree")
+
+
 # ----------------------------------------------------------------- helper
 
 ## The source of `func_name` in `src`: from its `func` line up to the next

@@ -290,7 +290,7 @@ func _populate_default_tutorial_steps() -> void:
 func _build_tutorial_panel():
 	_tutorial_panel = tutorial_panel_scene.instantiate()
 	_tutorial_panel.name = "TutorialPanel"
-
+	_tutorial_panel.modulate.a = 0.0  # unseen until a step or the beat fades it in
 	# The panel hasn't entered the tree yet (it's appended below), so its
 	# @onready prompt_label isn't live -- get_node still works because
 	# instantiate() built the subtree.

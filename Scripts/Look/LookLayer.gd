@@ -47,7 +47,8 @@ const GLINT_MATERIAL := preload("res://Scripts/Shaders/glint_material.tres")
 ## The full-rect ColorRect carrying the vignette and grain shader.
 @onready var _cover: ColorRect = $Cover
 
-## The full-rect ColorRect carrying the bloom, drawn under the cover so the
+## The full-rect ColorRect carrying the bloom (off by default, see
+## bloom_enabled), drawn under the cover so the
 ## vignette darkens the bloom rather than the bloom washing out the vignette.
 ##
 ## It reads the screen texture once per frame, which is the only genuinely
@@ -55,6 +56,16 @@ const GLINT_MATERIAL := preload("res://Scripts/Shaders/glint_material.tres")
 ## its own always-on autoload. _refresh() takes the whole layer out of the draw
 ## list when the setting is off, so an unchecked box costs nothing at all.
 @onready var _bloom: ColorRect = $Bloom
+
+## Whether Efek Visual adds its own full-screen bloom on top of the glow each
+## screen already carries. OFF since 2026-09-30, the owner's call: stacked on
+## the Lobby's glow it read as overwhelming, so Efek Visual is the vignette
+## and the grain. On, it still needs Grafis HD. Strength and threshold are
+## bloom_material.tres's; the debug overlay's Look tab has the same switch.
+@export var bloom_enabled: bool = false:
+	set(value):
+		bloom_enabled = value
+		_refresh()
 
 ## How long the layer takes to fade in or out when the setting is flipped, in
 ## seconds. A hard cut on a full-screen tint reads as a glitch.
@@ -125,11 +136,6 @@ static func msaa_for(hd: bool) -> Viewport.MSAA:
 	return int(ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_2d", 0)) as Viewport.MSAA
 
 
-## True while the global bloom may draw: Efek Visual on and Grafis HD on.
-static func wants_bloom() -> bool:
-	return GameSettings.look_layer_enabled and GameSettings.hd_graphics_enabled
-
-
 func _apply_msaa() -> void:
 	get_tree().root.msaa_2d = msaa_for(GameSettings.hd_graphics_enabled)
 
@@ -162,11 +168,11 @@ func _refresh(instant: bool = false) -> void:
 	_tween = null
 	if want:
 		visible = true
-	# Grafis HD off hides the bloom, not just fades it: a transparent bloom
-	# still copies the screen every frame. Efek Visual's own fade is the
-	# layer's, above and below.
+	# Hidden, not just faded, when it may not run: a transparent bloom still
+	# copies the screen every frame. Efek Visual's own fade is the layer's,
+	# above and below.
 	if _bloom != null:
-		_bloom.visible = GameSettings.hd_graphics_enabled
+		_bloom.visible = bloom_enabled and GameSettings.hd_graphics_enabled
 	if instant or fade_seconds <= 0.0:
 		_cover.modulate.a = target
 		if _bloom != null:

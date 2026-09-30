@@ -85,7 +85,7 @@ read-only for us.
 | `ItemDatabase`, `Cart` | Shop item catalog and cart. |
 | `Achievements`, `AchievementToast` | Achievement tracker (saved), prize multipliers, unlock banner. |
 | `_mcp_game_helper` | Godot AI MCP runtime hook. |
-| `LookLayer` | Bloom, vignette, grain; off unless `GameSettings.look_layer_enabled`. |
+| `LookLayer` | Vignette, grain (bloom off); off unless `GameSettings.look_layer_enabled`. |
 | `RewardFeedback` | `play(moment, anchor, opts)`: tiered sound, particles, haptics, shake. |
 
 ### The two student representations — know which you're holding

@@ -140,8 +140,9 @@ func test_nothing_clips_the_screen_rim() -> void:
 func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 	# Front-row head centres, derived from the portrait art's opaque
 	# bounds (Thea.png: art starts 10.8% down, centred 49.9% across)
-	# mapped through Slot3 and Slot4's rects.
-	var heads := [Vector2(225, 389), Vector2(845, 389)]
+	# mapped through Slot3 and Slot4's rects; 83 px lower since the seats
+	# sit on the desk's real back edge (2026-10-01).
+	var heads := [Vector2(225, 472), Vector2(845, 472)]
 	var radius := 110.0
 	for n in ["DisplayUang", "DailyLogin", "SettingsButton", "ProgressHeader", "IconRail"]:
 		var c := _hud(n)
@@ -160,8 +161,9 @@ func test_hud_does_not_sit_on_the_front_row_faces() -> void:
 ## How far a seat's centre may sit from the centre of its desk's top, px.
 const SEAT_TOLERANCE := 2.5
 ## The rows of a desk's top surface, in the desk plate's own pixels, that the
-## seat is centred against (the back desks' tops run from y=343 to about 560).
-const DESK_TOP_ROWS := Vector2i(343, 560)
+## seat is centred against: the back desks' tops run from y=410 to about 560.
+## Rows 343-409 are the chair back drawn behind the desk, not the desk.
+const DESK_TOP_ROWS := Vector2i(410, 560)
 
 
 ## The mean centre, in plate pixels, of the opaque span across a desk plate's

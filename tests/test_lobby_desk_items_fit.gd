@@ -13,9 +13,12 @@ extends McpTestSuite
 ## wears that scale, and the front row's wider items run past their desks
 ## and off the screen's edge exactly as the picture's do.
 ##
-## The picture's desks are other art than the game's (429 px wide against
-## 448), so its numbers are mapped through K = 448 / 429, anchored on each
-## desk's back edge: spec and plan 2026-09-30-lobby-seating-and-planks.
+## The picture's numbers are mapped through K = 448 / 429 (game desk width
+## over the picture's), anchored on each desk's back edge: spec and plan
+## 2026-09-30-lobby-seating-and-planks. That pass anchored on the top of the
+## chair back drawn into every desk plate, which is the same wood as the desk,
+## so every seat sat one chair-height too high; since 2026-10-01 the edge is
+## read from the plate's own pixels (spec 2026-10-01-lobby-seat-on-desk-edge).
 ##
 ## Measured from the packed scene's SceneState, so the Lobby is never
 ## instanced. A Hand_* node draws its texture at native size (stretch_mode 3)
@@ -40,6 +43,15 @@ const TOLERANCE := 0.5
 const SCALE_TOLERANCE := 0.002
 ## The portraits' native side, px.
 const PORTRAIT_SIDE := 1280.0
+## Reads a texture's pixels whatever its import compression.
+const TexturePixels := preload("res://tests/texture_pixels.gd")
+## A desk plate row with an opaque run wider than this is desk, not chair:
+## the chair backs drawn into the plates run at most 223 px, and each desk's
+## first row at least 303.
+const DESK_MIN_RUN := 260
+## Slack between a seat's Portrait bottom and its desk's back edge, px; the
+## picture's own gap is 1.25 (Thea's square ends at 811.8, her desk at 813).
+const EDGE_TOLERANCE := 1.5
 
 ## What the picture shows in each seat. anchor_picture / anchor_game are one
 ## point in each: vertically the desk's back edge; horizontally, in the front
@@ -48,29 +60,29 @@ const PORTRAIT_SIDE := 1280.0
 ## game (test_lobby_layout keeps the back seats centred on their desks, an
 ## owner rule the picture's looser desk art does not overrule). hand_origin
 ## and portrait_origin are where the native texture's pixel (0, 0) lands in
-## the picture.
+## the picture. "desk" is the seat's desk plate node.
 const SEATS := {
 	"Slot1": {
-		"portraits": "StudentPortraitsContainer_Back/Slot1", "hands": "StudentHandsContainer_Back/Slot1",
-		"anchor_picture": Vector2(253.8, 523.0), "anchor_game": Vector2(271.26, 338),
+		"portraits": "StudentPortraitsContainer_Back/Slot1", "hands": "StudentHandsContainer_Back/Slot1", "desk": "Meja_KiriAtas",
+		"anchor_picture": Vector2(253.8, 523.0), "anchor_game": Vector2(271.26, 400.045),
 		"student": "Andi", "hand_scale": 0.80, "hand_origin": Vector2(48.2, 499.0), "mirrored": false,
 		"portrait_scale": 0.20, "portrait_origin": Vector2(125.8, 267.4),
 	},
 	"Slot2": {
-		"portraits": "StudentPortraitsContainer_Back/Slot2", "hands": "StudentHandsContainer_Back/Slot2",
-		"anchor_picture": Vector2(826.2, 523.5), "anchor_game": Vector2(803.74, 338),
+		"portraits": "StudentPortraitsContainer_Back/Slot2", "hands": "StudentHandsContainer_Back/Slot2", "desk": "Meja_KananAtas",
+		"anchor_picture": Vector2(826.2, 523.5), "anchor_game": Vector2(803.74, 400.0),
 		"student": "Citra", "hand_scale": 0.80, "hand_origin": Vector2(630.0, 462.0), "mirrored": false,
 		"portrait_scale": 0.20, "portrait_origin": Vector2(698.2, 267.4),
 	},
 	"Slot3": {
-		"portraits": "StudentPortraitsContainer_Front/Slot3", "hands": "StudentHandsContainer_Front/Slot3",
-		"anchor_picture": Vector2(481.0, 813.0), "anchor_game": Vector2(462, 683),
+		"portraits": "StudentPortraitsContainer_Front/Slot3", "hands": "StudentHandsContainer_Front/Slot3", "desk": "Meja_KiriBawah",
+		"anchor_picture": Vector2(481.0, 813.0), "anchor_game": Vector2(462, 766),
 		"student": "Marcel", "hand_scale": 1.00, "hand_origin": Vector2(-41.0, 717.0), "mirrored": true,
 		"portrait_scale": 0.25, "portrait_origin": Vector2(67.8, 491.8),
 	},
 	"Slot4": {
-		"portraits": "StudentPortraitsContainer_Front/Slot4", "hands": "StudentHandsContainer_Front/Slot4",
-		"anchor_picture": Vector2(599.0, 813.0), "anchor_game": Vector2(622, 683),
+		"portraits": "StudentPortraitsContainer_Front/Slot4", "hands": "StudentHandsContainer_Front/Slot4", "desk": "Meja_KananBawah",
+		"anchor_picture": Vector2(599.0, 813.0), "anchor_game": Vector2(622, 766),
 		"student": "Thea", "hand_scale": 1.00, "hand_origin": Vector2(598.0, 727.0), "mirrored": false,
 		"portrait_scale": 0.25, "portrait_origin": Vector2(692.2, 491.8),
 	},
@@ -112,6 +124,8 @@ const BEFORE := {
 
 ## Written properties per node, keyed by path under the scene root.
 var _props: Dictionary
+## Each seat's desk back edge in classroom px, read once from the plates.
+var _edges: Dictionary
 
 
 ## The runner's name for this suite.
@@ -119,9 +133,13 @@ func suite_name() -> String:
 	return "lobby_desk_items_fit"
 
 
-## Reads the scene's node properties once for every test.
+## Reads the scene's node properties and the desks' back edges once for
+## every test.
 func suite_setup(_ctx: Dictionary) -> void:
 	_props = read_scene_props(load(SCENE) as PackedScene)
+	_edges = {}
+	for name: String in SEATS:
+		_edges[name] = _desk_back_edge(SEATS[name]["desk"])
 
 
 ## Every node's written properties, keyed by its path under the root.
@@ -155,6 +173,33 @@ func _slot_rect(slot_path: String) -> Rect2:
 	var size := Vector2(float(slot.get("offset_right", 0.0)) - float(slot.get("offset_left", 0.0)),
 		float(slot.get("offset_bottom", 0.0)) - float(slot.get("offset_top", 0.0)))
 	return Rect2(origin, size)
+
+
+## The first row of `plate`'s texture whose longest opaque run is wider than
+## DESK_MIN_RUN, in classroom px (the plate's offset_top added; the plates
+## are never stretched vertically). A colour or alpha bounding box would start
+## at the chair back's top instead.
+func _desk_back_edge(plate: String) -> float:
+	var props := _node(plate)
+	var img := TexturePixels.of(props["texture"] as Texture2D)
+	if img.is_compressed():
+		img.decompress()
+	for y in img.get_height():
+		var run := 0
+		for x in img.get_width():
+			run = run + 1 if img.get_pixel(x, y).a > 0.5 else 0
+			if run > DESK_MIN_RUN:
+				return y + float(props.get("offset_top", 0.0))
+	return INF
+
+
+## A slot's Portrait rect in classroom pixels.
+func _portrait_rect(slot_path: String) -> Rect2:
+	var slot := _slot_rect(slot_path)
+	var p := _node("%s/Portrait" % slot_path)
+	return Rect2(slot.position + Vector2(p.get("offset_left", 0.0), p.get("offset_top", 0.0)),
+		slot.size + Vector2(float(p.get("offset_right", 0.0)) - float(p.get("offset_left", 0.0)),
+			float(p.get("offset_bottom", 0.0)) - float(p.get("offset_top", 0.0))))
 
 
 ## Where a Hand_* node draws its texture's centre, in classroom pixels.
@@ -201,11 +246,7 @@ func _row_rise(row: Array) -> float:
 func test_each_seats_portrait_sits_where_the_picture_puts_it() -> void:
 	for name: String in SEATS:
 		var seat: Dictionary = SEATS[name]
-		var slot := _slot_rect(seat["portraits"])
-		var p: Dictionary = _node("%s/Portrait" % seat["portraits"])
-		var got := Rect2(slot.position + Vector2(p.get("offset_left", 0.0), p.get("offset_top", 0.0)),
-			slot.size + Vector2(float(p.get("offset_right", 0.0)) - float(p.get("offset_left", 0.0)),
-				float(p.get("offset_bottom", 0.0)) - float(p.get("offset_top", 0.0))))
+		var got := _portrait_rect(seat["portraits"])
 		var side: float = PORTRAIT_SIDE * float(seat["portrait_scale"]) * K
 		var want := Rect2(to_game(seat, seat["portrait_origin"]), Vector2(side, side))
 		assert_true(got.position.distance_to(want.position) < TOLERANCE and got.end.distance_to(want.end) < TOLERANCE,
@@ -280,3 +321,27 @@ func test_no_desk_item_leaves_the_classroom() -> void:
 			var inside := drawn.intersection(Rect2(Vector2.ZERO, CLASSROOM_SIZE))
 			assert_true(inside.get_area() >= drawn.get_area() * 0.75,
 				"%s in %s draws %s, more than a quarter outside the classroom" % [path.get_file(), name, str(drawn)])
+
+
+## The picture is anchored on each desk's real back edge, read from the
+## plate's pixels, so a moved plate or new desk art cannot leave the seats
+## on a stale number.
+func test_each_seat_is_anchored_on_its_desks_back_edge() -> void:
+	for name: String in SEATS:
+		var seat: Dictionary = SEATS[name]
+		var plate := _node(seat["desk"])
+		assert_eq((plate.get("scale", Vector2.ONE) as Vector2).y, 1.0,
+			"%s is not stretched vertically" % seat["desk"])
+		assert_true(absf((seat["anchor_game"] as Vector2).y - float(_edges[name])) < 0.01,
+			"%s is anchored at y=%.3f, its desk's back edge is at %.3f"
+				% [name, (seat["anchor_game"] as Vector2).y, _edges[name]])
+
+
+## As in the picture, each seat's body ends on its desk's back edge, so the
+## arms rest on the desk top and the body hides the chair behind it.
+func test_each_seats_portrait_ends_on_its_desks_back_edge() -> void:
+	for name: String in SEATS:
+		var bottom := _portrait_rect(SEATS[name]["portraits"]).end.y
+		assert_true(absf(bottom - float(_edges[name])) <= EDGE_TOLERANCE,
+			"%s's Portrait ends at y=%.2f, its desk's back edge is at %.2f"
+				% [name, bottom, _edges[name]])

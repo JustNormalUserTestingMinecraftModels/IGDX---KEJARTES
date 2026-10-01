@@ -4,16 +4,18 @@ extends McpTestSuite
 ## Targeted mipmaps (2026-09-22 crispness pass).
 ##
 ## The project draws canvas textures with Linear Mipmap filtering
-## (`default_texture_filter = 3`, pinned by tests/test_project_hygiene.gd).
+## (`default_texture_filter = 2`, pinned by tests/test_project_hygiene.gd;
+## until 2026-10-01 it was 3, which is Nearest Mipmap, not Linear).
 ## A mipmapped sampler only ever reads a mip chain that the importer actually
 ## generated, so the two halves of this suite are one argument:
 ##
 ##   TARGETS      -- measured downscale offenders that MUST carry a chain, or
 ##                   they minify from a single bilinear tap and shimmer.
 ##   MUST_STAY_CRISP -- art whose sharpness IS the design, which must NOT carry
-##                   one. With a single mip level the mipmapped filter is a
-##                   no-op on them, which is the whole reason the global
-##                   default could be flipped without a blur pass.
+##                   one. With a single mip level the mipmapped filter reads
+##                   level 0 bilinearly, the same as plain Linear, which is
+##                   the whole reason the global default could be flipped
+##                   without a blur pass.
 ##
 ## Ratios below were measured live at 1080x1920 through tests/layout_frame.gd,
 ## not derived from .tscn offsets -- several static derivations were wrong
@@ -149,7 +151,7 @@ func test_every_target_texture_actually_carries_a_chain() -> void:
 			+ ", ".join(flat))
 
 
-## The premise that lets `default_texture_filter = 3` be a global setting.
+## The premise that lets `default_texture_filter = 2` be a global setting.
 func test_crisp_art_carries_no_chain_to_sample() -> void:
 	var blurred := PackedStringArray()
 	for source in MUST_STAY_CRISP:

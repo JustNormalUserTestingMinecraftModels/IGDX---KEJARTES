@@ -8,6 +8,22 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Canvas filter is Linear Mipmap for real
+
+The 2026-09-22 crispness pass set `default_texture_filter = 3` believing it
+was Linear Mipmap. In Godot 4.6.2's project setting, 3 is **Nearest** Mipmap
+(the hint string reads `Nearest,Linear,Linear Mipmap,Nearest Mipmap`), so
+for nine days every texture drew with stair-stepped edges: a live probe
+rendered a 2-texel ramp stretched 64x as a hard step. The owner picked
+option A from a side-by-side of the Lobby, Badminton and Skin Select under
+both values; the setting is now 2. Mip chains are still read, and art with
+a single mip level is back to the plain bilinear look it had before that
+pass. `test_project_hygiene` pins 2; its comment, `test_texture_mipmaps`'s
+and `skin_card_focus.gdshader`'s now name the enum correctly (the
+2026-09-22 entry below keeps the old, wrong label as history).
+`SkinSelect.tscn`'s `Frozen` override and the shader's own linear sampler
+stay: harmless now, and they keep those reads linear whatever the default.
+
 ## 2026-10-01 — Skin1 art redraw
 
 The artist's redrawn Skin1 set (Drive folder

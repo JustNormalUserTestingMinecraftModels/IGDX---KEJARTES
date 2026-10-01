@@ -297,6 +297,16 @@ static func save(week: Dictionary = {}) -> void:
 	if err != OK:
 		push_warning("SaveGame: could not move the save into place (error %d)" % err)
 		return
+	delete_legacy_inventory()
+
+
+## Deletes the pre-2026-10-01 inventory-only save: once a run carrying its
+## items is on disk (save()), or when every bit of progress is wiped
+## (GameState.forget_session(), so a new game cannot merge it back). No-op in
+## the editor.
+static func delete_legacy_inventory() -> void:
+	if Engine.is_editor_hint():
+		return
 	if FileAccess.file_exists(LEGACY_INVENTORY_PATH):
 		DirAccess.remove_absolute(LEGACY_INVENTORY_PATH)
 

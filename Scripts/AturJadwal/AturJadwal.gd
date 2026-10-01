@@ -1289,10 +1289,9 @@ func _input(event: InputEvent) -> void:
 			_holiday_dismissed.emit()
 			get_viewport().set_input_as_handled()
 
-## Fills the objective strip (D8): the month and week of the grade, how many
-## students are on the per-student pass line, and the bar toward it. Also paints
-## the two rounded_gradient materials from the tokens -- the strip brown to
-## deeper brown with a gold rim, the chip gold -- since a shader has no theme.
+## Fills the objective strip (D8): the month and week of the grade, how many students are on the
+## per-student pass line, and the bar toward it. Also paints the two rounded_gradient materials from
+## the tokens -- the strip brown to deeper brown with a gold rim, the chip gold -- since a shader has no theme.
 func _update_objective_strip() -> void:
 	if objective_title:
 		objective_title.text = ObjectiveHint.title(GameState.minggu_ke, GameState.max_minggu)

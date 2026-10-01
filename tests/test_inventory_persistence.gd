@@ -56,18 +56,23 @@ func test_save_inventory_is_gated_in_editor_context() -> void:
 
 func test_forget_session_resets_run_state_but_keeps_progress_flags() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
-	var start := src.find("func forget_session")
-	assert_gt(start, 0, "forget_session must exist")
+	var start := src.find("func reset_run")
+	assert_gt(start, 0, "reset_run must exist")
 	var body := src.substr(start, src.find("\nfunc ", start + 1) - start)
 	for field in ["inventory", "approved_students", "day_schedules", "pending_earnings",
 			"minigame_gain_this_week", "player_money", "minggu_ke", "current_grade",
 			"run_stats"]:
-		assert_contains(body, field, "forget_session must reset " + field)
+		assert_contains(body, field, "reset_run must reset " + field)
 	assert_false(body.contains("is_game_beaten"),
-		"forget_session must NOT wipe the persisted is_game_beaten flag")
+		"reset_run must NOT wipe the persisted is_game_beaten flag")
 	assert_false(body.contains("debug_level_select_enabled"),
-		"forget_session must NOT wipe the persisted debug_level_select flag")
-	assert_contains(body, "clear_inventory_save()", "forget_session drops the on-disk save")
+		"reset_run must NOT wipe the persisted debug_level_select flag")
+	var forget_start := src.find("func forget_session")
+	assert_gt(forget_start, 0, "forget_session must exist")
+	var forget_body := src.substr(forget_start, src.find("\nfunc ", forget_start + 1) - forget_start)
+	assert_contains(forget_body, "reset_run()", "forget_session resets the run")
+	assert_contains(forget_body, "SaveGame.delete_save()", "forget_session drops the on-disk save")
+	assert_contains(forget_body, "Achievements.reset()", "forget_session wipes achievement progress")
 
 func test_transition_flushes_inventory_on_scene_change() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Transition/Transition.gd")

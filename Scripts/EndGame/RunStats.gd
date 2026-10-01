@@ -10,8 +10,8 @@ extends Resource
 ## GameState.use_item(), SchoolDay._pay_out_wirausaha(), and SchoolDay's
 ## event branch -- and read only by RunGrade and RunResult.
 ##
-## Session-scoped, like everything else on GameState: this is a Resource
-## for the typed fields and the Inspector, NOT because it is ever saved.
+## Saved with the run through to_dict()/from_dict() (SaveGame); a Resource
+## for the typed fields and the Inspector, never written with ResourceSaver.
 
 ## Minigames the roster won this grade.
 @export var minigames_won: int = 0
@@ -72,6 +72,35 @@ func minigame_win_rate() -> float:
 	if played <= 0:
 		return 0.0
 	return float(minigames_won) / float(played)
+
+
+## Every tally as {name: value}, for SaveGame. Walks the property list, so a
+## tally added or removed later is saved without touching this.
+func to_dict() -> Dictionary:
+	var d := {}
+	for prop in get_property_list():
+		if not (prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
+			continue
+		var value: Variant = get(prop.name)
+		d[prop.name] = value.duplicate(true) if (value is Array or value is Dictionary) else value
+	return d
+
+
+## Inverse of to_dict(): resets, then copies back every key this build still
+## has. Unknown keys (a tally since removed) are ignored; typed arrays come
+## back through assign() so they keep their type.
+func from_dict(d: Dictionary) -> void:
+	reset()
+	for prop in get_property_list():
+		if not (prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) or not d.has(prop.name):
+			continue
+		var current: Variant = get(prop.name)
+		if current is Array:
+			var typed: Array = current.duplicate()
+			typed.assign(d[prop.name])
+			set(prop.name, typed)
+		else:
+			set(prop.name, d[prop.name])
 
 
 func reset() -> void:

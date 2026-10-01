@@ -575,9 +575,9 @@ func test_seen_beats_are_a_session_dictionary_on_game_state() -> void:
 
 func test_forgetting_the_session_and_starting_a_run_forget_the_seen_beats() -> void:
 	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
-	var forget := _function_source(src, "forget_session")
-	assert_false(forget.is_empty(), "forget_session was found")
-	assert_contains(forget, "headmaster_beats_seen = {}", "forget_session clears it")
+	var forget := _function_source(src, "reset_run")
+	assert_false(forget.is_empty(), "reset_run was found")
+	assert_contains(forget, "headmaster_beats_seen = {}", "reset_run (Forget Session's wipe) clears it")
 	var run := _function_source(src, "set_grade")
 	assert_false(run.is_empty(), "set_grade was found")
 	assert_contains(run, "headmaster_beats_seen = {}",

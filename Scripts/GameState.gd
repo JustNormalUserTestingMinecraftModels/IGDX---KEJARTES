@@ -110,6 +110,10 @@ var run_stats: RunStats = RunStats.new()
 ## RunResult to force a D grade without re-running the evaluation.
 var run_failed: bool = false
 
+## A saved week in progress, handed from SaveGame.load_save() to
+## SchoolDay._ready(), which resumes it and empties this. Never saved itself.
+var pending_week_resume: Dictionary = {}
+
 ## Emitted when a student's worn skin changes (equip_skin, or a debug lock
 ## that strips it).
 signal skin_changed(student_name: String)
@@ -482,11 +486,11 @@ func is_shop_sold_out() -> bool:
 	return true
 
 
-## Debug: return every session run-state field to its declared default and
-## drop the on-disk inventory save. Deliberately leaves is_game_beaten and
-## debug_level_select_enabled alone -- those are persisted progress flags
-## (GameSettings writes them to settings.cfg), not run state.
-func forget_session() -> void:
+## Return every run field to its declared default: what "Permainan baru"
+## wipes. Leaves achievements, settings and the persisted progress flags
+## (is_game_beaten, debug_level_select_enabled -- GameSettings writes them)
+## alone, and touches no file.
+func reset_run() -> void:
 	next_scene = "res://Scenes/MainMenu/MainMenu.tscn"
 	returned_from_student_card = false
 	approved_students = []
@@ -505,6 +509,7 @@ func forget_session() -> void:
 	grade7_student_ids = []
 	grade8_student_ids = []
 	run_failed = false
+	pending_week_resume = {}
 	equipped_skins = {}
 	skin_unlock_overrides = {}
 	player_money = 0
@@ -514,9 +519,14 @@ func forget_session() -> void:
 	daily_login_day = 1
 	last_claim_date = ""
 	run_stats.reset()
-	clear_inventory_save()
-	Achievements.reset()
 	inventory_changed.emit()
+
+
+## Debug: reset_run(), delete the save file, and wipe achievement progress.
+func forget_session() -> void:
+	reset_run()
+	SaveGame.delete_save()
+	Achievements.reset()
 
 
 ## Stat ceiling shared with StudentData's mood/energy range.

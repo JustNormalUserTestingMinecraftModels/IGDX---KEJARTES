@@ -127,7 +127,7 @@ func test_reset_clears_the_promo() -> void:
 
 func test_forget_session_goes_through_reset_shop_week() -> void:
 	var src: String = FileAccess.get_file_as_string("res://Scripts/GameState.gd")
-	var at: int = src.find("func forget_session()")
+	var at: int = src.find("func reset_run()")
 	var body: String = src.substr(at, src.find("\nfunc ", at + 1) - at)
 	assert_true(body.contains("reset_shop_week()"),
 		"one place clears the shop week, promo included")

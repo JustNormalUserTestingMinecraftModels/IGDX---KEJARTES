@@ -56,10 +56,12 @@
 // first pulled toward grey by shadow_saturation, since a multiplied tone
 // cannot add blue to a dark that has none), and then
 // rescales each pixel to the luma it had before, so it moves hue and never
-// brightness: it cannot make a plate read darker. Every material leaves it
-// off (split_strength 0) except the Lobby's three -- its backdrop
-// (illustration_grade_material_lobby.tres), its desks and its faces, hands
-// and desk items -- until it has been tuned there and is carried to the rest.
+// brightness: it cannot make a plate read darker. Tuned on the Lobby first,
+// where the owner kept the deeper darks but asked for warm, not plum,
+// shadows; then carried to every grade material (2026-10-01). All six carry
+// the same split-tone values (tests/test_lobby_split_tone.gd); the shader's
+// own defaults stay off, so a new material starts ungraded until it copies
+// them.
 shader_type canvas_item;
 
 // Pull towards or away from grey. 1.0 is untouched.

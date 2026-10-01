@@ -38,10 +38,14 @@ const NODE_SLIDERS := [
 	[&"SunShafts", "intensity", "Berkas (SunShafts): Kekuatan", 0.0, 0.2, 0.005, 0.2],
 	[&"ScreenSaturation", "saturation", "Saturasi Layar", 0.0, 2.0, 0.01, 0.7],
 ]
-## The Lobby's split-tone materials (2026-10-01): its backdrop, its desks and
-## its faces, which also dress its hands and desk items. Every split-tone row
-## writes all three, so the room and the students cannot drift apart.
+## Every grade material carries the split-tone (2026-10-01): the shared
+## backdrop and cutout grades, the speaker splash, and the Lobby's backdrop,
+## desks and faces (which also dress its hands and desk items). Every
+## split-tone row writes all six, so no screen drifts from another.
 const SPLIT_TONE_MATERIALS := [
+	"res://Scripts/Shaders/illustration_grade_material.tres",
+	"res://Scripts/Shaders/illustration_grade_cutout.tres",
+	"res://Scripts/Shaders/illustration_grade_splash.tres",
 	"res://Scripts/Shaders/illustration_grade_material_lobby.tres",
 	"res://Scripts/Shaders/illustration_grade_cutout_lobby.tres",
 	"res://Scripts/Shaders/illustration_grade_face.tres",
@@ -238,7 +242,7 @@ static func _add_material_slider(vbox: VBoxContainer, mats: Array, uniform: Stri
 ## A switch and nine sliders over SPLIT_TONE_MATERIALS. The switch remembers
 ## the strength it turned off, so off and on again returns to the tuned look.
 static func _build_split_tone_section(vbox: VBoxContainer) -> void:
-	_add_heading(vbox, "Split-Tone Lobby (bayangan hangat, sorot krem):")
+	_add_heading(vbox, "Split-Tone (semua ilustrasi; bayangan hangat, sorot krem):")
 	var mats: Array = []
 	for path: String in SPLIT_TONE_MATERIALS:
 		var mat := load(path) as ShaderMaterial

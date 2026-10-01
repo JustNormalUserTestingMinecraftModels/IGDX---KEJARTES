@@ -1,9 +1,9 @@
 @tool
 extends McpTestSuite
 
-## The Lobby's split-tone grade (2026-10-01): deeper, still-warm shadows and
-## cream highlights, after the owner's key-art reference, on the Lobby only until
-## it has been tuned there and is carried to the rest of the game.
+## The split-tone grade (2026-10-01): deeper, still-warm shadows and cream
+## highlights, after the owner's key-art reference. Tuned on the Lobby first,
+## then carried to every grade material the same day.
 ##
 ## Design: docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md
 ##
@@ -13,19 +13,19 @@ extends McpTestSuite
 
 const SHADER := "res://Scripts/Shaders/illustration_grade.gdshader"
 const LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
-## The Lobby's three split-tone materials: backdrop, desks, faces (and, with
-## the faces, the hands and desk items).
+## The Lobby's three grade materials: backdrop, desks, faces (and, with the
+## faces, the hands and desk items).
 const LOBBY_PLAIN := "res://Scripts/Shaders/illustration_grade_material_lobby.tres"
 const LOBBY_CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"
 const FACE := "res://Scripts/Shaders/illustration_grade_face.tres"
-const LOBBY_MATERIALS := [LOBBY_PLAIN, LOBBY_CUTOUT, FACE]
-## The game's shared grades, which leave split-tone off until the spread pass.
-const SHARED_MATERIALS := [
-	"res://Scripts/Shaders/illustration_grade_material.tres",
+const PLAIN := "res://Scripts/Shaders/illustration_grade_material.tres"
+## Every grade material in the game. All six carry one split-tone.
+const ALL_MATERIALS := [
+	PLAIN,
 	"res://Scripts/Shaders/illustration_grade_cutout.tres",
 	"res://Scripts/Shaders/illustration_grade_splash.tres",
+	LOBBY_PLAIN, LOBBY_CUTOUT, FACE,
 ]
-const PLAIN := "res://Scripts/Shaders/illustration_grade_material.tres"
 const SPLIT_UNIFORMS := [
 	"shadow_tone", "highlight_tone", "split_balance", "split_strength", "shadow_saturation",
 ]
@@ -60,23 +60,23 @@ func _strength_or_zero(mat: ShaderMaterial) -> float:
 	return 0.0 if value == null else float(value)
 
 
-## The Lobby's three materials carry one split-tone between them. Tune one
-## from the Look page and write it into only that .tres, and the students
-## would lean a different colour from the room they sit in.
-func test_the_lobby_materials_agree_on_split_tone() -> void:
-	var first: ShaderMaterial = load(LOBBY_MATERIALS[0])
-	assert_true(first != null, "%s must exist" % LOBBY_MATERIALS[0])
+## Every grade material carries one split-tone. Tune one from the Look page
+## and write it into only that .tres, and that screen (or the students against
+## their own room) would lean a different colour from the rest of the game.
+func test_every_grade_material_agrees_on_split_tone() -> void:
+	var first: ShaderMaterial = load(ALL_MATERIALS[0])
+	assert_true(first != null, "%s must exist" % ALL_MATERIALS[0])
 	if first == null:
 		return
-	assert_gt(_strength_or_zero(first), 0.0, "the Lobby's split-tone must be on")
-	for path: String in LOBBY_MATERIALS:
+	assert_gt(_strength_or_zero(first), 0.0, "the split-tone must be on")
+	for path: String in ALL_MATERIALS:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:
 			continue
 		for uniform: String in SPLIT_UNIFORMS:
 			assert_eq(str(mat.get_shader_parameter(uniform)), str(first.get_shader_parameter(uniform)),
-				"%s: %s must match %s" % [path, uniform, LOBBY_MATERIALS[0]])
+				"%s: %s must match %s" % [path, uniform, ALL_MATERIALS[0]])
 
 
 ## The lean (2026-10-01): the owner kept the deeper darks of the plum pass
@@ -97,17 +97,6 @@ func test_the_lean_is_warm_shadows_and_cream_highlights() -> void:
 	assert_true(float(mat.get_shader_parameter("shadow_saturation")) < 1.0,
 		"the darks are pulled part-way toward grey: that is what deepens them against the "
 			+ "lights (owner, 2026-10-01: 'the contrast is better now')")
-
-
-## Lobby only, until the spread pass relaxes this on purpose.
-func test_the_shared_materials_leave_split_tone_off() -> void:
-	for path: String in SHARED_MATERIALS:
-		var mat: ShaderMaterial = load(path)
-		assert_true(mat != null, "%s must exist" % path)
-		if mat == null:
-			continue
-		assert_true(is_zero_approx(_strength_or_zero(mat)),
-			"%s: split-tone is the Lobby's until it is tuned there" % path)
 
 
 ## The shader's own defaults are off and white, so a material that never
@@ -184,9 +173,9 @@ func test_every_hand_and_item_wears_the_face_material() -> void:
 	assert_eq(seen, HAND_AND_ITEM_PLATES, "every slot's arms and items, for all six students")
 
 
-## The Look page drives all three Lobby materials.
+## The Look page drives every grade material.
 func test_the_look_page_tunes_split_tone() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugLookPanel.gd")
 	assert_contains(src, "_build_split_tone_section(vbox)", "the Look page builds the block")
-	for path: String in LOBBY_MATERIALS:
+	for path: String in ALL_MATERIALS:
 		assert_contains(src, path, "the Look page drives %s" % path)

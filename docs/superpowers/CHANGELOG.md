@@ -8,7 +8,7 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
-## 2026-10-01 — Lobby split-tone: deeper warm shadows, cream highlights
+## 2026-10-01 — Split-tone grade: deeper warm shadows, cream highlights, every screen
 
 Branch `feat/lobby-split-tone`; spec
 `docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md`. The owner's
@@ -31,7 +31,11 @@ plum it made possible (30–90 band 100, 49, 27 to 84, 52, 43) gave better
 light-and-dark but read too cool, so the owner asked for the earlier warmth
 back: the landed values are a warm `shadow_tone` 1.08 / 1.00 / 0.86 with
 `shadow_saturation` 0.55 and strength 0.85 (that band now about 91, 51, 32),
-picked from five side-by-side live variants.
+picked from five side-by-side live variants. The owner then asked for it on
+every screen: the shared plain, cutout and splash materials carry the same
+values, so the shops, the minigames, the exam screens, the event dialogue
+and the win screen all wear it; the Look page's Split-Tone block drives all
+six grade materials.
 Carrying it to the rest of the game is a later pass.
 
 ## 2026-10-01 — Canvas filter is Linear Mipmap for real

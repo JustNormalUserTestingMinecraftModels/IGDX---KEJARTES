@@ -63,6 +63,13 @@ split-tone: one colour for shadows, another for highlights.
    back. The "plum" in the goal and starting values below is superseded;
    the test pins "shadows stay warm (blue under red)" instead.
 
+4. **Every screen, in the same PR** (owner: "a and apply it to all
+   scenes"). Section 6's spread happened at once: the shared plain, cutout
+   and splash materials take the landed values, the Look page drives all
+   six materials, and the Lobby-only assertion became "every grade
+   material agrees". The Lobby's own backdrop material stays, equal to the
+   plain one, as the place for a Lobby-only tweak.
+
 ## 1. Shader: `Scripts/Shaders/illustration_grade.gdshader`
 
 Four new uniforms, each with a `//` line in the existing style:

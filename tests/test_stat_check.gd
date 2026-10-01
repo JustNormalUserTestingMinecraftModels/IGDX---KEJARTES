@@ -371,6 +371,40 @@ func test_cleared_count_uses_the_verdicts_predicate() -> void:
 	assert_eq(StatCheckCard.cleared_count(_student_with(0.0, 0.0, 0.0)), 0)
 
 
+## One roster entry as GameState.approved_students holds it: all three skill
+## keys and all three targets present, so neither side of the bridge falls
+## back to a default.
+func _roster_entry(a: float, s: float, o: float, target_o: float) -> Dictionary:
+	return {
+		"id": 1, "name": "Citra",
+		"akademis": a, "seni_budaya": s, "olahraga": o,
+		"target_akademis": 60.0, "target_seni_budaya": 60.0, "target_olahraga": target_o,
+	}
+
+
+## The stamp counts a StudentData (cleared_count) and the verdict counts the
+## roster dictionary (targets_cleared_for). Both must give one answer for the
+## same student, or a TIDAK LULUS card and a lost run could contradict each
+## other. Each case also pins the count itself, so two sides that drifted
+## together would still fail.
+func test_the_stamp_and_the_verdict_count_the_same_targets() -> void:
+	var cases: Array[Dictionary] = [
+		{"label": "3 cleared", "entry": _roster_entry(70.0, 70.0, 70.0, 60.0), "want": 3},
+		{"label": "2 cleared", "entry": _roster_entry(70.0, 70.0, 10.0, 60.0), "want": 2},
+		{"label": "1 cleared", "entry": _roster_entry(70.0, 10.0, 10.0, 60.0), "want": 1},
+		{"label": "0 cleared", "entry": _roster_entry(10.0, 10.0, 10.0, 60.0), "want": 0},
+		{"label": "value equal to target clears", "entry": _roster_entry(60.0, 60.0, 60.0, 60.0), "want": 3},
+		{"label": "a zero target never clears", "entry": _roster_entry(70.0, 70.0, 90.0, 0.0), "want": 2},
+	]
+	for c in cases:
+		var entry: Dictionary = c["entry"]
+		var sd: StudentData = GameState.student_data_from_dict(entry)
+		var stamp_side: int = StatCheckCard.cleared_count(sd)
+		var verdict_side: int = GameState.targets_cleared_for(entry)
+		assert_eq(stamp_side, verdict_side, "%s: stamp and verdict agree" % c["label"])
+		assert_eq(verdict_side, c["want"], "%s: the count itself" % c["label"])
+
+
 func test_a_student_under_the_line_is_stamped_only_when_asked() -> void:
 	var card = load(_CARD_SCENE).instantiate()
 	Engine.get_main_loop().root.add_child(card)
@@ -401,6 +435,7 @@ func test_the_sequence_stamps_each_card_after_its_rows() -> void:
 	var rows_at := src.find("for row in card.rows():")
 	var stamp_at := src.find("card.stamp_if_failed()")
 	var out_at := src.find("await _slide_out(card)")
+	assert_true(rows_at >= 0, "the rows loop anchor is still in StatCheck.gd")
 	assert_true(stamp_at > 0, "StatCheck calls card.stamp_if_failed()")
 	assert_true(rows_at < stamp_at and stamp_at < out_at,
 		"after the rows loop, before the slide-out")

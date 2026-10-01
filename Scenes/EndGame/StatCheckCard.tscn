@@ -81,3 +81,22 @@ icon = ExtResource("6_dev83")
 layout_mode = 2
 category = "Olahraga"
 icon = ExtResource("7_t3llh")
+
+[node name="FailStamp" type="PanelContainer" parent="." unique_id=1671155604]
+visible = false
+layout_mode = 0
+offset_left = 150.0
+offset_top = 580.0
+offset_right = 610.0
+offset_bottom = 700.0
+rotation = -0.10471976
+pivot_offset = Vector2(230, 60)
+mouse_filter = 2
+theme_type_variation = &"DayStampPanel"
+
+[node name="StampLabel" type="Label" parent="FailStamp" unique_id=618014902]
+layout_mode = 2
+theme_type_variation = &"DayStampLabel"
+text = "TIDAK LULUS"
+horizontal_alignment = 1
+vertical_alignment = 1

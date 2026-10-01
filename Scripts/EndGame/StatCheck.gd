@@ -120,6 +120,8 @@ func _run_check() -> void:
 		if rushed_clears > 0:
 			AudioDirector.play_sfx(&"tally")
 
+		card.stamp_if_failed()
+
 		# Stand the rush down before the read beat. The trailing hold and
 		# the slide-out play in full so the numbers can actually be read; a
 		# second tap rushes those.

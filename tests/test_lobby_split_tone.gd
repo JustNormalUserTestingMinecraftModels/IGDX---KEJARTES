@@ -1,8 +1,8 @@
 @tool
 extends McpTestSuite
 
-## The Lobby's split-tone grade (2026-10-01): plum-brown shadows and cream
-## highlights, read off the owner's key-art reference, on the Lobby only until
+## The Lobby's split-tone grade (2026-10-01): deeper, still-warm shadows and
+## cream highlights, after the owner's key-art reference, on the Lobby only until
 ## it has been tuned there and is carried to the rest of the game.
 ##
 ## Design: docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md
@@ -79,22 +79,24 @@ func test_the_lobby_materials_agree_on_split_tone() -> void:
 				"%s: %s must match %s" % [path, uniform, LOBBY_MATERIALS[0]])
 
 
-## The lean is the reference's: plum shadows keep blue at or above green, and
-## cream highlights drop blue under red. Any tuned value inside that holds.
-func test_the_lean_is_plum_shadows_and_cream_highlights() -> void:
+## The lean (2026-10-01): the owner kept the deeper darks of the plum pass
+## ("the contrast is better now") but asked for the earlier warmth back, so the
+## darks stay warm (blue under red), deepened only by shadow_saturation, and
+## the highlights lean cream. Any tuned value inside that holds.
+func test_the_lean_is_warm_shadows_and_cream_highlights() -> void:
 	var mat: ShaderMaterial = load(LOBBY_PLAIN)
 	assert_true(mat != null, "the Lobby backdrop material must exist")
 	if mat == null:
 		return
 	var shadow: Color = mat.get_shader_parameter("shadow_tone")
 	var highlight: Color = mat.get_shader_parameter("highlight_tone")
-	assert_true(shadow.r > shadow.g and shadow.b >= shadow.g,
-		"shadows lean plum (red up, blue at or above green), not %s" % shadow)
+	assert_true(shadow.r > shadow.b,
+		"shadows stay warm (blue under red), not %s" % shadow)
 	assert_true(highlight.r > highlight.b,
 		"highlights lean cream (blue under red), not %s" % highlight)
 	assert_true(float(mat.get_shader_parameter("shadow_saturation")) < 1.0,
-		"the darks are pulled toward grey first: the Lobby's orange-brown darks have almost no "
-			+ "blue, so a plum tone alone only reads redder (measured 2026-10-01)")
+		"the darks are pulled part-way toward grey: that is what deepens them against the "
+			+ "lights (owner, 2026-10-01: 'the contrast is better now')")
 
 
 ## Lobby only, until the spread pass relaxes this on purpose.

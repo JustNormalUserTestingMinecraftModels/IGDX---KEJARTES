@@ -145,13 +145,14 @@ Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 
 **Speaker splashes are the exception.** The event dialogue's and the minigame win screen's speaker splash wear `illustration_grade_splash.tres`: the same shader with the owner's 2026-10-01 grade (saturation 0.78, contrast 0.90, exposure 1.16, warm tint 1.08 / 1.005 / 0.875) and rim and inner AO off, because on a speaker the rim read as a hard outline. Their shade comes from `SplashShadow` (soft_ao_shadow.gdshader) behind them instead. The census lists them as SPLASH plates.
 
-**The Lobby leans plum and cream** (split-tone, 2026-10-01, spec
+**The Lobby has deep warm shadows and cream highlights** (split-tone, 2026-10-01, spec
 `docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md`). The grade
 shader's `shadow_tone` and `highlight_tone` tint the darks and the lights
 separately, crossfaded around `split_balance`, then rescale each pixel to its
 own luma, so split-tone moves hue and never brightness. `shadow_saturation`
-first pulls the darks toward grey: the Lobby's darks are orange-brown with
-almost no blue, so a plum tone multiplied onto them alone only reads redder. `split_strength` is 0
+first pulls the darks part-way toward grey, which deepens them against the
+lights; a warm `shadow_tone` (1.08 / 1.00 / 0.86) gives them their warmth
+back. A plum tone was tried first and read too cool. `split_strength` is 0
 (off, and free) on every material but the Lobby's three: its backdrop wears
 its own `illustration_grade_material_lobby.tres` (the plain material plus
 split-tone), its desks `illustration_grade_cutout_lobby.tres`, and its faces,

@@ -85,10 +85,10 @@ uniform vec4 highlight_tone : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float split_balance : hint_range(0.0, 1.0) = 0.5;
 // How much of the split-tone to apply. 0 = off, and free.
 uniform float split_strength : hint_range(0.0, 1.0) = 0.0;
-// Saturation of the darks before shadow_tone lands, 1 = untouched. The
-// Lobby's darks are a strong orange-brown with almost no blue, so a plum tone
-// multiplied onto them only reads redder; the reference's darks are a near
-// grey leaning plum. Fades out toward the highlights with the same crossfade.
+// Saturation of the darks before shadow_tone lands, 1 = untouched. Pulling
+// the darks part-way toward grey deepens them against the lights without
+// changing their brightness; a warm shadow_tone then gives them back their
+// warmth. Fades out toward the highlights with the same crossfade.
 uniform float shadow_saturation : hint_range(0.0, 1.0) = 1.0;
 
 // -- AO and rim knobs -------------------------------------------------------

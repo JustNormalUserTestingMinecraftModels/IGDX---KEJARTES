@@ -55,6 +55,14 @@ split-tone: one colour for shadows, another for highlights.
    moves the 40–90 band from about 105, 50, 25 to about 88, 53, 43, toward
    the reference's 63, 53, 54.
 
+3. **Warm, not plum** (owner, after the full-size capture: "the contrast is
+   better now (light and dark) but apply the same warmer color like
+   before"). `shadow_tone` is now warm, 1.08 / 1.00 / 0.86, and
+   `shadow_saturation` 0.55: the darks keep most of their depth (30–90 band
+   about 91, 51, 32, against the original 104, 48, 24) with their warmth
+   back. The "plum" in the goal and starting values below is superseded;
+   the test pins "shadows stay warm (blue under red)" instead.
+
 ## 1. Shader: `Scripts/Shaders/illustration_grade.gdshader`
 
 Four new uniforms, each with a `//` line in the existing style:

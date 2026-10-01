@@ -8,7 +8,7 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
-## 2026-10-01 — Lobby split-tone: plum shadows, cream highlights
+## 2026-10-01 — Lobby split-tone: deeper warm shadows, cream highlights
 
 Branch `feat/lobby-split-tone`; spec
 `docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md`. The owner's
@@ -16,8 +16,7 @@ key-art reference (the KEJAR TES poster) has cream highlights and plum-brown
 shadows; one multiplied `tint` cannot give both. The grade shader gains
 split-tone (`shadow_tone`, `highlight_tone`, `split_balance`,
 `split_strength`) and `shadow_saturation`, all luma-preserving: measured on
-the Lobby, mean brightness moved −0.02% and the 30–90 band went from about
-100, 49, 27 to 84, 52, 43 (the reference's is 63, 53, 54). Off on every
+the Lobby, mean brightness stays put (under 0.05%). Off on every
 material but the Lobby's three; the Lobby backdrop got its own
 `illustration_grade_material_lobby.tres`, and the students' 48 arms and
 desk-item plates now wear the face grade. Tuned live from the Look page's
@@ -27,7 +26,12 @@ Two things the first live capture caught. Contrast leaves near-black
 channels just under zero, and the luma rescale divided two near-zero numbers:
 black hair (0, 0, 0) came out grey (37, 32, 32), so the block now clamps
 first. And the tones alone only read redder, because the Lobby's darks have
-almost no blue to multiply, hence `shadow_saturation` (owner's pick).
+almost no blue to multiply, hence `shadow_saturation` (owner's pick). The
+plum it made possible (30–90 band 100, 49, 27 to 84, 52, 43) gave better
+light-and-dark but read too cool, so the owner asked for the earlier warmth
+back: the landed values are a warm `shadow_tone` 1.08 / 1.00 / 0.86 with
+`shadow_saturation` 0.55 and strength 0.85 (that band now about 91, 51, 32),
+picked from five side-by-side live variants.
 Carrying it to the rest of the game is a later pass.
 
 ## 2026-10-01 — Canvas filter is Linear Mipmap for real

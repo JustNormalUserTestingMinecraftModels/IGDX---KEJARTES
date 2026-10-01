@@ -378,7 +378,7 @@ const _DELIBERATELY_UNSNAPSHOTTED := {
 	"debug_level_select_enabled": "debug flag, not run state",
 	"daily_login_day": "daily-login streak counter, unrelated to the end-of-grade run a rehearsal replays",
 	"last_claim_date": "daily-login streak timestamp, unrelated to the end-of-grade run a rehearsal replays",
-	"seen_minigame_how_to": "which CARA MAIN cards showed this session; no minigame runs in the end-of-grade sequence, and a card seen meanwhile need not show again",
+	"seen_minigame_how_to": "which CARA MAIN cards showed this run; no minigame runs in the end-of-grade sequence, and a card seen meanwhile need not show again",
 	"pending_week_resume": "transient hand-off from SaveGame.load_save() to SchoolDay._ready(); empty outside that one frame",
 }
 

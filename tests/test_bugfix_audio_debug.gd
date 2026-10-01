@@ -81,7 +81,7 @@ func test_playtest_defaults_leave_the_saved_tutorial_switch_alone() -> void:
 	var body := _function_body(FileAccess.get_file_as_string(DEBUG_SCRIPT),
 		"func _apply_playtest_defaults(")
 	assert_true(body.contains("GameState.tutorials_bypassed = true"),
-		"playtest still bypasses the screen tutorials, session-only")
+		"playtest still bypasses the screen tutorials")
 	assert_false(body.contains("minigame_tutorial_enabled"),
 		"a forced value in the saved field reaches settings.cfg on the next save")
 	assert_false(body.contains("save_settings"),

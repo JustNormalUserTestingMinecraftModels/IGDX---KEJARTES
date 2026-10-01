@@ -16,21 +16,18 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
 - **Ratchets:** `SaveGame.SAVE_KEYS` + `EXCLUDED` must cover every GameState field (`test_save_game`); `pending_week_resume` joined `EndGameRehearsal`'s `_DELIBERATELY_UNSNAPSHOTTED`.
 - **Size:** to stay under the clean-code ratchet, SchoolDay's day-outcome roll and minigame category pick moved into `DayRoll.gd`, and the night fade became `_fall_into_night()`.
 - **Verified live:** quit after Rabu's result, relaunch, Lanjutkan resumed on Kamis and the week's report counted all five days; a Koperasi purchase survived a restart; Permainan baru kept achievements; a garbage save was quarantined.
+- **Final-review fixes:** the static tutorial flags (`SaveGame.TUTORIAL_FLAGS`, moved from RunResult) ride the save, and `reset_run()` clears them, so a resumed run no longer replays AturJadwal's and StudentList's walkthroughs; `inventory.cfg` is deleted only by the first save that carries its items (a quit before the first save lost them); a new game keeps the debug tutorial bypass; ContinuePopup pops in a frame late, after layout; the week's-end badge names the week after a resume on Akhir Pekan; a run a failed rename left in `savegame.tmp` is recovered; a wrong-typed value makes the whole file unusable (quarantined, nothing applied) instead of half-applying.
 
 ## 2026-10-01 — Explanations moved out of CLAUDE.md
 
 The save-system paragraph pushed `CLAUDE.md` over its 23,000-character budget,
-so these sentences moved here. Each explained a rule that stayed; none is a
-rule itself.
+so these sentences moved here. Each is the rationale behind a rule that stayed.
+Two more moved at first (rule 5's reason the headless escape hatches fail, and
+the `load_default()` symptom); the final review ruled those live rules, and
+they went back in compressed form.
 
 - Opened `## Working efficiently here`: "Verification, not implementation,
   dominates the cost of a session here."
-- `## Testing`, rule 5, after "the bridge is the only way.": "(`--script`
-  registers no autoloads; running a *scene* makes `Engine.is_editor_hint()`
-  false, so every `@tool` guard fires for real.)"
-- Under the `class_name` warning, after "`load_default()` keeps serving the
-  cached instance,": "so the new value silently does not take effect and a test
-  asserting it fails for no visible reason."
 - `A full test_run can drop the bridge`: "The runner instances scenes test
   after test with no frame between, so deferred layout calls flood the
   MessageQueue and the editor dies."

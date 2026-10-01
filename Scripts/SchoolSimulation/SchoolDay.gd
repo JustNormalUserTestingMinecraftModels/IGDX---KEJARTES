@@ -1146,8 +1146,7 @@ func _on_week_complete() -> void:
 		var checkup_instance = result_checkup_scene.instantiate()
 		game_container.add_child(checkup_instance)
 		checkup_instance.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		# _pay_out_wirausaha() above already emptied pending_earnings, so the
-		# week's coins travel in by hand.
+		# _pay_out_wirausaha() emptied pending_earnings: hand the coins in.
 		checkup_instance.initialize_checkup(student_manager, wirausaha_total)
 		await checkup_instance.checkup_closed
 		checkup_instance.queue_free()
@@ -1160,10 +1159,11 @@ func _on_week_complete() -> void:
 	await fade.finished
 
 	if book_clock_widget and book_clock_widget.has_method("set_banner"):
+		# Here too: a week resumed after Jumat (SaveGame) ran no day to set it.
+		book_clock_widget.call("set_week", GameState.minggu_ke, GameState.get_max_weeks())
 		book_clock_widget.call("set_banner", "Akhir Pekan")
 	Juice.fill_bar(progress_bar, 100.0)
-	# "Minggu selesai!" used to sit on the day counter, which the banner's
-	# fill replaced; it rides the status strip now, and stays up.
+	# "Minggu selesai!" rides the status strip (the day counter is retired).
 	_set_status("Minggu selesai! Selamat!")
 	if wirausaha_total > 0:
 		var wirausaha_chip := _make_chip(

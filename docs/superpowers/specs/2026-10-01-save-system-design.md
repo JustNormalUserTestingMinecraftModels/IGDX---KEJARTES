@@ -38,27 +38,31 @@ owner's request. CLAUDE.md's Persistence paragraph is rewritten to match.
   `grade7_student_ids`, `grade8_student_ids`, `equipped_skins`,
   `skin_unlock_overrides`, `player_money`, `inventory`, `pending_earnings`,
   `ad_debt`, `daily_login_day`, `last_claim_date`, plus `run_stats` via
-  `RunStats.to_dict()`.
+  `RunStats.to_dict()` and the screens' static first-run tutorial flags
+  (`SaveGame.TUTORIAL_FLAGS`; final review: a relaunch reset them, so a
+  resumed run replayed AturJadwal's and StudentList's walkthroughs).
 - Not saved: `next_scene`, `selected_student`, `selected_day`
   (screen-local); `run_failed` (StatCheck decides it fresh); `max_minggu`
   (derived from `current_grade`); `is_game_beaten`,
   `debug_level_select_enabled` (GameSettings persists them already);
   `pending_week_resume` (transient hand-off, see below).
 - File layout: `[meta]` holds `version`, `grade`, `week`, `max_week` and
-  `day`; `[state]` holds one key per `SAVE_KEYS` entry plus `run_stats`;
+  `day`; `[state]` holds one key per `SAVE_KEYS` entry plus `run_stats` and
+  `tutorial_flags`;
   `[week]` is present only while a week is in progress.
 - Pure functions over a `ConfigFile` (`write_state`, `read_state`,
   `summary_for`, `resume_scene`) carry all the logic and are what the tests
   exercise. The disk functions (`save`, `load_save`, `has_save`,
-  `delete_save`, `take_legacy_inventory`) are thin wrappers that no-op under
+  `delete_save`, `read_legacy_inventory`) are thin wrappers that no-op under
   `Engine.is_editor_hint()`.
 - Writes are atomic: save to `savegame.tmp`, then rename it over
   `savegame.cfg`.
 - Reading restores `current_grade` first, since its setter recomputes
   `max_minggu`. Typed arrays come back through `.assign()`, and
   `inventory_changed` is emitted at the end.
-- A file that fails to parse, lacks `[meta] version`, or carries a version
-  newer than `SaveGame.VERSION` is unusable. `has_save()` returns false,
+- A file that fails to parse, lacks `[meta] version`, carries a version
+  newer than `SaveGame.VERSION`, or holds a value whose type does not fit its
+  field (final review: checked before anything is applied) is unusable. `has_save()` returns false,
   the file is renamed to `savegame.bad.cfg`, and a warning is pushed. The
   game never crashes on a bad save.
 
@@ -138,8 +142,10 @@ owner's request. CLAUDE.md's Persistence paragraph is rewritten to match.
 - `GameState.load_inventory()` and `save_inventory()` and their boot and
   notification calls are removed. The pure `_write_inventory_to` and
   `_read_inventory_from` helpers go too.
-- `SaveGame.take_legacy_inventory()` reads `user://inventory.cfg`, deletes
-  it, and returns its items.
+- `SaveGame.read_legacy_inventory()` reads `user://inventory.cfg` and
+  returns its items. The first `save()` that carries them deletes the file
+  (final review: deleting it on read lost the items to a quit before the
+  first save).
 - Starting a new game (from the popup, or a first tap with no save) merges
   those items into `GameState.inventory` once. Nobody loses pre-update
   purchases.

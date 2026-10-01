@@ -10,8 +10,8 @@ class_name WeekRecap
 ## tested without instantiating a scene.
 ##
 ## Nothing here is persisted. The week's totals are recomputed on demand
-## from the live StudentManager, matching GameState's session-scoped
-## design.
+## from the live StudentManager, whose state SaveGame carries mid-week (its
+## [week] section), so a resumed week recaps every day.
 ##
 ## One caveat on money_earned: SchoolDay pays the Wirausaha earnings out --
 ## emptying GameState.pending_earnings, which is what _sum_pending_earnings

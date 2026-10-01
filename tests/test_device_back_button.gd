@@ -9,8 +9,8 @@ extends McpTestSuite
 ## before 2026-09-21; seven with a working on-screen back button did not,
 ## and because application/config/quit_on_go_back defaults to TRUE a back
 ## press on any of those quit the game outright -- taking the run with it,
-## since roster, money, week and schedules are all session-scoped and none
-## of them reach disk.
+## since before 2026-10-01 roster, money, week and schedules were all
+## session-scoped and none of them reached disk.
 ##
 ## Source scans, like test_audio_coverage: these screens cannot be
 ## instantiated headlessly, and the runner has no way to post a window

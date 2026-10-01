@@ -53,9 +53,14 @@ func test_forget_session_resets_run_state_but_keeps_progress_flags() -> void:
 	assert_contains(forget_body, "SaveGame.delete_save()", "forget_session drops the on-disk save")
 	assert_contains(forget_body, "Achievements.reset()", "forget_session wipes achievement progress")
 
+## The checkpoint must run before the scene changes: after it, `current` is
+## the new scene (or null) and the hub test would read the wrong "from" path.
 func test_transition_checkpoints_around_hub_screens() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Transition/Transition.gd")
-	assert_true(src.contains("SaveGame.checkpoint("), "change_scene saves around hubs")
+	var checkpoint_at := src.find("SaveGame.checkpoint(")
+	assert_true(checkpoint_at != -1, "change_scene saves around hubs")
+	assert_true(checkpoint_at < src.find("change_scene_to_file("),
+		"and does so while the scene being left is still current")
 	assert_false(src.contains("save_inventory"), "the old flush is gone")
 
 

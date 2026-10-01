@@ -8,8 +8,8 @@ extends Node
 ## player taps shelf art) and drained by Koperasi.gd's "BELI" button, which
 ## deducts `GameState.player_money` and calls `GameState.add_to_inventory()`
 ## per line before clearing this cart. Never persisted -- leaving the shop
-## without buying loses the basket, matching every other session-scoped
-## state in the game.
+## without buying loses the basket; the run's save (SaveGame) carries only
+## what was bought.
 
 signal cart_changed
 

@@ -566,7 +566,7 @@ func test_the_beat_card_is_centred_down_the_screen() -> void:
 
 # ------------------------------------------ the beat's flag lives on GameState
 
-func test_seen_beats_are_a_session_dictionary_on_game_state() -> void:
+func test_seen_beats_are_a_run_dictionary_on_game_state() -> void:
 	var value: Variant = GameState.headmaster_beats_seen
 	assert_true(value is Dictionary, "headmaster_beats_seen is a Dictionary, grade -> true")
 	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)

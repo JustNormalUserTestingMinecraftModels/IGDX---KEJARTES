@@ -82,7 +82,7 @@ var seen_minigame_how_to: Dictionary = {}
 ## The grades whose headmaster's beat has played this run, grade -> true.
 ## HeadmasterBeat marks Kelas 8 or 9 when its congratulation ends, so the beat
 ## plays once per promotion and a retry of the same grade does not replay it.
-## Cleared by forget_session() and by set_grade() (a new run starts there).
+## Cleared by reset_run() and by set_grade() (a new run starts there).
 ## Saved with the run (SaveGame), so a resumed run does not replay a beat.
 var headmaster_beats_seen: Dictionary = {}
 var current_grade: int = 7:
@@ -444,7 +444,8 @@ func is_shop_sold_out() -> bool:
 	return true
 
 
-## Return every run field to its declared default: what "Permainan baru"
+## Return every run field to its declared default, and the screens' first-run
+## tutorial flags (SaveGame.TUTORIAL_FLAGS) to false: what "Permainan baru"
 ## wipes. Leaves achievements, settings and the persisted progress flags
 ## (is_game_beaten, debug_level_select_enabled -- GameSettings writes them)
 ## alone, and touches no file.
@@ -477,6 +478,7 @@ func reset_run() -> void:
 	daily_login_day = 1
 	last_claim_date = ""
 	run_stats.reset()
+	SaveGame.reset_tutorial_flags()
 	inventory_changed.emit()
 
 

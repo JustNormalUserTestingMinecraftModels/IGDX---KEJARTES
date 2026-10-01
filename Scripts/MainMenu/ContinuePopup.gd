@@ -32,13 +32,24 @@ func _ready() -> void:
 		func() -> void: new_game_chosen.emit())
 
 
-## Shows the dialog on its Ask page with the save's summary line.
+## Shows the dialog on its Ask page with the save's summary line. The card
+## pops in a frame later, as the sibling popups do (StatDetailPopup.open()):
+## the CenterContainer sizes the Frame in its sort at the end of this frame,
+## and popped at once, the first open of every launch took its pivot from the
+## pre-layout size and zoomed in from below. Hidden for that one frame. In the
+## editor (tests) it only shows, so a test never leaves a coroutine behind.
 func open(summary_text: String) -> void:
 	_summary.text = summary_text
 	show_confirm(false)
 	visible = true
-	if not Engine.is_editor_hint():
-		AudioDirector.play_sfx(&"popup_open")
+	if Engine.is_editor_hint():
+		return
+	_frame.modulate.a = 0.0
+	AudioDirector.play_sfx(&"popup_open")
+	await get_tree().process_frame
+	# Lanjutkan or back may have closed it within that frame.
+	if not visible or not is_instance_valid(_frame):
+		return
 	Juice.pop_in(_frame)
 
 

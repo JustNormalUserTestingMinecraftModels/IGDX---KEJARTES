@@ -3,7 +3,7 @@ extends McpTestSuite
 
 ## Dapatkan Uang (2026-09-27 scrapbook HUD spec §7, Phase 2): the earn-money
 ## panel the Lobby's coin "+" opens, its dev-mode payouts, and the
-## session-scoped GameState.ad_debt the "ambil dulu" cash-ins run up. The
+## GameState.ad_debt the "ambil dulu" cash-ins run up, saved with the run. The
 ## handlers are called directly: pressing through the GUI needs a frame.
 
 const _GAME_STATE := "res://Scripts/GameState.gd"

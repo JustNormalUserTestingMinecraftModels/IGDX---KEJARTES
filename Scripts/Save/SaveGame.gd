@@ -7,10 +7,11 @@ extends RefCounted
 ##
 ## user://savegame.cfg is a ConfigFile with three sections: [meta] (version,
 ## and the grade/week/day the title popup summarises), [state] (one key per
-## SAVE_KEYS field plus run_stats), and [week] (only while SchoolDay is
-## mid-week). The pure functions over a ConfigFile carry every rule and are
-## what tests call; the disk wrappers no-op under Engine.is_editor_hint() so
-## a test never touches user://.
+## SAVE_KEYS field, plus run_stats and the screens' first-run tutorial flags,
+## EXTRA_KEYS), and [week] (only while SchoolDay is mid-week). The pure
+## functions over a ConfigFile carry every rule and are what tests call; the
+## disk wrappers no-op under Engine.is_editor_hint() so a test never touches
+## user://.
 ##
 ## Saved at: hub-screen visits (checkpoint(), from Transition), pause/quit on
 ## a hub screen (save_if_at_hub(), from GameState), each SchoolDay day's
@@ -25,7 +26,8 @@ const SAVE_PATH := "user://savegame.cfg"
 const TMP_PATH := "user://savegame.tmp"
 ## Where an unreadable save is moved, for debugging, so the game starts fresh.
 const BAD_PATH := "user://savegame.bad.cfg"
-## The inventory-only save this file replaced. Read once, then deleted.
+## The inventory-only save this file replaced. Every new game reads it; the
+## first save() that carries its items deletes it.
 const LEGACY_INVENTORY_PATH := "user://inventory.cfg"
 
 const LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
@@ -71,6 +73,25 @@ const EXCLUDED := {
 	"pending_week_resume": "the transient hand-off this file fills on load",
 }
 
+## The [state] keys beyond SAVE_KEYS. Both hold dictionaries.
+const EXTRA_KEYS := ["run_stats", "tutorial_flags"]
+
+## The first-run tutorial flags, by the script that owns them as static vars.
+## A static var resets on every launch, so the save carries them: without
+## that, a resumed run replayed AturJadwal's and StudentList's walkthroughs
+## after every relaunch. reset_tutorial_flags() clears them for a new run
+## (GameState.reset_run) and a beaten game (RunResult). StudentList's flag once
+## pointed at Lobby.gd, which has none, and a silent guard hid it.
+##
+## Deliberately an untyped Dictionary of plain Arrays. It was once typed
+## `Dictionary[String, PackedStringArray]` over Array literals, and iterating it
+## handed back empty flag names and then hard-crashed Godot 4.6.2 (signal 11)
+## the moment a beaten game pressed Selesai.
+const TUTORIAL_FLAGS := {
+	"res://Scripts/AturJadwal/AturJadwal.gd": ["tutorial_phase1_done", "tutorial_phase3_done"],
+	"res://Scripts/StudentList/StudentList.gd": ["tutorial_shown"],
+}
+
 ## The grade a file that records none means: where every run starts.
 const DEFAULT_GRADE := 7
 
@@ -94,21 +115,51 @@ static func write_state(cfg: ConfigFile, week: Dictionary = {}) -> void:
 		cfg.set_value("state", key,
 			value.duplicate(true) if (value is Array or value is Dictionary) else value)
 	cfg.set_value("state", "run_stats", GameState.run_stats.to_dict())
+	cfg.set_value("state", "tutorial_flags", tutorial_flags())
 	for k in week:
 		cfg.set_value("week", k, week[k])
 
 
-## True for a file this build can read: it has a version, and the version is
-## not newer than VERSION.
+## True for a file this build can read: it has a version, the version is not
+## newer than VERSION, and every value fits its field (values_fit()).
 static func is_usable(cfg: ConfigFile) -> bool:
 	if not cfg.has_section_key("meta", "version"):
 		return false
 	var v: Variant = cfg.get_value("meta", "version")
-	return typeof(v) == TYPE_INT and v >= 1 and v <= VERSION
+	return typeof(v) == TYPE_INT and v >= 1 and v <= VERSION and values_fit(cfg)
 
 
-## Applies `cfg` to GameState. Returns false, changing nothing, for an
-## unusable file. Emits GameState.inventory_changed.
+## True when each [state] value has its GameState field's type (int and float
+## interchangeable; a typed array's elements, its element type) and each
+## EXTRA_KEYS value is a dictionary. Checked before anything is applied: a
+## hand-edited `shop_stock=5` used to raise mid-read, leaving the run
+## half-applied and the save deleted rather than quarantined.
+static func values_fit(cfg: ConfigFile) -> bool:
+	for key in SAVE_KEYS:
+		if cfg.has_section_key("state", key) \
+				and not _fits(cfg.get_value("state", key), GameState.get(key)):
+			return false
+	for key in EXTRA_KEYS:
+		if cfg.has_section_key("state", key) and not cfg.get_value("state", key) is Dictionary:
+			return false
+	return true
+
+
+## True when `value` can stand in for `current`, a GameState field's value.
+static func _fits(value: Variant, current: Variant) -> bool:
+	if current is int or current is float:
+		return value is int or value is float
+	if typeof(value) != typeof(current):
+		return false
+	if current is Array and (current as Array).is_typed():
+		for item in value:
+			if typeof(item) != (current as Array).get_typed_builtin():
+				return false
+	return true
+
+
+## Applies `cfg` to GameState and the tutorial flags. Returns false, changing
+## nothing, for an unusable file. Emits GameState.inventory_changed.
 static func read_state(cfg: ConfigFile) -> bool:
 	if not is_usable(cfg):
 		return false
@@ -120,15 +171,56 @@ static func read_state(cfg: ConfigFile) -> bool:
 		var current: Variant = GameState.get(key)
 		if current is Array:
 			var typed: Array = current.duplicate()
-			typed.assign(value)
+			typed.assign((value as Array).duplicate(true))
 			GameState.set(key, typed)
 		elif current is Dictionary:
 			GameState.set(key, (value as Dictionary).duplicate(true))
 		else:
-			GameState.set(key, value)
+			GameState.set(key, type_convert(value, typeof(current)))
 	GameState.run_stats.from_dict(cfg.get_value("state", "run_stats", {}))
+	restore_tutorial_flags(cfg.get_value("state", "tutorial_flags", {}))
 	GameState.inventory_changed.emit()
 	return true
+
+
+## Every TUTORIAL_FLAGS static as it stands, path -> {flag: bool}: what
+## write_state stores.
+static func tutorial_flags() -> Dictionary:
+	var out := {}
+	for path in TUTORIAL_FLAGS:
+		var script := load(path) as GDScript
+		var flags := {}
+		for flag in TUTORIAL_FLAGS[path]:
+			flags[flag] = script != null and script.get(flag) == true
+		out[path] = flags
+	return out
+
+
+## Sets every TUTORIAL_FLAGS static to its value in `saved` (tutorial_flags()'s
+## shape); a flag `saved` lacks, or holds as a non-bool, goes back to false.
+static func restore_tutorial_flags(saved: Dictionary) -> void:
+	for path in TUTORIAL_FLAGS:
+		var flags: Variant = saved.get(path, {})
+		for flag in TUTORIAL_FLAGS[path]:
+			var value: Variant = (flags as Dictionary).get(flag, false) if flags is Dictionary else false
+			set_tutorial_flag(path, flag, value is bool and value)
+
+
+## Puts every TUTORIAL_FLAGS static back to false, so the first-run tutorials
+## play again.
+static func reset_tutorial_flags() -> void:
+	restore_tutorial_flags({})
+
+
+## Sets the static bool `flag` on the script at `path`. The screens that own
+## the flags have no class_name, so they are reached by path; a script or flag
+## that is not there is an error, never a silent skip.
+static func set_tutorial_flag(path: String, flag: String, on: bool) -> void:
+	var script := load(path) as GDScript
+	if script == null or not flag in script:
+		push_error("SaveGame: no static %s on %s" % [flag, path])
+		return
+	script.set(flag, on)
 
 
 ## The [week] section as a dictionary, or empty between weeks.
@@ -166,8 +258,9 @@ static func summary_for(cfg: ConfigFile) -> String:
 	return text
 
 
-## True when a usable save is on disk. An unusable one is quarantined to
-## BAD_PATH. Always false in the editor.
+## True when a usable save is on disk, including one a failed rename left in
+## TMP_PATH. An unusable one is quarantined to BAD_PATH. Always false in the
+## editor.
 static func has_save() -> bool:
 	if Engine.is_editor_hint():
 		return false
@@ -178,10 +271,13 @@ static func has_save() -> bool:
 ## platform's rename overwrites (Android, Linux, macOS) that is atomic: a kill
 ## leaves the old save or the new one whole, never neither. Only when the
 ## rename refuses (a platform that will not overwrite) is the old file removed
-## first and the rename retried once; a kill in that gap leaves just the temp
-## file.
+## first and the rename retried once; a kill in that gap, or a second failed
+## rename, leaves just the temp file, which _load_usable() recovers.
 ## Writes nothing when no roster is approved: there is nothing to continue
 ## (and Forget Session's hop to the menu must not re-save the wiped state).
+## Once the run is in place, the legacy inventory file goes: its items were
+## merged into this run when it began (merge_legacy_inventory), and deleting
+## it any earlier lost them to a quit before the first save.
 ## No-op in the editor.
 static func save(week: Dictionary = {}) -> void:
 	if Engine.is_editor_hint():
@@ -200,11 +296,15 @@ static func save(week: Dictionary = {}) -> void:
 		err = DirAccess.rename_absolute(TMP_PATH, SAVE_PATH)
 	if err != OK:
 		push_warning("SaveGame: could not move the save into place (error %d)" % err)
+		return
+	if FileAccess.file_exists(LEGACY_INVENTORY_PATH):
+		DirAccess.remove_absolute(LEGACY_INVENTORY_PATH)
 
 
 ## Loads the save into GameState, and its week (if any) into
 ## GameState.pending_week_resume. False, changing nothing, when there is no
-## usable save. No-op in the editor.
+## usable save; _load_usable() has then quarantined an unusable one (a
+## wrong-typed value included) to BAD_PATH. No-op in the editor.
 static func load_save() -> bool:
 	if Engine.is_editor_hint():
 		return false
@@ -244,9 +344,10 @@ static func save_if_at_hub(current_path: String) -> void:
 		save()
 
 
-## Reads the pre-2026-10-01 inventory-only save, deletes it, and returns its
-## items (name -> count). Empty when there is none. No-op in the editor.
-static func take_legacy_inventory() -> Dictionary:
+## Reads the pre-2026-10-01 inventory-only save and returns its items (name
+## -> count); empty when there is none. Read-only: save() deletes the file
+## once a run carrying the items is on disk. No-op in the editor.
+static func read_legacy_inventory() -> Dictionary:
 	if Engine.is_editor_hint():
 		return {}
 	if not FileAccess.file_exists(LEGACY_INVENTORY_PATH):
@@ -254,17 +355,20 @@ static func take_legacy_inventory() -> Dictionary:
 	var items := {}
 	var cfg := ConfigFile.new()
 	if cfg.load(LEGACY_INVENTORY_PATH) == OK:
-		var raw: Dictionary = cfg.get_value("inventory", "items", {})
-		for k in raw:
-			items[String(k)] = int(raw[k])
-	DirAccess.remove_absolute(LEGACY_INVENTORY_PATH)
+		var raw: Variant = cfg.get_value("inventory", "items", {})
+		if raw is Dictionary:
+			for k in raw:
+				if raw[k] is int or raw[k] is float:
+					items[str(k)] = int(raw[k])
 	return items
 
 
-## Adds the legacy inventory, once, to the new game's. Called by every new
-## game the title screen starts.
+## Adds the legacy inventory to the new game's. Called by every new game the
+## title screen starts, always after GameState.reset_run() has emptied the
+## inventory, so a second new game (the first quit before its first save,
+## which keeps the file) gets the items once, not twice.
 static func merge_legacy_inventory() -> void:
-	var legacy := take_legacy_inventory()
+	var legacy := read_legacy_inventory()
 	if legacy.is_empty():
 		return
 	for item in legacy:
@@ -272,17 +376,38 @@ static func merge_legacy_inventory() -> void:
 	GameState.inventory_changed.emit()
 
 
-## The save on disk if it is usable; otherwise null, and an unreadable file
-## is moved to BAD_PATH so the next save starts clean.
+## The save on disk if it is usable; otherwise null, and an unusable file is
+## moved to BAD_PATH so the next save starts clean. With no SAVE_PATH, a run
+## a failed rename left in TMP_PATH is recovered instead.
 static func _load_usable() -> ConfigFile:
 	if not FileAccess.file_exists(SAVE_PATH):
-		return null
+		return _recover_temp()
 	var cfg := ConfigFile.new()
 	if cfg.load(SAVE_PATH) == OK and is_usable(cfg):
 		return cfg
-	push_warning("SaveGame: %s is unreadable or from a newer build; moved to %s"
-		% [SAVE_PATH, BAD_PATH])
 	if FileAccess.file_exists(BAD_PATH):
 		DirAccess.remove_absolute(BAD_PATH)
-	DirAccess.rename_absolute(SAVE_PATH, BAD_PATH)
+	var err := DirAccess.rename_absolute(SAVE_PATH, BAD_PATH)
+	if err == OK:
+		push_warning("SaveGame: %s cannot be read by this build; moved to %s"
+			% [SAVE_PATH, BAD_PATH])
+	else:
+		push_warning("SaveGame: %s cannot be read by this build, and could not be moved (error %d)"
+			% [SAVE_PATH, err])
 	return null
+
+
+## save() leaves the run in TMP_PATH alone only when both its renames failed,
+## or a kill fell between them; has_save() used to miss it, and the next new
+## game deleted it. A usable temp file is moved into place and returned (read
+## where it is if the move fails again); anything else there is a write cut
+## short, and is removed. Null when there is nothing to recover.
+static func _recover_temp() -> ConfigFile:
+	if not FileAccess.file_exists(TMP_PATH):
+		return null
+	var cfg := ConfigFile.new()
+	if cfg.load(TMP_PATH) != OK or not is_usable(cfg):
+		DirAccess.remove_absolute(TMP_PATH)
+		return null
+	DirAccess.rename_absolute(TMP_PATH, SAVE_PATH)
+	return cfg

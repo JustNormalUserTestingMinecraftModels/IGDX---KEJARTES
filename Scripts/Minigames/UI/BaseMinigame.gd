@@ -335,7 +335,7 @@ func activate_minigame() -> void:
 
 
 ## Whether to show the CARA MAIN card: the Settings switch is on, the game
-## has a card, and it has not shown this session. Pure, so it is testable.
+## has a card, and it has not shown this run. Pure, so it is testable.
 static func should_show_how_to(enabled: bool, seen: Dictionary, key: String) -> bool:
 	return enabled and key != "" and not seen.has(key)
 

@@ -559,10 +559,26 @@ func test_weekly_minigame_count_is_randomised() -> void:
 
 func test_minigame_category_has_uniform_noise() -> void:
 	# The pick lives in DayRoll.gd since 2026-10-01; SchoolDay's
-	# _pick_minigame_category() forwards there.
+	# _pick_minigame_category() forwards there. The branch itself, not the
+	# constant's name, which DayRoll's own ## docs also carry.
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/DayRoll.gd")
-	assert_true(src.contains("Balance.MINIGAME_KATEGORI_ACAK_PELUANG"),
+	assert_true(src.contains("randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG"),
 		"the minigame category pick must branch on the uniform-noise chance")
+	var forward := _function_body(FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT),
+		"_pick_minigame_category")
+	assert_true(forward.contains("return DayRoll.pick_category("),
+		"SchoolDay's category pick forwards to DayRoll's")
+
+
+## DayRoll.outcome() draws in proportion to the weights, so a day with weight
+## in one outcome only always lands there, and a day with none is Normal.
+func test_the_day_outcome_follows_the_only_weight_there_is() -> void:
+	var day_roll = load("res://Scripts/SchoolSimulation/DayRoll.gd")
+	assert_eq(day_roll.outcome({"normal": 0, "minigame": 0, "event": 0}), "Normal",
+		"a day with no weight at all is a normal one")
+	assert_eq(day_roll.outcome({"normal": 0, "minigame": 4, "event": 0}), "Minigame")
+	assert_eq(day_roll.outcome({"normal": 0, "minigame": 0, "event": 3}), "Event")
+	assert_eq(day_roll.outcome({"normal": 5, "minigame": 0, "event": 0}), "Normal")
 
 
 # ------------------------------------------------ day-roll weights
@@ -716,16 +732,19 @@ func test_the_event_cap_zeroes_the_event_weight_bonus_included() -> void:
 		"the event cap does not touch the minigame weight")
 
 
-## Both simulation paths must take their weights from the one helper, so a
-## watched week and a skipped week roll at the same odds. A source scan,
-## because neither path runs without the live scene (see the file header);
-## the tests above prove what the helper returns, this proves both ask it.
+## Both simulation paths must take their weights from the one helper, and
+## draw the outcome through DayRoll.outcome(), so a watched week and a skipped
+## week roll at the same odds. A source scan, because neither path runs
+## without the live scene (see the file header); the tests above prove what
+## the helpers return, this proves both paths ask them.
 func test_both_day_rolls_take_their_weights_from_the_shared_helper() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
 	for fn_name in ["_roll_event", "skip_to_results"]:
 		var body := _function_body(src, fn_name)
 		assert_true(body.contains("_todays_roll_weights("),
 			"%s() must take its day-roll weights from the shared helper" % fn_name)
+		assert_true(body.contains("DayRoll.outcome("),
+			"%s() must draw the day's outcome through DayRoll.outcome()" % fn_name)
 		assert_false(body.contains("SIFAT_BIANG_ONAR_PELUANG_EVENT"),
 			"%s() must not add Biang Onar's bonus itself -- the helper does" % fn_name)
 		assert_false(body.contains("active_studying"),

@@ -132,12 +132,20 @@ func _start_game() -> void:
 
 ## Permainan baru (or a first tap with no save): wipe the run -- not the
 ## achievements or settings -- delete the save, carry any pre-2026-10-01
-## inventory over once, then the Level Select (while
+## inventory over, then the Level Select (while
 ## GameState.is_level_select_enabled()) or the intro, which starts Kelas 7.
+## The tutorial bypass outlives the wipe, paired as DebugManager's toggle
+## pairs it: a debug build sets it at launch for every playtest
+## (_apply_playtest_defaults), and a new game must not bring the tutorials back.
 func _begin_new_game() -> void:
 	_continue_popup.close()
+	var bypassed: bool = GameState.tutorials_bypassed
 	GameState.reset_run()
+	if bypassed:
+		GameState.tutorials_bypassed = true
+		GameState.lobby_tutorial_completed = true
 	SaveGame.delete_save()
+	# Only after reset_run(), which empties the inventory the items land in.
 	SaveGame.merge_legacy_inventory()
 	var target := "res://Scenes/LevelSelect/LevelSelect.tscn" \
 		if GameState.is_level_select_enabled() \

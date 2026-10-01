@@ -818,7 +818,8 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
   skin starts unlocked (`StudentSkins.UNLOCKED_BY_DEFAULT`) and only the debug
   toggle locks them; the Cosmetic Shop stub is the likely home. Worn skins
   are session-scoped like the roster (not saved). The artist's
-  `<Name>Skin1(itemonly).png` clothes-only images (kosmetik.zip) are not
+  clothes-only images (`<Name>_skin1_item.png`, Drive folder
+  `1YOa85DvUYQfhyXPf8cNrUTEH2St8uwcW`, 2026-10-01 redraw) are not
   imported -- probably future shop icons. The flat Skin1 portraits are baked,
   not drawn: re-run `Scripts/Skins/BakeSkinPortraits.gd` (headless, see its
   header) when a skin's face base changes; Marcel's glasses bake with a

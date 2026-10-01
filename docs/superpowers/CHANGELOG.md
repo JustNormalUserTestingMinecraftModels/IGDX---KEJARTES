@@ -8,6 +8,17 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Skin1 art redraw
+
+The artist's redrawn Skin1 set (Drive folder
+`1YOa85DvUYQfhyXPf8cNrUTEH2St8uwcW`) replaced every student's Skin1 splash
+and face-rig base in place: recoloured outfits, and full-length splashes
+with shoes that reach as low as the default splashes (the old ones stopped
+at the knee). Same canvases and registration, so no layout moved. The flat
+Skin1 portraits were rebaked from the new bases with
+`Scripts/Skins/BakeSkinPortraits.gd`. The desk arms are bare forearms and
+were kept; the set's clothes-only `_item` images are not imported (DEBT.md).
+
 ## 2026-10-01 — Tutorial unification, headmaster beat, Lobby tutorial back
 
 Branch `feat/tutorial-unify-headmaster`; spec

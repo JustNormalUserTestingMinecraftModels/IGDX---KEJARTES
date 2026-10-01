@@ -23,6 +23,7 @@ const _SECTIONS := {
 	"AudioCard": ["SUARA", ["MasterRow", "BgmRow", "SfxRow"]],
 	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
 	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
+	"DataCard": ["DATA", ["ResetProgressButton"]],
 }
 ## Each switch row's words.
 const _ROW_LABELS := {
@@ -125,6 +126,9 @@ func test_each_tab_shows_its_sections() -> void:
 	assert_false(_screen.get_node("%AudioCard").visible)
 	assert_true(_screen.get_node("%GameplayCard").visible, "MAIN shows the switches")
 	assert_true(_screen.get_node("%DisplayCard").visible)
+	assert_true(_screen.get_node("%DataCard").visible, "MAIN shows Reset Progres too")
+	_screen.show_tab(0)
+	assert_false(_screen.get_node("%DataCard").visible, "SUARA hides it")
 
 
 ## show_tab keeps the frame's own active_tab export in step, so the tab strip's
@@ -323,10 +327,10 @@ func test_sections_scroll_under_the_header() -> void:
 	assert_true(scroll.get_node_or_null("Pad/Sections") != null, "the cards sit in Pad/Sections")
 
 
-## Three titled sections, in order, each a plain VBoxContainer -- the page
+## Four titled sections, in order, each a plain VBoxContainer -- the page
 ## and its well are the surface now, so the old Card chrome is gone -- each
 ## holding its rows in order with one SettingsDivider between neighbours.
-func test_settings_are_grouped_into_three_titled_cards() -> void:
+func test_settings_are_grouped_into_four_titled_cards() -> void:
 	var sections := _screen.find_child("Sections", true, false)
 	assert_true(sections != null, "Settings needs its Sections column")
 	if sections == null:
@@ -334,7 +338,7 @@ func test_settings_are_grouped_into_three_titled_cards() -> void:
 	var names: Array = []
 	for card in sections.get_children():
 		names.append(String(card.name))
-	assert_eq(names, _SECTIONS.keys(), "the three sections, in order")
+	assert_eq(names, _SECTIONS.keys(), "the four sections, in order")
 	for card_name in _SECTIONS:
 		var vbox := sections.get_node_or_null("%s/Margin/VBox" % card_name)
 		assert_true(vbox != null, card_name + " needs Margin/VBox")
@@ -442,9 +446,39 @@ func test_every_card_fits_the_design_screen_without_scrolling() -> void:
 
 	root.call("show_tab", 1)
 	LayoutFrame.settle(root)
-	var display := stand.find_child("DisplayCard", true, false) as Control
-	assert_true(display != null, "Settings needs DisplayCard")
-	if display != null:
-		assert_true(display.get_global_rect().end.y <= scroll.get_global_rect().end.y,
-			"TAMPILAN ends at %d, below the scroll's %d" % [
-				display.get_global_rect().end.y, scroll.get_global_rect().end.y])
+	# DataCard is MAIN's last section, so it is the one that could spill.
+	var data := stand.find_child("DataCard", true, false) as Control
+	assert_true(data != null, "Settings needs DataCard")
+	if data != null:
+		assert_true(data.get_global_rect().end.y <= scroll.get_global_rect().end.y,
+			"DATA ends at %d, below the scroll's %d" % [
+				data.get_global_rect().end.y, scroll.get_global_rect().end.y])
+
+
+## Reset Progres (2026-10-01): a tomato DangerButton opening the confirm popup,
+## which the scene instances hidden (static chrome lives in the .tscn).
+func test_reset_progres_is_a_red_button_that_asks_first() -> void:
+	var button := _screen.get_node("%ResetProgressButton") as Button
+	assert_eq(button.text, "Reset Progres")
+	assert_eq(button.theme_type_variation, &"DangerButton", "a full wipe is a danger action")
+	var popup := _screen.get_node("%ResetProgressPopup") as ResetProgressPopup
+	assert_true(popup != null, "Settings.tscn instances the popup")
+	assert_false(popup.visible, "hidden until asked")
+	button.pressed.emit()
+	assert_true(popup.visible, "the button opens the confirm, never wipes at once")
+	popup.close()
+
+
+## Android back with the popup open closes only the popup: Settings stays.
+## (A second back would leave the screen, which a test must not trigger.)
+func test_back_with_the_popup_open_closes_only_the_popup() -> void:
+	var popup := _screen.get_node("%ResetProgressPopup") as ResetProgressPopup
+	popup.open()
+	_screen.notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+	assert_false(popup.visible, "back closes the popup")
+	assert_true(is_instance_valid(_screen) and _screen.is_inside_tree(), "and Settings stays")
+	var src := FileAccess.get_file_as_string("res://Scripts/UI/Settings.gd")
+	var note: String = src.get_slice("func _notification(", 1).get_slice("
+func ", 0)
+	assert_true(note.find("_reset_popup.visible") < note.find("_on_back_pressed()"),
+		"the popup is checked before Back leaves")

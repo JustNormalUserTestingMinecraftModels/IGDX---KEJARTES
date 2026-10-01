@@ -52,6 +52,11 @@ func test_forget_session_resets_run_state_but_keeps_progress_flags() -> void:
 	assert_contains(forget_body, "reset_run()", "forget_session resets the run")
 	assert_contains(forget_body, "SaveGame.delete_save()", "forget_session drops the on-disk save")
 	assert_contains(forget_body, "Achievements.reset()", "forget_session wipes achievement progress")
+	# Reset Progres means everything: a surviving legacy inventory.cfg would
+	# merge its items into the next new game, and the cart outlives the run.
+	assert_contains(forget_body, "SaveGame.delete_legacy_inventory()",
+		"forget_session drops the legacy inventory file")
+	assert_contains(forget_body, "Cart.clear()", "forget_session empties the shop cart")
 
 ## The checkpoint must run before the scene changes: after it, `current` is
 ## the new scene (or null) and the hub test would read the wrong "from" path.

@@ -31,6 +31,7 @@ extends Control
 @onready var _setting_button: Button = $SafeArea/Content/IconBar/SettingButton
 @onready var _quit_button: Button = $SafeArea/Content/IconBar/QuitButton
 @onready var _version: Label = $SafeArea/Content/VersionLabel
+@onready var _continue_popup: ContinuePopup = $ContinuePopup
 
 ## Float amplitude (px) and half-period (s) for the drifting KEJARTES logo.
 const _LOGO_FLOAT_AMPLITUDE := 12.0
@@ -42,6 +43,9 @@ var _started := false
 func _ready() -> void:
 	_setting_button.pressed.connect(_on_setting_pressed)
 	_quit_button.pressed.connect(_on_quit_pressed)
+	_continue_popup.continue_chosen.connect(_continue_game)
+	_continue_popup.new_game_chosen.connect(_begin_new_game)
+	_continue_popup.dismissed.connect(func() -> void: _started = false)
 
 	_version.text = "v" + str(ProjectSettings.get_setting(
 		"application/config/version", "0.1"))
@@ -91,10 +95,11 @@ func _float_forever(node: Control, base_y: float) -> void:
 		_LOGO_FLOAT_HALF_PERIOD)
 
 
-## The wipe into the cutscene is deliberately slower than every other
-## transition in the game (Transition.change_scene's other ~20 call
-## sites all use the default duration) -- this is the one moment meant
-## to feel unhurried, giving the player a beat before the story starts.
+## The wipe out of the title (into the Level Select or the intro, or back
+## into a saved run) is deliberately slower than every other transition in
+## the game (Transition.change_scene's other ~20 call sites all use the
+## default duration) -- this is the one moment meant to feel unhurried,
+## giving the player a beat before the story starts.
 const _INTRO_WIPE_SEC := 1.1
 
 ## Tapping anywhere that a Button did not already consume starts the
@@ -104,7 +109,9 @@ const _INTRO_WIPE_SEC := 1.1
 func _unhandled_input(event: InputEvent) -> void:
 	# A tap during the intro wipe would latch _started while Transition
 	# still refuses the change, leaving the title stuck (bug sweep 2026-09-30).
-	if _started or Transition.is_busy():
+	# The popup's own scrim stops its taps, but a tap that reached here while
+	# it is open must still never re-fire the title.
+	if _started or Transition.is_busy() or _continue_popup.visible:
 		return
 	if event is InputEventScreenTouch and event.pressed:
 		_start_game()
@@ -112,16 +119,50 @@ func _unhandled_input(event: InputEvent) -> void:
 		_start_game()
 
 
-## A new game picks its grade on the Level Select first while
-## GameState.is_level_select_enabled(); otherwise it goes straight to the
-## intro, which starts Kelas 7.
+## A tap on the title: with a save on disk, ask whether to carry on;
+## otherwise start a new game as before.
 func _start_game() -> void:
 	_started = true
 	AudioDirector.play_sfx(&"confirm")
+	if SaveGame.has_save():
+		_continue_popup.open(SaveGame.summary())
+	else:
+		_begin_new_game()
+
+
+## Permainan baru (or a first tap with no save): wipe the run -- not the
+## achievements or settings -- delete the save, carry any pre-2026-10-01
+## inventory over, then the Level Select (while
+## GameState.is_level_select_enabled()) or the intro, which starts Kelas 7.
+## The tutorial bypass outlives the wipe, paired as DebugManager's toggle
+## pairs it: a debug build sets it at launch for every playtest
+## (_apply_playtest_defaults), and a new game must not bring the tutorials back.
+func _begin_new_game() -> void:
+	_continue_popup.close()
+	var bypassed: bool = GameState.tutorials_bypassed
+	GameState.reset_run()
+	if bypassed:
+		GameState.tutorials_bypassed = true
+		GameState.lobby_tutorial_completed = true
+	SaveGame.delete_save()
+	# Only after reset_run(), which empties the inventory the items land in.
+	SaveGame.merge_legacy_inventory()
 	var target := "res://Scenes/LevelSelect/LevelSelect.tscn" \
 		if GameState.is_level_select_enabled() \
 		else "res://Scenes/CutScene/CutScene.tscn"
 	Transition.change_scene(target, Transition.Style.WIPE, _INTRO_WIPE_SEC)
+
+
+## Ya, lanjutkan: load the save and land where it left off. A save that
+## vanished or went bad since the popup opened falls back to a new game.
+func _continue_game() -> void:
+	_continue_popup.close()
+	if not SaveGame.load_save():
+		_begin_new_game()
+		return
+	Transition.change_scene(
+		SaveGame.resume_scene(GameState.pending_week_resume, GameState.returned_from_student_card),
+		Transition.Style.WIPE, _INTRO_WIPE_SEC)
 
 
 func _on_setting_pressed() -> void:

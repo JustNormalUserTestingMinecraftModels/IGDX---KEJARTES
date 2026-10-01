@@ -190,7 +190,7 @@ func test_both_vram_variants_are_imported_so_the_import_files_stay_stable() -> v
 
 ## A const typed `Dictionary[K, Packed*Array]` and built from Array literals
 ## comes out corrupted in Godot 4.6.2: iterating it yields empty strings and then
-## segfaults. RunResult.TUTORIAL_FLAGS did that, and the crash only showed when a
+## segfaults. TUTORIAL_FLAGS (RunResult's then, SaveGame's now) did that, and the crash only showed when a
 ## beaten game pressed Selesai. Type the values as plain Arrays instead.
 func test_no_typed_dictionary_const_holds_packed_arrays() -> void:
 	var pattern := RegEx.create_from_string(

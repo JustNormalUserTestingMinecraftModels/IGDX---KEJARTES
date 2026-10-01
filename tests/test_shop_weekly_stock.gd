@@ -209,9 +209,9 @@ func test_the_shelf_is_sold_out_only_once_every_item_sold() -> void:
 
 func test_forget_session_clears_the_shop() -> void:
 	var src := FileAccess.get_file_as_string(GAME_STATE_PATH)
-	var forget_body := _body(src, "func forget_session()")
+	var forget_body := _body(src, "func reset_run()")
 	assert_true(forget_body.contains("reset_shop_week()"),
-		"forget_session() forgets the shop through reset_shop_week()")
+		"reset_run() (Forget Session's wipe) forgets the shop through reset_shop_week()")
 	var reset_body := _body(src, "func reset_shop_week()")
 	for reset in ["shop_week_key = \"\"", "shop_stock = []", "shop_sold = []"]:
 		assert_true(reset_body.contains(reset), "reset_shop_week() does " + reset)

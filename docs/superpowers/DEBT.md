@@ -360,9 +360,45 @@ still stays silent with the permission on, the 8 ms and 20 ms tiers
 (`RewardFeedback.HAPTIC_MS`, `PressFeel.PRESS_TICK_MS`) are the next suspect,
 since many motors cannot render a pulse that short.
 
-**Unsimulated item boosts die on quit (moved from CLAUDE.md, 2026-09-30).**
-Item boosts land on `approved_students`, which is not persisted, so a boost applied and not simulated before quit is lost.
-It follows from the session-scoped-run rule; fixing it means persisting the roster, which needs the owner's go-ahead.
+**Save system follow-ups (2026-10-01, final review of `feat/save-system`).**
+Left after the fix wave; none loses a player's run.
+
+- *Debug overwrites the real save.* Seed Playtest State, then any hub visit,
+  saves the seeded run over the real one (and deletes a legacy
+  `inventory.cfg` it never merged). A Gladi Resik rehearsal checkpoints
+  the pre-rehearsal state on its teleport, then RunResult's Selesai saves the
+  rehearsal state over the file, or deletes it (a Kelas 7 loss, a beaten
+  game). `_restore_before_rehearsal` restores memory only; the file heals on
+  the next hub visit.
+- *Recovery trusts any usable temp file.* `save()`'s remove-then-rename
+  fallback can leave the run only in `savegame.tmp`, which `_load_usable()`
+  now recovers. It checks only `is_usable()`, so a temp file cut off by a
+  failed write exactly at a line boundary would resume as a partial run.
+- *Type checks are top-level only.* `SaveGame.values_fit()` checks each
+  `[state]` value's type, not nested shapes (a `day_schedules` entry that is
+  not a Dictionary, a roster row missing keys), and not the `[week]` section:
+  a non-Dictionary `manager` would break `SchoolDay.resume_simulation()`.
+- *Week-snapshot keys are spelled three times.* `resume_day`,
+  `minigames_played`, `events_triggered`, `max_events`, `max_minigames` and
+  `manager` are written by `SchoolDay._week_snapshot()`, read by
+  `resume_simulation()`, and `resume_day` again by `SaveGame.write_state()`. A
+  typo in one resumes on day 0 or with default quotas; no test spells them.
+- *Resume page tint.* A resume on a later day tweens the page tint from the
+  default instead of snapping it (only `current_day == 0` snaps).
+- *Skip re-applies a day's decay (pre-existing).* `skip_to_results()` loops
+  from `current_day`, which only advances after `_run_single_day()` returns, so
+  a skip over day N's summary or click prompt replays day N's activity and
+  decay on top. A resume plus a skip takes the same path.
+- *Forget Session leaves `inventory.cfg`.* It no longer deletes a leftover
+  legacy file (`clear_inventory_save` is gone), so a tester with a pre-update
+  file who presses Forget Session before any new game gets its items merged
+  into the next one.
+- *One idiom twice.* `current.scene_file_path if current else ""` is in
+  `Transition.gd` and `GameState._notification()`; a third caller should get a
+  helper instead.
+- *ContinuePopup's Confirm page.* The frame's sticker still reads LANJUTKAN
+  over "Yakin? Progres lama akan hilang.", and the card's width shifts
+  slightly between the two pages.
 
 **Ambient kit gaps (2026-09-27).** `hdr_2d` is the clean way to bloom only
 the lights without also blooming the near-white paper and sky; it is a
@@ -827,7 +863,7 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
 - **Skins (2026-09-18).** No way to earn or buy a skin yet: every shipped
   skin starts unlocked (`StudentSkins.UNLOCKED_BY_DEFAULT`) and only the debug
   toggle locks them; the Cosmetic Shop stub is the likely home. Worn skins
-  are session-scoped like the roster (not saved). The artist's
+  are saved with the run (`SaveGame`). The artist's
   clothes-only images (`<Name>_skin1_item.png`, Drive folder
   `1YOa85DvUYQfhyXPf8cNrUTEH2St8uwcW`, 2026-10-01 redraw) are not
   imported -- probably future shop icons. The flat Skin1 portraits are baked,
@@ -849,6 +885,8 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
 
 - **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
   wipes achievement progress and claimed prizes. Turn it off before release.
+  Since the run save (2026-10-01) a continued run keeps its progress while
+  its achievements reset, so check achievements within one launch.
 
 - **Achievements polish (2026-09-18).** The debug Prestasi tab's "Buka
   semua" loops `Achievements.debug_unlock(id)` over all 26 catalog entries,

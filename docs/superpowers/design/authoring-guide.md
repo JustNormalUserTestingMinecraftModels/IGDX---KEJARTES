@@ -287,8 +287,9 @@ Worked example, from `Scripts/GameState.gd`'s header:
 ##
 ## An autoload. Everything the player does between the main menu and the
 ## semester end lands here: the approved roster, the week's schedules, the
-## current week and grade, money, and the inventory. There is deliberately no
-## save system -- a run is session-scoped.
+## current week and grade, money, and the inventory. The run is saved by
+## SaveGame (SaveGame.SAVE_KEYS lists the fields it carries, EXCLUDED the
+## ones it leaves out); this script holds the state and does no file I/O.
 ##
 ## The roster: `approved_students` holds Array[Dictionary] whose stat keys
 ## (`akademis`, `seni_budaya`, `olahraga`, `mood`, `energy`) are the same

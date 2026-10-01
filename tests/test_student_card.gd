@@ -566,7 +566,7 @@ func test_the_beat_card_is_centred_down_the_screen() -> void:
 
 # ------------------------------------------ the beat's flag lives on GameState
 
-func test_seen_beats_are_a_session_dictionary_on_game_state() -> void:
+func test_seen_beats_are_a_run_dictionary_on_game_state() -> void:
 	var value: Variant = GameState.headmaster_beats_seen
 	assert_true(value is Dictionary, "headmaster_beats_seen is a Dictionary, grade -> true")
 	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
@@ -575,9 +575,9 @@ func test_seen_beats_are_a_session_dictionary_on_game_state() -> void:
 
 func test_forgetting_the_session_and_starting_a_run_forget_the_seen_beats() -> void:
 	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
-	var forget := _function_source(src, "forget_session")
-	assert_false(forget.is_empty(), "forget_session was found")
-	assert_contains(forget, "headmaster_beats_seen = {}", "forget_session clears it")
+	var forget := _function_source(src, "reset_run")
+	assert_false(forget.is_empty(), "reset_run was found")
+	assert_contains(forget, "headmaster_beats_seen = {}", "reset_run (Forget Session's wipe) clears it")
 	var run := _function_source(src, "set_grade")
 	assert_false(run.is_empty(), "set_grade was found")
 	assert_contains(run, "headmaster_beats_seen = {}",
@@ -605,13 +605,10 @@ func test_a_retry_of_the_same_grade_does_not_replay_the_beat() -> void:
 		"only a beaten game's restart goes through set_grade, which clears them")
 
 
-func test_seen_beats_are_never_written_to_disk() -> void:
-	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
-	for func_name: String in ["_write_inventory_to", "_read_inventory_from", "save_inventory",
-			"load_inventory", "clear_inventory_save"]:
-		var body := _function_source(src, func_name)
-		assert_false(body.is_empty(), func_name + " was found")
-		assert_false(body.contains("headmaster_beats_seen"), func_name + " must not touch the beats")
+## Since 2026-10-01 the run is saved, beats included: a resumed run must not
+## replay a promotion's congratulation.
+func test_seen_beats_travel_with_the_run_save() -> void:
+	assert_true(SaveGame.SAVE_KEYS.has("headmaster_beats_seen"))
 	for path: String in ["res://Scripts/GameSettings.gd", "res://Scripts/Achievements/Achievements.gd"]:
 		assert_false(FileAccess.get_file_as_string(path).contains("headmaster_beats_seen"),
-			path + " persists; the beats are session-scoped")
+			path + " is not where the run lives")

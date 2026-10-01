@@ -197,8 +197,10 @@ func change_scene(path: String, style: Style = Style.WIPE, duration_override: fl
 		return
 	_busy = true
 
-	if not Engine.is_editor_hint():
-		GameState.save_inventory()
+	# The run's hub checkpoint (SaveGame): leaving or entering a hub screen
+	# saves. SaveGame's disk calls no-op in the editor themselves.
+	var current := get_tree().current_scene
+	SaveGame.checkpoint(current.scene_file_path if current else "", path)
 
 	# Re-rolled per transition, before the cover is visible, so two
 	# consecutive scene changes rarely show the same motif.

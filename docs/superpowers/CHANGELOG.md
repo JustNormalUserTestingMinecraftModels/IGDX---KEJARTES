@@ -8,6 +8,30 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Save system and Lanjutkan
+
+- **Saved:** one file, `user://savegame.cfg` (`SaveGame`; spec `2026-10-01-save-system-design.md`), written to `savegame.tmp` and renamed over it. It saves on hub-screen visits (`Transition` → `SaveGame.checkpoint`: Lobby, AturJadwal, ShopHub, Koperasi, CosmeticShop, Inventory, ReportCard), on pause/quit on a hub, after every SchoolDay day summary (a `[week]` section, so a quit mid-week resumes on the next day; not while a skip finishes the week) and at RunResult's exit to StudentCard. RunResult's exit to MainMenu deletes it; an unreadable or newer-version file moves to `savegame.bad.cfg`.
+- **Popup:** with a save, MainMenu opens ContinuePopup ("Mau melanjutkan permainan sebelumnya?", a summary like "Kelas 7 · Minggu 1/4 · Kamis"). Ya, lanjutkan resumes into SchoolDay mid-week, the Lobby or StudentCard; Permainan baru asks "Yakin? Progres lama akan hilang." then `GameState.reset_run()` (achievements and settings stay). The frame hides its close button.
+- **Inventory:** `inventory.cfg` is retired and `GameState.save_inventory/load_inventory` are gone; the legacy file's items merge into the next new game once, then the file is deleted.
+- **Ratchets:** `SaveGame.SAVE_KEYS` + `EXCLUDED` must cover every GameState field (`test_save_game`); `pending_week_resume` joined `EndGameRehearsal`'s `_DELIBERATELY_UNSNAPSHOTTED`.
+- **Size:** to stay under the clean-code ratchet, SchoolDay's day-outcome roll and minigame category pick moved into `DayRoll.gd`, and the night fade became `_fall_into_night()`.
+- **Verified live:** quit after Rabu's result, relaunch, Lanjutkan resumed on Kamis and the week's report counted all five days; a Koperasi purchase survived a restart; Permainan baru kept achievements; a garbage save was quarantined.
+- **Final-review fixes:** the static tutorial flags (`SaveGame.TUTORIAL_FLAGS`, moved from RunResult) ride the save, and `reset_run()` clears them, so a resumed run no longer replays AturJadwal's and StudentList's walkthroughs; `inventory.cfg` is deleted only by the first save that carries its items (a quit before the first save lost them); a new game keeps the debug tutorial bypass; ContinuePopup pops in after its two-pass first layout, its pivot following every resize; after a resume on Akhir Pekan the week's-end badge names the week and the banner wears Jumat's fill; a run a failed rename left in `savegame.tmp` is recovered; a wrong-typed value makes the whole file unusable (quarantined, nothing applied) instead of half-applying.
+
+## 2026-10-01 — Explanations moved out of CLAUDE.md
+
+The save-system paragraph pushed `CLAUDE.md` over its 23,000-character budget,
+so these sentences moved here. Each is the rationale behind a rule that stayed.
+Two more moved at first (rule 5's reason the headless escape hatches fail, and
+the `load_default()` symptom); the final review ruled those live rules, and
+they went back in compressed form.
+
+- Opened `## Working efficiently here`: "Verification, not implementation,
+  dominates the cost of a session here."
+- `A full test_run can drop the bridge`: "The runner instances scenes test
+  after test with no frame between, so deferred layout calls flood the
+  MessageQueue and the editor dies."
+
 ## 2026-10-01 — Per-student lose rule
 
 `GameState.check_semester_passed()` now requires every student to clear at least

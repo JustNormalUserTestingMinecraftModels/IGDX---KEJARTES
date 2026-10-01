@@ -39,7 +39,7 @@ func test_the_countdown_runs_outside_the_tutorial_branch() -> void:
 func test_forget_session_clears_the_seen_cards() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
 	assert_contains(src, "var seen_minigame_how_to: Dictionary = {}")
-	var forget := src.substr(src.find("func forget_session"))
+	var forget := src.substr(src.find("func reset_run"))
 	forget = forget.substr(0, forget.find("\nfunc ", 1))
 	assert_contains(forget, "seen_minigame_how_to = {}")
 

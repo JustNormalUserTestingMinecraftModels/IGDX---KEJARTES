@@ -49,6 +49,7 @@ const POPUPS := {
 	# free: the frame is drawn behind the calendar art it wraps, so it
 	# rides DailyLoginPanel's own show, hide and scale.
 	"res://Scenes/Lobby/Lobby.tscn": ["DailyReward/DailyLoginFrame", "sheet", "free"],
+	"res://Scenes/MainMenu/ContinuePopup.tscn": ["Scrim/Safe/Center/Frame", "dialog", "safe"],
 }
 
 ## The one frame that is not a page to tap on. The tutorial's card sits over

@@ -1,0 +1,106 @@
+[gd_scene format=3 uid="uid://dkc0r8kmr6kjp"]
+
+[ext_resource type="Script" uid="uid://b6eul37eqrqem" path="res://Scripts/MainMenu/ContinuePopup.gd" id="1_8mure"]
+[ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="1_fmtau"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="2_8mure"]
+
+[node name="ContinuePopup" type="CanvasLayer" unique_id=949575835]
+layer = 100
+visible = false
+script = ExtResource("1_8mure")
+
+[node name="Scrim" type="Panel" parent="." unique_id=2050609197]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_type_variation = &"Scrim"
+
+[node name="Safe" type="MarginContainer" parent="Scrim" unique_id=1273112018]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+script = ExtResource("1_fmtau")
+
+[node name="Center" type="CenterContainer" parent="Scrim/Safe" unique_id=704437048]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Frame" parent="Scrim/Safe/Center" unique_id=244189710 instance=ExtResource("2_8mure")]
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+title_text = "LANJUTKAN"
+ring_count = 4
+show_well = false
+show_close = false
+
+[node name="Layout" type="VBoxContainer" parent="Scrim/Safe/Center/Frame" unique_id=857599772]
+layout_mode = 2
+
+[node name="Ask" type="VBoxContainer" parent="Scrim/Safe/Center/Frame/Layout" unique_id=454230091]
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Question" type="Label" parent="Scrim/Safe/Center/Frame/Layout/Ask" unique_id=610934333]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "Mau melanjutkan permainan sebelumnya?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Summary" type="Label" parent="Scrim/Safe/Center/Frame/Layout/Ask" unique_id=262248536]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Kelas 7 · Minggu 1/4"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Scrim/Safe/Center/Frame/Layout/Ask" unique_id=911946978]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="NewButton" type="Button" parent="Scrim/Safe/Center/Frame/Layout/Ask/Buttons" unique_id=1468011012]
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Permainan baru"
+
+[node name="ContinueButton" type="Button" parent="Scrim/Safe/Center/Frame/Layout/Ask/Buttons" unique_id=63499406]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "Ya, lanjutkan"
+
+[node name="Confirm" type="VBoxContainer" parent="Scrim/Safe/Center/Frame/Layout" unique_id=1808165589]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 32
+
+[node name="Warning" type="Label" parent="Scrim/Safe/Center/Frame/Layout/Confirm" unique_id=1119945120]
+layout_mode = 2
+theme_type_variation = &"H2Label"
+text = "Yakin? Progres lama akan hilang."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Scrim/Safe/Center/Frame/Layout/Confirm" unique_id=883828529]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="CancelButton" type="Button" parent="Scrim/Safe/Center/Frame/Layout/Confirm/Buttons" unique_id=299459465]
+layout_mode = 2
+theme_type_variation = &"SecondaryButton"
+text = "Batal"
+
+[node name="ConfirmButton" type="Button" parent="Scrim/Safe/Center/Frame/Layout/Confirm/Buttons" unique_id=526130531]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "Ya, mulai baru"

@@ -84,19 +84,6 @@ const GRADE_CAPTIONS := {
 	"D": "Belum berhasil. Mereka masih menunggumu.",
 }
 
-## The first-run tutorial flags a beaten game resets, by the script that owns
-## them as static vars. StudentList's walkthrough flag once pointed at Lobby.gd,
-## which has none, and the old silent guard hid it.
-##
-## Deliberately an untyped Dictionary of plain Arrays. It was once typed
-## `Dictionary[String, PackedStringArray]` over Array literals, and iterating it
-## in _apply_progression() handed back empty flag names and then hard-crashed
-## Godot 4.6.2 (signal 11) the moment a beaten game pressed Selesai.
-const TUTORIAL_FLAGS := {
-	"res://Scripts/AturJadwal/AturJadwal.gd": ["tutorial_phase1_done", "tutorial_phase3_done"],
-	"res://Scripts/StudentList/StudentList.gd": ["tutorial_shown"],
-}
-
 var _grade_text: String = "D"
 var _money_row: Control = null
 var _exiting: bool = false
@@ -266,6 +253,12 @@ func _on_selesai_pressed() -> void:
 	_exiting = true
 	AudioDirector.play_sfx(&"confirm")
 	var destination := _apply_progression()
+	# The save follows the run: a run going on (next grade, or a retry) is
+	# saved at its new StudentCard start; a run that ended is deleted.
+	if destination == ROSTER_SCENE:
+		SaveGame.save()
+	else:
+		SaveGame.delete_save()
 
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, EXIT_FADE_SECONDS)
@@ -374,19 +367,7 @@ func _apply_progression() -> String:
 		GameState.grade8_student_ids.clear()
 		GameState.lobby_tutorial_completed = false
 
-		# A beaten game replays the first-run tutorials.
-		for path in TUTORIAL_FLAGS:
-			for flag in TUTORIAL_FLAGS[path]:
-				_reset_static_flag(String(path), String(flag))
+		# A beaten game replays the first-run tutorials. The flag table moved
+		# to SaveGame (TUTORIAL_FLAGS), which also saves them with the run.
+		SaveGame.reset_tutorial_flags()
 		return destination
-
-
-## Sets the static bool `flag` on the script at `path` back to false. The
-## screens that own the tutorial flags have no class_name, so they are reached
-## by path; a script or flag that is not there is an error, never a silent skip.
-static func _reset_static_flag(path: String, flag: String) -> void:
-	var script := load(path) as GDScript
-	if script == null or not flag in script:
-		push_error("RunResult: no static %s on %s to reset" % [flag, path])
-		return
-	script.set(flag, false)

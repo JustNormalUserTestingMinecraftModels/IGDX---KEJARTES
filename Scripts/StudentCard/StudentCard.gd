@@ -572,7 +572,7 @@ func _begin_tutorial() -> void:
 		_show_step(0)
 
 ## Plays the headmaster's congratulation when this grade has one not yet seen
-## this session (GameState.headmaster_beats_seen): once per promotion, so a
+## this run (GameState.headmaster_beats_seen): once per promotion, so a
 ## retry does not replay it, and tutorials on or off. It rides the tutorial's
 ## overlay and card; the tutorial (or its bypass) follows. True when one began.
 func _maybe_play_headmaster_beat() -> bool:

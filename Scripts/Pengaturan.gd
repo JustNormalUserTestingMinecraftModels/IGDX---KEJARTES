@@ -3,8 +3,8 @@ class_name Pengaturan
 
 ## The settings overlay: a single toggle for the minigame tutorial,
 ## reading and writing `GameSettings.minigame_tutorial_enabled`
-## (persisted immediately via `GameSettings.save_settings()`, unlike
-## `GameState` which is session-only).
+## (persisted immediately via `GameSettings.save_settings()`, apart from
+## the run, which `SaveGame` saves at its checkpoints).
 ##
 ## Not an autoload -- whichever screen offers a settings button
 ## instantiates this by script and listens for `back_pressed` to know

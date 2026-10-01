@@ -130,8 +130,8 @@ func _ready() -> void:
 	log_message("Debug System Initialized. Press '~' or F1, or tap top-right 5x to toggle.")
 
 ## Runs once per launch, before the overlay UI exists. Every playtest should
-## start the same way: the screen tutorials bypassed (the session-only
-## GameState.tutorials_bypassed) and the window filling the screen. Music and
+## start the same way: the screen tutorials bypassed (GameState.tutorials_bypassed,
+## which a new game keeps) and the window filling the screen. Music and
 ## the minigame CARA MAIN card are left to the Settings screen: a BGM mute here
 ## (2026-08-31 to 2026-09-30) was saved as "Musik 0" on every quit, and a forced
 ## minigame_tutorial_enabled = false would be saved by the next save_settings()

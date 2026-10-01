@@ -128,7 +128,7 @@ func test_bridge_uses_the_skin() -> void:
 
 func test_forget_session_source_clears_skins() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
-	var body := src.substr(src.find("func forget_session"), 2000)
+	var body := src.substr(src.find("func reset_run"), 2000)
 	assert_true(body.contains("equipped_skins = {}"))
 	assert_true(body.contains("skin_unlock_overrides = {}"))
 

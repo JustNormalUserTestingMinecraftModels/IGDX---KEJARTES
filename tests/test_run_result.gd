@@ -471,10 +471,10 @@ func test_the_title_reads_over_the_letterbox_bar() -> void:
 
 ## A beaten game resets each first-run tutorial flag on the script that owns
 ## it. Every entry must be a real static var there: the StudentList flag was
-## once pointed at Lobby.gd, which has none, and a silent guard hid it.
+## once pointed at Lobby.gd, which has none, and a silent guard hid it. The
+## table moved from RunResult to SaveGame (2026-10-01), which also saves it.
 func test_every_tutorial_flag_to_reset_exists_on_its_script() -> void:
-	var consts: Dictionary = (load("res://Scripts/EndGame/RunResult.gd") as GDScript).get_script_constant_map()
-	var flags: Dictionary = consts.get("TUTORIAL_FLAGS", {})
+	var flags: Dictionary = SaveGame.TUTORIAL_FLAGS
 	assert_true(flags.has("res://Scripts/StudentList/StudentList.gd"),
 		"StudentList's walkthrough flag is reset")
 	for path: String in flags:
@@ -483,24 +483,23 @@ func test_every_tutorial_flag_to_reset_exists_on_its_script() -> void:
 			assert_true(owner != null and flag in owner, "%s has a static %s" % [path, flag])
 	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
 	var beaten := src.find("GameState.is_game_beaten = true")
-	var reset := src.find("_reset_static_flag(String(path), String(flag))")
+	var reset := src.find("SaveGame.reset_tutorial_flags()")
 	assert_true(beaten != -1 and reset > beaten,
-		"the beaten-game branch runs the reset over TUTORIAL_FLAGS")
+		"the beaten-game branch resets every TUTORIAL_FLAGS flag")
+	assert_false(src.contains("const TUTORIAL_FLAGS"), "RunResult keeps no second copy of the table")
 
 
 ## Iterating a `Dictionary[String, PackedStringArray]` const built from Array
 ## literals gave empty flag names and then hard-crashed Godot 4.6.2 (signal 11)
-## when a beaten game pressed Selesai. This walks the very constant and loop
-## the game uses, so a return of the typed form fails here instead of in play.
+## when a beaten game pressed Selesai. This walks the very constant the game
+## loops over, so a return of the typed form fails here instead of in play.
 func test_the_tutorial_flag_table_is_untyped_and_iterates_to_real_names() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	var src := FileAccess.get_file_as_string("res://Scripts/Save/SaveGame.gd")
 	assert_true(src.contains("const TUTORIAL_FLAGS := {"),
 		"the flag table stays an untyped Dictionary")
-	var consts: Dictionary = (load("res://Scripts/EndGame/RunResult.gd") as GDScript).get_script_constant_map()
-	var flags: Dictionary = consts.get("TUTORIAL_FLAGS", {})
 	var seen := 0
-	for path in flags:
-		for flag in flags[path]:
+	for path in SaveGame.TUTORIAL_FLAGS:
+		for flag in SaveGame.TUTORIAL_FLAGS[path]:
 			assert_true(String(flag) != "", "%s lists a non-empty flag name" % path)
 			seen += 1
 	assert_true(seen >= 3, "all three tutorial flags are listed")
@@ -509,15 +508,14 @@ func test_the_tutorial_flag_table_is_untyped_and_iterates_to_real_names() -> voi
 ## The reset really clears the flag, through the same helper the game uses.
 func test_the_flag_reset_clears_the_student_list_walkthrough() -> void:
 	var list := load("res://Scripts/StudentList/StudentList.gd") as GDScript
-	var run_result := load("res://Scripts/EndGame/RunResult.gd") as GDScript
-	assert_true(list != null and run_result != null, "both scripts load")
-	if list == null or run_result == null:
+	assert_true(list != null, "StudentList.gd loads")
+	if list == null:
 		return
-	var was: Variant = list.get("tutorial_shown")
+	var was: Dictionary = SaveGame.tutorial_flags()
 	list.set("tutorial_shown", true)
-	run_result.call("_reset_static_flag", "res://Scripts/StudentList/StudentList.gd", "tutorial_shown")
+	SaveGame.reset_tutorial_flags()
 	var after: Variant = list.get("tutorial_shown")
-	list.set("tutorial_shown", was)
+	SaveGame.restore_tutorial_flags(was)
 	assert_eq(after, false, "tutorial_shown is back to false")
 
 

@@ -41,7 +41,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Pengaturan.gd::_ready": 73,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd::_play_minigame": 84,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd::_run_event": 68,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd::_run_single_day": 83,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd::_run_single_day": 75,
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd::_draw": 69,
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_jadwal_activity": 60,
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_minigame_result": 68,
@@ -85,7 +85,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/SchoolSimulation/DaySummaryPopup.gd": 9,
 	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 2,
 	"res://Scripts/SchoolSimulation/ResultCheckup.gd": 5,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 71,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": 62,
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 36,
 	"res://Scripts/SchoolSimulation/StudentData.gd": 8,
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 38,
@@ -171,7 +171,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/SchoolSimulation/DayVerdict.gd": 2,
 	"res://Scripts/SchoolSimulation/EventStudentSelectDialog.gd": 2,
 	"res://Scripts/SchoolSimulation/EventWarning.gd": 3,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 54,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": 52,
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 20,
 	"res://Scripts/SchoolSimulation/StudentData.gd": 19,
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 29,
@@ -218,7 +218,7 @@ const DUPLICATE_GROUPS: Array[String] = [
 const LARGE_SCRIPTS: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 1468,
 	"res://Scripts/Debug/DebugManager.gd": 1745,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1637,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1628,
 	"res://Scripts/StudentCard/StudentCard.gd": 1444,
 }
 

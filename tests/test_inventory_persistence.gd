@@ -1,9 +1,10 @@
 @tool
 extends McpTestSuite
 
-## Inventory persistence: the pure serialise/deserialise pair round-trips,
-## the disk path is is_editor_hint-gated (no file appears in test context),
-## and forget_session()'s reset covers the run-state fields.
+## Inventory persistence, since 2026-10-01: the inventory travels in SaveGame's
+## file with the rest of the run (the old inventory-only save is gone, and
+## Transition checkpoints around hub screens), and forget_session()'s reset
+## covers the run-state fields.
 
 func suite_name() -> String:
 	return "inventory_persistence"
@@ -22,59 +23,46 @@ func teardown() -> void:
 	GameState.approved_students = _roster_backup
 	GameState.player_money = _money_backup
 
-func test_write_then_read_round_trips() -> void:
-	GameState.inventory = {"Komik": 3, "Raket": 1}
-	var cfg := ConfigFile.new()
-	GameState._write_inventory_to(cfg)
-	GameState.inventory = {}
-	GameState._read_inventory_from(cfg)
-	assert_eq(GameState.inventory.get("Komik"), 3)
-	assert_eq(GameState.inventory.get("Raket"), 1)
+## 2026-10-01: the inventory travels in SaveGame's file with the rest of the
+## run; the old inventory-only save is gone.
+func test_the_inventory_only_save_is_retired() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
+	for gone in ["func save_inventory", "func load_inventory", "func clear_inventory_save",
+			"func _write_inventory_to", "func _read_inventory_from", "INVENTORY_SAVE_PATH"]:
+		assert_false(src.contains(gone), gone + " was removed")
+	assert_true(SaveGame.SAVE_KEYS.has("inventory"), "the inventory is part of the run save")
 
-func test_read_from_empty_config_leaves_inventory_empty() -> void:
-	GameState.inventory = {"stale": 9}
-	GameState._read_inventory_from(ConfigFile.new())
-	assert_true(GameState.inventory.is_empty())
-
-func test_read_coerces_types() -> void:
-	var cfg := ConfigFile.new()
-	cfg.set_value("inventory", "items", {StringName("Komik"): 2.0})
-	GameState._read_inventory_from(cfg)
-	for k in GameState.inventory:
-		assert_true(k is String)
-		assert_true(typeof(GameState.inventory[k]) == TYPE_INT)
-	assert_eq(GameState.inventory.get("Komik"), 2)
-
-func test_save_inventory_is_gated_in_editor_context() -> void:
-	# State-independent: save_inventory() must not CREATE (or remove) the
-	# file in editor/test context, whatever was there before.
-	var existed_before := FileAccess.file_exists(GameState.INVENTORY_SAVE_PATH)
-	GameState.inventory = {"Komik": 1}
-	GameState.save_inventory()
-	assert_eq(FileAccess.file_exists(GameState.INVENTORY_SAVE_PATH), existed_before,
-		"save_inventory must no-op on disk under Engine.is_editor_hint()")
 
 func test_forget_session_resets_run_state_but_keeps_progress_flags() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
-	var start := src.find("func forget_session")
-	assert_gt(start, 0, "forget_session must exist")
+	var start := src.find("func reset_run")
+	assert_gt(start, 0, "reset_run must exist")
 	var body := src.substr(start, src.find("\nfunc ", start + 1) - start)
 	for field in ["inventory", "approved_students", "day_schedules", "pending_earnings",
 			"minigame_gain_this_week", "player_money", "minggu_ke", "current_grade",
 			"run_stats"]:
-		assert_contains(body, field, "forget_session must reset " + field)
+		assert_contains(body, field, "reset_run must reset " + field)
 	assert_false(body.contains("is_game_beaten"),
-		"forget_session must NOT wipe the persisted is_game_beaten flag")
+		"reset_run must NOT wipe the persisted is_game_beaten flag")
 	assert_false(body.contains("debug_level_select_enabled"),
-		"forget_session must NOT wipe the persisted debug_level_select flag")
-	assert_contains(body, "clear_inventory_save()", "forget_session drops the on-disk save")
+		"reset_run must NOT wipe the persisted debug_level_select flag")
+	var forget_start := src.find("func forget_session")
+	assert_gt(forget_start, 0, "forget_session must exist")
+	var forget_body := src.substr(forget_start, src.find("\nfunc ", forget_start + 1) - forget_start)
+	assert_contains(forget_body, "reset_run()", "forget_session resets the run")
+	assert_contains(forget_body, "SaveGame.delete_save()", "forget_session drops the on-disk save")
+	assert_contains(forget_body, "Achievements.reset()", "forget_session wipes achievement progress")
 
-func test_transition_flushes_inventory_on_scene_change() -> void:
+## The checkpoint must run before the scene changes: after it, `current` is
+## the new scene (or null) and the hub test would read the wrong "from" path.
+func test_transition_checkpoints_around_hub_screens() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Transition/Transition.gd")
-	assert_true(src.contains("GameState.save_inventory()"),
-		"change_scene must flush the inventory save")
-	assert_true(src.contains("is_editor_hint"),
-		"the save call must be editor-gated")
+	var checkpoint_at := src.find("SaveGame.checkpoint(")
+	assert_true(checkpoint_at != -1, "change_scene saves around hubs")
+	assert_true(checkpoint_at < src.find("change_scene_to_file("),
+		"and does so while the scene being left is still current")
+	assert_false(src.contains("save_inventory"), "the old flush is gone")
+
 
 func test_debug_manager_has_forget_session() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/Debug/DebugManager.gd")

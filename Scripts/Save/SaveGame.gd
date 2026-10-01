@@ -174,9 +174,15 @@ static func has_save() -> bool:
 	return _load_usable() != null
 
 
-## Writes the run to disk, atomically. Writes nothing when no roster is
-## approved: there is nothing to continue (and Forget Session's hop to the
-## menu must not re-save the wiped state). No-op in the editor.
+## Writes the run to TMP_PATH, then renames it over SAVE_PATH. Where the
+## platform's rename overwrites (Android, Linux, macOS) that is atomic: a kill
+## leaves the old save or the new one whole, never neither. Only when the
+## rename refuses (a platform that will not overwrite) is the old file removed
+## first and the rename retried once; a kill in that gap leaves just the temp
+## file.
+## Writes nothing when no roster is approved: there is nothing to continue
+## (and Forget Session's hop to the menu must not re-save the wiped state).
+## No-op in the editor.
 static func save(week: Dictionary = {}) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -188,9 +194,10 @@ static func save(week: Dictionary = {}) -> void:
 	if err != OK:
 		push_warning("SaveGame: could not write %s (error %d)" % [TMP_PATH, err])
 		return
-	if FileAccess.file_exists(SAVE_PATH):
-		DirAccess.remove_absolute(SAVE_PATH)
 	err = DirAccess.rename_absolute(TMP_PATH, SAVE_PATH)
+	if err != OK:
+		DirAccess.remove_absolute(SAVE_PATH)
+		err = DirAccess.rename_absolute(TMP_PATH, SAVE_PATH)
 	if err != OK:
 		push_warning("SaveGame: could not move the save into place (error %d)" % err)
 

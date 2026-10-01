@@ -57,8 +57,13 @@ func test_every_saved_field_round_trips() -> void:
 		expected[key] = var_to_str(GameState.get(key))
 	var won := GameState.run_stats.minigames_won
 
+	# Through the file's text form, as a real save is: this is what proves int
+	# roster ids and typed arrays survive the serializer, not just memory.
+	var back := ConfigFile.new()
+	assert_eq(back.parse(cfg.encode_to_text()), OK, "the save survives its text form")
+
 	GameState.reset_run()
-	assert_true(SaveGame.read_state(cfg), "a fresh file reads")
+	assert_true(SaveGame.read_state(back), "a fresh file reads")
 	for key in SaveGame.SAVE_KEYS:
 		assert_eq(var_to_str(GameState.get(key)), expected[key], key + " round-trips")
 	assert_eq(GameState.max_minggu, GameState.weeks_for_grade(8),

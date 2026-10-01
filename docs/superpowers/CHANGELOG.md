@@ -10,15 +10,15 @@ deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maint
 
 ## 2026-10-01 — Per-student lose rule
 
-The win condition is now per-student, not roster-average. Every student must
-clear at least 2 of their 3 academic targets; if any one student falls below
-that by the grade's final week, the run fails with a D, regardless of the
-others' scores. The AturJadwal roster screen now displays a "safe" count
-("3 / 4" with a person icon) showing how many students have locked in enough
-targets. StatCheck's "TIDAK LULUS" stamp marks any failing student red. Debug
-rehearsal presets for B and C grades are [3,3,2,2] and [2,2,2,2]
-respectively, balancing their minigame tallies (B: 4 won / 6 lost) to match
-the intended score.
+`GameState.check_semester_passed()` now requires every student to clear at least
+2 of their 3 academic targets (`GameState.MIN_TARGETS_PER_STUDENT`): one under loses
+the run with a D, however strong the rest. `run_stars()` stays as a score (Lobby header,
+StatCheck meter, RunGrade). The weekly schedule screen displays safe-student count
+with `SafeChip` and a person icon (`nav_students.svg`), using `ObjectiveHint.safe_text()`
+and `safe_percent()`. StatCheck stamps a failing student "TIDAK LULUS" via
+`StatCheckCard.stamp_if_failed()`. Debug rehearsal presets for B and C grades are
+[3,3,2,2] and [2,2,2,2], landing at 67.83 (B) and 52.17 (C); B's minigame tally is
+4 won / 6 lost.
 
 ## 2026-10-01 — Canvas filter is Linear Mipmap for real
 

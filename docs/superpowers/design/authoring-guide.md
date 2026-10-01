@@ -307,7 +307,9 @@ game-facing identifiers and UI strings in Indonesian.
 
 Two suites, source-text scans in the style of `tests/test_project_hygiene.gd`
 — no scene instantiation needed, no main scene required, both run in well
-under a second.
+under a second. Note what that buys and what it does not: a scan asserts the
+value you *set*, so it can confirm you changed what you meant to and can never
+tell you that you changed the wrong things.
 
 - `tests/test_script_documentation.gd` — **a plain rule.** Every non-exempt
   script must have a `##` file header in its first 12 lines, and every

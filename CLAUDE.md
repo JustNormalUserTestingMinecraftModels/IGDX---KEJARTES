@@ -41,8 +41,7 @@ opens Settings) skips the minigame lines;
 Nasi Kotak, Hujan and the choice events keep theirs. A won minigame ends on
 `MinigameWinScreen` (LOBBY skips the rest of the week); a loss keeps
 `MinigameResultPopup`.
-Splashscreen still exists and is tested but nothing routes to it (the game
-boots straight to MainMenu, which loads in one hop). There is no Loading
+There is no Loading
 screen: the shared `Transition` wipe covers the scene-load gap.
 All navigation is a single `Transition.change_scene(target, …)`. **Lobby
 hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard (its coin
@@ -198,8 +197,8 @@ alpha before laying out on any soft-edged texture.
 
 Minigames share one layout (strip · field · tray/hint pill, CARA MAIN card;
 spec `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
-and one type ladder (`MinigameType`), and follow the glyph and popup rules; their inner play art still had no
-polish pass. The debug overlay is out of scope for the design system.
+and one type ladder (`MinigameType`), and follow the glyph and popup rules.
+The debug overlay is out of scope for the design system.
 
 ## Testing
 
@@ -236,9 +235,7 @@ a full run may just be ordering — re-run that suite alone before believing it.
 
 Many tests are **source-text scans** (`src.contains(...)`) rather than
 behavioral, because a lot of the UI can't be instantiated headlessly. Follow
-that pattern where it's established. Note what that buys and what it does not:
-a scan asserts the value you *set*, so it can confirm you changed what you
-meant to and can never tell you that you changed the wrong things.
+that pattern where it's established.
 
 ## Pull requests
 

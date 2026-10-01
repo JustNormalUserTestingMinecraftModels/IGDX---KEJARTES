@@ -299,7 +299,7 @@ findings, and the second is the one that matters:
 **`.tscn` properties: clean where it counts.** 66 non-layout overrides
 (`font_sizes`, `styles`, `colors`) existed in scene files, and **every one is
 inside `Scenes/Minigames/**`**, in the minigames' inner play art, which
-had no polish pass (CLAUDE.md). The 2026-09-29 minigame layout cleared
+had no polish pass. The 2026-09-29 minigame layout cleared
 Menjodohkan, MainBola and PauseMenu and halved BuatBatik, and the
 2026-09-30 minigame hierarchy pass cleared `QuestionCard`, `AnswerCard`,
 `KalkulatorKey` and BuatBatik's four tool boxes: 28 remain, in `AnswerRow` 7,
@@ -389,6 +389,8 @@ Each minigame's `Calm` grade costs a full-screen copy every frame, and its
 `Glow` the Environment's own glow pass (the Efek Visual layer keeps the
 bloom shader opt-in for an unknown performance floor); nobody has measured
 frame time on a low-end phone yet, the timed minigames first.
+
+**Splashscreen scene is built but unreachable (moved from CLAUDE.md, 2026-10-01).** The Splashscreen scene exists and is tested, but no route in the game leads to it — the game boots straight to MainMenu, which loads in one hop.
 
 **Bug-sweep leftovers (2026-09-30).** Found by the 2026-09-30 scan and left
 on purpose: (1) "Ulangi Kelas 8/9" keeps the failed attempt's skill gains,

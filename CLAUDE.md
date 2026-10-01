@@ -8,11 +8,11 @@ Indonesian-language school-management sim. Main scene:
 
 You play a teacher. Approve a roster, assign each student a daily activity for
 the school week, then watch the week simulate: stats move, minigames and random
-events fire, and a report lands at week's end. Clear two-thirds of the roster's
-academic targets — `run_stars() >= 2.0` of 3.0 — by the end of the grade's
-final week to pass. It is a roster-wide fraction, not a per-student gate: three students
-clearing everything while a fourth clears nothing is 9 of 12 = 2.25 stars, and
-passes.
+events fire, and a report lands at week's end. To pass, by the end of the grade's
+final week **every student must clear at least 2 of their 3 academic targets**
+(`GameState.MIN_TARGETS_PER_STUDENT`); one student under that loses the run with a D,
+however strong the rest. `run_stars()` (cleared ÷ total × 3) is only a score now:
+the Lobby header, StatCheck's meter and RunGrade read it, the verdict does not.
 
 **Grades scale the whole game** (`GameState.current_grade`, 7–9):
 
@@ -25,6 +25,7 @@ passes.
 Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
 `TARGET_UPLIFT_BY_GRADE` (ours, paired); `Balance.JUMLAH_MINGGU_KELAS_*` and
 `TARGET_KENAIKAN_KELAS_*` still say 6/12/16 and 15/34/40 but nothing reads them.
+`Balance.STAR_WIN_THRESHOLD` (2.0) is unread too since the per-student rule.
 
 **Loop:** **MainMenu (boot)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →

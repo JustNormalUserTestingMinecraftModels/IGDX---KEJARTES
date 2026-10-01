@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Per-student lose rule
+
+The win condition is now per-student, not roster-average. Every student must
+clear at least 2 of their 3 academic targets; if any one student falls below
+that by the grade's final week, the run fails with a D, regardless of the
+others' scores. The AturJadwal roster screen now displays a "safe" count
+("3 / 4" with a person icon) showing how many students have locked in enough
+targets. StatCheck's "TIDAK LULUS" stamp marks any failing student red. Debug
+rehearsal presets for B and C grades are [3,3,2,2] and [2,2,2,2]
+respectively, balancing their minigame tallies (B: 4 won / 6 lost) to match
+the intended score.
+
 ## 2026-10-01 — Canvas filter is Linear Mipmap for real
 
 The 2026-09-22 crispness pass set `default_texture_filter = 3` believing it

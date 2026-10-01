@@ -303,9 +303,12 @@ func test_the_legacy_inventory_outlives_a_quit_before_the_first_save() -> void:
 	assert_false(read.contains("remove_absolute"), "reading leaves the file in place")
 	var save_body: String = src.get_slice("static func save(", 1).get_slice("\nstatic func ", 0)
 	assert_true(save_body.contains("(error %d)\" % err)\n\t\treturn\n"
-			+ "\tif FileAccess.file_exists(LEGACY_INVENTORY_PATH):\n"
-			+ "\t\tDirAccess.remove_absolute(LEGACY_INVENTORY_PATH)"),
+			+ "\tdelete_legacy_inventory()"),
 		"save() drops the file only past the failed-rename return, with the run in place")
+	var drop: String = src.get_slice("static func delete_legacy_inventory(", 1).get_slice("\nstatic func ", 0)
+	assert_true(drop.contains("if FileAccess.file_exists(LEGACY_INVENTORY_PATH):\n"
+			+ "\t\tDirAccess.remove_absolute(LEGACY_INVENTORY_PATH)"),
+		"delete_legacy_inventory() removes the legacy file")
 
 
 func test_checkpoints_fire_only_around_hub_screens() -> void:

@@ -55,12 +55,12 @@ func test_default_entry_is_todays_art() -> void:
 	assert_eq(StudentSkins.layer_path("Thea", "default", "splash"), "res://Assets/Images/SplashArtMurid/splash_thea.png")
 	assert_eq(StudentSkins.layer_path("Thea", "default", "portrait"), "res://Assets/Images/MuridPortrait/Thea.png")
 	assert_eq(StudentSkins.layer_path("Thea", "default", "face_base"), "res://Assets/Images/MuridPortrait/Thea/thea_base.png")
-	assert_eq(StudentSkins.layer_path("Thea", "default", "hand"), "res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png")
+	assert_eq(StudentSkins.layer_path("Thea", "default", "hand"), "res://Assets/Images/MuridPortrait/TanganItems/Thea_Arms.png")
 
 
 func test_skin1_paths_follow_the_skins_folder() -> void:
 	assert_eq(StudentSkins.layer_path("Andi", "skin1", "splash"), "res://Assets/Images/Skins/Andi/splash_andi_skin1.png")
-	assert_eq(StudentSkins.layer_path("Andi", "skin1", "hand"), "res://Assets/Images/Skins/Andi/andi_table_skin1.png")
+	assert_eq(StudentSkins.layer_path("Andi", "skin1", "hand"), "res://Assets/Images/Skins/Andi/andi_arms_skin1.png")
 
 
 func test_unknown_name_and_id() -> void:
@@ -86,7 +86,7 @@ func test_equipped_skin_wins_and_dict_is_untouched() -> void:
 	assert_eq(StudentSkins.splash_for(s), "res://Assets/Images/Skins/Andi/splash_andi_skin1.png")
 	assert_eq(StudentSkins.portrait_for(s), "res://Assets/Images/Skins/Andi/andi_portrait_skin1.png")
 	assert_eq(StudentSkins.face_base_for("Andi"), "res://Assets/Images/Skins/Andi/andi_base_skin1.png")
-	assert_eq(StudentSkins.hand_for("Andi"), "res://Assets/Images/Skins/Andi/andi_table_skin1.png")
+	assert_eq(StudentSkins.hand_for("Andi"), "res://Assets/Images/Skins/Andi/andi_arms_skin1.png")
 	assert_eq(s["splash"], "res://Assets/Images/SplashArtMurid/splash_andi.png", "the roster dict keeps its base art")
 
 

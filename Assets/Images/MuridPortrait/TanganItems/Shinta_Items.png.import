@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ce1kfh8jybbhh"
-path="res://.godot/imported/Thea_Table.png-3a2853280263af026483586b59c3d68f.ctex"
+uid="uid://dceiofwiklsuv"
+path="res://.godot/imported/Shinta_Items.png-c81c7559806077f3aec4258410821e85.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png"
-dest_files=["res://.godot/imported/Thea_Table.png-3a2853280263af026483586b59c3d68f.ctex"]
+source_file="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Items.png"
+dest_files=["res://.godot/imported/Shinta_Items.png-c81c7559806077f3aec4258410821e85.ctex"]
 
 [params]
 

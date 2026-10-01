@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://w2eebv4y4ue0"
-path="res://.godot/imported/Citra_Table.png-d9e2c00722a5c9dcff493e2bb5150e14.ctex"
+uid="uid://boarpns16aasr"
+path="res://.godot/imported/citra_arms_skin1.png-391fffd80a0007c2f20fdd3814d72112.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/MuridPortrait/TanganItems/Citra_Table.png"
-dest_files=["res://.godot/imported/Citra_Table.png-d9e2c00722a5c9dcff493e2bb5150e14.ctex"]
+source_file="res://Assets/Images/Skins/Citra/citra_arms_skin1.png"
+dest_files=["res://.godot/imported/citra_arms_skin1.png-391fffd80a0007c2f20fdd3814d72112.ctex"]
 
 [params]
 

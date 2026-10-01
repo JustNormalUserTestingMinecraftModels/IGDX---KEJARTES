@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfqhmn15yvf1o"
-path="res://.godot/imported/citra_table_skin1.png-3bee50e3b06b1014cbc1cd3696fa8d22.ctex"
+uid="uid://tw1xtytw2p7u"
+path="res://.godot/imported/shinta_arms_skin1.png-4b7e1ce79a755f4ed4fd7392f657dbd3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Skins/Citra/citra_table_skin1.png"
-dest_files=["res://.godot/imported/citra_table_skin1.png-3bee50e3b06b1014cbc1cd3696fa8d22.ctex"]
+source_file="res://Assets/Images/Skins/Shinta/shinta_arms_skin1.png"
+dest_files=["res://.godot/imported/shinta_arms_skin1.png-4b7e1ce79a755f4ed4fd7392f657dbd3.ctex"]
 
 [params]
 

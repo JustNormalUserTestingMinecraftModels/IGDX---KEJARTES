@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dvotkc0awnd16"
-path="res://.godot/imported/Doni_Table.png-3fc5ccc454aabf3621b545aac6d52ec3.ctex"
+uid="uid://7sq45gdodijp"
+path="res://.godot/imported/Doni_Items.png-4b0d960ee14048ad34b040b5fc42d1f7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/MuridPortrait/TanganItems/Doni_Table.png"
-dest_files=["res://.godot/imported/Doni_Table.png-3fc5ccc454aabf3621b545aac6d52ec3.ctex"]
+source_file="res://Assets/Images/MuridPortrait/TanganItems/Doni_Items.png"
+dest_files=["res://.godot/imported/Doni_Items.png-4b0d960ee14048ad34b040b5fc42d1f7.ctex"]
 
 [params]
 

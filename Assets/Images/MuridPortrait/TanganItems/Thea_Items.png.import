@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cicqkg1dcqoa6"
-path="res://.godot/imported/thea_table_skin1.png-b2f929ce4a493f1706d33f8c73651f1e.ctex"
+uid="uid://dh30ig6tq6mvw"
+path="res://.godot/imported/Thea_Items.png-c035d66ac62a834fe1231f8972d4834d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Skins/Thea/thea_table_skin1.png"
-dest_files=["res://.godot/imported/thea_table_skin1.png-b2f929ce4a493f1706d33f8c73651f1e.ctex"]
+source_file="res://Assets/Images/MuridPortrait/TanganItems/Thea_Items.png"
+dest_files=["res://.godot/imported/Thea_Items.png-c035d66ac62a834fe1231f8972d4834d.ctex"]
 
 [params]
 

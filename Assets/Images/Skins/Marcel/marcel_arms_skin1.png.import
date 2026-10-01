@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkem271j0dr8e"
-path="res://.godot/imported/marcel_table_skin1.png-ca12a67a676519a072bc02f58bd21248.ctex"
+uid="uid://b2vtjokpau1i6"
+path="res://.godot/imported/marcel_arms_skin1.png-105fe17679c6232aad42805d4e8ad681.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Skins/Marcel/marcel_table_skin1.png"
-dest_files=["res://.godot/imported/marcel_table_skin1.png-ca12a67a676519a072bc02f58bd21248.ctex"]
+source_file="res://Assets/Images/Skins/Marcel/marcel_arms_skin1.png"
+dest_files=["res://.godot/imported/marcel_arms_skin1.png-105fe17679c6232aad42805d4e8ad681.ctex"]
 
 [params]
 

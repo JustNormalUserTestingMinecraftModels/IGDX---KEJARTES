@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://vwe02tlwbjjg"
-path="res://.godot/imported/Marcel_Table.png-58ba0c38a080416709d8e2e83bf871be.ctex"
+uid="uid://551pmd1nplka"
+path="res://.godot/imported/doni_arms_skin1.png-6b8ab2edb6d6fba8304cc6682f0eb37a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Table.png"
-dest_files=["res://.godot/imported/Marcel_Table.png-58ba0c38a080416709d8e2e83bf871be.ctex"]
+source_file="res://Assets/Images/Skins/Doni/doni_arms_skin1.png"
+dest_files=["res://.godot/imported/doni_arms_skin1.png-6b8ab2edb6d6fba8304cc6682f0eb37a.ctex"]
 
 [params]
 

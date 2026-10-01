@@ -34,15 +34,39 @@ func test_hand_skins_swap_and_restore() -> void:
 	track(slot)
 	var hand := TextureRect.new()
 	hand.name = "Hand_Andi"
-	var base_tex := load("res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png") as Texture2D
+	var base_tex := load("res://Assets/Images/MuridPortrait/TanganItems/Andi_Arms.png") as Texture2D
 	hand.texture = base_tex
 	slot.add_child(hand)
 	GameState.equip_skin("Andi", "skin1")
 	loby_script._apply_hand_skins(slot)
-	assert_eq(hand.texture.resource_path, "res://Assets/Images/Skins/Andi/andi_table_skin1.png")
+	assert_eq(hand.texture.resource_path, "res://Assets/Images/Skins/Andi/andi_arms_skin1.png")
 	GameState.equip_skin("Andi", "default")
 	loby_script._apply_hand_skins(slot)
 	assert_eq(hand.texture, base_tex, "default restores the authored texture")
+
+
+## Showing a student shows its arms and its desk items together, and only
+## those; a name with no node of its own shows the fallback student's pair.
+func test_show_hand_for_shows_the_arms_and_items_pair() -> void:
+	var lobby_script: GDScript = load("res://Scripts/Lobby/Lobby.gd")
+	var slot := Control.new()
+	track(slot)
+	for n: String in ["Hand_Andi", "Items_Andi", "Hand_Doni", "Items_Doni"]:
+		var c := TextureRect.new()
+		c.name = n
+		slot.add_child(c)
+	lobby_script._show_hand_for(slot, "Andi")
+	var shown: Array[String] = []
+	for c in slot.get_children():
+		if (c as CanvasItem).visible:
+			shown.append(String(c.name))
+	assert_eq(shown, ["Hand_Andi", "Items_Andi"] as Array[String])
+	lobby_script._show_hand_for(slot, "Murid1")
+	shown.clear()
+	for c in slot.get_children():
+		if (c as CanvasItem).visible:
+			shown.append(String(c.name))
+	assert_eq(shown, ["Hand_Doni", "Items_Doni"] as Array[String])
 
 
 func test_setup_students_wires_both() -> void:

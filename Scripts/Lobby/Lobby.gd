@@ -17,17 +17,22 @@ extends Control
 ## StudentData.avatar_texture of their own.
 @export var default_portrait: Texture2D = preload("res://Assets/Images/MuridPortrait/Thea.png")
 
-## Name prefix marking a slot child as one student's desk art. Everything
+## Name prefix marking a slot child as one student's arms layer. Everything
 ## after the prefix is the student name it belongs to, so adding a
 ## character means duplicating a Hand_* node in Lobby.tscn and renaming it
 ## -- no code change here.
 const HAND_NODE_PREFIX := "Hand_"
 
 ## Which Hand_* node stands in for a student with no node of their own.
-## Doni's is the deliberate choice: his art is desk props with no arms, so
-## a wrong match reads as a plain desk rather than as another character's
-## hands.
+## Doni's is the deliberate choice: his arms are just two hands at the desk
+## edge, so a wrong match still reads as a plain desk rather than as another
+## character's arms.
 const HAND_FALLBACK_NAME := "Doni"
+
+## Name prefix of a student's desk items node, the sibling drawn under its
+## Hand_* (arms) node. Items are shared by every skin and keep their own
+## authored transform, so a seat can grow the student without growing the desk.
+const ITEMS_NODE_PREFIX := "Items_"
 
 ## The Settings screen's script; the gear sets where its back button returns.
 const SettingsScript := preload("res://Scripts/UI/Settings.gd")
@@ -249,24 +254,28 @@ func _connect_hud_buttons() -> void:
 	earn_panel.paid.connect(_on_wallet_paid)
 	hud.can_reopen = _chatter_allowed  # popups keep the HUD down too
 
-## Shows the one Hand_<Name> node in this slot that matches the student
-## sitting here, and hides its five siblings.
+## Shows the arms and desk items of the student sitting in this slot, and
+## hides every other student's pair.
 ##
-## Every slot carries a hand node per student, each positioned and scaled
-## by hand in the 2D viewport against the real desks. That is deliberate:
-## the six art files were drawn at different scales and cropped without a
-## shared registration point, so no single rule lines all of them up with
-## the shoulders. The transforms are authored data, not something this
-## script computes -- it only picks which one is visible, and must never
-## write position, size or scale, or it would clobber that authoring.
+## Each slot has, per student, an arms node (Hand_<Name>) and an items node
+## (Items_<Name>), both positioned and scaled by hand in the 2D viewport
+## against the real desks. That is deliberate: the art files were drawn at
+## different scales and cropped without a shared registration point, so no
+## single rule lines them all up. The transforms are authored data, not
+## something this script computes -- it only picks which pair is visible, and
+## must never write position, size or scale, or it would clobber that
+## authoring.
 ##
 ## A name with no matching node (a stock Murid1-6 portrait, or a roster
 ## seeded by a test) falls back to HAND_FALLBACK_NAME's node, so the slot
 ## shows a plain desk rather than nothing.
-func _show_hand_for(h_slot: Node, student_name: String) -> void:
+static func _show_hand_for(h_slot: Node, student_name: String) -> void:
 	var matched: Node = null
 	var fallback: Node = null
 	for child in h_slot.get_children():
+		if child.name.begins_with(ITEMS_NODE_PREFIX):
+			(child as CanvasItem).hide()
+			continue
 		if not child.name.begins_with(HAND_NODE_PREFIX):
 			continue
 		child.hide()
@@ -278,11 +287,15 @@ func _show_hand_for(h_slot: Node, student_name: String) -> void:
 	var chosen: Node = matched if matched != null else fallback
 	if chosen != null:
 		chosen.show()
+		var items := h_slot.get_node_or_null(NodePath(ITEMS_NODE_PREFIX + String(chosen.name).substr(HAND_NODE_PREFIX.length())))
+		if items != null:
+			(items as CanvasItem).show()
 
 
 ## Dresses every Hand_<Name> node in this slot in its student's equipped
 ## skin, restoring the authored texture for the default. Only the texture is
 ## touched: the per-node transforms are hand-authored (see _show_hand_for).
+## Items_* nodes are never touched: skins change arms, not desk items.
 ## The first call stashes each node's authored texture in its
 ## "default_texture" meta so a later default can put it back. Static so the
 ## test runner can call it without an instance of this non-@tool script.

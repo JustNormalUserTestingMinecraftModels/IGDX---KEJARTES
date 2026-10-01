@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cowgvm1mr8ibi"
-path="res://.godot/imported/Shinta_Table.png-394b98f6a9c9fc2f702ba70cfeb806b4.ctex"
+uid="uid://bqyqxriee3dd4"
+path="res://.godot/imported/Citra_Arms.png-0bb52854937175a9fb3fae5b8e48c045.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Table.png"
-dest_files=["res://.godot/imported/Shinta_Table.png-394b98f6a9c9fc2f702ba70cfeb806b4.ctex"]
+source_file="res://Assets/Images/MuridPortrait/TanganItems/Citra_Arms.png"
+dest_files=["res://.godot/imported/Citra_Arms.png-0bb52854937175a9fb3fae5b8e48c045.ctex"]
 
 [params]
 

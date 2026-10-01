@@ -6,14 +6,14 @@
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/AndiFace.tscn" id="4_yhuud"]
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/DoniFace.tscn" id="5_ikpat"]
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/MarcelFace.tscn" id="6_dx44p"]
-[ext_resource type="Texture2D" uid="uid://dvotkc0awnd16" path="res://Assets/Images/MuridPortrait/TanganItems/Doni_Table.png" id="6_dyk4g"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Doni_Arms.png" id="6_dyk4g"]
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/ShintaFace.tscn" id="7_62a4m"]
-[ext_resource type="Texture2D" uid="uid://w2eebv4y4ue0" path="res://Assets/Images/MuridPortrait/TanganItems/Citra_Table.png" id="7_ek62u"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Citra_Arms.png" id="7_ek62u"]
 [ext_resource type="PackedScene" path="res://Scenes/Lobby/TheaFace.tscn" id="8_gbno3"]
-[ext_resource type="Texture2D" uid="uid://ckls11l3yiniv" path="res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png" id="9_bfy74"]
-[ext_resource type="Texture2D" uid="uid://vwe02tlwbjjg" path="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Table.png" id="9_q4xuc"]
-[ext_resource type="Texture2D" uid="uid://cowgvm1mr8ibi" path="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Table.png" id="10_3lohg"]
-[ext_resource type="Texture2D" uid="uid://ce1kfh8jybbhh" path="res://Assets/Images/MuridPortrait/TanganItems/Thea_Table.png" id="11_4d6wl"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Andi_Arms.png" id="9_bfy74"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Arms.png" id="9_q4xuc"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Arms.png" id="10_3lohg"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Thea_Arms.png" id="11_4d6wl"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="14_dyk4g"]
 [ext_resource type="Texture2D" uid="uid://tqmtge2yjihm" path="res://Assets/Images/UI/icon_daily_login.png" id="15_d385k"]
 [ext_resource type="Texture2D" uid="uid://bmp4omrxkfdwv" path="res://Assets/Images/UI/DailyLogin/day1.png" id="16_dyk4g"]
@@ -55,6 +55,12 @@
 [ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
 [ext_resource type="Script" uid="uid://rnlhn8b6jrns" path="res://Scripts/UI/ParallaxDiorama.gd" id="parallax_diorama"]
 [ext_resource type="Material" path="res://Scripts/Shaders/window_light_material.tres" id="window_light"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Andi_Items.png" id="items_andi"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Citra_Items.png" id="items_citra"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Doni_Items.png" id="items_doni"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Items.png" id="items_marcel"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Shinta_Items.png" id="items_shinta"]
+[ext_resource type="Texture2D" path="res://Assets/Images/MuridPortrait/TanganItems/Thea_Items.png" id="items_thea"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2gra1"]
 shader = ExtResource("2_e1w2y")
@@ -248,9 +254,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 87.591
-offset_top = 71.08
-offset_right = -45.071
+offset_left = 38.76
+offset_top = -26.582
+offset_right = 3.76
 offset_bottom = -111.582
 grow_horizontal = 2
 grow_vertical = 2
@@ -261,10 +267,10 @@ stretch_mode = 5
 [node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back/Slot1" unique_id=324588308]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 329.76
-offset_top = 276.749
-offset_right = 329.76
-offset_bottom = 276.749
+offset_left = 369.396
+offset_top = 254.221
+offset_right = 369.396
+offset_bottom = 254.221
 mouse_filter = 2
 
 [node name="Slot2" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back" unique_id=414336718]
@@ -279,9 +285,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 50.071
-offset_top = 70.558
-offset_right = -82.591
+offset_left = 1.24
+offset_top = -27.104
+offset_right = -33.76
 offset_bottom = -112.104
 grow_horizontal = 2
 grow_vertical = 2
@@ -292,10 +298,10 @@ stretch_mode = 5
 [node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Back/Slot2" unique_id=1266035256]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 69.74
-offset_top = 274.727
-offset_right = 69.74
-offset_bottom = 274.727
+offset_left = 28.094
+offset_top = 251.651
+offset_right = 28.094
+offset_bottom = 251.651
 mouse_filter = 2
 
 [node name="StudentHandsContainer_Back" type="Control" parent="World/Classroom" unique_id=696016454]
@@ -315,7 +321,7 @@ offset_top = -25.955
 offset_right = 484.0
 offset_bottom = 424.045
 
-[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1069990093]
+[node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -330,11 +336,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_andi")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1069990093]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.459
+offset_top = -22.066
+offset_right = 129.541
+offset_bottom = 177.934
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1441938456]
+[node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -349,11 +373,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_citra")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1441938456]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -134.775
+offset_top = -73.109
+offset_right = 145.225
+offset_bottom = 126.891
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=24226062]
+[node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -368,11 +410,29 @@ scale = Vector2(0.835, 0.835)
 grow_horizontal = 2
 grow_vertical = 0
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_doni")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=24226062]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -149.046
+offset_top = -62.88
+offset_right = 130.954
+offset_bottom = 137.12
+scale = Vector2(1.14, 1.14)
+grow_horizontal = 2
+grow_vertical = 0
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1806363820]
+[node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -387,11 +447,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_marcel")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1806363820]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -139.851
+offset_top = -86.854
+offset_right = 140.149
+offset_bottom = 113.146
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=337767282]
+[node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -406,11 +484,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_shinta")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=337767282]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -137.42
+offset_top = -97.584
+offset_right = 142.58
+offset_bottom = 102.416
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1533997835]
+[node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -425,6 +521,24 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_thea")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1533997835]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -198.593
+offset_top = -61.76
+offset_right = 81.407
+offset_bottom = 138.24
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
@@ -436,7 +550,7 @@ offset_top = -23.0
 offset_right = 1025.0
 offset_bottom = 427.0
 
-[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=397972223]
+[node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -451,11 +565,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(-0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_andi")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=397972223]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -163.541
+offset_top = -25.588
+offset_right = 116.459
+offset_bottom = 174.412
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=2050109560]
+[node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -470,11 +602,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_citra")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=2050109560]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -143.295
+offset_top = -76.631
+offset_right = 136.705
+offset_bottom = 123.369
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=43024304]
+[node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -489,11 +639,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_doni")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=43024304]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -157.566
+offset_top = -66.402
+offset_right = 122.434
+offset_bottom = 133.598
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=344255062]
+[node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -508,11 +676,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_marcel")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=344255062]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -148.371
+offset_top = -90.376
+offset_right = 131.629
+offset_bottom = 109.624
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1332688156]
+[node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -527,11 +713,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_shinta")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1332688156]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -145.94
+offset_top = -101.106
+offset_right = 134.06
+offset_bottom = 98.894
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1752655893]
+[node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -545,6 +749,24 @@ offset_bottom = 118.176
 grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.835, 0.835)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_thea")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1752655893]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -207.113
+offset_top = -65.282
+offset_right = 72.887
+offset_bottom = 134.718
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.14, 1.14)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
@@ -617,9 +839,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -19.5
-offset_top = -22.426
-offset_right = -85.328
+offset_left = -52.414
+offset_top = -88.253
+offset_right = -52.414
 offset_bottom = -138.253
 grow_horizontal = 2
 grow_vertical = 2
@@ -630,10 +852,10 @@ stretch_mode = 5
 [node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front/Slot3" unique_id=754957017]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 302.381
-offset_top = 199.141
-offset_right = 302.381
-offset_bottom = 199.141
+offset_left = 332.874
+offset_top = 176.959
+offset_right = 332.874
+offset_bottom = 176.959
 mouse_filter = 2
 
 [node name="Slot4" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front" unique_id=85502973]
@@ -648,9 +870,9 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 99.328
-offset_top = -22.426
-offset_right = 33.5
+offset_left = 66.414
+offset_top = -88.253
+offset_right = 66.414
 offset_bottom = -138.253
 grow_horizontal = 2
 grow_vertical = 2
@@ -661,10 +883,10 @@ stretch_mode = 5
 [node name="ChatAnchor" type="Control" parent="World/Classroom/StudentPortraitsContainer_Front/Slot4" unique_id=306268741]
 layout_mode = 1
 anchors_preset = 0
-offset_left = 111.619
-offset_top = 199.141
-offset_right = 111.619
-offset_bottom = 199.141
+offset_left = 81.126
+offset_top = 176.959
+offset_right = 81.126
+offset_bottom = 176.959
 mouse_filter = 2
 
 [node name="StudentHandsContainer_Front" type="Control" parent="World/Classroom" unique_id=927537512]
@@ -684,7 +906,7 @@ offset_top = 453.0
 offset_right = 445.0
 offset_bottom = 903.0
 
-[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1515879549]
+[node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -699,11 +921,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_andi")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1515879549]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -140.668
+offset_top = -106.245
+offset_right = 113.332
+offset_bottom = 139.755
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=2035720]
+[node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -718,11 +958,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_citra")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=2035720]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -123.481
+offset_top = -162.183
+offset_right = 130.519
+offset_bottom = 83.817
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=379927227]
+[node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -737,11 +995,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_doni")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=379927227]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -139.12
+offset_top = -150.972
+offset_right = 114.88
+offset_bottom = 95.028
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=103314952]
+[node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -756,11 +1032,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(-1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_marcel")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=103314952]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -189.785
+offset_top = -177.245
+offset_right = 64.215
+offset_bottom = 68.755
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=693423398]
+[node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -775,11 +1069,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_shinta")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=693423398]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -126.379
+offset_top = -189.004
+offset_right = 127.621
+offset_bottom = 56.996
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1270190136]
+[node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -794,6 +1106,24 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_thea")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1270190136]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.43
+anchor_top = 0.89000005
+anchor_right = 0.43
+anchor_bottom = 0.89000005
+offset_left = -193.418
+offset_top = -149.745
+offset_right = 60.582
+offset_bottom = 96.255
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1
 stretch_mode = 3
@@ -805,7 +1135,7 @@ offset_top = 453.0
 offset_right = 1020.0
 offset_bottom = 903.0
 
-[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1794435452]
+[node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -820,11 +1150,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(-1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_andi")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1794435452]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -100.886
+offset_top = -77.503
+offset_right = 179.114
+offset_bottom = 122.497
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_bfy74")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1187726315]
+[node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -839,11 +1187,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_citra")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1187726315]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -78.699
+offset_top = -133.441
+offset_right = 201.301
+offset_bottom = 66.559
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("7_ek62u")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1238697973]
+[node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -858,11 +1224,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(-1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_doni")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1238697973]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -102.434
+offset_top = -122.23
+offset_right = 177.566
+offset_bottom = 77.77
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("6_dyk4g")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=147415357]
+[node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -877,11 +1261,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(-1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_marcel")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=147415357]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -112.511
+offset_top = -148.503
+offset_right = 167.489
+offset_bottom = 51.497
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(-1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("9_q4xuc")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1382477295]
+[node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -896,11 +1298,29 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
 pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_shinta")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1382477295]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -81.597
+offset_top = -160.262
+offset_right = 198.403
+offset_bottom = 39.738
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
+pivot_offset = Vector2(140, 100)
 texture = ExtResource("10_3lohg")
 expand_mode = 1
 stretch_mode = 3
 
-[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=549175006]
+[node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -914,6 +1334,24 @@ offset_bottom = 67.847
 grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.044, 1.044)
+pivot_offset = Vector2(140, 100)
+texture = ExtResource("items_thea")
+expand_mode = 1
+stretch_mode = 3
+[node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=549175006]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.56200004
+anchor_top = 0.89000005
+anchor_right = 0.56200004
+anchor_bottom = 0.89000005
+offset_left = -148.636
+offset_top = -121.003
+offset_right = 131.364
+offset_bottom = 78.997
+grow_horizontal = 2
+grow_vertical = 0
+scale = Vector2(1.25, 1.25)
 pivot_offset = Vector2(140, 100)
 texture = ExtResource("11_4d6wl")
 expand_mode = 1

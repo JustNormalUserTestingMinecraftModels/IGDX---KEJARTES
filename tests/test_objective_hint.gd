@@ -82,8 +82,8 @@ func test_the_strip_only_uses_glyphs_the_display_face_has() -> void:
 	var texts := []
 	for week in [1, 5, 9, 13, 17, 21]:
 		texts.append(ObjectiveHint.title(week, 16))
-	for stars in [0.0, 0.25, 1.5, 1.75, 2.0, 3.0]:
-		texts.append(ObjectiveHint.star_text(stars))
+	for pair in [[0, 4], [3, 4], [6, 6], [1, 1]]:
+		texts.append(ObjectiveHint.safe_text(pair[0], pair[1]))
 	for text in texts:
 		for i in String(text).length():
 			var code := String(text).unicode_at(i)
@@ -91,16 +91,23 @@ func test_the_strip_only_uses_glyphs_the_display_face_has() -> void:
 				"'%s' in '%s' is not in the display face" % [String.chr(code), text])
 
 
-## The progress bar fills toward the pass line, not toward the three-star
-## maximum: full means the grade is passing.
-func test_progress_is_measured_against_the_pass_line() -> void:
-	assert_eq(ObjectiveHint.progress_percent(0.0), 0.0)
-	assert_eq(ObjectiveHint.progress_percent(Balance.STAR_WIN_THRESHOLD), 100.0)
-	assert_eq(ObjectiveHint.progress_percent(Balance.STAR_WIN_THRESHOLD * 0.5), 50.0)
-	assert_eq(ObjectiveHint.progress_percent(Balance.STARS_TOTAL), 100.0, "clamped at full")
+## The bar fills toward the whole roster being safe (GameState's
+## per-student rule): full means the grade passes.
+func test_progress_is_the_safe_share_of_the_roster() -> void:
+	assert_eq(ObjectiveHint.safe_percent(0, 4), 0.0)
+	assert_eq(ObjectiveHint.safe_percent(2, 4), 50.0)
+	assert_eq(ObjectiveHint.safe_percent(4, 4), 100.0)
+	assert_eq(ObjectiveHint.safe_percent(5, 4), 100.0, "clamped at full")
+	assert_eq(ObjectiveHint.safe_percent(0, 0), 100.0,
+		"an empty roster reads as passing, as check_semester_passed() does")
 
 
-func test_the_star_chip_reads_stars_over_the_pass_line() -> void:
-	assert_eq(ObjectiveHint.star_text(1.5), "1.5 / %s" % ObjectiveHint.format_stars(Balance.STAR_WIN_THRESHOLD))
-	assert_eq(ObjectiveHint.format_stars(2.0), "2", "a whole number drops its decimal")
-	assert_eq(ObjectiveHint.format_stars(1.75), "1.8", "one decimal")
+func test_the_chip_reads_safe_students_over_the_roster() -> void:
+	assert_eq(ObjectiveHint.safe_text(3, 4), "3 / 4")
+	assert_eq(ObjectiveHint.safe_text(0, 6), "0 / 6")
+
+
+func test_the_strip_no_longer_measures_stars() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/ObjectiveHint.gd")
+	assert_false(src.contains("STAR_WIN_THRESHOLD"),
+		"the pass line is per-student now, not a star count")

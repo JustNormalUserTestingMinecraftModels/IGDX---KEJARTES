@@ -23,7 +23,7 @@ Checked 2026-09-29 (UI depth pass, Phase 3). A new caller adds its row.
 
 | File | Job | Used by | Pinned by |
 |---|---|---|---|
-| `nav_students.svg` | Roster | Lobby's `Student` tile (`RaisedPage`) | `test_lobby_tile_icons` |
+| `nav_students.svg` | Roster | Lobby's `Student` tile (`RaisedPage`); AturJadwal's objective `SafeChip` | `test_lobby_tile_icons`, `test_atur_jadwal` |
 | `nav_jadwal.png` (owner art) | Schedule | Lobby's `Jadwal` tile (`RaisedPage`) | `test_lobby_tile_icons` |
 | `nav_koperasi.png` (owner art) | Shop | Lobby's `Koperasi` tile (`ShelfPage`) | `test_lobby_tile_icons` |
 | `nav_inventory.png` (owner art) | Inventory | Lobby's `Inventory` tile (`ShelfPage`) | `test_lobby_tile_icons` |

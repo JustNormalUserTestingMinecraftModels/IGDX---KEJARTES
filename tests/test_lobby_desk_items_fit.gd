@@ -108,6 +108,10 @@ const FRONT_INNER_EDGE := {"Slot3": 462.0, "Slot4": 622.0}
 ## is each one's mean placement in the scene before the picture pass
 ## (4ec87bc0^), where each already sat the same in every seat.
 const OWN_PLACE := {"Doni": Vector2(0.010120, 1.166307), "Shinta": Vector2(0.041973, 1.071228)}
+## Owner-tuned moves of a student's arms only, in body sides, on top of its
+## place on the body: Shinta's arms sat a little high, so they hovered above
+## the desk (owner's pick "A", 2026-10-01: down 3% of the body).
+const ARMS_NUDGE := {"Shinta": Vector2(0.0, 0.03)}
 ## The Hand_* nodes drawn mirrored, by hands slot: the picture mirrors
 ## Marcel in Slot3; the rest keep the mirroring they always had.
 const MIRRORED := {
@@ -326,7 +330,7 @@ func test_every_arms_layer_grows_with_its_body() -> void:
 			assert_eq(scale.x < 0.0, mirrored, "%s in %s is mirrored only where MIRRORED says" % [student, name])
 			assert_eq(widest_hand_art(student), float((hand["texture"] as Texture2D).get_width()),
 				"%s has a skin whose arms art is another width: place it for the widest" % student)
-			var want := _on_body(student, body, mirrored)
+			var want := _on_body(student, body, mirrored) + (ARMS_NUDGE.get(student, Vector2.ZERO) as Vector2) * body.size.x
 			var centre := _hand_centre(seat["hands"], hand)
 			assert_true(centre.distance_to(want) < TOLERANCE,
 				"%s in %s draws arms at %s, expected %s (its place on its grown body)" % [student, name, str(centre), str(want)])

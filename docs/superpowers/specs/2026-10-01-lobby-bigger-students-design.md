@@ -84,6 +84,12 @@ student, shared by every skin, so they are not a skin layer. The old
 
 If the progress-tag rule fails at this size, stop and show the owner.
 
+## Addendum: Shinta's arms (owner review)
+
+Shinta's arms sat a little high and hovered over the desk. Her arms only
+move down 3% of her body side (10.95 px back, 12 px front); her items stay.
+The test carries it as `ARMS_NUDGE`.
+
 ## Out of scope
 
 Other screens' art; new item layouts; the idle bob (still moves bodies only).

@@ -77,7 +77,9 @@ place. Each seat grows its body and arms about the point where the body meets
 the desk, back to the sizes before the picture pass (back 365, front 400 px);
 the arms follow the body with no aisle clamp, the items keep it. Marcel's book
 is in his hands layer and grows with him. `_show_hand_for` (now static) shows
-the arms and items pair; skins swap only the arms.
+the arms and items pair; skins swap only the arms. On review, Shinta's
+arms sat a little high and hovered over the desk; they now sit 3% of her
+body lower (`ARMS_NUDGE`, owner's pick).
 
 ## 2026-10-01 — Lobby students sit at the desk, not on the chair
 

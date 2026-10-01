@@ -182,3 +182,51 @@ func test_boot_no_longer_loads_anything() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
 	var ready: String = src.get_slice("func _ready()", 1).get_slice("\nfunc ", 0)
 	assert_false(ready.contains("load"), "the save loads only when the player picks Lanjutkan")
+
+
+## The week in progress: StudentManager's live and week-start stats, and the
+## history the weekly report reads, survive a save.
+func test_student_manager_round_trips_a_week_in_progress() -> void:
+	GameState.approved_students = [
+		{"id": 1, "name": "Marcel", "akademis": 50.0, "seni_budaya": 50.0, "olahraga": 50.0,
+			"energy": 80.0, "mood": 80.0, "hobby_category": "Olahraga"},
+	]
+	var a := StudentManager.new()
+	track(a)
+	a.initialize_from_gamestate()
+	a.students[0].akademis = 58.5
+	a.students[0].energy = 61.0
+	a.log_stat_change("Senin", "Marcel", "akademis", 8.5, "activity")
+	a.record_event_result("Senin", "Hujan", ["Marcel"], "basah")
+	var saved := a.to_save_dict()
+
+	var b := StudentManager.new()
+	track(b)
+	b.restore_from_save(saved)
+	assert_eq(b.students.size(), 1)
+	assert_eq(b.students[0].akademis, 58.5, "the live stat comes back")
+	assert_eq(b.students[0].energy, 61.0)
+	assert_eq(b.students[0].initial_akademis, 50.0, "the week-start stat too, for the report's deltas")
+	assert_eq(b.minigame_history.size(), 1, "the week's history comes back")
+	assert_eq((b.daily_stat_log["Senin"] as Array).size(), 1, "and the day log")
+
+
+func test_school_day_saves_after_each_days_result() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	var summary_at := src.find("await _show_day_summary(day_name)")
+	var save_at := src.find("SaveGame.save(_week_snapshot(current_day + 1))")
+	var click_at := src.find("await _await_click_to_continue()")
+	assert_true(save_at > summary_at and save_at < click_at,
+		"the daily save sits right after the day's result is shown")
+
+
+func test_school_day_resumes_a_saved_week() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	var ready: String = src.get_slice("func _ready()", 1).get_slice("\nfunc ", 0)
+	assert_true(ready.contains("GameState.pending_week_resume"), "_ready looks for a saved week")
+	assert_true(ready.contains("resume_simulation("), "and resumes it")
+	var resume: String = src.get_slice("func resume_simulation(", 1).get_slice("\nfunc ", 0)
+	assert_true(resume.contains("restore_from_save("), "the roster comes from the save")
+	assert_false(resume.contains("minigame_gain_this_week.clear()"),
+		"a resumed week keeps its minigame-gain budget, unlike a fresh one")
+	assert_true(resume.contains("_run_day()"), "and the day loop runs from resume_day")

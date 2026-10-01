@@ -222,7 +222,14 @@ func _ready() -> void:
 		menjodohkan_scene, variabel_scene, pilihan_ganda_scene, password_scene,
 		main_bola_scene, badminton_scene, buat_batik_scene, lomba_menari_scene
 	)
-	start_simulation()
+	# Lanjutkan into a week in progress (SaveGame): resume it on its next
+	# day instead of rolling a fresh week. The hand-off is one-shot.
+	if not GameState.pending_week_resume.is_empty():
+		var week: Dictionary = GameState.pending_week_resume
+		GameState.pending_week_resume = {}
+		resume_simulation(week)
+	else:
+		start_simulation()
 
 func _input(event: InputEvent) -> void:
 	if _is_tutorial_active:
@@ -290,6 +297,42 @@ func start_simulation() -> void:
 	# it; a bed left running would murmur on under the shop and the lobby.
 	AudioDirector.play_ambience(&"classroom_1")
 	_run_day()
+
+
+## Picks a saved week up on its next day (SaveGame's daily checkpoint):
+## restores the week's quotas, the roster's live stats and the history, and
+## keeps GameState.minigame_gain_this_week as saved -- a fresh week clears
+## it, a resumed one must not. resume_day == DAYS.size() runs straight to
+## the weekly report.
+func resume_simulation(week: Dictionary) -> void:
+	if is_running:
+		return
+	is_running = true
+	is_skipped = false
+	current_day = clampi(int(week.get("resume_day", 0)), 0, DAYS.size())
+	minigames_played_this_week = int(week.get("minigames_played", 0))
+	events_triggered_this_week = int(week.get("events_triggered", 0))
+	max_events_this_week = int(week.get("max_events", 1))
+	max_minigames_this_week = int(week.get("max_minigames", Balance.MINIGAME_MAKS_MINGGU_MIN))
+	student_manager = StudentManager.new()
+	student_manager.restore_from_save(week.get("manager", {}))
+	if skip_button:
+		skip_button.show()
+	AudioDirector.play_ambience(&"classroom_1")
+	_run_day()
+
+
+## The week so far, for SaveGame.save(): the day to resume on, the week's
+## quotas, and StudentManager's state.
+func _week_snapshot(resume_day: int) -> Dictionary:
+	return {
+		"resume_day": resume_day,
+		"minigames_played": minigames_played_this_week,
+		"events_triggered": events_triggered_this_week,
+		"max_events": max_events_this_week,
+		"max_minigames": max_minigames_this_week,
+		"manager": student_manager.to_save_dict(),
+	}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Drives the whole week. This must stay a loop: _run_single_day() awaits
@@ -438,14 +481,24 @@ func _run_single_day() -> void:
 	# ── End-of-Day Summary ────────────────────────────────────────────────────
 	await _show_day_summary(day_name)
 
+	# The daily-result checkpoint (SaveGame): the day is decided and shown,
+	# so a quit from here on resumes on the next day. A skip tapped over the
+	# summary has already finished the week, so there is nothing to resume.
+	if not is_skipped:
+		SaveGame.save(_week_snapshot(current_day + 1))
+
 	# ── Blinking "Click anywhere to continue" prompt ─────────────────────────
 	await _await_click_to_continue()
 	if is_skipped:
 		return
 
-	# Fade out before moving to the next day, as the deep night falls: the
-	# sky dips to a real night -- tint, stars, the school dark with its
-	# windows lit -- and holds briefly before the next day's dawn lifts it.
+	await _fall_into_night()
+
+
+## Fades the day out as the deep night falls: the sky dips to a real night --
+## tint, stars, the school dark with its windows lit -- and holds briefly
+## before the next day's dawn lifts it.
+func _fall_into_night() -> void:
 	var night_fall := _begin_night()
 	var fade_out = create_tween()
 	fade_out.tween_property(day_screen, "modulate:a", 0.0, 0.5)
@@ -455,8 +508,7 @@ func _run_single_day() -> void:
 	if night_fall != null and night_fall.is_running():
 		await night_fall.finished
 	await get_tree().create_timer(NIGHT_HOLD).timeout
-	if is_skipped:
-		return
+
 
 func _await_click_to_continue() -> void:
 	if click_to_continue_label == null:
@@ -727,20 +779,10 @@ func _phase_duration() -> float:
 
 # ─────────────────────────────────────────────────────────────────────────────
 ## A school day's Normal / Minigame / Event roll weights, as
-## {"normal": int, "minigame": int, "event": int}.
-##
-## `counts` is GameState.get_jadwal_for_day(day_name), `roster` the
-## simulated StudentData and `schedules` GameState.day_schedules. Resting
-## students add normal-day weight and studying students minigame weight;
-## each Biang Onar student scheduled for anything but rest that day adds
-## Balance.SIFAT_BIANG_ONAR_PELUANG_EVENT to the event weight. Once the
-## week's minigame or event cap is reached, that weight is 0 -- the bonus
-## included.
-##
-## Static and pure so a test can call it without the scene. Shared by
-## _roll_event() and skip_to_results(), through _todays_roll_weights(), so
-## the two simulation paths can't drift apart: skipping once rolled
-## without Biang Onar's bonus.
+## {"normal": int, "minigame": int, "event": int}: DayRoll.weights(), which
+## documents the arguments. Static and pure so a test can call it without
+## the scene; shared by _roll_event() and skip_to_results() through
+## _todays_roll_weights().
 static func day_roll_weights(counts: Dictionary, roster: Array, schedules: Dictionary,
 		day_name: String, minigames_played: int, max_minigames: int,
 		events_triggered: int, max_events: int) -> Dictionary:
@@ -774,22 +816,7 @@ func _roll_event(day_name: String) -> void:
 	var w_olahraga = counts.get("Olahraga", 0)
 	var w_seni = counts.get("SeniBudaya", 0)
 
-	var weights := _todays_roll_weights(day_name, counts)
-	var w_normal: int = weights["normal"]
-	var w_minigame: int = weights["minigame"]
-	var w_event: int = weights["event"]
-
-	var total_weight = w_normal + w_minigame + w_event
-
-	var outcome = "Normal"
-	if total_weight > 0:
-		var roll = randi() % total_weight
-		if roll < w_normal:
-			outcome = "Normal"
-		elif roll < w_normal + w_minigame:
-			outcome = "Minigame"
-		else:
-			outcome = "Event"
+	var outcome: String = DayRoll.outcome(_todays_roll_weights(day_name, counts))
 
 	if outcome == "Normal":
 		_set_status("Hari biasa...", STATUS_BEAT_HOLD)
@@ -818,33 +845,11 @@ func _roll_event(day_name: String) -> void:
 		await _trigger_random_event(day_name)
 
 # ─────────────────────────────────────────────────────────────────────────────
-## Picks a minigame category with a chance of uniform-random noise
-## (Balance.MINIGAME_KATEGORI_ACAK_PELUANG) before falling back to a pick
-## proportional to the day's scheduled subject weights, with a uniform
-## fallback if all weights are zero. Shared by _roll_event() and
-## skip_to_results() so the two simulation paths can't drift apart.
+## DayRoll.pick_category(): a minigame category for the day's scheduled
+## subject weights. Shared by _roll_event() and skip_to_results() so the two
+## simulation paths can't drift apart.
 func _pick_minigame_category(w_akademis: int, w_olahraga: int, w_seni: int) -> String:
-	if randf() < Balance.MINIGAME_KATEGORI_ACAK_PELUANG:
-		var r := randi() % 3
-		return "Akademis" if r == 0 else ("Olahraga" if r == 1 else "SeniBudaya")
-	else:
-		var total_subject_weight = w_akademis + w_olahraga + w_seni
-		if total_subject_weight == 0:
-			var cat_roll = randi() % 3
-			if cat_roll == 0:
-				return "Akademis"
-			elif cat_roll == 1:
-				return "Olahraga"
-			else:
-				return "SeniBudaya"
-		else:
-			var choice = randi() % total_subject_weight
-			if choice < w_akademis:
-				return "Akademis"
-			elif choice < w_akademis + w_olahraga:
-				return "Olahraga"
-			else:
-				return "SeniBudaya"
+	return DayRoll.pick_category(w_akademis, w_olahraga, w_seni)
 
 func _trigger_random_event(day_name: String) -> void:
 	events_triggered_this_week += 1
@@ -1194,21 +1199,7 @@ func skip_to_results() -> void:
 		var w_olahraga = counts.get("Olahraga", 0)
 		var w_seni = counts.get("SeniBudaya", 0)
 
-		var weights := _todays_roll_weights(day_name, counts)
-		var w_normal: int = weights["normal"]
-		var w_minigame: int = weights["minigame"]
-		var w_event: int = weights["event"]
-		var total_weight = w_normal + w_minigame + w_event
-
-		var outcome = "Normal"
-		if total_weight > 0:
-			var roll = randi() % total_weight
-			if roll < w_normal:
-				outcome = "Normal"
-			elif roll < w_normal + w_minigame:
-				outcome = "Minigame"
-			else:
-				outcome = "Event"
+		var outcome: String = DayRoll.outcome(_todays_roll_weights(day_name, counts))
 
 		if outcome == "Minigame":
 			minigames_played_this_week += 1

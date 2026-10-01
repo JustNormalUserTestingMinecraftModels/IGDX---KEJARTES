@@ -138,10 +138,11 @@ func test_the_week_advances_by_loop_not_by_self_recursion() -> void:
 		"the loop must await exactly one day per iteration")
 	assert_true(src.contains("func _run_single_day() -> void:"),
 		"the per-day body must live in its own function")
-	# Exactly two occurrences may remain: the `func _run_day() -> void:`
-	# definition, and the single call from start_simulation().
-	assert_eq(src.count("_run_day()"), 2,
-		"_run_day() must be defined once and called once (from start_simulation); any third occurrence is a reintroduced self-call")
+	# Exactly three occurrences may remain: the `func _run_day() -> void:`
+	# definition, and one call from each way a week starts -- start_simulation()
+	# (a fresh week) and resume_simulation() (a saved one, SaveGame).
+	assert_eq(src.count("_run_day()"), 3,
+		"_run_day() must be defined once and called once each from start_simulation and resume_simulation; any fourth occurrence is a reintroduced self-call")
 
 
 ## The per-student status cards were built node by node at runtime, with
@@ -557,7 +558,9 @@ func test_weekly_minigame_count_is_randomised() -> void:
 
 
 func test_minigame_category_has_uniform_noise() -> void:
-	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	# The pick lives in DayRoll.gd since 2026-10-01; SchoolDay's
+	# _pick_minigame_category() forwards there.
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/DayRoll.gd")
 	assert_true(src.contains("Balance.MINIGAME_KATEGORI_ACAK_PELUANG"),
 		"the minigame category pick must branch on the uniform-noise chance")
 

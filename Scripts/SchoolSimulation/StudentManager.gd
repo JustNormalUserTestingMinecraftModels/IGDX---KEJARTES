@@ -392,3 +392,45 @@ func write_back_to_gamestate() -> void:
 				dict["mood"] = student.mood
 				dict["energy"] = student.energy
 				break
+
+
+## The StudentData fields SchoolDay's daily save carries, by student id:
+## the live stats and the week-start ones the weekly report diffs against.
+const SAVED_STAT_KEYS := [
+	"akademis", "seni_budaya", "olahraga", "energy", "mood",
+	"initial_akademis", "initial_seni_budaya", "initial_olahraga",
+	"initial_energy", "initial_mood",
+]
+
+
+## The week so far, for SaveGame: each student's SAVED_STAT_KEYS by id, and
+## the history and day log the weekly report reads. Plain data only.
+func to_save_dict() -> Dictionary:
+	var rows := []
+	for s in students:
+		var row := {"id": s.id}
+		for k in SAVED_STAT_KEYS:
+			row[k] = s.get(k)
+		rows.append(row)
+	return {
+		"students": rows,
+		"minigame_history": minigame_history.duplicate(true),
+		"daily_stat_log": daily_stat_log.duplicate(true),
+	}
+
+
+## Inverse of to_save_dict(): rebuilds the roster from GameState (portraits,
+## targets, quirks), then lays the saved stats over it by id, and restores
+## the week's history. GameState itself is not written until the week ends.
+func restore_from_save(d: Dictionary) -> void:
+	initialize_from_gamestate()
+	var by_id := {}
+	for row in d.get("students", []):
+		by_id[int(row.get("id", 0))] = row
+	for s in students:
+		var row: Dictionary = by_id.get(s.id, {})
+		for k in SAVED_STAT_KEYS:
+			if row.has(k):
+				s.set(k, float(row[k]))
+	minigame_history.assign(d.get("minigame_history", []))
+	daily_stat_log = (d.get("daily_stat_log", {}) as Dictionary).duplicate(true)

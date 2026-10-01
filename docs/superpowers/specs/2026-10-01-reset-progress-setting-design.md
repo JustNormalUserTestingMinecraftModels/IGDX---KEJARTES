@@ -1,7 +1,8 @@
 # Reset Progress in Settings — design + implementation handoff
 
 **Date:** 2026-10-01 · **Branch:** `feat/reset-progress-setting` ·
-**Status:** approved in chat (owner's pick "A", tomato) — **not built yet, handoff**
+**Status:** approved in chat (owner's pick "A", tomato) — **built 2026-10-01**
+(what changed against this handoff: CHANGELOG, "Reset Progres in Settings")
 
 A player-facing "Reset Progres" entry in Settings that wipes all progress and
 restarts the game from the Splashscreen. The debug-only **Forget Session**

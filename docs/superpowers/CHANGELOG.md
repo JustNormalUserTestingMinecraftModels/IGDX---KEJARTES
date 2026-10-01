@@ -8,6 +8,12 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Reset Progres in Settings
+
+- **What:** the collaborator's spec `specs/2026-10-01-reset-progress-setting-design.md`, built. Settings' MAIN tab gains a fourth section, **DATA**, holding a tomato `DangerButton` "Reset Progres". It opens `ResetProgressPopup` (a one-page NotebookFrame dialog cloned from ContinuePopup's Confirm page: "RESET PROGRES", "Apakah Anda yakin?", "Semua progres akan dihapus dan tidak bisa dikembalikan.", Batal / Ya, Reset). Ya, Reset runs `GameState.forget_session()` (run, save, achievements; settings stay) and fades 1.3 s to the Splashscreen, whose tap goes on to MainMenu.
+- **Adapted from the spec:** Settings is tabbed now, so `show_tab` puts DataCard on MAIN (it still fits 1080x1920 without scrolling; the fit test now checks it, MAIN's last section). Android back with the popup open closes only the popup (Settings forwards it; the popup has no `dismissed` signal, since nothing listened). A confirm while `Transition.is_busy()` is ignored before anything is wiped, so a dropped scene change cannot strand a wiped run on Settings.
+- **Tests:** new `test_reset_progress_popup`; `test_settings` covers the fourth card, the button and back; the popup joined `test_popup_frames`' roster.
+
 ## 2026-10-01 — Save system and Lanjutkan
 
 - **Saved:** one file, `user://savegame.cfg` (`SaveGame`; spec `2026-10-01-save-system-design.md`), written to `savegame.tmp` and renamed over it. It saves on hub-screen visits (`Transition` → `SaveGame.checkpoint`: Lobby, AturJadwal, ShopHub, Koperasi, CosmeticShop, Inventory, ReportCard), on pause/quit on a hub, after every SchoolDay day summary (a `[week]` section, so a quit mid-week resumes on the next day; not while a skip finishes the week) and at RunResult's exit to StudentCard. RunResult's exit to MainMenu deletes it; an unreadable or newer-version file moves to `savegame.bad.cfg`.

@@ -406,11 +406,17 @@ func test_school_day_resumes_a_saved_week() -> void:
 
 
 ## A resume at resume_day 5 runs no day, so the week's closing screen sets the
-## calendar badge itself: it read "Minggu" with no number.
+## calendar badge and the banner's fill itself: the badge read "Minggu" with no
+## number, and the cream "Akhir Pekan" sat nearly invisible on the default
+## white fill. The fill is Jumat's, as the last school day leaves it.
 func test_the_weeks_end_names_the_week_even_after_a_resume() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
 	var done: String = src.get_slice("func _on_week_complete()", 1).get_slice("\nfunc ", 0)
 	var week_at := done.find("\"set_week\", GameState.minggu_ke, GameState.get_max_weeks()")
+	var style_at := done.find("\"set_day_style\", Juice.tokens().category_color("
+		+ "DAY_CATEGORIES[DAYS.size() - 1]), DAYS.size() - 1)")
 	var banner_at := done.find("\"set_banner\", \"Akhir Pekan\"")
 	assert_true(week_at != -1 and week_at < banner_at,
 		"the badge is set before the closing banner is written")
+	assert_true(style_at != -1 and style_at < banner_at,
+		"and so is Jumat's fill, so the banner's text reads")

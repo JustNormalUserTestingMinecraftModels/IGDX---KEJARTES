@@ -383,10 +383,8 @@ Left after the fix wave; none loses a player's run.
   `manager` are written by `SchoolDay._week_snapshot()`, read by
   `resume_simulation()`, and `resume_day` again by `SaveGame.write_state()`. A
   typo in one resumes on day 0 or with default quotas; no test spells them.
-- *Resume pose.* A resume on a later day tweens the page tint from the default
-  instead of snapping it (only `current_day == 0` snaps). A resume at
-  `resume_day` 5 opens the week's-end screen with the banner's default fill
-  (no `set_day_style`) over the default sky, not Jumat's colour and evening.
+- *Resume page tint.* A resume on a later day tweens the page tint from the
+  default instead of snapping it (only `current_day == 0` snaps).
 - *Skip re-applies a day's decay (pre-existing).* `skip_to_results()` loops
   from `current_day`, which only advances after `_run_single_day()` returns, so
   a skip over day N's summary or click prompt replays day N's activity and

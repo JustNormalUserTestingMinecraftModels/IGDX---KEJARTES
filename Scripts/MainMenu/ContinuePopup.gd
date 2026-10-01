@@ -19,6 +19,12 @@ signal dismissed
 @onready var _summary: Label = $Scrim/Safe/Center/Frame/Layout/Ask/Summary
 @onready var _frame: Control = $Scrim/Safe/Center/Frame
 
+## Frames the card stays hidden before it pops in. The popup is hidden from
+## launch, so its first layout takes two passes: the autowrapped Question
+## learns its width only after its height was computed, and on the first pass
+## the Frame is about 2,100 px tall. Measured live, 2026-10-01.
+const LAYOUT_PASSES := 2
+
 
 func _ready() -> void:
 	# Pure wiring, ungated, so the suite can press the buttons.
@@ -30,14 +36,22 @@ func _ready() -> void:
 		func() -> void: show_confirm(false))
 	$Scrim/Safe/Center/Frame/Layout/Confirm/Buttons/ConfirmButton.pressed.connect(
 		func() -> void: new_game_chosen.emit())
+	_frame.resized.connect(_center_pivot)
+
+
+## Keeps the card's scale pivot at its centre through every resize: the first
+## layout's tall pass, and the Confirm page, which is narrower than Ask. A
+## pivot read once, before layout settled, made the first open of every launch
+## zoom in from below the screen.
+func _center_pivot() -> void:
+	Juice.set_pivot_center(_frame)
 
 
 ## Shows the dialog on its Ask page with the save's summary line. The card
-## pops in a frame later, as the sibling popups do (StatDetailPopup.open()):
-## the CenterContainer sizes the Frame in its sort at the end of this frame,
-## and popped at once, the first open of every launch took its pivot from the
-## pre-layout size and zoomed in from below. Hidden for that one frame. In the
-## editor (tests) it only shows, so a test never leaves a coroutine behind.
+## stays hidden (alpha 0) through the first layout's LAYOUT_PASSES frames, so
+## its tall first pass never shows, then pops in about its centre, which
+## _center_pivot() keeps right. In the editor (tests) it only shows, so a test
+## never leaves a coroutine behind.
 func open(summary_text: String) -> void:
 	_summary.text = summary_text
 	show_confirm(false)
@@ -46,8 +60,9 @@ func open(summary_text: String) -> void:
 		return
 	_frame.modulate.a = 0.0
 	AudioDirector.play_sfx(&"popup_open")
-	await get_tree().process_frame
-	# Lanjutkan or back may have closed it within that frame.
+	for _pass in LAYOUT_PASSES:
+		await get_tree().process_frame
+	# Lanjutkan or back may have closed it meanwhile.
 	if not visible or not is_instance_valid(_frame):
 		return
 	Juice.pop_in(_frame)

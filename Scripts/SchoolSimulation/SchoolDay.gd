@@ -1159,11 +1159,11 @@ func _on_week_complete() -> void:
 	await fade.finished
 
 	if book_clock_widget and book_clock_widget.has_method("set_banner"):
-		# Here too: a week resumed after Jumat (SaveGame) ran no day to set it.
+		# A week resumed after Jumat (SaveGame) ran no day: set its week and Jumat's fill too.
 		book_clock_widget.call("set_week", GameState.minggu_ke, GameState.get_max_weeks())
+		book_clock_widget.call("set_day_style", Juice.tokens().category_color(DAY_CATEGORIES[DAYS.size() - 1]), DAYS.size() - 1)
 		book_clock_widget.call("set_banner", "Akhir Pekan")
 	Juice.fill_bar(progress_bar, 100.0)
-	# "Minggu selesai!" rides the status strip (the day counter is retired).
 	_set_status("Minggu selesai! Selamat!")
 	if wirausaha_total > 0:
 		var wirausaha_chip := _make_chip(

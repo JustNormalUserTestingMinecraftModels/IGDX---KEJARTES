@@ -152,13 +152,36 @@ func test_a_new_game_keeps_the_debug_tutorial_bypass() -> void:
 	assert_true(kept_at > reset_at, "and both halves of it are put back after")
 
 
-## The card pops in a frame after it is shown, once the CenterContainer has
-## sized it: popped at once, its pivot came from the pre-layout size, and the
-## first open of every launch zoomed in from below the screen.
+## The card pops in only after it is shown and laid out, hidden meanwhile:
+## popped at once, its pivot came from the pre-layout size, and the first open
+## of every launch zoomed in from below the screen.
 func test_the_card_pops_in_after_layout() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/MainMenu/ContinuePopup.gd")
 	var open: String = src.get_slice("func open(", 1).get_slice("\nfunc ", 0)
+	var hidden := open.find("_frame.modulate.a = 0.0")
 	var waited := open.find("await get_tree().process_frame")
 	var popped := open.find("Juice.pop_in(_frame)")
-	assert_true(waited != -1 and popped > waited, "pop_in waits a frame for the layout")
-	assert_true(open.contains("if not visible"), "and skips a popup closed in that frame")
+	assert_true(hidden != -1 and waited > hidden, "the card is hidden before the layout wait")
+	assert_true(popped > waited, "pop_in waits for the layout")
+	assert_true(open.contains("if not visible"), "and skips a popup closed meanwhile")
+	var ready: String = src.get_slice("func _ready()", 1).get_slice("\nfunc ", 0)
+	assert_true(ready.contains("_frame.resized.connect(_center_pivot)"),
+		"_ready keeps the pivot centred through every resize")
+
+
+## The live check (2026-10-01): a hidden popup's first layout takes two passes,
+## the first about 2,100 px tall, so one wait still read a stale size. The
+## pivot now follows every resize. Setting the Frame's size emits `resized` at
+## once, so this needs no frame. Both sizes clear the Frame's minimum (the
+## pivot is checked against the size it really took), and they differ, so the
+## last check proves the pivot moved.
+func test_the_pivot_follows_every_resize() -> void:
+	var p := _popup()
+	var frame := p.get_node("Scrim/Safe/Center/Frame") as Control
+	frame.size = Vector2(3000.0, 3000.0)
+	assert_eq(frame.pivot_offset, frame.size * 0.5, "centred on the first size")
+	var first := frame.pivot_offset
+	frame.size = Vector2(3100.0, 3400.0)
+	assert_eq(frame.pivot_offset, frame.size * 0.5, "and re-centred on the next")
+	assert_ne(frame.pivot_offset, first, "the resize really moved it")
+	Engine.get_main_loop().root.remove_child(p)

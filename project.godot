@@ -14,7 +14,7 @@ config/name="KejarTes Ver9.00"
 run/main_scene="res://Scenes/MainMenu/MainMenu.tscn"
 config/quit_on_go_back=false
 config/features=PackedStringArray("4.6", "Mobile")
-config/icon="res://icon.svg"
+config/icon="res://Assets/Images/AppIcon/app_icon.png"
 
 [audio]
 

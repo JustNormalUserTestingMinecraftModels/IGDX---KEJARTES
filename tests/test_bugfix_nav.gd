@@ -171,8 +171,8 @@ func test_inventory_is_flushed_on_close_and_background() -> void:
 	var body := _body(FileAccess.get_file_as_string(GAME_STATE_SCRIPT), "_notification")
 	assert_contains(body, "NOTIFICATION_WM_CLOSE_REQUEST", "a window close flushes")
 	assert_contains(body, "NOTIFICATION_APPLICATION_PAUSED", "going to the background flushes")
-	assert_contains(body, "save_inventory()", "through the existing inventory save")
-	assert_false(body.contains("ConfigFile"), "no new persistence: only the existing save")
+	assert_contains(body, "SaveGame.save_if_at_hub(", "through the run save, on a hub screen only")
+	assert_false(body.contains("ConfigFile"), "the file format lives in SaveGame")
 
 
 # -- Koperasi: finding 19 -----------------------------------------------------

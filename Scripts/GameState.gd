@@ -5,9 +5,9 @@ extends Node
 ##
 ## An autoload. Everything the player does between the main menu and the
 ## semester end lands here: the approved roster, the week's schedules, the
-## current week and grade, money, and the inventory. There is deliberately
-## no save system -- a run is session-scoped, and adding persistence here
-## is a design change, not a refactor.
+## current week and grade, money, and the inventory. The run is saved by
+## SaveGame (SaveGame.SAVE_KEYS lists the fields it carries, EXCLUDED the
+## ones it leaves out); this script holds the state and does no file I/O.
 ##
 ## Written by: StudentCard.gd (approves the roster into
 ## `approved_students`), AturJadwal.gd (fills `day_schedules`),
@@ -38,7 +38,7 @@ var day_schedules: Dictionary = {}
 ## Per-week tally of skill points each student has gained from minigame WINS,
 ## student_id -> float. Enforces Balance.MINIGAME_MENANG_POIN_MAKS_PER_MINGGU_*.
 ## Cleared at week start (SchoolDay.start_simulation) and on grade change
-## (reset_roster_for_new_grade). Session-scoped like everything here.
+## (reset_roster_for_new_grade). Saved with the run (SaveGame).
 var minigame_gain_this_week: Dictionary = {}
 
 ## How many items the Koperasi shelf shows -- one per Barang* slot on
@@ -47,7 +47,7 @@ const SHOP_SHELF_SIZE: int = 6
 ## The most copies of one item a week's shelf can hold.
 const SHOP_MAX_COPIES: int = 3
 ## The week the Koperasi shelf was rolled for, as shop_week_key_for(); ""
-## until the first visit. Session-scoped like everything here.
+## until the first visit. Saved with the run (SaveGame).
 var shop_week_key: String = ""
 ## Item names on the Koperasi shelf this week, in slot order. An item can
 ## fill up to SHOP_MAX_COPIES slots.
@@ -74,16 +74,16 @@ var max_minggu: int = WEEKS_BY_GRADE[7]
 var lobby_tutorial_completed: bool = false
 ## Debug-menu master switch: true skips every tutorial in the game (lobby,
 ## atur jadwal, student card, student list, school day, minigames), not just
-## the lobby one. Session-scoped like everything else on GameState -- no save.
+## the lobby one. Saved with the run (SaveGame).
 var tutorials_bypassed: bool = false
-## MinigameHowTo resource paths whose CARA MAIN card has shown this session.
-## Session-scoped by design (CLAUDE.md: no new persistence).
+## MinigameHowTo resource paths whose CARA MAIN card has shown this run.
+## Saved with the run (SaveGame).
 var seen_minigame_how_to: Dictionary = {}
-## The grades whose headmaster's beat has played this session, grade -> true.
+## The grades whose headmaster's beat has played this run, grade -> true.
 ## HeadmasterBeat marks Kelas 8 or 9 when its congratulation ends, so the beat
 ## plays once per promotion and a retry of the same grade does not replay it.
 ## Cleared by forget_session() and by set_grade() (a new run starts there).
-## Session-scoped by design (CLAUDE.md: no new persistence) -- never saved.
+## Saved with the run (SaveGame), so a resumed run does not replay a beat.
 var headmaster_beats_seen: Dictionary = {}
 var current_grade: int = 7:
 	set(val):
@@ -119,7 +119,7 @@ var pending_week_resume: Dictionary = {}
 signal skin_changed(student_name: String)
 ## Student name -> skin id they wear. Absent means StudentSkins.DEFAULT_ID.
 ## Keyed by name, not roster id, so a skin follows the character across
-## grades. Session-scoped like the roster -- not saved.
+## grades. Saved with the run (SaveGame).
 var equipped_skins: Dictionary = {}
 ## "Name:skin_id" -> unlocked. Absent means StudentSkins.UNLOCKED_BY_DEFAULT.
 ## Only the debug overlay writes it (set_all_skins_locked).
@@ -284,15 +284,14 @@ var player_money: int:
 		_player_money = value
 		money_changed.emit(value)
 
-## Inventory: item_name -> quantity. Session-scoped, like every other
-## field on this autoload -- the project has no save system.
+## Inventory: item_name -> quantity. Saved with the run (SaveGame).
 var inventory: Dictionary = {}  ## Tracks item quantities by name
 
 ## Wirausaha earnings accrued this week, student_id -> rupiah. Emptied by
 ## SchoolDay at week end, when the total is paid into player_money.
 var pending_earnings: Dictionary = {}
 ## Ads owed from Dapatkan Uang's "ambil dulu" cash-ins; one watched owed
-## ad pays one back. Session-scoped like money -- never saved.
+## ad pays one back. Saved with the run (SaveGame), like money.
 var ad_debt: int = 0
 
 
@@ -328,47 +327,6 @@ func seed_playtest_inventory(quantity: int = 2) -> void:
 			inventory[item.item_name] = quantity
 	inventory_changed.emit()
 
-
-const INVENTORY_SAVE_PATH := "user://inventory.cfg"
-
-## Serialize `inventory` into `cfg` (pure -- no disk, no editor gate). Split
-## out so a headless test can round-trip it without the is_editor_hint guard.
-func _write_inventory_to(cfg: ConfigFile) -> void:
-	cfg.set_value("inventory", "items", inventory.duplicate())
-
-## Inverse of _write_inventory_to. A missing section leaves `inventory` empty.
-## Coerces keys to String and values to int.
-func _read_inventory_from(cfg: ConfigFile) -> void:
-	var raw: Dictionary = cfg.get_value("inventory", "items", {})
-	inventory.clear()
-	for k in raw:
-		inventory[String(k)] = int(raw[k])
-
-## Persist the current inventory. No-op in editor/test context: a placeholder
-## instance must never touch user://.
-func save_inventory() -> void:
-	if Engine.is_editor_hint():
-		return
-	var cfg := ConfigFile.new()
-	_write_inventory_to(cfg)
-	cfg.save(INVENTORY_SAVE_PATH)
-
-## Load the persisted inventory at boot. Emits inventory_changed so any
-## already-built screen rebuilds. No-op in editor/test context.
-func load_inventory() -> void:
-	if Engine.is_editor_hint():
-		return
-	var cfg := ConfigFile.new()
-	if cfg.load(INVENTORY_SAVE_PATH) == OK:
-		_read_inventory_from(cfg)
-		inventory_changed.emit()
-
-## Delete the on-disk inventory save, if present.
-func clear_inventory_save() -> void:
-	if Engine.is_editor_hint():
-		return
-	if FileAccess.file_exists(INVENTORY_SAVE_PATH):
-		DirAccess.remove_absolute(INVENTORY_SAVE_PATH)
 
 ## Forget the stocked week, so the next shop_stock_for_week() rolls a fresh
 ## shelf with nothing sold and no promo. Every run restart calls this: it
@@ -620,17 +578,15 @@ var last_claim_date: String = ""
 
 func _ready():
 	print("GameState siap")
-	load_inventory()
 
-## Flushes the inventory when the window closes or the app goes to the
-## background, where no scene change is coming to save it: a phone may kill a
-## backgrounded app without warning, and a desktop close skips Transition
-## entirely. Only WHEN the save runs changes; what reaches disk is still the
-## inventory alone (Transition.change_scene stays the usual flush), and
-## save_inventory() is a no-op in the editor.
+## Saves when the window closes or the app goes to the background on a hub
+## screen, where no scene change is coming to checkpoint it: a phone may kill
+## a backgrounded app without warning. Mid-week and in the end-of-grade
+## chain the last checkpoint stands (SaveGame.save_if_at_hub).
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
-		save_inventory()
+		var current := get_tree().current_scene if is_inside_tree() else null
+		SaveGame.save_if_at_hub(current.scene_file_path if current else "")
 
 # --- Converter: Dictionary → StudentData (for simulation) ---
 ## One roster entry as a simulation StudentData. The single conversion rule:

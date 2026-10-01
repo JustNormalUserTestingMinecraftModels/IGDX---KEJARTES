@@ -266,6 +266,12 @@ func _on_selesai_pressed() -> void:
 	_exiting = true
 	AudioDirector.play_sfx(&"confirm")
 	var destination := _apply_progression()
+	# The save follows the run: a run going on (next grade, or a retry) is
+	# saved at its new StudentCard start; a run that ended is deleted.
+	if destination == ROSTER_SCENE:
+		SaveGame.save()
+	else:
+		SaveGame.delete_save()
 
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, EXIT_FADE_SECONDS)

@@ -167,3 +167,18 @@ func test_checkpoints_fire_only_around_hub_screens() -> void:
 		"SchoolDay saves itself, after each day's result, never mid-day")
 	for path in SaveGame.HUB_SCENES:
 		assert_true(ResourceLoader.exists(path), path + " exists")
+
+
+func test_run_result_saves_a_continuing_run_and_deletes_an_ended_one() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	var body: String = src.get_slice("var destination := _apply_progression()", 1) \
+		.get_slice("var tween", 0)
+	assert_true(body.contains("SaveGame.save()"), "a run going on to StudentCard is saved")
+	assert_true(body.contains("SaveGame.delete_save()"), "a run ending at the menu is deleted")
+	assert_true(body.contains("ROSTER_SCENE"), "and the branch is on the destination")
+
+
+func test_boot_no_longer_loads_anything() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
+	var ready: String = src.get_slice("func _ready()", 1).get_slice("\nfunc ", 0)
+	assert_false(ready.contains("load"), "the save loads only when the player picks Lanjutkan")

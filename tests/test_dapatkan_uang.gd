@@ -65,13 +65,13 @@ func _fixture() -> DapatkanUang:
 
 ## A source scan, not a call: forget_session() in the editor would also wipe
 ## achievement progress.
-func test_ad_debt_is_a_session_counter() -> void:
+func test_ad_debt_is_a_run_counter_saved_with_the_money() -> void:
 	var src := FileAccess.get_file_as_string(_GAME_STATE)
 	assert_true(src.contains("var ad_debt: int = 0"), "ad_debt is a typed int, 0 at start")
 	var forget: String = src.get_slice("func reset_run()", 1).get_slice("\nfunc ", 0)
 	assert_true(forget.contains("ad_debt = 0"), "reset_run (Forget Session's wipe) clears it")
-	var saver: String = src.get_slice("func _write_inventory_to(", 1).get_slice("\nfunc ", 0)
-	assert_false(saver.contains("ad_debt"), "ad_debt never reaches disk")
+	assert_true(SaveGame.SAVE_KEYS.has("ad_debt"),
+		"ad_debt is saved with player_money: a resumed run still owes its ads")
 
 
 func test_the_panel_holds_every_authored_part() -> void:

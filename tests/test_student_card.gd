@@ -605,13 +605,10 @@ func test_a_retry_of_the_same_grade_does_not_replay_the_beat() -> void:
 		"only a beaten game's restart goes through set_grade, which clears them")
 
 
-func test_seen_beats_are_never_written_to_disk() -> void:
-	var src := FileAccess.get_file_as_string(_GAME_STATE_PATH)
-	for func_name: String in ["_write_inventory_to", "_read_inventory_from", "save_inventory",
-			"load_inventory", "clear_inventory_save"]:
-		var body := _function_source(src, func_name)
-		assert_false(body.is_empty(), func_name + " was found")
-		assert_false(body.contains("headmaster_beats_seen"), func_name + " must not touch the beats")
+## Since 2026-10-01 the run is saved, beats included: a resumed run must not
+## replay a promotion's congratulation.
+func test_seen_beats_travel_with_the_run_save() -> void:
+	assert_true(SaveGame.SAVE_KEYS.has("headmaster_beats_seen"))
 	for path: String in ["res://Scripts/GameSettings.gd", "res://Scripts/Achievements/Achievements.gd"]:
 		assert_false(FileAccess.get_file_as_string(path).contains("headmaster_beats_seen"),
-			path + " persists; the beats are session-scoped")
+			path + " is not where the run lives")

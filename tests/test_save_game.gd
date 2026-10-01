@@ -55,7 +55,7 @@ func test_every_saved_field_round_trips() -> void:
 	var expected := {}
 	for key in SaveGame.SAVE_KEYS:
 		expected[key] = var_to_str(GameState.get(key))
-	var won := GameState.run_stats.minigames_won
+	var won: int = GameState.run_stats.minigames_won
 
 	# Through the file's text form, as a real save is: this is what proves int
 	# roster ids and typed arrays survive the serializer, not just memory.

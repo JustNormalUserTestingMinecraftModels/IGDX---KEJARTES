@@ -55,7 +55,7 @@ const HOLIDAYS = {
 ## (2026-09-24 visual polish, D8): tap it to open the hint below it.
 @onready var objective_strip: Button = $ObjectiveStrip
 @onready var objective_title: Label = $ObjectiveStrip/Title
-@onready var objective_stars: Label = $ObjectiveStrip/StarChip/Stars
+@onready var objective_count: Label = $ObjectiveStrip/SafeChip/Count
 @onready var objective_progress: ProgressBar = $ObjectiveStrip/Progress
 @onready var objective_chevron: TextureRect = $ObjectiveStrip/Chevron
 @onready var objective_hint: Control = $ObjectiveHint
@@ -1289,18 +1289,18 @@ func _input(event: InputEvent) -> void:
 			_holiday_dismissed.emit()
 			get_viewport().set_input_as_handled()
 
-## Fills the objective strip (D8): the month and week of the grade, the run's
-## stars against the pass line, and the bar toward it. Also paints the two
-## rounded_gradient materials from the tokens -- the strip brown to deeper
-## brown with a gold rim, the chip gold -- since a shader has no theme.
+## Fills the objective strip (D8): the month and week of the grade, how many students are on the
+## per-student pass line, and the bar toward it. Also paints the two rounded_gradient materials from
+## the tokens -- the strip brown to deeper brown with a gold rim, the chip gold -- since a shader has no theme.
 func _update_objective_strip() -> void:
 	if objective_title:
 		objective_title.text = ObjectiveHint.title(GameState.minggu_ke, GameState.max_minggu)
-	var stars: float = GameState.run_stars()
-	if objective_stars:
-		objective_stars.text = ObjectiveHint.star_text(stars)
+	var safe: int = GameState.safe_student_count()
+	var total: int = GameState.approved_students.size()
+	if objective_count:
+		objective_count.text = ObjectiveHint.safe_text(safe, total)
 	if objective_progress:
-		objective_progress.value = ObjectiveHint.progress_percent(stars)
+		objective_progress.value = ObjectiveHint.safe_percent(safe, total)
 	var t := DesignTokens.load_default()
 	var gold_deep := t.currency_gold.darkened(0.25)
 	var body := get_node_or_null("ObjectiveStrip/Body") as CanvasItem
@@ -1310,7 +1310,7 @@ func _update_objective_strip() -> void:
 		mat.set_shader_parameter("color_b", t.brand_primary_dark)
 		mat.set_shader_parameter("rim_a", t.currency_gold)
 		mat.set_shader_parameter("rim_b", gold_deep)
-	var chip := get_node_or_null("ObjectiveStrip/StarChip/Body") as CanvasItem
+	var chip := get_node_or_null("ObjectiveStrip/SafeChip/Body") as CanvasItem
 	if chip and chip.material is ShaderMaterial:
 		var cmat := chip.material as ShaderMaterial
 		cmat.set_shader_parameter("color_a", t.currency_gold)

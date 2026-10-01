@@ -10,8 +10,8 @@ extends RefCounted
 ## A failed run is always "D", regardless of score: the letter is the
 ## player's reward for winning well, not a consolation for losing.
 
-## Weights, summing to 100. Targets dominate on purpose -- clearing every
-## student's three targets is the actual win condition; the rest is style.
+## Weights, summing to 100. Targets dominate on purpose -- they decide the verdict
+## (GameState.check_semester_passed(): every student clears MIN_TARGETS_PER_STUDENT); the rest is style.
 const WEIGHT_TARGETS := 55.0
 const WEIGHT_MINIGAMES := 20.0
 const WEIGHT_MONEY := 15.0

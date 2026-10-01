@@ -280,8 +280,11 @@ func test_the_photo_and_name_sit_on_the_printed_frame_and_plate() -> void:
 func test_the_name_is_the_only_text_on_the_page() -> void:
 	var card = load(_CARD_SCENE).instantiate()
 	track(card)
-	var labels: Array = card.find_children("*", "Label", true, false)
-	assert_eq(labels.size(), 1, "one Label on the page: %s" % str(labels))
+	var stamp: Node = card.get_node("FailStamp")
+	var bio: Array = card.find_children("*", "Label", true, false).filter(
+		func(l): return not stamp.is_ancestor_of(l))
+	assert_eq(bio.size(), 1,
+		"one bio Label on the page (the verdict stamp aside): %s" % str(bio))
 	var src := FileAccess.get_file_as_string(_CARD_SCRIPT)
 	assert_false(src.contains("profil"),
 		"StatCheckCard never shows the Agama / Jenis Kelamin lines")
@@ -325,6 +328,117 @@ func test_card_rows_carry_the_right_categories_and_icons() -> void:
 		assert_eq(String(r.icon.resource_path), _ICON_DIR + _STAT_ICONS[r.category],
 			"%s wears the game's own stat icon" % r.category)
 	Engine.get_main_loop().root.remove_child(card)
+
+
+## The verdict's mark on a page (2026-10-01): a student under
+## GameState.MIN_TARGETS_PER_STUDENT is stamped TIDAK LULUS, in the same ink
+## stamp SchoolDay uses for "<hari> selesai".
+func test_card_carries_a_hidden_fail_stamp() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	track(card)
+	var stamp := card.get_node_or_null("FailStamp") as PanelContainer
+	assert_true(stamp != null, "FailStamp is a PanelContainer authored in the scene")
+	if stamp == null:
+		return
+	assert_eq(stamp.theme_type_variation, &"DayStampPanel")
+	assert_false(stamp.visible, "the stamp starts hidden")
+	assert_eq(stamp.mouse_filter, Control.MOUSE_FILTER_IGNORE,
+		"a tap through the stamp still rushes the check")
+	assert_true(stamp.get_index() > card.get_node("Paper").get_index(),
+		"the stamp draws over the paper")
+	var label := stamp.get_node_or_null("StampLabel") as Label
+	assert_true(label != null and label.theme_type_variation == &"DayStampLabel",
+		"StampLabel wears DayStampLabel")
+	if label != null:
+		assert_eq(label.text, "TIDAK LULUS")
+
+
+func _student_with(a: float, s: float, o: float) -> StudentData:
+	var sd := StudentData.new()
+	sd.student_name = "Citra"
+	sd.akademis = a
+	sd.target_akademis = 60.0
+	sd.seni_budaya = s
+	sd.target_seni_budaya = 60.0
+	sd.olahraga = o
+	sd.target_olahraga = 60.0
+	return sd
+
+
+func test_cleared_count_uses_the_verdicts_predicate() -> void:
+	assert_eq(StatCheckCard.cleared_count(_student_with(70.0, 30.0, 60.0)), 2)
+	assert_eq(StatCheckCard.cleared_count(_student_with(70.0, 30.0, 10.0)), 1)
+	assert_eq(StatCheckCard.cleared_count(_student_with(0.0, 0.0, 0.0)), 0)
+
+
+## One roster entry as GameState.approved_students holds it: all three skill
+## keys and all three targets present, so neither side of the bridge falls
+## back to a default.
+func _roster_entry(a: float, s: float, o: float, target_o: float) -> Dictionary:
+	return {
+		"id": 1, "name": "Citra",
+		"akademis": a, "seni_budaya": s, "olahraga": o,
+		"target_akademis": 60.0, "target_seni_budaya": 60.0, "target_olahraga": target_o,
+	}
+
+
+## The stamp counts a StudentData (cleared_count) and the verdict counts the
+## roster dictionary (targets_cleared_for). Both must give one answer for the
+## same student, or a TIDAK LULUS card and a lost run could contradict each
+## other. Each case also pins the count itself, so two sides that drifted
+## together would still fail.
+func test_the_stamp_and_the_verdict_count_the_same_targets() -> void:
+	var cases: Array[Dictionary] = [
+		{"label": "3 cleared", "entry": _roster_entry(70.0, 70.0, 70.0, 60.0), "want": 3},
+		{"label": "2 cleared", "entry": _roster_entry(70.0, 70.0, 10.0, 60.0), "want": 2},
+		{"label": "1 cleared", "entry": _roster_entry(70.0, 10.0, 10.0, 60.0), "want": 1},
+		{"label": "0 cleared", "entry": _roster_entry(10.0, 10.0, 10.0, 60.0), "want": 0},
+		{"label": "value equal to target clears", "entry": _roster_entry(60.0, 60.0, 60.0, 60.0), "want": 3},
+		{"label": "a zero target never clears", "entry": _roster_entry(70.0, 70.0, 90.0, 0.0), "want": 2},
+	]
+	for c in cases:
+		var entry: Dictionary = c["entry"]
+		var sd: StudentData = GameState.student_data_from_dict(entry)
+		var stamp_side: int = StatCheckCard.cleared_count(sd)
+		var verdict_side: int = GameState.targets_cleared_for(entry)
+		assert_eq(stamp_side, verdict_side, "%s: stamp and verdict agree" % c["label"])
+		assert_eq(verdict_side, c["want"], "%s: the count itself" % c["label"])
+
+
+func test_a_student_under_the_line_is_stamped_only_when_asked() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	card.bind(_student_with(70.0, 30.0, 10.0))
+	assert_true(card.failed, "1 of 3 is under the line")
+	assert_false(card.get_node("FailStamp").visible, "bind() alone never shows it")
+	card.stamp_if_failed()
+	assert_true(card.get_node("FailStamp").visible, "stamp_if_failed() shows it")
+	Engine.get_main_loop().root.remove_child(card)
+
+
+func test_a_safe_student_is_never_stamped() -> void:
+	var card = load(_CARD_SCENE).instantiate()
+	Engine.get_main_loop().root.add_child(card)
+	track(card)
+	card.bind(_student_with(70.0, 30.0, 60.0))
+	assert_false(card.failed, "2 of 3 is safe")
+	card.stamp_if_failed()
+	assert_false(card.get_node("FailStamp").visible)
+	Engine.get_main_loop().root.remove_child(card)
+
+
+## The stamp lands after the card's rows have filled, and before the read
+## beat and slide-out, so the player sees why.
+func test_the_sequence_stamps_each_card_after_its_rows() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	var rows_at := src.find("for row in card.rows():")
+	var stamp_at := src.find("card.stamp_if_failed()")
+	var out_at := src.find("await _slide_out(card)")
+	assert_true(rows_at >= 0, "the rows loop anchor is still in StatCheck.gd")
+	assert_true(stamp_at > 0, "StatCheck calls card.stamp_if_failed()")
+	assert_true(rows_at < stamp_at and stamp_at < out_at,
+		"after the rows loop, before the slide-out")
 
 
 ## Every roster name has to fit the plate at the label's real font and size.

@@ -335,6 +335,18 @@ func test_arm_makes_the_grade_d_preset_resolve_to_a_d() -> void:
 	EndGameRehearsal.restore(snap)
 
 
+## Every grade preset that should pass must keep every student on the
+## per-student line (GameState.MIN_TARGETS_PER_STUDENT), or the 2026-10-01
+## rule forces its letter to D whatever the score says.
+func test_passing_grade_presets_keep_every_student_safe() -> void:
+	for preset in [EndGameRehearsal.PRESET_GRADE_A,
+			EndGameRehearsal.PRESET_GRADE_B, EndGameRehearsal.PRESET_GRADE_C]:
+		var roster := EndGameRehearsal.build_roster(preset, 7, _fake_source_four())
+		for s in roster:
+			assert_true(GameState.student_is_safe(s), "%s: %s clears only %d of 3"
+				% [preset, s.get("name", "?"), GameState.targets_cleared_for(s)])
+
+
 ## The inverse of the completeness ratchet above: every SNAPSHOT_KEYS entry
 ## must still name a real GameState field. A key left behind after a field
 ## is deleted fails silently -- get() returns null, set() no-ops -- so the

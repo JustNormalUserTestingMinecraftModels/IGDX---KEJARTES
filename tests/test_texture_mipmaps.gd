@@ -90,6 +90,9 @@ const TARGETS := {
 	"res://Assets/Images/EventDialogue/splash_mom.png": 1.0,
 	"res://Assets/Images/EventDialogue/splash_gurupenjas.png": 1.0,
 	"res://Assets/Images/EventDialogue/splash_gurusenibudaya.png": 1.0,
+	# AturJadwal's SafeChip icon (2026-10-01): the 256 px nav_students.svg drawn at
+	# 36 px (256 / 36), derived from the scene's offsets, not re-measured live.
+	"res://Assets/Images/UI/Icons/nav_students.svg": 7.11,
 	# Minigame sprites. CLAUDE.md puts Scenes/Minigames/** out of scope for
 	# the design system, but an .import flag is not a design decision, and
 	# these are the project's worst ratios on art that is always moving.
@@ -198,7 +201,8 @@ func test_mipmaps_stay_targeted_not_global() -> void:
 	assert_true(total > 300, "sanity: expected the full texture set, saw %d" % total)
 	# 45 until 2026-09-25, when the twelve day outfits joined TARGETS above;
 	# 57 until 2026-09-30, when the six skin splashes joined them; 63 until
-	# 2026-10-01, when the three speaker splashes joined them.
-	assert_true(mipmapped <= 66,
+	# 2026-10-01, when the three speaker splashes joined them; 66 until later
+	# that day, when AturJadwal's SafeChip icon joined them.
+	assert_true(mipmapped <= 67,
 		"mipmaps are per-asset and measured, not a bulk flip: %d of %d imports "
 			% [mipmapped, total] + "generate them")

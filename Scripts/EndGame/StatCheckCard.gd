@@ -17,6 +17,10 @@ extends Control
 ## This page deliberately shows the name only -- it is about the targets,
 ## not the student's file.
 ##
+## A student under GameState.MIN_TARGETS_PER_STUDENT gets the FailStamp
+## ("TIDAK LULUS", SchoolDay's day-stamp ink), authored hidden in the scene
+## and shown by stamp_if_failed() once StatCheck has filled the rows.
+##
 ## Instanced from StatCheckCard.tscn once per student by StatCheck, which is
 ## a reviewed per-call-dynamic exception to the no-runtime-construction rule
 ## (tests/test_viewport_editability.gd ALLOWED).
@@ -26,6 +30,10 @@ extends Control
 @onready var row_akademis: StatCheckRow = $Paper/Rows/Akademis
 @onready var row_seni: StatCheckRow = $Paper/Rows/Seni
 @onready var row_olahraga: StatCheckRow = $Paper/Rows/Olahraga
+@onready var fail_stamp: Control = $FailStamp
+
+## True once bind() has seen a student under GameState.MIN_TARGETS_PER_STUDENT.
+var failed: bool = false
 
 
 ## Fill the page from a StudentData and arm its three rows. Nothing
@@ -36,9 +44,38 @@ func bind(student: StudentData) -> void:
 	row_akademis.set_result(student.akademis, student.target_akademis)
 	row_seni.set_result(student.seni_budaya, student.target_seni_budaya)
 	row_olahraga.set_result(student.olahraga, student.target_olahraga)
+	failed = cleared_count(student) < GameState.MIN_TARGETS_PER_STUDENT
+	fail_stamp.visible = false
 
 
 ## The three rows in the order the check plays them: akademis, seni
 ## budaya, olahraga -- the brief's order.
 func rows() -> Array:
 	return [row_akademis, row_seni, row_olahraga]
+
+
+## How many of `student`'s three skill targets are cleared, by the verdict's
+## own predicate, so the stamp and GameState.check_semester_passed() never
+## disagree.
+static func cleared_count(student: StudentData) -> int:
+	var cleared := 0
+	for pair in [
+		[student.akademis, student.target_akademis],
+		[student.seni_budaya, student.target_seni_budaya],
+		[student.olahraga, student.target_olahraga],
+	]:
+		if GameState.target_cleared(float(pair[0]), float(pair[1])):
+			cleared += 1
+	return cleared
+
+
+## Shows the TIDAK LULUS stamp with a pop and the stamp SFX if bind() found
+## this student under the line; does nothing otherwise. The SFX is gated so
+## the suite can call this in the editor.
+func stamp_if_failed() -> void:
+	if not failed:
+		return
+	fail_stamp.visible = true
+	Juice.pop_in(fail_stamp)
+	if not Engine.is_editor_hint():
+		AudioDirector.play_sfx(&"stamp")

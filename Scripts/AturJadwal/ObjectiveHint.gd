@@ -3,13 +3,15 @@ class_name ObjectiveHint
 extends RefCounted
 
 ## The words and numbers on AturJadwal's objective strip (2026-09-24 visual
-## polish, D8): its title, its star chip, its progress bar, and the one-line
+## polish, D8): its title, its safe-student chip, its progress bar, and the one-line
 ## plain-language hint it expands to. Pure static functions, tested directly.
 ##
-## Nothing here restates a threshold. The pass line and the star total are
-## Balance's; "tired" is Balance.BATAS_KELELAHAN; a skill's gap is measured
-## against the student's own target. The most urgent skill is the same one
-## StatFlags flags "perlu", so the strip and the bars never disagree.
+## Nothing here restates a threshold. The pass line is GameState's
+## per-student rule (MIN_TARGETS_PER_STUDENT), counted by
+## GameState.safe_student_count(); "tired" is Balance.BATAS_KELELAHAN; a
+## skill's gap is measured against the student's own target. The most
+## urgent skill is the same one StatFlags flags "perlu", so the strip and
+## the bars never disagree.
 
 ## Months of the school calendar, four weeks each, starting in August. A week
 ## past the last one clamps to it rather than failing.
@@ -39,25 +41,18 @@ static func title(week: int, total_weeks: int) -> String:
 	return "%s - Minggu %d/%d" % [month, week, total_weeks]
 
 
-## Stars as the chip shows them: one decimal, and none for a whole number.
-static func format_stars(stars: float) -> String:
-	var rounded := snappedf(stars, 0.1)
-	if is_equal_approx(rounded, roundf(rounded)):
-		return "%d" % int(roundf(rounded))
-	return "%.1f" % rounded
+## The chip: students on or past the pass line, over the roster.
+static func safe_text(safe: int, total: int) -> String:
+	return "%d / %d" % [safe, total]
 
 
-## The star chip: the run's stars over the pass line.
-static func star_text(stars: float) -> String:
-	return "%s / %s" % [format_stars(stars), format_stars(Balance.STAR_WIN_THRESHOLD)]
-
-
-## How far the run is toward passing, 0-100. Full means the grade passes;
-## stars past the pass line do not overfill it.
-static func progress_percent(stars: float) -> float:
-	if Balance.STAR_WIN_THRESHOLD <= 0.0:
+## How far the run is toward passing, 0-100: the share of the roster that is
+## safe. Full means the grade passes. An empty roster reads full, matching
+## GameState.check_semester_passed().
+static func safe_percent(safe: int, total: int) -> float:
+	if total <= 0:
 		return 100.0
-	return clampf(stars / Balance.STAR_WIN_THRESHOLD * 100.0, 0.0, 100.0)
+	return clampf(float(safe) / float(total) * 100.0, 0.0, 100.0)
 
 
 ## The one-line hint for `student`: who they are, the skill they most need,

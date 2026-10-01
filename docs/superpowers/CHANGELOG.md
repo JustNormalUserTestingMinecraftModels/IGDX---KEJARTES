@@ -8,6 +8,18 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — Per-student lose rule
+
+`GameState.check_semester_passed()` now requires every student to clear at least
+2 of their 3 academic targets (`GameState.MIN_TARGETS_PER_STUDENT`): one under loses
+the run with a D, however strong the rest. `run_stars()` stays as a score (Lobby header,
+StatCheck meter, RunGrade). AturJadwal's objective chip (`SafeChip`) shows the
+safe-student count, "3 / 4", with a person icon (`nav_students.svg`), using
+`ObjectiveHint.safe_text()` and `safe_percent()`. StatCheck stamps a failing
+student "TIDAK LULUS" via `StatCheckCard.stamp_if_failed()`. Debug rehearsal
+presets for B and C grades are [3,3,2,2] and [2,2,2,2], landing at 67.83 (B) and
+52.17 (C); B's minigame tally is 4 won / 6 lost.
+
 ## 2026-10-01 — Split-tone grade: deeper warm shadows, cream highlights, every screen
 
 Branch `feat/lobby-split-tone`; spec

@@ -8,11 +8,11 @@ Indonesian-language school-management sim. Main scene:
 
 You play a teacher. Approve a roster, assign each student a daily activity for
 the school week, then watch the week simulate: stats move, minigames and random
-events fire, and a report lands at week's end. Clear two-thirds of the roster's
-academic targets — `run_stars() >= 2.0` of 3.0 — by the end of the grade's
-final week to pass. It is a roster-wide fraction, not a per-student gate: three students
-clearing everything while a fourth clears nothing is 9 of 12 = 2.25 stars, and
-passes.
+events fire, and a report lands at week's end. To pass, by the end of the grade's
+final week **every student must clear at least 2 of their 3 academic targets**
+(`GameState.MIN_TARGETS_PER_STUDENT`); one student under that loses the run with a D,
+however strong the rest. The stars (cleared ÷ total × 3) are only a score now: the Lobby
+header's `run_stars()`, StatCheck's meter and RunGrade's target share. The verdict ignores them.
 
 **Grades scale the whole game** (`GameState.current_grade`, 7–9):
 
@@ -23,8 +23,8 @@ passes.
 | 9 | 8 | +26 | 6 | −5 |
 
 Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
-`TARGET_UPLIFT_BY_GRADE` (ours, paired); `Balance.JUMLAH_MINGGU_KELAS_*` and
-`TARGET_KENAIKAN_KELAS_*` still say 6/12/16 and 15/34/40 but nothing reads them.
+`TARGET_UPLIFT_BY_GRADE` (ours, paired); `Balance.JUMLAH_MINGGU_KELAS_*` (6/12/16),
+`TARGET_KENAIKAN_KELAS_*` (15/34/40) and `STAR_WIN_THRESHOLD` (2.0) are unread.
 
 **Loop:** **MainMenu (boot)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →
@@ -40,8 +40,7 @@ opens Settings) skips the minigame lines;
 Nasi Kotak, Hujan and the choice events keep theirs. A won minigame ends on
 `MinigameWinScreen` (LOBBY skips the rest of the week); a loss keeps
 `MinigameResultPopup`.
-Splashscreen still exists and is tested but nothing routes to it (the game
-boots straight to MainMenu, which loads in one hop). There is no Loading
+There is no Loading
 screen: the shared `Transition` wipe covers the scene-load gap.
 All navigation is a single `Transition.change_scene(target, …)`. **Lobby
 hub** → StudentCard, AturJadwal, ShopHub, Inventory, ReportCard (its coin
@@ -197,8 +196,8 @@ alpha before laying out on any soft-edged texture.
 
 Minigames share one layout (strip · field · tray/hint pill, CARA MAIN card;
 spec `docs/superpowers/specs/2026-09-29-minigame-mobile-layout-design.md`)
-and one type ladder (`MinigameType`), and follow the glyph and popup rules; their inner play art still had no
-polish pass. The debug overlay is out of scope for the design system.
+and one type ladder (`MinigameType`), and follow the glyph and popup rules.
+The debug overlay is out of scope for the design system.
 
 ## Testing
 
@@ -235,9 +234,9 @@ a full run may just be ordering — re-run that suite alone before believing it.
 
 Many tests are **source-text scans** (`src.contains(...)`) rather than
 behavioral, because a lot of the UI can't be instantiated headlessly. Follow
-that pattern where it's established. Note what that buys and what it does not:
-a scan asserts the value you *set*, so it can confirm you changed what you
-meant to and can never tell you that you changed the wrong things.
+that pattern where it's established. A scan asserts the value you *set*, so it
+can confirm you changed what you meant to and can never tell you that you
+changed the wrong things.
 
 ## Pull requests
 
@@ -377,11 +376,11 @@ savings come from cheaper verification loops, not from fewer tests.
 ## Outstanding debt & placeholders
 
 Placeholders, deferred passes and known bugs live in `docs/superpowers/DEBT.md`;
-grep it before changing a screen or asset. Constraints on future changes stay here, under `## Visual system`.
+grep it before changing a screen or asset.
 
 ## Current work
 
-Nothing in flight (parked passes are in `docs/superpowers/DEBT.md`).
+Nothing in flight.
 
 ## Maintaining this file
 

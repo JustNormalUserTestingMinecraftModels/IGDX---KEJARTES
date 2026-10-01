@@ -17,7 +17,7 @@
 [ext_resource type="Material" path="res://Scripts/Shaders/objective_chip_material.tres" id="16_wjev8"]
 [ext_resource type="Texture2D" uid="uid://hq418p0ftajb" path="res://Assets/Images/UI/BarFill/icon_ghost_sabit.png" id="17_gscbg"]
 [ext_resource type="Texture2D" uid="uid://dbl6a1ft4dmer" path="res://Assets/Images/StudentCard/stat_mood.png" id="17_icon_mood"]
-[ext_resource type="Texture2D" uid="uid://dwndrgjat4di8" path="res://Assets/Images/UI/star.png" id="17_jrwbr"]
+[ext_resource type="Texture2D" uid="uid://bjccxqjbt3wyo" path="res://Assets/Images/UI/Icons/nav_students.svg" id="17_jrwbr"]
 [ext_resource type="PackedScene" path="res://Scenes/AturJadwal/ActivityTile.tscn" id="20_tile"]
 [ext_resource type="Texture2D" uid="uid://cinn50y7nlgac" path="res://Assets/Images/UI/uang.png" id="21_uang"]
 [ext_resource type="Texture2D" uid="uid://cbjish08tay7r" path="res://Assets/Images/UI/Picker/arrow_down.svg" id="23_arrow_down"]
@@ -672,7 +672,7 @@ text = "Agustus - Minggu 1/6"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="StarChip" type="Control" parent="ObjectiveStrip" unique_id=899302992]
+[node name="SafeChip" type="Control" parent="ObjectiveStrip" unique_id=899302992]
 anchors_preset = 0
 offset_left = 770.0
 offset_top = 16.0
@@ -680,7 +680,7 @@ offset_right = 934.0
 offset_bottom = 64.0
 mouse_filter = 2
 
-[node name="Body" type="ColorRect" parent="ObjectiveStrip/StarChip" unique_id=632199085]
+[node name="Body" type="ColorRect" parent="ObjectiveStrip/SafeChip" unique_id=632199085]
 material = ExtResource("16_wjev8")
 layout_mode = 1
 anchors_preset = 15
@@ -690,7 +690,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Icon" type="TextureRect" parent="ObjectiveStrip/StarChip" unique_id=360654154]
+[node name="Icon" type="TextureRect" parent="ObjectiveStrip/SafeChip" unique_id=360654154]
 layout_mode = 0
 offset_left = 10.0
 offset_top = 6.0
@@ -701,7 +701,7 @@ texture = ExtResource("17_jrwbr")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Stars" type="Label" parent="ObjectiveStrip/StarChip" unique_id=1516718262]
+[node name="Count" type="Label" parent="ObjectiveStrip/SafeChip" unique_id=1516718262]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -711,7 +711,7 @@ offset_right = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_type_variation = &"ObjectiveStarLabel"
-text = "0 / 2"
+text = "0 / 4"
 horizontal_alignment = 1
 vertical_alignment = 1
 

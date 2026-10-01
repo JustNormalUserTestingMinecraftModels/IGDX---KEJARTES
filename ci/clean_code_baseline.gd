@@ -104,7 +104,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/AturJadwal/ActivityPreview.gd": 6,
 	"res://Scripts/AturJadwal/AturJadwal.gd": 78,
 	"res://Scripts/AturJadwal/DayStickyNote.gd": 10,
-	"res://Scripts/AturJadwal/ObjectiveHint.gd": 4,
+	"res://Scripts/AturJadwal/ObjectiveHint.gd": 3,
 	"res://Scripts/AturJadwal/SpecialtyMatchBurst.gd": 1,
 	"res://Scripts/Audio/AudioDirector.gd": 10,
 	"res://Scripts/CutScene/CutScene.gd": 6,

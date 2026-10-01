@@ -1,6 +1,6 @@
 // A rounded rectangle filled with a diagonal two-colour gradient, inside a
 // rim carrying a gradient of its own. AturJadwal's objective strip wears it
-// in brown with a gold rim, and its star chip in gold (2026-09-24 visual
+// in brown with a gold rim, and its safe chip in gold (2026-09-24 visual
 // polish, D8: "gradient brown ... with gold-gradient accents -- not flat
 // single-brown").
 //

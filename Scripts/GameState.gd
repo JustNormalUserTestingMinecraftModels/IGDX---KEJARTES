@@ -660,15 +660,59 @@ func run_stars() -> float:
 	return Balance.STARS_TOTAL * float(counted[0]) / float(total)
 
 
-## Win rule since Plan A: the star meter at or above
-## Balance.STAR_WIN_THRESHOLD. Replaces "every student clears all three
-## targets" -- one weak student on a strong roster no longer loses the run.
-## An empty roster still passes, as it always did, so a debug teleport with
-## nothing approved never reads as a loss.
+## The per-student pass line (2026-10-01): every student must clear at least
+## this many of their three skill targets by the end of the grade, or the
+## whole run is lost. Ours, not Balance's -- Balance's old two-star win
+## threshold is no longer read anywhere. (Do not spell its constant name in
+## this file: test_economy_state greps for it.)
+const MIN_TARGETS_PER_STUDENT := 2
+
+## Each skill and the target it is checked against. Energy and mood have
+## targets too but never count toward the verdict.
+const SKILL_TARGET_PAIRS := [
+	["akademis", "target_akademis"],
+	["seni_budaya", "target_seni_budaya"],
+	["olahraga", "target_olahraga"],
+]
+
+
+## The win rule since 2026-10-01: every student clears at least
+## MIN_TARGETS_PER_STUDENT of their three targets. It replaced the 2.0-star
+## roster fraction, which it implies -- every student on 2 of 3 is at least
+## 8 of 12. One student under the line loses the run however strong the
+## rest are. An empty roster still passes, so a debug teleport with nothing
+## approved never reads as a loss.
 func check_semester_passed() -> bool:
 	if approved_students.is_empty():
 		return true
-	return run_stars() >= Balance.STAR_WIN_THRESHOLD
+	return safe_student_count() == approved_students.size()
+
+
+## How many of the roster are on or past MIN_TARGETS_PER_STUDENT.
+## AturJadwal's objective chip shows this over the roster size.
+func safe_student_count() -> int:
+	var safe := 0
+	for student in approved_students:
+		if student_is_safe(student):
+			safe += 1
+	return safe
+
+
+## True when `student` (an approved_students dictionary) clears at least
+## MIN_TARGETS_PER_STUDENT of their three skill targets.
+static func student_is_safe(student: Dictionary) -> bool:
+	return targets_cleared_for(student) >= MIN_TARGETS_PER_STUDENT
+
+
+## How many of `student`'s three skill targets are cleared, by
+## target_cleared() -- the same predicate the star meter counts with.
+static func targets_cleared_for(student: Dictionary) -> int:
+	var cleared := 0
+	for pair in SKILL_TARGET_PAIRS:
+		if target_cleared(float(student.get(pair[0], 0.0)),
+				float(student.get(pair[1], 0.0))):
+			cleared += 1
+	return cleared
 
 
 ## Counts how many of the roster's three-per-student academic targets have
@@ -679,23 +723,15 @@ func count_targets_cleared() -> Array:
 	var cleared := 0
 	var total := 0
 	for student in approved_students:
-		var pairs := [
-			["akademis", "target_akademis"],
-			["seni_budaya", "target_seni_budaya"],
-			["olahraga", "target_olahraga"],
-		]
-		for pair in pairs:
-			total += 1
-			if target_cleared(float(student.get(pair[0], 0.0)),
-					float(student.get(pair[1], 0.0))):
-				cleared += 1
+		total += SKILL_TARGET_PAIRS.size()
+		cleared += targets_cleared_for(student)
 	return [cleared, total]
 
 
 ## The one predicate for "this stat cleared its target", shared by the
-## verdict (count_targets_cleared, and so run_stars and
-## check_semester_passed) and by the reveal (StatCheckRow.ratio, which
-## reaches 100 on exactly this condition).
+## verdict (targets_cleared_for, and so check_semester_passed,
+## safe_student_count and run_stars) and by the reveal (StatCheckRow.ratio,
+## which reaches 100 on exactly this condition).
 ##
 ## A target of zero or less is NOT cleared. Targets are only ever zero when
 ## initialize_grade_targets() never ran, which is a data bug -- and the two

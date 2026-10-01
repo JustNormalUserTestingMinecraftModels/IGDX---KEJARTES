@@ -299,7 +299,7 @@ findings, and the second is the one that matters:
 **`.tscn` properties: clean where it counts.** 66 non-layout overrides
 (`font_sizes`, `styles`, `colors`) existed in scene files, and **every one is
 inside `Scenes/Minigames/**`**, in the minigames' inner play art, which
-had no polish pass (CLAUDE.md). The 2026-09-29 minigame layout cleared
+had no polish pass. The 2026-09-29 minigame layout cleared
 Menjodohkan, MainBola and PauseMenu and halved BuatBatik, and the
 2026-09-30 minigame hierarchy pass cleared `QuestionCard`, `AnswerCard`,
 `KalkulatorKey` and BuatBatik's four tool boxes: 28 remain, in `AnswerRow` 7,
@@ -389,6 +389,8 @@ Each minigame's `Calm` grade costs a full-screen copy every frame, and its
 `Glow` the Environment's own glow pass (the Efek Visual layer keeps the
 bloom shader opt-in for an unknown performance floor); nobody has measured
 frame time on a low-end phone yet, the timed minigames first.
+
+**Splashscreen scene is built but unreachable (moved from CLAUDE.md, 2026-10-01).** The Splashscreen scene exists and is tested, but no route in the game leads to it — the game boots straight to MainMenu, which loads in one hop.
 
 **Bug-sweep leftovers (2026-09-30).** Found by the 2026-09-30 scan and left
 on purpose: (1) "Ulangi Kelas 8/9" keeps the failed attempt's skill gains,
@@ -665,6 +667,8 @@ widget via `project_run` instead, which exercises it fine.
     the pill's text or that Badminton and LombaMenari hide the timer, only
     PilihanGanda's tray is checked against the thumb line, and nothing
     stands a tray up bottom-anchored.
+  - **The minigames' inner play art has had no polish pass** (moved from
+    CLAUDE.md, 2026-10-01). The layout and hierarchy passes left it alone.
 
 **UI depth pass, leftovers (2026-09-28, Phase 3 2026-09-29).** All three
 phases have shipped (`docs/superpowers/CHANGELOG.md`); these are what they
@@ -718,6 +722,12 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
   `is_dev_mode` goes false. The six amounts (+150 / +450 / +900 for 4 ads /
   +2000 for 8) await the Balance owner's sign-off:
   `docs/superpowers/specs/2026-09-27-earn-money-balance-proposal.md`.
+- **`Balance.STAR_WIN_THRESHOLD` is dead; its comment is wrong** (2026-10-01,
+  per-student lose rule). Nothing reads it since the verdict became every
+  student on `GameState.MIN_TARGETS_PER_STUDENT`, yet `Balance.gd:36-40` still
+  says "The run is won at STAR_WIN_THRESHOLD or better" (8 of 12 wins, 7
+  loses). Proposed to the Balance owner: retire the constant, or reword that
+  comment. Awaits their sign-off; `Balance.gd` stays untouched on our side.
 - **Scrapbook HUD review leftovers** (2026-09-28, Phase 1 reviews in
   `.superpowers/sdd/2026-09-27-loby-final-polish/`). On a phone that
   reports a bottom inset, the hidden HUD's 48 px chevron peek sits inside
@@ -807,7 +817,7 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     CutScene).
   - **Source resizes** would beat mipmaps for the static UI offenders and cut
     VRAM, but five textures are shared across 2-12 scenes at different drawn
-    sizes (`return_button.png` in 12, `uang.png` in 4, `star.png` in 6), so
+    sizes (`return_button.png` in 12, `uang.png` in 4, `star.png` in 5), so
     any resize has to satisfy the largest call site. Not attempted.
 
   Note `detect_3d/compress_to=1` is set on all 402 texture imports: any

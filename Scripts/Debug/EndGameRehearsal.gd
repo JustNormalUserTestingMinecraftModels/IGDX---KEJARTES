@@ -59,8 +59,8 @@ const CLEARED_COUNTS := {
 	PRESET_GAGAL: [0, 0, 0, 0],
 	PRESET_CAMPUR: [3, 2, 1, 0],
 	PRESET_GRADE_A: [3, 3, 3, 3],
-	PRESET_GRADE_B: [3, 3, 2, 1],
-	PRESET_GRADE_C: [3, 2, 2, 1],
+	PRESET_GRADE_B: [3, 3, 2, 2],
+	PRESET_GRADE_C: [2, 2, 2, 2],
 	PRESET_GRADE_D: [2, 1, 1, 0],
 }
 
@@ -238,18 +238,18 @@ const REHEARSAL_STATS := {
 	# A >= 75, B >= 60, C >= 45, else D -- see RunGrade.LETTER_BANDS). Against
 	# the fixed 4-student / 12-target debug roster and RunGrade.score()'s
 	# arithmetic: grade A lands at 82.41 (A band 75-90, ~7 points clear of
-	# both the A floor and the S floor above it); grade B lands at 67.25 (B
-	# band 60-75); grade C lands at 52.17 (C band 45-60, ~7 points clear of
-	# both the C floor and the B floor above it); grade D lands at 25.19, but
-	# its letter is forced to "D" regardless of score because 4/12 targets
-	# (1.0 of 3.0 stars) fails check_semester_passed()'s 2.0-star threshold.
+	# both the A floor and the S floor above it); grade B lands at 67.83 (B
+	# band 60-75, ~7 points clear of both floors); grade C lands at 52.17 (C
+	# band 45-60, ~7 points clear of both the C floor and the B floor above it);
+	# grade D lands at 25.19, but its letter is forced to "D" regardless of score
+	# because three of its four students clear under GameState.MIN_TARGETS_PER_STUDENT.
 	# Re-run RunGrade.score() by hand before retuning any of these.
 	PRESET_GRADE_A: {
 		"won": 6, "lost": 5, "points": 20.0, "items": 4,
 		"money": 12000, "events": 3,
 	},
 	PRESET_GRADE_B: {
-		"won": 6, "lost": 4, "points": 24.0, "items": 3,
+		"won": 4, "lost": 6, "points": 24.0, "items": 3,
 		"money": 12000, "events": 2,
 	},
 	PRESET_GRADE_C: {

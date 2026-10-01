@@ -28,16 +28,55 @@ rule itself.
 - `## Testing`, rule 5, after "the bridge is the only way.": "(`--script`
   registers no autoloads; running a *scene* makes `Engine.is_editor_hint()`
   false, so every `@tool` guard fires for real.)"
-- `## Testing`, after the source-text-scan paragraph: "Note what that buys and
-  what it does not: a scan asserts the value you *set*, so it can confirm you
-  changed what you meant to and can never tell you that you changed the wrong
-  things."
 - Under the `class_name` warning, after "`load_default()` keeps serving the
   cached instance,": "so the new value silently does not take effect and a test
   asserting it fails for no visible reason."
 - `A full test_run can drop the bridge`: "The runner instances scenes test
   after test with no frame between, so deferred layout calls flood the
   MessageQueue and the editor dies."
+
+## 2026-10-01 — Per-student lose rule
+
+`GameState.check_semester_passed()` now requires every student to clear at least
+2 of their 3 academic targets (`GameState.MIN_TARGETS_PER_STUDENT`): one under loses
+the run with a D, however strong the rest. `run_stars()` stays as a score (Lobby header,
+StatCheck meter, RunGrade). AturJadwal's objective chip (`SafeChip`) shows the
+safe-student count, "3 / 4", with a person icon (`nav_students.svg`), using
+`ObjectiveHint.safe_text()` and `safe_percent()`. StatCheck stamps a failing
+student "TIDAK LULUS" via `StatCheckCard.stamp_if_failed()`. Debug rehearsal
+presets for B and C grades are [3,3,2,2] and [2,2,2,2], landing at 67.83 (B) and
+52.17 (C); B's minigame tally is 4 won / 6 lost.
+
+## 2026-10-01 — Split-tone grade: deeper warm shadows, cream highlights, every screen
+
+Branch `feat/lobby-split-tone`; spec
+`docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md`. The owner's
+key-art reference (the KEJAR TES poster) has cream highlights and plum-brown
+shadows; one multiplied `tint` cannot give both. The grade shader gains
+split-tone (`shadow_tone`, `highlight_tone`, `split_balance`,
+`split_strength`) and `shadow_saturation`, all luma-preserving: measured on
+the Lobby, mean brightness stays put (under 0.05%). Off on every
+material but the Lobby's three; the Lobby backdrop got its own
+`illustration_grade_material_lobby.tres`, and the students' 48 arms and
+desk-item plates now wear the Lobby cutout grade (the face grade minus its
+eye-hole probes, which the local review flagged as cost for nothing). Tuned
+live from the Look page's Split-Tone block.
+
+Two things the first live capture caught. Contrast leaves near-black
+channels just under zero, and the luma rescale divided two near-zero numbers:
+black hair (0, 0, 0) came out grey (37, 32, 32), so the block now clamps
+first. And the tones alone only read redder, because the Lobby's darks have
+almost no blue to multiply, hence `shadow_saturation` (owner's pick). The
+plum it made possible (30–90 band 100, 49, 27 to 84, 52, 43) gave better
+light-and-dark but read too cool, so the owner asked for the earlier warmth
+back: the landed values are a warm `shadow_tone` 1.08 / 1.00 / 0.86 with
+`shadow_saturation` 0.55 and strength 0.85 (that band now about 91, 51, 32),
+picked from five side-by-side live variants. The owner then asked for it on
+every screen: the shared plain, cutout and splash materials carry the same
+values, so the shops, the minigames, the exam screens, the event dialogue
+and the win screen all wear it; the Look page's Split-Tone block drives all
+six grade materials.
+Carrying it to the rest of the game is a later pass.
 
 ## 2026-10-01 — Canvas filter is Linear Mipmap for real
 

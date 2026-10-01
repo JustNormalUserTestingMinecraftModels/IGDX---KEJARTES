@@ -47,6 +47,22 @@
 // KEEP IT SUBTLE. Characters are graded separately from the backgrounds they
 // stand in front of -- they are separate nodes -- so a strong grade would pull
 // them apart from their own scene. Judge any change on a full-size capture.
+//
+// SPLIT-TONE (2026-10-01). The owner's key-art reference has cream highlights
+// and plum-brown shadows: its darks keep blue at or above green. One
+// multiplied tint pushes every brightness the same way, so warm highlights
+// would also mean orange shadows. Split-tone takes two colours, one for the
+// darks and one for the lights, crossfaded around split_balance (the darks
+// first pulled toward grey by shadow_saturation, since a multiplied tone
+// cannot add blue to a dark that has none), and then
+// rescales each pixel to the luma it had before, so it moves hue and not
+// brightness. (Before the final clamp, that is: a near-white whose red is
+// pushed past 1.0 loses that overshoot, a level or two, and nothing else.) Tuned on the Lobby first,
+// where the owner kept the deeper darks but asked for warm, not plum,
+// shadows; then carried to every grade material (2026-10-01). All six carry
+// the same split-tone values (tests/test_lobby_split_tone.gd); the shader's
+// own defaults stay off, so a new material starts ungraded until it copies
+// them.
 shader_type canvas_item;
 
 // Pull towards or away from grey. 1.0 is untouched.
@@ -63,6 +79,20 @@ uniform vec4 tint : source_color = vec4(1.022, 1.0, 0.972, 1.0);
 // alike -- 0 = off. A single dial for the whole game: at 0 the art renders
 // untouched, not just ungraded.
 uniform float amount : hint_range(0.0, 1.0) = 1.0;
+// Split-tone (2026-10-01, every grade material). The colour the darks lean
+// toward, multiplied in; white is no lean.
+uniform vec4 shadow_tone : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+// The colour the lights lean toward, multiplied in; white is no lean.
+uniform vec4 highlight_tone : source_color = vec4(1.0, 1.0, 1.0, 1.0);
+// The luma where shadow_tone hands over to highlight_tone.
+uniform float split_balance : hint_range(0.0, 1.0) = 0.5;
+// How much of the split-tone to apply. 0 = off, and free.
+uniform float split_strength : hint_range(0.0, 1.0) = 0.0;
+// Saturation of the darks before shadow_tone lands, 1 = untouched. Pulling
+// the darks part-way toward grey deepens them against the lights without
+// changing their brightness; a warm shadow_tone then gives them back their
+// warmth. Fades out toward the highlights with the same crossfade.
+uniform float shadow_saturation : hint_range(0.0, 1.0) = 1.0;
 
 // -- AO and rim knobs -------------------------------------------------------
 // Both are zero on the plain material, so the backdrops that wear it pay
@@ -125,6 +155,9 @@ uniform vec2 light_dir = vec2(-0.6, -0.8);
 
 // Rec. 709 luma, for a saturation that does not shift hues.
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
+// Half-width, in luma, of the crossfade from shadow_tone to highlight_tone
+// around split_balance. Fixed rather than a knob, to keep the Look page short.
+const float SPLIT_WIDTH = 0.35;
 
 void fragment() {
 	vec4 src = texture(TEXTURE, UV) * COLOR;
@@ -150,6 +183,29 @@ void fragment() {
 		rgb = mix(vec3(dot(rgb, LUMA)), rgb, saturation);
 		rgb = (rgb - vec3(0.5)) * contrast + vec3(0.5);
 		rgb *= tint.rgb * exposure;
+		// Split-tone: a hue for the darks and another for the lights, then
+		// each pixel scaled back to its own luma, so the hue moves and the
+		// brightness does not. The branch is uniform, so a plate that leaves
+		// split_strength at 0 pays nothing.
+		//
+		// Clamped at zero first, on purpose. Contrast above 1 pushes a
+		// near-black pixel's green and blue just under zero, its luma lands on
+		// zero, and the rescale then divides one near-zero number by another:
+		// it flipped sign and turned black hair (0, 0, 0) into grey (37, 32,
+		// 32), measured on Marcel in the Lobby on 2026-10-01. With every
+		// channel at or above zero and every tone above zero, the rescale
+		// stays near 1.
+		if (split_strength > 0.0) {
+			vec3 base = max(rgb, vec3(0.0));
+			float l = dot(base, LUMA);
+			float t = smoothstep(split_balance - SPLIT_WIDTH, split_balance + SPLIT_WIDTH, l);
+			// Pull the darks toward their own grey first. Desaturating toward
+			// luma keeps luma, so this too moves colour and never brightness.
+			base = mix(vec3(l), base, mix(shadow_saturation, 1.0, t));
+			vec3 toned = base * mix(shadow_tone.rgb, highlight_tone.rgb, t);
+			toned *= l / max(dot(toned, LUMA), 1e-4);
+			rgb = mix(rgb, toned, split_strength);
+		}
 		vec3 graded = clamp(mix(src.rgb, rgb, amount), vec3(0.0), vec3(1.0));
 
 		// -- inner AO --------------------------------------------------------

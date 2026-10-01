@@ -39,6 +39,22 @@ split-tone: one colour for shadows, another for highlights.
 - Today's five grade values (saturation, contrast, exposure, tint, amount)
   on every material, the Lobby's included. They do not change.
 
+## Revisions after the first live capture (2026-10-01)
+
+1. **Clamp before the rescale.** Contrast above 1 leaves a near-black
+   pixel's green and blue just under zero; its luma lands on zero and the
+   rescale divided two near-zero numbers, turning black hair (0, 0, 0) into
+   grey (37, 32, 32) on Marcel. The block now works on `max(rgb, 0)`.
+2. **`shadow_saturation`, a fifth uniform** (owner's pick, option A). The
+   tones alone shifted every band about +6 red: the Lobby's darks (about
+   94, 43, 21) have almost no blue for a plum tone to multiply, so they read
+   redder, not plum. The darks are now pulled toward their own grey first
+   (luma-preserving, fading out toward the highlights with the same
+   crossfade). Default 1.0 (untouched); the Lobby starts at 0.35 with
+   `split_strength` raised to 0.85. Simulated on the captured frame, that
+   moves the 40–90 band from about 105, 50, 25 to about 88, 53, 43, toward
+   the reference's 63, 53, 54.
+
 ## 1. Shader: `Scripts/Shaders/illustration_grade.gdshader`
 
 Four new uniforms, each with a `//` line in the existing style:

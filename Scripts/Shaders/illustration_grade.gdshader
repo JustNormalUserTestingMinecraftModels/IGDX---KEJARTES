@@ -52,7 +52,9 @@
 // and plum-brown shadows: its darks keep blue at or above green. One
 // multiplied tint pushes every brightness the same way, so warm highlights
 // would also mean orange shadows. Split-tone takes two colours, one for the
-// darks and one for the lights, crossfaded around split_balance, and then
+// darks and one for the lights, crossfaded around split_balance (the darks
+// first pulled toward grey by shadow_saturation, since a multiplied tone
+// cannot add blue to a dark that has none), and then
 // rescales each pixel to the luma it had before, so it moves hue and never
 // brightness: it cannot make a plate read darker. Every material leaves it
 // off (split_strength 0) except the Lobby's three -- its backdrop
@@ -83,6 +85,11 @@ uniform vec4 highlight_tone : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float split_balance : hint_range(0.0, 1.0) = 0.5;
 // How much of the split-tone to apply. 0 = off, and free.
 uniform float split_strength : hint_range(0.0, 1.0) = 0.0;
+// Saturation of the darks before shadow_tone lands, 1 = untouched. The
+// Lobby's darks are a strong orange-brown with almost no blue, so a plum tone
+// multiplied onto them only reads redder; the reference's darks are a near
+// grey leaning plum. Fades out toward the highlights with the same crossfade.
+uniform float shadow_saturation : hint_range(0.0, 1.0) = 1.0;
 
 // -- AO and rim knobs -------------------------------------------------------
 // Both are zero on the plain material, so the backdrops that wear it pay
@@ -189,6 +196,9 @@ void fragment() {
 			vec3 base = max(rgb, vec3(0.0));
 			float l = dot(base, LUMA);
 			float t = smoothstep(split_balance - SPLIT_WIDTH, split_balance + SPLIT_WIDTH, l);
+			// Pull the darks toward their own grey first. Desaturating toward
+			// luma keeps luma, so this too moves colour and never brightness.
+			base = mix(vec3(l), base, mix(shadow_saturation, 1.0, t));
 			vec3 toned = base * mix(shadow_tone.rgb, highlight_tone.rgb, t);
 			toned *= l / max(dot(toned, LUMA), 1e-4);
 			rgb = mix(rgb, toned, split_strength);

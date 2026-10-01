@@ -26,7 +26,9 @@ const SHARED_MATERIALS := [
 	"res://Scripts/Shaders/illustration_grade_splash.tres",
 ]
 const PLAIN := "res://Scripts/Shaders/illustration_grade_material.tres"
-const SPLIT_UNIFORMS := ["shadow_tone", "highlight_tone", "split_balance", "split_strength"]
+const SPLIT_UNIFORMS := [
+	"shadow_tone", "highlight_tone", "split_balance", "split_strength", "shadow_saturation",
+]
 ## The two containers that hold every student's arms and desk items.
 const HAND_CONTAINERS := [
 	"World/Classroom/StudentHandsContainer_Back",
@@ -90,6 +92,9 @@ func test_the_lean_is_plum_shadows_and_cream_highlights() -> void:
 		"shadows lean plum (red up, blue at or above green), not %s" % shadow)
 	assert_true(highlight.r > highlight.b,
 		"highlights lean cream (blue under red), not %s" % highlight)
+	assert_true(float(mat.get_shader_parameter("shadow_saturation")) < 1.0,
+		"the darks are pulled toward grey first: the Lobby's orange-brown darks have almost no "
+			+ "blue, so a plum tone alone only reads redder (measured 2026-10-01)")
 
 
 ## Lobby only, until the spread pass relaxes this on purpose.
@@ -110,6 +115,7 @@ func test_the_shader_defaults_are_off() -> void:
 	assert_contains(src, "uniform float split_strength : hint_range(0.0, 1.0) = 0.0;")
 	assert_contains(src, "uniform vec4 shadow_tone : source_color = vec4(1.0, 1.0, 1.0, 1.0);")
 	assert_contains(src, "uniform vec4 highlight_tone : source_color = vec4(1.0, 1.0, 1.0, 1.0);")
+	assert_contains(src, "uniform float shadow_saturation : hint_range(0.0, 1.0) = 1.0;")
 
 
 ## Split-tone moves hue and never brightness: each pixel is scaled back to
@@ -126,6 +132,8 @@ func test_split_tone_keeps_brightness_and_is_free_when_off() -> void:
 		"clamp before the rescale: contrast leaves near-black channels under zero, and dividing "
 			+ "near-zero lumas turned black hair grey (2026-10-01)")
 	assert_contains(src, "float l = dot(base, LUMA);", "the luma comes from the clamped colour")
+	assert_contains(src, "base = mix(vec3(l), base, mix(shadow_saturation, 1.0, t));",
+		"the darks desaturate toward their own luma, which keeps brightness")
 
 
 ## The Lobby's backdrop material is the shared backdrop plus split-tone,

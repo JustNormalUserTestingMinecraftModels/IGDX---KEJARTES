@@ -51,6 +51,7 @@ const SPLIT_TONE_MATERIALS := [
 const SPLIT_TONE_SLIDERS := [
 	{"uniform": "split_strength", "channel": -1, "caption": "Split-Tone: Kekuatan", "range": Vector3(0.0, 1.0, 0.01)},
 	{"uniform": "split_balance", "channel": -1, "caption": "Split-Tone: Titik Tengah", "range": Vector3(0.0, 1.0, 0.01)},
+	{"uniform": "shadow_saturation", "channel": -1, "caption": "Bayangan: Saturasi", "range": Vector3(0.0, 1.0, 0.01)},
 	{"uniform": "shadow_tone", "channel": 0, "caption": "Bayangan (plum): R", "range": Vector3(0.8, 1.2, 0.005)},
 	{"uniform": "shadow_tone", "channel": 1, "caption": "Bayangan (plum): G", "range": Vector3(0.8, 1.2, 0.005)},
 	{"uniform": "shadow_tone", "channel": 2, "caption": "Bayangan (plum): B", "range": Vector3(0.8, 1.2, 0.005)},
@@ -234,7 +235,7 @@ static func _add_material_slider(vbox: VBoxContainer, mats: Array, uniform: Stri
 
 # ── The Lobby's split-tone ───────────────────────────────────────────────────
 
-## A switch and eight sliders over SPLIT_TONE_MATERIALS. The switch remembers
+## A switch and nine sliders over SPLIT_TONE_MATERIALS. The switch remembers
 ## the strength it turned off, so off and on again returns to the tuned look.
 static func _build_split_tone_section(vbox: VBoxContainer) -> void:
 	_add_heading(vbox, "Split-Tone Lobby (bayangan plum, sorot krem):")

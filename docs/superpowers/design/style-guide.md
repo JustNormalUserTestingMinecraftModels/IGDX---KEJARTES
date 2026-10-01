@@ -149,14 +149,16 @@ Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 `docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md`). The grade
 shader's `shadow_tone` and `highlight_tone` tint the darks and the lights
 separately, crossfaded around `split_balance`, then rescale each pixel to its
-own luma, so split-tone moves hue and never brightness. `split_strength` is 0
+own luma, so split-tone moves hue and never brightness. `shadow_saturation`
+first pulls the darks toward grey: the Lobby's darks are orange-brown with
+almost no blue, so a plum tone multiplied onto them alone only reads redder. `split_strength` is 0
 (off, and free) on every material but the Lobby's three: its backdrop wears
 its own `illustration_grade_material_lobby.tres` (the plain material plus
 split-tone), its desks `illustration_grade_cutout_lobby.tres`, and its faces,
 arms and desk items `illustration_grade_face.tres`. All three carry the same
 values, pinned by `tests/test_lobby_split_tone.gd`. Tune them on the Look
-page's **Split-Tone Lobby** block (a switch, strength, balance and R/G/B for
-each tone), then write the landed values into all three `.tres`. Carrying it
+page's **Split-Tone Lobby** block (a switch, strength, balance, shadow
+saturation and R/G/B for each tone), then write the landed values into all three `.tres`. Carrying it
 to the rest of the game is a later pass: copy the values into the shared
 materials and drop that suite's Lobby-only assertion.
 

@@ -9,8 +9,8 @@ extends RefCounted
 ## moves: the Efek Suasana and Efek Visual switches, and every AmbientGlow (the
 ## Lobby's bloom), ScreenGlow, ScreenSaturation, LightPool and SunShafts in the tree, so the bloom on the shops, the end game
 ## and the minigames can be seen and tuned live. The rest tunes SHARED
-## materials (AO, rim, the Lobby's shafts and its WorldEnvironment glow), so one
-## drag moves every plate at once. Nothing here persists except the two
+## materials (AO, rim, the Lobby's shafts and its WorldEnvironment glow, and the
+## Lobby's split-tone), so one drag moves every plate at once. Nothing here persists except the two
 ## switches, which are the player's own settings; copy a value into the .tres
 ## or .tscn once it looks right.
 
@@ -38,6 +38,26 @@ const NODE_SLIDERS := [
 	[&"SunShafts", "intensity", "Berkas (SunShafts): Kekuatan", 0.0, 0.2, 0.005, 0.2],
 	[&"ScreenSaturation", "saturation", "Saturasi Layar", 0.0, 2.0, 0.01, 0.7],
 ]
+## The Lobby's split-tone materials (2026-10-01): its backdrop, its desks and
+## its faces, which also dress its hands and desk items. Every split-tone row
+## writes all three, so the room and the students cannot drift apart.
+const SPLIT_TONE_MATERIALS := [
+	"res://Scripts/Shaders/illustration_grade_material_lobby.tres",
+	"res://Scripts/Shaders/illustration_grade_cutout_lobby.tres",
+	"res://Scripts/Shaders/illustration_grade_face.tres",
+]
+## The split-tone sliders. `channel` is 0 R, 1 G, 2 B of a Color uniform, or
+## -1 for a float uniform; `range` is min, max, step.
+const SPLIT_TONE_SLIDERS := [
+	{"uniform": "split_strength", "channel": -1, "caption": "Split-Tone: Kekuatan", "range": Vector3(0.0, 1.0, 0.01)},
+	{"uniform": "split_balance", "channel": -1, "caption": "Split-Tone: Titik Tengah", "range": Vector3(0.0, 1.0, 0.01)},
+	{"uniform": "shadow_tone", "channel": 0, "caption": "Bayangan (plum): R", "range": Vector3(0.8, 1.2, 0.005)},
+	{"uniform": "shadow_tone", "channel": 1, "caption": "Bayangan (plum): G", "range": Vector3(0.8, 1.2, 0.005)},
+	{"uniform": "shadow_tone", "channel": 2, "caption": "Bayangan (plum): B", "range": Vector3(0.8, 1.2, 0.005)},
+	{"uniform": "highlight_tone", "channel": 0, "caption": "Sorot (krem): R", "range": Vector3(0.8, 1.2, 0.005)},
+	{"uniform": "highlight_tone", "channel": 1, "caption": "Sorot (krem): G", "range": Vector3(0.8, 1.2, 0.005)},
+	{"uniform": "highlight_tone", "channel": 2, "caption": "Sorot (krem): B", "range": Vector3(0.8, 1.2, 0.005)},
+]
 
 
 ## Builds the tab under `parent` and returns its root, for DebugManager's
@@ -61,6 +81,7 @@ static func build(parent: Control) -> Control:
 
 	_build_screen_section(vbox)
 	_build_shared_section(vbox)
+	_build_split_tone_section(vbox)
 	_add_note(vbox, "Catatan: slider di sini hilang saat keluar. Salin nilainya ke .tres / .tscn kalau sudah pas.")
 	return scroll
 
@@ -209,6 +230,54 @@ static func _add_material_slider(vbox: VBoxContainer, mats: Array, uniform: Stri
 			for mat in live:
 				mat.set_shader_parameter(uniform, v)
 			return live.size())
+
+
+# ── The Lobby's split-tone ───────────────────────────────────────────────────
+
+## A switch and eight sliders over SPLIT_TONE_MATERIALS. The switch remembers
+## the strength it turned off, so off and on again returns to the tuned look.
+static func _build_split_tone_section(vbox: VBoxContainer) -> void:
+	_add_heading(vbox, "Split-Tone Lobby (bayangan plum, sorot krem):")
+	var mats: Array = []
+	for path: String in SPLIT_TONE_MATERIALS:
+		var mat := load(path) as ShaderMaterial
+		if mat != null:
+			mats.append(mat)
+	if mats.is_empty():
+		return
+	var kept := {"strength": float(mats[0].get_shader_parameter("split_strength"))}
+	var toggle := CheckButton.new()
+	toggle.text = " Split-Tone Aktif "
+	toggle.button_pressed = kept["strength"] > 0.0
+	toggle.add_theme_font_size_override("font_size", CAPTION_FONT)
+	toggle.toggled.connect(func(on: bool) -> void:
+		var now := float(mats[0].get_shader_parameter("split_strength"))
+		if not on and now > 0.0:
+			kept["strength"] = now
+		for mat: ShaderMaterial in mats:
+			mat.set_shader_parameter("split_strength", kept["strength"] if on else 0.0))
+	vbox.add_child(toggle)
+	for spec: Dictionary in SPLIT_TONE_SLIDERS:
+		var span: Vector3 = spec["range"]
+		if spec["channel"] < 0:
+			_add_material_slider(vbox, mats, spec["uniform"], spec["caption"], span.x, span.y, span.z)
+		else:
+			_add_channel_slider(vbox, mats, spec["uniform"], spec["channel"], spec["caption"],
+				span.x, span.y, span.z)
+
+
+## One slider bound to one channel (0 R, 1 G, 2 B) of a Color uniform, written
+## to every material in `mats` at once. It starts at the first material's value.
+static func _add_channel_slider(vbox: VBoxContainer, mats: Array, uniform: String, channel: int,
+		caption: String, min_value: float, max_value: float, step: float) -> void:
+	var start: Color = mats[0].get_shader_parameter(uniform)
+	_add_slider_row(vbox, caption, min_value, max_value, step, start[channel],
+		func(v: float) -> int:
+			for mat: ShaderMaterial in mats:
+				var tone: Color = mat.get_shader_parameter(uniform)
+				tone[channel] = v
+				mat.set_shader_parameter(uniform, tone)
+			return mats.size())
 
 
 # ── Rows ─────────────────────────────────────────────────────────────────────

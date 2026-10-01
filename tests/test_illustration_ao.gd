@@ -27,6 +27,9 @@ const LOBBY_CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout_lobby.tre
 ## and warmer than the shared grades, with the rim and the inner AO off. The
 ## SplashShadow's soft ambient occlusion replaces the shading those two gave.
 const SPLASH := "res://Scripts/Shaders/illustration_grade_splash.tres"
+## The Lobby's own backdrop grade (2026-10-01): the plain material plus the
+## Lobby's split-tone. tests/test_lobby_split_tone.gd pins the split-tone.
+const LOBBY_PLAIN := "res://Scripts/Shaders/illustration_grade_material_lobby.tres"
 
 
 func suite_name() -> String:
@@ -38,7 +41,7 @@ func suite_name() -> String:
 func test_both_materials_share_the_one_shader() -> void:
 	var shader: Shader = load(SHADER)
 	assert_true(shader != null, "the grade shader must exist")
-	for path in [PLAIN, CUTOUT, LOBBY_CUTOUT, FACE, SPLASH]:
+	for path in [PLAIN, LOBBY_PLAIN, CUTOUT, LOBBY_CUTOUT, FACE, SPLASH]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:
@@ -62,7 +65,7 @@ func test_the_two_materials_agree_on_the_shared_grade() -> void:
 	if plain == null:
 		return
 	var reference_tint: Color = plain.get_shader_parameter("tint")
-	for path in [CUTOUT, LOBBY_CUTOUT, FACE]:
+	for path in [LOBBY_PLAIN, CUTOUT, LOBBY_CUTOUT, FACE]:
 		var other: ShaderMaterial = load(path)
 		assert_true(other != null, "%s must exist" % path)
 		if other == null:
@@ -291,7 +294,6 @@ const SPLASHES := {
 
 ## Full-bleed. These keep the material they have always worn.
 const BACKDROPS := {
-	"res://Scenes/Lobby/Lobby.tscn": ["World/Classroom/BGLayer"],
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Background"],
 	"res://Scenes/Minigames/Akademis/Menjodohkan.tscn": ["World/Room/Background"],
 	"res://Scenes/Minigames/Akademis/Password.tscn": ["World/Room/Background"],
@@ -307,6 +309,45 @@ const BACKDROPS := {
 	"res://Scenes/EndGame/StatCheck.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/EndGame/ExamProgress.tscn": ["World/Room/Backdrop"],
 	"res://Scenes/EndGame/WinStage.tscn": ["Stage/Backdrop"],
+}
+
+
+## The Lobby's backdrop is full-bleed too, but wears its own copy of the plain
+## material carrying the Lobby's split-tone (2026-10-01).
+const LOBBY_BACKDROP := {
+	"res://Scenes/Lobby/Lobby.tscn": ["World/Classroom/BGLayer"],
+}
+
+## The Lobby students' arms and desk items (2026-10-01): cutouts that wear the
+## face material, so under the split-tone a hand matches the face beside it.
+## tests/test_lobby_split_tone.gd walks the containers for any it missed.
+const LOBBY_HANDS := {
+	"res://Scenes/Lobby/Lobby.tscn": [
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Andi", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Citra", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Doni", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Marcel", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Shinta", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Thea", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Thea",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Andi", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Citra", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Doni", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Marcel", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Shinta", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Thea", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Thea",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Andi", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Citra", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Doni", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Marcel", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Shinta", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Thea", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Thea",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Andi", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Citra", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Doni", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Marcel", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Shinta", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Thea", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Thea",
+	],
 }
 
 
@@ -530,11 +571,12 @@ func test_every_backdrop_keeps_the_plain_material() -> void:
 				"%s/%s is full-bleed and must not pay for AO" % [scene_path, node_path])
 
 
-## The dicts here (CUTOUTS, SPLASHES, LOBBY_DESKS, FACES, BACKDROPS) and
-## look_layer's GRADED describe the same forty-two plates from two angles. This checks that agreement: a plate added to one dict and
+## The dicts here (CUTOUTS, SPLASHES, LOBBY_DESKS, FACES, BACKDROPS,
+## LOBBY_BACKDROP, LOBBY_HANDS) and look_layer's GRADED describe the same
+## ninety plates from two angles. This checks that agreement: a plate added to one dict and
 ## forgotten in the other fails here. It does NOT notice a plate that was
 ## given a grade material in a .tscn but added to neither list -- that plate
-## is invisible to this test too. The assert_eq(counted.size(), 42, ...) below
+## is invisible to this test too. The assert_eq(counted.size(), 90, ...) below
 ## is a deliberate ratchet, not a discovered fact: bump it by hand when a
 ## plate is legitimately added to both dicts.
 func test_the_census_covers_every_graded_plate_exactly_once() -> void:
@@ -548,7 +590,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		return
 
 	var counted := {}
-	for source in [CUTOUTS, SPLASHES, LOBBY_DESKS, FACES, BACKDROPS]:
+	for source in [CUTOUTS, SPLASHES, LOBBY_DESKS, FACES, BACKDROPS, LOBBY_BACKDROP, LOBBY_HANDS]:
 		for scene_path in source:
 			for node_path in source[scene_path]:
 				var key := "%s::%s" % [scene_path, node_path]
@@ -564,7 +606,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		assert_true(counted.has(key), "%s wears the grade but is in neither census bucket" % key)
 	for key in counted:
 		assert_true(expected.has(key), "%s is in the census but does not wear the grade" % key)
-	assert_eq(counted.size(), 42, "the census must cover all forty-two graded plates")
+	assert_eq(counted.size(), 90, "the census must cover all ninety graded plates")
 
 
 ## The Lobby's light shafts (2026-09-23). The volumetric piece of the pass, and

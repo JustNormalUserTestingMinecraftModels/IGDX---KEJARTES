@@ -145,6 +145,21 @@ Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 
 **Speaker splashes are the exception.** The event dialogue's and the minigame win screen's speaker splash wear `illustration_grade_splash.tres`: the same shader with the owner's 2026-10-01 grade (saturation 0.78, contrast 0.90, exposure 1.16, warm tint 1.08 / 1.005 / 0.875) and rim and inner AO off, because on a speaker the rim read as a hard outline. Their shade comes from `SplashShadow` (soft_ao_shadow.gdshader) behind them instead. The census lists them as SPLASH plates.
 
+**The Lobby leans plum and cream** (split-tone, 2026-10-01, spec
+`docs/superpowers/specs/2026-10-01-lobby-split-tone-design.md`). The grade
+shader's `shadow_tone` and `highlight_tone` tint the darks and the lights
+separately, crossfaded around `split_balance`, then rescale each pixel to its
+own luma, so split-tone moves hue and never brightness. `split_strength` is 0
+(off, and free) on every material but the Lobby's three: its backdrop wears
+its own `illustration_grade_material_lobby.tres` (the plain material plus
+split-tone), its desks `illustration_grade_cutout_lobby.tres`, and its faces,
+arms and desk items `illustration_grade_face.tres`. All three carry the same
+values, pinned by `tests/test_lobby_split_tone.gd`. Tune them on the Look
+page's **Split-Tone Lobby** block (a switch, strength, balance and R/G/B for
+each tone), then write the landed values into all three `.tres`. Carrying it
+to the rest of the game is a later pass: copy the values into the shared
+materials and drop that suite's Lobby-only assertion.
+
 **The Lobby look on other screens** (spec
 `docs/superpowers/specs/2026-09-28-lobby-look-everywhere-design.md`): the
 backdrop and its light move into a `World` CanvasLayer at −1 holding one

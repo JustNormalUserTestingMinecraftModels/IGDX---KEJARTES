@@ -45,8 +45,9 @@
 [ext_resource type="Texture2D" uid="uid://6pi65iumean8" path="res://Assets/Images/MuridPortrait/Thea.png" id="default_portrait_tex"]
 [ext_resource type="Texture2D" uid="uid://cvwlo21egl6k" path="res://Assets/Images/UI/Icons/nav_jadwal.png" id="ic_nav_jadwal"]
 [ext_resource type="Texture2D" uid="uid://bjccxqjbt3wyo" path="res://Assets/Images/UI/Icons/nav_students.svg" id="ic_nav_students"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material.tres" id="illus_grade"]
 [ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout_lobby.tres" id="illus_grade_cut"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_material_lobby.tres" id="illus_grade_bg_lobby"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_face.tres" id="illus_grade_face"]
 [ext_resource type="Texture2D" uid="uid://dkoxq7j7lgu34" path="res://Assets/Images/MuridPortrait/Meja/kiri_atas.png" id="meja_ka_tex"]
 [ext_resource type="Texture2D" uid="uid://bflgqwew54uyi" path="res://Assets/Images/MuridPortrait/Meja/kiri_bawah.png" id="meja_kb_tex"]
 [ext_resource type="Texture2D" uid="uid://b1o2lvbn4fpi5" path="res://Assets/Images/MuridPortrait/Meja/kanan_atas.png" id="meja_kna_tex"]
@@ -174,7 +175,7 @@ mouse_filter = 2
 
 [node name="BGLayer" type="TextureRect" parent="World/Classroom" unique_id=18068981]
 unique_name_in_owner = true
-material = ExtResource("illus_grade")
+material = ExtResource("illus_grade_bg_lobby")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -322,6 +323,7 @@ offset_right = 484.0
 offset_bottom = 424.045
 
 [node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -340,6 +342,7 @@ texture = ExtResource("items_andi")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1069990093]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -359,6 +362,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -377,6 +381,7 @@ texture = ExtResource("items_citra")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1441938456]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -396,6 +401,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -414,6 +420,7 @@ texture = ExtResource("items_doni")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=24226062]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -433,6 +440,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -451,6 +459,7 @@ texture = ExtResource("items_marcel")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1806363820]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -470,6 +479,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -488,6 +498,7 @@ texture = ExtResource("items_shinta")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=337767282]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -507,6 +518,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -525,6 +537,7 @@ texture = ExtResource("items_thea")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot1" unique_id=1533997835]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -551,6 +564,7 @@ offset_right = 1025.0
 offset_bottom = 427.0
 
 [node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -569,6 +583,7 @@ texture = ExtResource("items_andi")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=397972223]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -588,6 +603,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -606,6 +622,7 @@ texture = ExtResource("items_citra")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=2050109560]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -625,6 +642,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -643,6 +661,7 @@ texture = ExtResource("items_doni")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=43024304]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -662,6 +681,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -680,6 +700,7 @@ texture = ExtResource("items_marcel")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=344255062]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -699,6 +720,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -717,6 +739,7 @@ texture = ExtResource("items_shinta")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1332688156]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -736,6 +759,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -754,6 +778,7 @@ texture = ExtResource("items_thea")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Back/Slot2" unique_id=1752655893]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -907,6 +932,7 @@ offset_right = 445.0
 offset_bottom = 903.0
 
 [node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -925,6 +951,7 @@ texture = ExtResource("items_andi")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1515879549]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -944,6 +971,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -962,6 +990,7 @@ texture = ExtResource("items_citra")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=2035720]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -981,6 +1010,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -999,6 +1029,7 @@ texture = ExtResource("items_doni")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=379927227]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -1018,6 +1049,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -1036,6 +1068,7 @@ texture = ExtResource("items_marcel")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=103314952]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -1055,6 +1088,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -1073,6 +1107,7 @@ texture = ExtResource("items_shinta")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=693423398]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -1092,6 +1127,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -1110,6 +1146,7 @@ texture = ExtResource("items_thea")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot3" unique_id=1270190136]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.43
@@ -1136,6 +1173,7 @@ offset_right = 1020.0
 offset_bottom = 903.0
 
 [node name="Items_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1154,6 +1192,7 @@ texture = ExtResource("items_andi")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Andi" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1794435452]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1173,6 +1212,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1191,6 +1231,7 @@ texture = ExtResource("items_citra")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Citra" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1187726315]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1210,6 +1251,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1228,6 +1270,7 @@ texture = ExtResource("items_doni")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Doni" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1238697973]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1247,6 +1290,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1265,6 +1309,7 @@ texture = ExtResource("items_marcel")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Marcel" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=147415357]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1284,6 +1329,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1302,6 +1348,7 @@ texture = ExtResource("items_shinta")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Shinta" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=1382477295]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1321,6 +1368,7 @@ expand_mode = 1
 stretch_mode = 3
 
 [node name="Items_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4"]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004
@@ -1339,6 +1387,7 @@ texture = ExtResource("items_thea")
 expand_mode = 1
 stretch_mode = 3
 [node name="Hand_Thea" type="TextureRect" parent="World/Classroom/StudentHandsContainer_Front/Slot4" unique_id=549175006]
+material = ExtResource("illus_grade_face")
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.56200004

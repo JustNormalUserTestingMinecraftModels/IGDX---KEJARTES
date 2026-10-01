@@ -21,12 +21,40 @@ const GRADE_LOBBY_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_c
 ## The speaker splashes' own grade (2026-10-01, owner's pick): softer, brighter
 ## and warmer than the four above, with the rim and AO off.
 const GRADE_SPLASH_MATERIAL := "res://Scripts/Shaders/illustration_grade_splash.tres"
+## The Lobby backdrop's own grade (2026-10-01): the plain one plus the Lobby's
+## split-tone.
+const GRADE_LOBBY_MATERIAL := "res://Scripts/Shaders/illustration_grade_material_lobby.tres"
 
 ## Every node that wears the grade, by scene. These are painted plates only.
 const GRADED := {
 	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/BGLayer", "World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
+		# The students' arms and desk items (2026-10-01), in the face grade.
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Andi", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Citra", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Doni", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Marcel", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Shinta", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Thea", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Thea",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Andi", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Citra", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Doni", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Marcel", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Shinta", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Back/Slot2/Hand_Thea", "World/Classroom/StudentHandsContainer_Back/Slot2/Items_Thea",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Andi", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Citra", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Doni", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Marcel", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Shinta", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Front/Slot3/Hand_Thea", "World/Classroom/StudentHandsContainer_Front/Slot3/Items_Thea",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Andi", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Andi",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Citra", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Citra",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Doni", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Doni",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Marcel", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Marcel",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Shinta", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Shinta",
+		"World/Classroom/StudentHandsContainer_Front/Slot4/Hand_Thea", "World/Classroom/StudentHandsContainer_Front/Slot4/Items_Thea",
 	],
 	"res://Scenes/Koperasi/Koperasi.tscn": [
 		"World/Room/Background", "World/Room/Herman", "World/Room/Foreground",
@@ -322,6 +350,8 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 	var face: Material = load("res://Scripts/Shaders/illustration_grade_face.tres")
 	var lobby: Material = load(GRADE_LOBBY_CUTOUT_MATERIAL)
 	var splash: Material = load(GRADE_SPLASH_MATERIAL)
+	var lobby_plain: Material = load(GRADE_LOBBY_MATERIAL)
+	assert_true(lobby_plain is ShaderMaterial, "the Lobby backdrop grade material must exist")
 	assert_true(splash is ShaderMaterial, "the splash grade material must exist")
 	assert_true(lobby is ShaderMaterial, "the Lobby cutout grade material must exist")
 	assert_true(plain is ShaderMaterial, "the grade material must exist")
@@ -336,8 +366,9 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 			if node == null:
 				continue
 			assert_true(node.material == plain or node.material == cutout
-					or node.material == face or node.material == lobby or node.material == splash,
-				"%s/%s must wear one of the five shared grades, not a copy"
+					or node.material == face or node.material == lobby or node.material == splash
+					or node.material == lobby_plain,
+				"%s/%s must wear one of the six shared grades, not a copy"
 					% [scene_path, node_path])
 
 
@@ -349,11 +380,13 @@ func test_the_grade_never_lands_on_a_ui_node() -> void:
 	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
 	var lobby: Material = load(GRADE_LOBBY_CUTOUT_MATERIAL)
 	var splash: Material = load(GRADE_SPLASH_MATERIAL)
+	var face: Material = load(GRADE_FACE_MATERIAL)
+	var lobby_plain: Material = load(GRADE_LOBBY_MATERIAL)
 	var offenders := PackedStringArray()
 	for scene_path in GRADED:
 		var root := (load(scene_path) as PackedScene).instantiate()
 		track(root)
-		_collect_ui_offenders(root, [plain, cutout, lobby, splash], scene_path, offenders)
+		_collect_ui_offenders(root, [plain, cutout, lobby, splash, face, lobby_plain], scene_path, offenders)
 	assert_eq(offenders.size(), 0,
 		"the grade is for painted art only; found it on UI: " + ", ".join(offenders))
 
@@ -445,7 +478,7 @@ const GRADE_SATURATION := 0.865
 ## 2026-10-01); test_the_splash_grade_is_the_owners_pick pins them instead.
 func test_the_grade_is_fifteen_percent_less_saturated() -> void:
 	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_LOBBY_CUTOUT_MATERIAL,
-			GRADE_FACE_MATERIAL]:
+			GRADE_FACE_MATERIAL, GRADE_LOBBY_MATERIAL]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:
@@ -483,7 +516,7 @@ func test_the_grade_stays_subtle() -> void:
 	# under these ceilings by pick), so a material could otherwise be pushed
 	# past them unnoticed while this test kept watching only the plain one.
 	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_LOBBY_CUTOUT_MATERIAL,
-			GRADE_FACE_MATERIAL, GRADE_SPLASH_MATERIAL]:
+			GRADE_FACE_MATERIAL, GRADE_SPLASH_MATERIAL, GRADE_LOBBY_MATERIAL]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:

@@ -273,6 +273,22 @@ func _roster_with_cleared(cleared: int) -> Array:
 	return roster
 
 
+## A roster where student i clears exactly counts[i] of their three skill
+## targets -- unlike _roster_with_cleared(), which fills students in order
+## and so cannot say which student is short.
+func _roster_with_counts(counts: Array) -> Array:
+	var roster: Array = []
+	for i in range(counts.size()):
+		var s := {"id": i + 1, "name": "M%d" % (i + 1)}
+		var k := 0
+		for pair in GameState.SKILL_TARGET_PAIRS:
+			s[pair[1]] = 60.0
+			s[pair[0]] = 70.0 if k < int(counts[i]) else 40.0
+			k += 1
+		roster.append(s)
+	return roster
+
+
 func test_run_stars_is_three_times_the_cleared_fraction() -> void:
 	var original: Array = GameState.approved_students
 	GameState.approved_students = _roster_with_cleared(8)
@@ -319,25 +335,57 @@ func test_run_stars_is_zero_for_an_empty_roster() -> void:
 	GameState.approved_students = original
 
 
-func test_semester_passes_at_two_stars_and_fails_below() -> void:
+func test_targets_cleared_for_counts_one_students_three_skills() -> void:
+	var roster := _roster_with_counts([3, 2, 1, 0])
+	assert_eq(GameState.targets_cleared_for(roster[0]), 3)
+	assert_eq(GameState.targets_cleared_for(roster[1]), 2)
+	assert_eq(GameState.targets_cleared_for(roster[2]), 1)
+	assert_eq(GameState.targets_cleared_for(roster[3]), 0)
+	assert_eq(GameState.targets_cleared_for({}), 0,
+		"a student with no targets clears nothing, by target_cleared()'s zero rule")
+
+
+func test_the_per_student_pass_line_is_two() -> void:
+	assert_eq(GameState.MIN_TARGETS_PER_STUDENT, 2, "two of three, per student")
+	var roster := _roster_with_counts([3, 2, 1])
+	assert_true(GameState.student_is_safe(roster[0]), "3 of 3 is safe")
+	assert_true(GameState.student_is_safe(roster[1]), "2 of 3 is safe")
+	assert_false(GameState.student_is_safe(roster[2]), "1 of 3 is not")
+
+
+func test_safe_student_count_counts_students_on_the_line() -> void:
 	var original: Array = GameState.approved_students
-	GameState.approved_students = _roster_with_cleared(8)   # exactly 2.0
-	assert_true(GameState.check_semester_passed(), "2.0 stars passes")
-	GameState.approved_students = _roster_with_cleared(7)   # 1.75
-	assert_false(GameState.check_semester_passed(), "1.75 stars fails")
-	GameState.approved_students = _roster_with_cleared(4)   # 1.0
-	assert_false(GameState.check_semester_passed(), "1 star fails")
+	GameState.approved_students = _roster_with_counts([3, 2, 1, 0])
+	assert_eq(GameState.safe_student_count(), 2)
 	GameState.approved_students = original
 
 
-func test_semester_pass_no_longer_requires_every_student_to_clear_everything() -> void:
-	# The old rule: one missed stat anywhere failed the run. The new rule
-	# carries a weak student on a strong roster. 11 of 12 cleared = 2.75.
+## The 2026-10-01 rule: one student under the line loses the run, however
+## many stars the rest of the roster earned. 3+3+3+1 = 10 of 12 = 2.5 stars.
+func test_one_student_under_two_targets_fails_the_run_at_two_and_a_half_stars() -> void:
 	var original: Array = GameState.approved_students
-	GameState.approved_students = _roster_with_cleared(11)
-	assert_true(GameState.check_semester_passed(),
-		"one missed target no longer fails the whole run")
+	GameState.approved_students = _roster_with_counts([3, 3, 3, 1])
+	assert_true(GameState.run_stars() > 2.0, "the roster is past the old star line")
+	assert_false(GameState.check_semester_passed(),
+		"a single student on 1 of 3 still loses the run")
+	GameState.approved_students = _roster_with_counts([3, 3, 3, 0])
+	assert_false(GameState.check_semester_passed(), "nor does 0 of 3 pass")
 	GameState.approved_students = original
+
+
+func test_every_student_on_two_targets_passes() -> void:
+	var original: Array = GameState.approved_students
+	GameState.approved_students = _roster_with_counts([2, 2, 2, 2])
+	assert_true(GameState.check_semester_passed(), "2 of 3 each is a pass")
+	GameState.approved_students = _roster_with_counts([3, 3, 3, 3])
+	assert_true(GameState.check_semester_passed(), "a clean sweep passes")
+	GameState.approved_students = original
+
+
+func test_the_verdict_no_longer_reads_the_star_threshold() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
+	assert_false(src.contains("STAR_WIN_THRESHOLD"),
+		"the verdict is per-student now; stars are only a score")
 
 
 func test_empty_roster_still_counts_as_passed() -> void:
@@ -351,4 +399,3 @@ func test_empty_roster_still_counts_as_passed() -> void:
 
 func test_star_tunables_live_in_balance() -> void:
 	assert_true(is_equal_approx(Balance.STARS_TOTAL, 3.0), "three stars total")
-	assert_true(is_equal_approx(Balance.STAR_WIN_THRESHOLD, 2.0), "two stars to win")

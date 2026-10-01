@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="amb_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/AmbientParticles.tscn" id="amb_particles"]
 [ext_resource type="Material" path="res://Scripts/Shaders/glint_material.tres" id="amb_glint"]
+[ext_resource type="PackedScene" uid="uid://dkc0r8kmr6kjp" path="res://Scenes/MainMenu/ContinuePopup.tscn" id="continue_popup"]
 
 [node name="MainMenu" type="Control" unique_id=1708799478]
 layout_mode = 3
@@ -169,3 +170,5 @@ tooltip_text = "Keluar"
 theme_type_variation = &"MainMenuIconButton"
 icon = ExtResource("ic_exit")
 expand_icon = true
+
+[node name="ContinuePopup" parent="." instance=ExtResource("continue_popup")]

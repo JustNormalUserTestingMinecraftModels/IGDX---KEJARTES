@@ -270,5 +270,11 @@ func test_logo_has_a_drop_shadow_behind_it() -> void:
 func test_old_layout_nodes_are_removed() -> void:
 	for name in ["ButtonColumn", "Layout", "TitleSpacer", "MidSpacer",
 			"BottomSpacer", "SubtitleLabel", "TitleLabel"]:
-		assert_true(_menu.find_child(name, true, false) == null,
-			name + " must be removed")
+		# Keep only nodes MainMenu.tscn itself owns (owner == _menu): the
+		# ContinuePopup instance carries its own Layout, owned by its own root.
+		# (find_children's owned = true would not do: it means "has any owner".)
+		var left_over: Array[Node] = []
+		for found in _menu.find_children(name, "", true, false):
+			if found.owner == _menu:
+				left_over.append(found)
+		assert_true(left_over.is_empty(), name + " must be removed")

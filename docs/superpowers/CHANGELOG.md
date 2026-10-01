@@ -61,6 +61,26 @@ transparent (an empty card showed at the overlay's corner for a frame, and
 each screen's exit tween played on it); each screen's step entrance fades it
 in.
 
+## 2026-10-01 — Event dialogue and win screen: softer, warmer speaker splash; soft AO shadow; win-screen bloom
+
+Branch `feat/event-win-splash-look`; the owner picked every value from live
+previews. The speaker splash on EventDialogue and MinigameWinScreen looked
+"fried" (crushed darks, hard rim outline). Both now wear
+`illustration_grade_splash.tres` (same grade shader): saturation 0.78,
+contrast 0.90, exposure 1.16, warm tint 1.08 / 1.005 / 0.875, rim light and
+inner edge shading off. Every other plate keeps the shared grades.
+
+The hard halo behind the event speaker (a PaperShadow that kept Mom's art for
+every speaker, a bug) is replaced by `SplashShadow` (`Scenes/UI/`), a soft
+ambient-occlusion shade (`soft_ao_shadow.gdshader`): the splash's own
+silhouette read at two blurred mip levels, warm dark brown at 65%, no offset.
+The screens call `follow(splash)` whenever they change the splash. The win
+screen gets the same shadow, plus a mild screen-reading bloom (`ScreenGlow`,
+threshold 0.85, intensity 0.40) after the splash and before the cards, since
+the Lobby's WorldEnvironment glow cannot reach a CanvasLayer at 999. The event
+dialogue keeps its AmbientGlow (Lobby settings, threshold 0.85). Mom's and
+the two teachers' splashes now import with mipmaps for the shadow's blur.
+
 ## 2026-10-01 — Lobby students back to their old size; desk items split from the arms
 
 Branch `feat/lobby-bigger-students`; spec and plan

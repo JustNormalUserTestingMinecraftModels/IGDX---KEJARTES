@@ -82,6 +82,13 @@ const TARGETS := {
 	"res://Assets/Images/Skins/Marcel/splash_marcel_skin1.png": 1.52,
 	"res://Assets/Images/Skins/Shinta/splash_shinta_skin1.png": 1.52,
 	"res://Assets/Images/Skins/Thea/splash_thea_skin1.png": 1.52,
+	# The three EventDialogue speaker splashes (2026-10-01): Mom and the two
+	# teachers. The SplashShadow's soft ambient occlusion (soft_ao_shadow.gdshader)
+	# reads their mip chain through textureLod, so without one the shade is not
+	# blurred at all. 1.0 because they draw near 1:1; nothing asserts the number.
+	"res://Assets/Images/EventDialogue/splash_mom.png": 1.0,
+	"res://Assets/Images/EventDialogue/splash_gurupenjas.png": 1.0,
+	"res://Assets/Images/EventDialogue/splash_gurusenibudaya.png": 1.0,
 	# Minigame sprites. CLAUDE.md puts Scenes/Minigames/** out of scope for
 	# the design system, but an .import flag is not a design decision, and
 	# these are the project's worst ratios on art that is always moving.
@@ -189,7 +196,8 @@ func test_mipmaps_stay_targeted_not_global() -> void:
 			stack.append(dir_path.path_join(sub))
 	assert_true(total > 300, "sanity: expected the full texture set, saw %d" % total)
 	# 45 until 2026-09-25, when the twelve day outfits joined TARGETS above;
-	# 57 until 2026-09-30, when the six skin splashes joined them.
-	assert_true(mipmapped <= 63,
+	# 57 until 2026-09-30, when the six skin splashes joined them; 63 until
+	# 2026-10-01, when the three speaker splashes joined them.
+	assert_true(mipmapped <= 66,
 		"mipmaps are per-asset and measured, not a bulk flip: %d of %d imports "
 			% [mipmapped, total] + "generate them")

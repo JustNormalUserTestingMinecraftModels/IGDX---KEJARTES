@@ -108,6 +108,10 @@ func test_the_row_is_authored() -> void:
 
 const _SCREEN := "res://Scenes/Minigames/UI/MinigameWinScreen.tscn"
 const _CITRA := "res://Assets/Images/SplashArtMurid/splash_citra.png"
+## The shared census helper: reads a saved scene's nodes without instancing it.
+const Census := preload("res://tests/scene_census.gd")
+## The soft-AO shadow component the speaker splash carries as its first child.
+const _SPLASH_SHADOW_SCENE := "res://Scenes/UI/SplashShadow.tscn"
 
 
 func _screen() -> MinigameWinScreen:
@@ -185,7 +189,7 @@ func test_the_screen_is_authored_and_themed() -> void:
 	for path in ["Root/Blur", "Root/Splash", "Root/Bubble"]:
 		assert_eq((s.get_node(path) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE, path)
 	assert_eq(s.blur.material.resource_path, "res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres")
-	assert_eq(s.splash.material.resource_path, "res://Scripts/Shaders/illustration_grade_cutout.tres")
+	assert_eq(s.splash.material.resource_path, "res://Scripts/Shaders/illustration_grade_splash.tres")
 	var tail := s.get_node("Root/Bubble/Tail") as TextureRect
 	assert_eq(tail.texture.resource_path, "res://Assets/Images/Shop/UI/chat_bubble_tail.svg")
 	assert_true(not tail.flip_h and tail.flip_v, "the tail points up-right at the speaker")
@@ -195,6 +199,62 @@ func test_the_screen_is_authored_and_themed() -> void:
 	var scene := FileAccess.get_file_as_string(_SCREEN)
 	for kind in ["theme_override_colors", "theme_override_font_sizes", "theme_override_fonts", "theme_override_styles"]:
 		assert_false(scene.contains(kind), "no " + kind + " in MinigameWinScreen.tscn")
+
+
+## The speaker casts the soft ambient-occlusion shade (2026-10-01), the same
+## SplashShadow the event dialogue uses. The component's own root carries the
+## look (behind its parent, Full Rect, mipmapped filter, the soft AO material),
+## so the instance here must not override it, and configure() points it at
+## whoever speaks with `shadow.follow(splash)`.
+func test_the_speaker_casts_a_soft_ao_shadow() -> void:
+	var c := Census.of(_SCREEN)
+	var shadow := Census.entry(c, "Root/Splash/Shadow")
+	assert_eq(shadow.get("instance"), _SPLASH_SHADOW_SCENE, "the shadow is a SplashShadow")
+	var kids := Census.children_of(c, "Root/Splash")
+	assert_eq(kids.size(), 1, "the splash has just its shadow")
+	assert_eq(kids[0] if kids.size() > 0 else "", "Shadow", "first child, so it draws behind the art")
+	for key in ["show_behind_parent", "texture_filter", "material", "anchor_right", "anchor_bottom"]:
+		assert_false((shadow.get("props", {}) as Dictionary).has(key),
+			"the instance leaves the component's " + key + " alone")
+	var comp := Census.entry(Census.of(_SPLASH_SHADOW_SCENE), ".")
+	assert_eq(Census.prop(comp, "show_behind_parent", false), true, "it draws behind the speaker")
+	assert_eq(float(Census.prop(comp, "anchor_right", 0.0)), 1.0, "Full Rect: right")
+	assert_eq(float(Census.prop(comp, "anchor_bottom", 0.0)), 1.0, "Full Rect: bottom")
+	assert_eq(int(Census.prop(comp, "texture_filter", 0)), CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+		"the shader's textureLod reads mips")
+	assert_eq((Census.prop(comp, "material") as Material).resource_path,
+		"res://Scripts/Shaders/soft_ao_shadow_material.tres", "the soft AO material")
+	var src := FileAccess.get_file_as_string("res://Scripts/Minigames/UI/MinigameWinScreen.gd")
+	var start := src.find("
+func configure(")
+	var body := src.substr(start, src.find("
+func ", start + 1) - start)
+	assert_true(start != -1 and body.contains("shadow.follow(splash)"), "configure() points the shadow at the speaker")
+	assert_true(body.find("shadow.follow(splash)") > body.find("splash.texture ="),
+		"and does it after the splash texture changes")
+
+
+## Only the speaker blooms (2026-10-01): GlowCopy (a fresh copy of the whole
+## viewport, because the Blur before it already read the screen) and Glow (a
+## ScreenGlow at threshold 0.85, intensity 0.4) sit right after Splash, and
+## Bubble and Card come after Glow so the UI never blooms.
+func test_the_splash_blooms_and_the_ui_does_not() -> void:
+	var c := Census.of(_SCREEN)
+	var kids := Census.children_of(c, "Root")
+	for want in ["Splash", "GlowCopy", "Glow", "Bubble", "Card"]:
+		assert_true(kids.has(want), "Root has " + want)
+	assert_eq(kids.find("GlowCopy") - kids.find("Splash"), 1, "GlowCopy sits right after Splash")
+	assert_eq(kids.find("Glow") - kids.find("GlowCopy"), 1, "Glow sits right after GlowCopy")
+	assert_true(kids.find("Bubble") > kids.find("Glow"), "the bubble draws over the bloom")
+	assert_true(kids.find("Card") > kids.find("Glow"), "the card draws over the bloom")
+	var copy := Census.entry(c, "Root/GlowCopy")
+	assert_eq(copy.get("type"), "BackBufferCopy", "GlowCopy is a BackBufferCopy")
+	assert_eq(int(Census.prop(copy, "copy_mode", 1)), BackBufferCopy.COPY_MODE_VIEWPORT,
+		"it copies the whole viewport")
+	var glow := Census.entry(c, "Root/Glow")
+	assert_eq(glow.get("instance"), "res://Scenes/Look/ScreenGlow.tscn", "Glow is a ScreenGlow")
+	assert_eq(float(Census.prop(glow, "threshold", 0.7)), 0.85, "the bloom's threshold")
+	assert_eq(float(Census.prop(glow, "intensity", 0.6)), 0.4, "the bloom's intensity")
 
 
 ## Measured off minigamewinscreen_mockup.jpeg (spec section 3): every piece

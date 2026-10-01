@@ -18,6 +18,9 @@ const GRADE_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_cutout.
 const GRADE_FACE_MATERIAL := "res://Scripts/Shaders/illustration_grade_face.tres"
 ## The Lobby desks' cutout grade, lit from the upper right (2026-09-24).
 const GRADE_LOBBY_CUTOUT_MATERIAL := "res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"
+## The speaker splashes' own grade (2026-10-01, owner's pick): softer, brighter
+## and warmer than the four above, with the rim and AO off.
+const GRADE_SPLASH_MATERIAL := "res://Scripts/Shaders/illustration_grade_splash.tres"
 
 ## Every node that wears the grade, by scene. These are painted plates only.
 const GRADED := {
@@ -305,10 +308,12 @@ func test_the_bloom_threshold_stays_above_the_paper() -> void:
 
 # ── The illustration grade ───────────────────────────────────────────────────
 
-## One shader, four materials: the cutouts wear
+## One shader, five materials: the cutouts wear
 ## illustration_grade_cutout.tres, which adds AO and a rim (the Lobby's desks
-## wear its upper-right-lit twin, and its faces a third), and the full-bleed
-## backdrops wear the plain one. Both are the shared resources -- what this
+## wear its upper-right-lit twin, and its faces a third), the two speaker
+## splashes wear illustration_grade_splash.tres (2026-10-01: the owner's
+## softer, warmer grade, no rim or AO), and the full-bleed
+## backdrops wear the plain one. All are the shared resources -- what this
 ## still forbids is a per-node copy, which would strand a plate the next time
 ## the grade is tuned. Which plate gets which is tested in illustration_ao.
 func test_every_graded_node_shares_a_shared_material() -> void:
@@ -316,6 +321,8 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
 	var face: Material = load("res://Scripts/Shaders/illustration_grade_face.tres")
 	var lobby: Material = load(GRADE_LOBBY_CUTOUT_MATERIAL)
+	var splash: Material = load(GRADE_SPLASH_MATERIAL)
+	assert_true(splash is ShaderMaterial, "the splash grade material must exist")
 	assert_true(lobby is ShaderMaterial, "the Lobby cutout grade material must exist")
 	assert_true(plain is ShaderMaterial, "the grade material must exist")
 	assert_true(cutout is ShaderMaterial, "the cutout grade material must exist")
@@ -329,8 +336,8 @@ func test_every_graded_node_shares_a_shared_material() -> void:
 			if node == null:
 				continue
 			assert_true(node.material == plain or node.material == cutout
-					or node.material == face or node.material == lobby,
-				"%s/%s must wear one of the four shared grades, not a copy"
+					or node.material == face or node.material == lobby or node.material == splash,
+				"%s/%s must wear one of the five shared grades, not a copy"
 					% [scene_path, node_path])
 
 
@@ -341,11 +348,12 @@ func test_the_grade_never_lands_on_a_ui_node() -> void:
 	var plain: Material = load(GRADE_MATERIAL)
 	var cutout: Material = load("res://Scripts/Shaders/illustration_grade_cutout.tres")
 	var lobby: Material = load(GRADE_LOBBY_CUTOUT_MATERIAL)
+	var splash: Material = load(GRADE_SPLASH_MATERIAL)
 	var offenders := PackedStringArray()
 	for scene_path in GRADED:
 		var root := (load(scene_path) as PackedScene).instantiate()
 		track(root)
-		_collect_ui_offenders(root, [plain, cutout, lobby], scene_path, offenders)
+		_collect_ui_offenders(root, [plain, cutout, lobby, splash], scene_path, offenders)
 	assert_eq(offenders.size(), 0,
 		"the grade is for painted art only; found it on UI: " + ", ".join(offenders))
 
@@ -432,7 +440,9 @@ const GRADE_SATURATION := 0.865
 
 
 ## 2026-09-29: the overall colour grade is 15% less saturated (1.0175 x 0.85),
-## on all four materials and on the shader's own default.
+## on all four materials and on the shader's own default. The splash material
+## is exempt from this one (the owner picked its own, softer values on
+## 2026-10-01); test_the_splash_grade_is_the_owners_pick pins them instead.
 func test_the_grade_is_fifteen_percent_less_saturated() -> void:
 	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_LOBBY_CUTOUT_MATERIAL,
 			GRADE_FACE_MATERIAL]:
@@ -447,14 +457,33 @@ func test_the_grade_is_fifteen_percent_less_saturated() -> void:
 		"and so does the shader's own default")
 
 
+## The splash grade's colour values, the owner's picks from the live previews
+## (2026-10-01): softer (saturation 0.78, contrast 0.9), brighter (exposure
+## 1.16) and warmer (tint 1.08 / 1.005 / 0.875) than the shared grades. Worn
+## only by the event dialogue's and the win screen's speaker splashes. Change
+## them only on the owner's say-so.
+func test_the_splash_grade_is_the_owners_pick() -> void:
+	var mat: ShaderMaterial = load(GRADE_SPLASH_MATERIAL)
+	assert_true(mat != null, "the splash grade material must exist")
+	if mat == null:
+		return
+	assert_true(is_equal_approx(mat.get_shader_parameter("saturation"), 0.78), "saturation")
+	assert_true(is_equal_approx(mat.get_shader_parameter("contrast"), 0.9), "contrast")
+	assert_true(is_equal_approx(mat.get_shader_parameter("exposure"), 1.16), "exposure")
+	var tint: Color = mat.get_shader_parameter("tint")
+	assert_true(is_equal_approx(tint.r, 1.08) and is_equal_approx(tint.g, 1.005) and is_equal_approx(tint.b, 0.875),
+		"tint is the warm 1.08 / 1.005 / 0.875, not %s" % tint)
+
+
 func test_the_grade_stays_subtle() -> void:
-	# All three materials: plain, cutout and face share the same
+	# All the materials: plain, cutout, face and splash share the same
 	# five colour uniforms (test_illustration_ao.gd's
-	# test_the_two_materials_agree_on_the_shared_grade pins that they must),
-	# so the cutout material could otherwise be pushed past these ceilings
-	# unnoticed while this test kept watching only the plain one.
+	# test_the_two_materials_agree_on_the_shared_grade pins that the first
+	# four must agree; the splash is the owner's own softer grade and sits
+	# under these ceilings by pick), so a material could otherwise be pushed
+	# past them unnoticed while this test kept watching only the plain one.
 	for path in [GRADE_MATERIAL, GRADE_CUTOUT_MATERIAL, GRADE_LOBBY_CUTOUT_MATERIAL,
-			GRADE_FACE_MATERIAL]:
+			GRADE_FACE_MATERIAL, GRADE_SPLASH_MATERIAL]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:

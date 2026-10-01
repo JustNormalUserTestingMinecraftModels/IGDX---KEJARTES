@@ -43,6 +43,7 @@ const FADE_OUT_TIME := 0.25
 @onready var root: Control = $Root
 @onready var blur: ColorRect = $Root/Blur
 @onready var splash: TextureRect = $Root/Splash
+@onready var shadow: SplashShadow = $Root/Splash/Shadow
 @onready var bubble: Control = $Root/Bubble
 @onready var line_label: Label = $Root/Bubble/Panel/Line
 @onready var card: PanelContainer = $Root/Card
@@ -74,6 +75,7 @@ func configure(stars: int, speaker_path: String, line: String, category: String,
 	_armed = false
 	splash.texture = load(speaker_path) if speaker_path != "" and ResourceLoader.exists(speaker_path) else null
 	splash.visible = splash.texture != null
+	shadow.follow(splash)
 	line_label.text = line
 	var i := 0
 	for star in star_row.get_children():

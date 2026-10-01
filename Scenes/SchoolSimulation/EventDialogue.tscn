@@ -5,8 +5,8 @@
 [ext_resource type="Material" path="res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres" id="3_qxown"]
 [ext_resource type="Texture2D" uid="uid://buqajwg3j13h2" path="res://Assets/Images/EventDialogue/splash_mom.png" id="4_5xvqv"]
 [ext_resource type="Texture2D" uid="uid://t3h8jmypjfe8" path="res://Assets/Images/EventDialogue/calendar_badge.png" id="5_esryj"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="illus_grade_cut"]
-[ext_resource type="PackedScene" uid="uid://dbpxkqo7wrn8e" path="res://Scenes/UI/PaperShadow.tscn" id="paper_shadow"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_splash.tres" id="illus_grade_cut"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SplashShadow.tscn" id="splash_shadow"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/ScreenSaturation.tscn" id="look_sat"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/LightPool.tscn" id="look_pool"]
 [ext_resource type="PackedScene" path="res://Scenes/Look/SunShafts.tscn" id="look_shafts"]
@@ -77,15 +77,8 @@ texture = ExtResource("4_5xvqv")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Shadow" parent="World/Room/Splash" unique_id=802972880 instance=ExtResource("paper_shadow")]
-layout_mode = 0
-shadow_texture = ExtResource("4_5xvqv")
-shadow_offset = Vector2(0, 0)
-shadow_scale = 1.02
-shadow_alpha = 0.7
-follow_parent_rect = true
-shadow_stretch_mode = 5
-blur = 4.0
+[node name="Shadow" parent="World/Room/Splash" unique_id=802972880 instance=ExtResource("splash_shadow")]
+texture = ExtResource("4_5xvqv")
 
 [node name="GradeCopy" type="BackBufferCopy" parent="World/Room"]
 copy_mode = 2

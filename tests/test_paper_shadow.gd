@@ -178,6 +178,10 @@ func test_a_custom_blur_duplicates_the_material_instead_of_mutating_it() -> void
 ## everything else in this dict. They were briefly taken out on 2026-09-23 at
 ## the user's call, then came back the same day as outer AO instead of a drop
 ## shadow -- see _OUTER_AO below, which holds the values that ship.
+##
+## The event dialogue's speaker splash is NOT in here any more (2026-10-01): it
+## now casts a SplashShadow (a soft ambient-occlusion component that follows
+## whoever speaks), not a PaperShadow. tests/test_event_dialogue.gd pins it.
 const _CONTACT_SHADOWS := {
 	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
@@ -185,7 +189,6 @@ const _CONTACT_SHADOWS := {
 	],
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman"],
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
-	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
 }
 
 
@@ -225,6 +228,10 @@ func test_the_flat_elements_now_cast_a_shadow() -> void:
 ##
 ## A deliberate reversal, not an accident. The design doc's section 6 has the
 ## argument in full.
+##
+## The event dialogue's speaker splash left this roster on 2026-10-01: it now
+## casts a SplashShadow, not a PaperShadow (tests/test_event_dialogue.gd pins
+## it), so it has no PaperShadow offset or strength to check here.
 const _OUTER_AO := {
 	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
@@ -232,15 +239,9 @@ const _OUTER_AO := {
 	],
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman"],
 	"res://Scenes/AturJadwal/AturJadwal.tscn": ["BGHari"],
-	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
 }
 const _OUTER_AO_ALPHA := 0.34
 const _OUTER_AO_BLUR := 1.2
-## Scenes whose outer AO keeps the zero offset but is denser and wider than the
-## shared strength, so it shows: EventDialogue's speaker, whose 0.34 / 1.2 shadow
-## was a one-pixel hairline against its photographic backdrop (2026-09-29).
-## test_event_dialogue pins its own values.
-const _OUTER_AO_OWN_STRENGTH := ["res://Scenes/SchoolSimulation/EventDialogue.tscn"]
 
 
 func test_the_contact_shadows_are_outer_ao_not_drop_shadows() -> void:
@@ -254,8 +255,6 @@ func test_the_contact_shadows_are_outer_ao_not_drop_shadows() -> void:
 				continue
 			assert_eq(shadow.get("shadow_offset"), Vector2.ZERO,
 				"%s/%s: an offset makes it a cast shadow again" % [scene_path, node_path])
-			if _OUTER_AO_OWN_STRENGTH.has(scene_path):
-				continue
 			assert_true(is_equal_approx(shadow.get("shadow_alpha"), _OUTER_AO_ALPHA),
 				"%s/%s: outer AO alpha must match the rest of the game" % [scene_path, node_path])
 			assert_true(is_equal_approx(shadow.get("blur"), _OUTER_AO_BLUR),
@@ -280,29 +279,32 @@ func test_the_paper_shadows_keep_their_offset() -> void:
 				"%s/%s: a flying paper still casts a real shadow" % [scene_path, paper_name])
 
 
-## An anchor-sized element takes its rect from the screen, so its shadow
-## cannot carry a baked size. Anchors cannot solve it either -- loading an
-## instance resets the shadow ROOT's rect to zero, so the Silhouette's anchors
-## would resolve against nothing. follow_parent_rect reads the parent's size
-## instead. EventDialogue's Splash was Full Rect until 2026-09-25; it is now a
-## 1920-tall box hung off the bottom edge that still stretches across the
-## screen's width, so the reason stands.
+## A Full Rect element takes its rect from its container or the screen, so its
+## shadow cannot carry a baked size. Anchors cannot solve it either -- loading
+## an instance resets the shadow ROOT's rect to zero, so the Silhouette's
+## anchors would resolve against nothing. follow_parent_rect reads the parent's
+## size instead. The one PaperShadow user left that needs it is AmplopCard's
+## envelope Body, Full Rect inside its Bob container. (EventDialogue's speaker
+## splash used to be this test's subject; since 2026-10-01 it casts a
+## SplashShadow, whose own Full Rect anchors do the job -- see
+## tests/test_splash_shadow.gd.)
 func test_a_full_rect_element_gets_a_shadow_that_follows_its_size() -> void:
-	var root := (load("res://Scenes/SchoolSimulation/EventDialogue.tscn") as PackedScene).instantiate()
+	var root := (load("res://Scenes/LevelSelect/AmplopCard.tscn") as PackedScene).instantiate()
 	track(root)
-	var splash := root.get_node_or_null("World/Room/Splash") as TextureRect
-	assert_true(splash != null, "Splash is gone")
-	if splash == null:
+	var body := root.get_node_or_null("Bob/Body") as TextureRect
+	assert_true(body != null, "the envelope Body is gone")
+	if body == null:
 		return
-	assert_eq(Vector2(splash.anchor_left, splash.anchor_right), Vector2(0, 1),
-		"Splash stretches across the screen's width, which is what makes this necessary")
-	var shadow := splash.get_node_or_null("Shadow") as Control
-	assert_true(shadow != null, "Splash has no shadow")
+	assert_eq(Vector4(body.anchor_left, body.anchor_top, body.anchor_right, body.anchor_bottom),
+		Vector4(0, 0, 1, 1), "Body is Full Rect, which is what makes this necessary")
+	var shadow := body.get_node_or_null("Shadow") as Control
+	assert_true(shadow != null, "Body has no shadow")
 	if shadow == null:
 		return
+	assert_eq(shadow.scene_file_path, _TEMPLATE, "its shadow is the shared PaperShadow template")
 	assert_true(shadow.get("follow_parent_rect"),
 		"a Full Rect element's shadow must take its size from the parent")
-	assert_eq(shadow.get("shadow_stretch_mode"), splash.stretch_mode,
+	assert_eq(shadow.get("shadow_stretch_mode"), body.stretch_mode,
 		"the shadow must fill its rect the same way its element does, or the two "
 			+ "diverge the moment the rect stops matching the texture's aspect")
 

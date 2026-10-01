@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3]
+
+[ext_resource type="Shader" path="res://Scripts/Shaders/soft_ao_shadow.gdshader" id="1_ao"]
+
+[resource]
+shader = ExtResource("1_ao")
+shader_parameter/near_lod = 4.5
+shader_parameter/far_lod = 7.0
+shader_parameter/near_weight = 0.4
+shader_parameter/shadow_color = Color(0.12, 0.07, 0.03, 0.65)

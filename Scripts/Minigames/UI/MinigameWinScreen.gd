@@ -43,6 +43,8 @@ const FADE_OUT_TIME := 0.25
 @onready var root: Control = $Root
 @onready var blur: ColorRect = $Root/Blur
 @onready var splash: TextureRect = $Root/Splash
+@onready var shadow: SplashShadow = $Root/Splash/Shadow
+@onready var glow: CanvasItem = $Root/Glow
 @onready var bubble: Control = $Root/Bubble
 @onready var line_label: Label = $Root/Bubble/Panel/Line
 @onready var card: PanelContainer = $Root/Card
@@ -74,6 +76,7 @@ func configure(stars: int, speaker_path: String, line: String, category: String,
 	_armed = false
 	splash.texture = load(speaker_path) if speaker_path != "" and ResourceLoader.exists(speaker_path) else null
 	splash.visible = splash.texture != null
+	shadow.follow(splash)
 	line_label.text = line
 	var i := 0
 	for star in star_row.get_children():
@@ -97,7 +100,7 @@ func arm_buttons() -> void:
 ## Every piece the reveal brings in, hidden and waiting. play() calls it
 ## first; a test calls it to check nothing shows before its turn.
 func hide_for_reveal() -> void:
-	for n in [blur, card, splash, bubble, lobby_button, lanjut_button,
+	for n in [blur, glow, card, splash, bubble, lobby_button, lanjut_button,
 			skill_chip.icon_box, energy_chip.icon_box, skill_chip.value, energy_chip.value]:
 		n.modulate.a = 0.0
 	for star in star_row.get_children():
@@ -128,6 +131,7 @@ func _reveal(step: StringName) -> void:
 			card.modulate.a = 1.0
 			var rise := create_tween().set_parallel(true)
 			rise.tween_property(blur, "modulate:a", 1.0, CARD_RISE_TIME)
+			rise.tween_property(glow, "modulate:a", 1.0, CARD_RISE_TIME)
 			rise.tween_property(card, "position:y", rest_y, CARD_RISE_TIME) \
 				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			await rise.finished

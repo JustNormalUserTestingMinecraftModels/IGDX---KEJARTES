@@ -23,18 +23,22 @@ const CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout.tres"
 const FACE := "res://Scripts/Shaders/illustration_grade_face.tres"
 ## The Lobby's desks: the cutout grade lit from the upper right (2026-09-24).
 const LOBBY_CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"
+## The speaker splashes' own grade (2026-10-01, owner's pick): softer, brighter
+## and warmer than the shared grades, with the rim and the inner AO off. The
+## SplashShadow's soft ambient occlusion replaces the shading those two gave.
+const SPLASH := "res://Scripts/Shaders/illustration_grade_splash.tres"
 
 
 func suite_name() -> String:
 	return "illustration_ao"
 
 
-## Two materials, one shader. If these ever diverge, a change to the grade
-## silently stops reaching half the game.
+## Every grade material shares the one shader. If these ever diverge, a change
+## to the grade silently stops reaching part of the game.
 func test_both_materials_share_the_one_shader() -> void:
 	var shader: Shader = load(SHADER)
 	assert_true(shader != null, "the grade shader must exist")
-	for path in [PLAIN, CUTOUT, LOBBY_CUTOUT, FACE]:
+	for path in [PLAIN, CUTOUT, LOBBY_CUTOUT, FACE, SPLASH]:
 		var mat: ShaderMaterial = load(path)
 		assert_true(mat != null, "%s must exist" % path)
 		if mat == null:
@@ -47,6 +51,11 @@ func test_both_materials_share_the_one_shader() -> void:
 ## the other silently keeps the old look, so 21 of the 30 graded plates (the
 ## cutouts) would drift from the other 9 (the backdrops). This is the test
 ## that would catch that drift.
+##
+## The splash material is deliberately NOT in this parity list: the owner
+## picked a softer, brighter, warmer grade for the speaker splashes on
+## 2026-10-01 (saturation, contrast, exposure and tint all differ on purpose).
+## Its values are pinned instead by test_the_splash_grade_is_the_owners_pick.
 func test_the_two_materials_agree_on_the_shared_grade() -> void:
 	var plain: ShaderMaterial = load(PLAIN)
 	assert_true(plain != null, "the plain material must exist")
@@ -89,6 +98,35 @@ func test_the_cutout_material_has_both_effects_on() -> void:
 		return
 	assert_true(mat.get_shader_parameter("ao_strength") > 0.0, "AO must be on for cutouts")
 	assert_true(mat.get_shader_parameter("rim_strength") > 0.0, "rim must be on for cutouts")
+
+
+## The splash grade turns the rim and the inner AO off (2026-10-01, owner's
+## pick: no hard rim or edge shading on a speaker). Its depth comes from the
+## SplashShadow's soft ambient occlusion instead, so a stray rim or AO value
+## here would double up on that shade.
+func test_the_splash_material_keeps_rim_and_ao_off() -> void:
+	var mat: ShaderMaterial = load(SPLASH)
+	assert_true(mat != null, "the splash material must exist")
+	if mat == null:
+		return
+	assert_true(is_zero_approx(mat.get_shader_parameter("rim_strength")),
+		"the splash grade has no rim light")
+	assert_true(is_zero_approx(mat.get_shader_parameter("ao_strength")),
+		"the splash grade has no inner AO; the SplashShadow does that job")
+
+
+## The splash grade's colour values are the owner's picks from the live
+## previews (2026-10-01): saturation 0.78, contrast 0.9, exposure 1.16 and a
+## warm tint. Change them only on the owner's say-so.
+func test_the_splash_grade_is_the_owners_pick() -> void:
+	var mat: ShaderMaterial = load(SPLASH)
+	assert_true(mat != null, "the splash material must exist")
+	if mat == null:
+		return
+	assert_true(is_equal_approx(mat.get_shader_parameter("saturation"), 0.78), "saturation")
+	assert_true(is_equal_approx(mat.get_shader_parameter("contrast"), 0.9), "contrast")
+	assert_true(is_equal_approx(mat.get_shader_parameter("exposure"), 1.16), "exposure")
+	assert_true((mat.get_shader_parameter("tint") as Color).is_equal_approx(Color(1.08, 1.005, 0.875)), "tint")
 
 
 ## The radius is in SCREEN pixels, via fwidth. A radius in source texels would
@@ -226,9 +264,6 @@ func test_the_lobby_cutout_differs_only_in_its_light() -> void:
 ## five taps per pixel for nothing. Percentages are transparent pixels.
 const CUTOUTS := {
 	"res://Scenes/Koperasi/Koperasi.tscn": ["World/Room/Herman", "World/Room/Foreground"],
-	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
-	# 2026-09-25: the minigame win screen's speaker, the same splash art.
-	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 	"res://Scenes/Minigames/SeniBudaya/DancerRig.tscn": ["Body", "Head"],
 	"res://Scenes/Minigames/Olahraga/MainBola.tscn": ["Goalie/GFX", "Ball/GFX"],
 	"res://Scenes/Minigames/Olahraga/Badminton.tscn": [
@@ -243,6 +278,15 @@ const CUTOUTS := {
 		"Stage/Students/Student1", "Stage/Students/Student2",
 		"Stage/Students/Student3", "Stage/Students/Student4",
 	],
+}
+
+## The speaker splashes (2026-10-01): cutouts too, but they wear the splash
+## grade, whose rim and AO are off by the owner's pick. They used to sit in
+## CUTOUTS (the event dialogue's since the AO pass, the minigame win screen's
+## since 2026-09-25, the same splash art).
+const SPLASHES := {
+	"res://Scenes/SchoolSimulation/EventDialogue.tscn": ["World/Room/Splash"],
+	"res://Scenes/Minigames/UI/MinigameWinScreen.tscn": ["Root/Splash"],
 }
 
 ## Full-bleed. These keep the material they have always worn.
@@ -456,6 +500,22 @@ func test_every_cutout_wears_the_cutout_material() -> void:
 				"%s/%s must wear the cutout grade" % [scene_path, node_path])
 
 
+## The speaker splashes wear the splash grade, never the cutout one.
+func test_every_splash_wears_the_splash_material() -> void:
+	var splash: Material = load(SPLASH)
+	assert_true(splash is ShaderMaterial, "the splash grade material must exist")
+	for scene_path in SPLASHES:
+		var root := (load(scene_path) as PackedScene).instantiate()
+		track(root)
+		for node_path in SPLASHES[scene_path]:
+			var node := root.get_node_or_null(NodePath(node_path)) as CanvasItem
+			assert_true(node != null, "%s is missing %s" % [scene_path, node_path])
+			if node == null:
+				continue
+			assert_eq(node.material, splash,
+				"%s/%s must wear the splash grade (soft, warm, no rim or AO)" % [scene_path, node_path])
+
+
 func test_every_backdrop_keeps_the_plain_material() -> void:
 	var plain: Material = load(PLAIN)
 	for scene_path in BACKDROPS:
@@ -470,8 +530,8 @@ func test_every_backdrop_keeps_the_plain_material() -> void:
 				"%s/%s is full-bleed and must not pay for AO" % [scene_path, node_path])
 
 
-## The two dicts here and look_layer's GRADED describe the same forty-two plates
-## from two angles. This checks that agreement: a plate added to one dict and
+## The dicts here (CUTOUTS, SPLASHES, LOBBY_DESKS, FACES, BACKDROPS) and
+## look_layer's GRADED describe the same forty-two plates from two angles. This checks that agreement: a plate added to one dict and
 ## forgotten in the other fails here. It does NOT notice a plate that was
 ## given a grade material in a .tscn but added to neither list -- that plate
 ## is invisible to this test too. The assert_eq(counted.size(), 42, ...) below
@@ -488,7 +548,7 @@ func test_the_census_covers_every_graded_plate_exactly_once() -> void:
 		return
 
 	var counted := {}
-	for source in [CUTOUTS, LOBBY_DESKS, FACES, BACKDROPS]:
+	for source in [CUTOUTS, SPLASHES, LOBBY_DESKS, FACES, BACKDROPS]:
 		for scene_path in source:
 			for node_path in source[scene_path]:
 				var key := "%s::%s" % [scene_path, node_path]

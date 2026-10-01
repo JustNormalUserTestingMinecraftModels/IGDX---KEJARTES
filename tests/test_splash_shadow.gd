@@ -64,7 +64,9 @@ func test_follow_copies_the_texture_and_the_stretch_mode() -> void:
 	var shadow := SplashShadow.new()
 	track(shadow)
 	var first := _splash(Color.RED, TextureRect.STRETCH_KEEP_ASPECT_COVERED)
+	first.flip_h = true
 	shadow.follow(first)
+	assert_true(shadow.flip_h, "a mirrored speaker casts a mirrored shade")
 	assert_eq(shadow.texture, first.texture, "the shade wears the speaker's art")
 	assert_eq(shadow.stretch_mode, TextureRect.STRETCH_KEEP_ASPECT_COVERED, "and fills its rect the same way")
 	var second := _splash(Color.BLUE, TextureRect.STRETCH_KEEP_ASPECT_CENTERED)

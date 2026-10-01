@@ -143,6 +143,8 @@ from the debug overlay's **Look** page, then write the landed value into the
 `.tres`. That bloom reaches only canvas layers ≤ −1: the room lives in the
 Lobby's `World` CanvasLayer, and UI stays on layer 0, out of the glow.
 
+**Speaker splashes are the exception.** The event dialogue's and the minigame win screen's speaker splash wear `illustration_grade_splash.tres`: the same shader with the owner's 2026-10-01 grade (saturation 0.78, contrast 0.90, exposure 1.16, warm tint 1.08 / 1.005 / 0.875) and rim and inner AO off, because on a speaker the rim read as a hard outline. Their shade comes from `SplashShadow` (soft_ao_shadow.gdshader) behind them instead. The census lists them as SPLASH plates.
+
 **The Lobby look on other screens** (spec
 `docs/superpowers/specs/2026-09-28-lobby-look-everywhere-design.md`): the
 backdrop and its light move into a `World` CanvasLayer at −1 holding one

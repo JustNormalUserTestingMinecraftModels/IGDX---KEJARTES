@@ -326,7 +326,7 @@ func test_before_the_reveal_everything_waits() -> void:
 	var s := _screen()
 	s.configure(3, _CITRA, "x", "Akademis", {"stat_delta": 8.0, "energy_delta": -5.0})
 	s.hide_for_reveal()
-	for n in [s.blur, s.card, s.splash, s.bubble, s.skill_chip.icon_box, s.energy_chip.icon_box, s.lobby_button, s.lanjut_button]:
+	for n in [s.blur, s.glow, s.card, s.splash, s.bubble, s.skill_chip.icon_box, s.energy_chip.icon_box, s.lobby_button, s.lanjut_button]:
 		assert_eq(n.modulate.a, 0.0, "%s waits for its turn" % n.name)
 	for star in s.star_row.get_children():
 		assert_eq(star.modulate.a, 0.0, "%s waits for its turn" % star.name)

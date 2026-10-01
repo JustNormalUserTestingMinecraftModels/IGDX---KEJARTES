@@ -83,9 +83,8 @@ const TARGETS := {
 	"res://Assets/Images/Skins/Shinta/splash_shinta_skin1.png": 1.52,
 	"res://Assets/Images/Skins/Thea/splash_thea_skin1.png": 1.52,
 	# The three EventDialogue speaker splashes (2026-10-01): Mom and the two
-	# teachers. The SplashShadow's soft ambient occlusion (soft_ao_shadow.gdshader)
-	# reads their mip chain through textureLod, so without one the shade is not
-	# blurred at all. 1.0 because they draw near 1:1; nothing asserts the number.
+	# teachers. Not downscale offenders: SplashShadow's soft AO shader samples their mip
+	# chain (textureLod), so they must keep it at any ratio. Do not prune by ratio.
 	"res://Assets/Images/EventDialogue/splash_mom.png": 1.0,
 	"res://Assets/Images/EventDialogue/splash_gurupenjas.png": 1.0,
 	"res://Assets/Images/EventDialogue/splash_gurusenibudaya.png": 1.0,

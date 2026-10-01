@@ -18,8 +18,10 @@ extends TextureRect
 ## silhouette.)
 
 
-## Takes `source`'s texture and stretch mode, so the shade matches the art
-## the source shows now.
+## Takes `source`'s texture, stretch mode and flips, so the shade matches the
+## art the source shows now.
 func follow(source: TextureRect) -> void:
 	texture = source.texture
 	stretch_mode = source.stretch_mode
+	flip_h = source.flip_h
+	flip_v = source.flip_v

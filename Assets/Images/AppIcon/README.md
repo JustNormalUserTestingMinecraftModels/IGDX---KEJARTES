@@ -17,9 +17,10 @@ transparent canvas; a full-bleed foreground shows only hair.
 
 **`export_presets.cfg` is gitignored** (it holds the keystore settings), so
 each machine that exports must set the four `launcher_icons/*` slots itself:
-Project > Export > Android > Launcher Icons. Left empty, Godot falls back to
-`app_icon.png` for the main and foreground layers, and the foreground is then
-cropped to the hair.
+Project > Export > Android > Launcher Icons. Don't rely on an empty slot's
+fallback: with the monochrome slot empty, a 2026-10-01 export shipped the
+template's Godot robot there. To check a build, unzip the APK and look at
+`res/mipmap-xxxhdpi-v4/icon*.webp`.
 
 Android caches launcher icons: uninstall the old APK before installing a new
 one to see a change.

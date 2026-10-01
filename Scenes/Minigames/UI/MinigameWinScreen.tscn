@@ -2,11 +2,13 @@
 
 [ext_resource type="Script" uid="uid://bat0vei6vps3u" path="res://Scripts/Minigames/UI/MinigameWinScreen.gd" id="1_win"]
 [ext_resource type="Material" path="res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres" id="2_blur"]
-[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_cutout.tres" id="3_cut"]
+[ext_resource type="Material" path="res://Scripts/Shaders/illustration_grade_splash.tres" id="3_cut"]
 [ext_resource type="Texture2D" uid="uid://chs5y1k0f18x2" path="res://Assets/Images/Shop/UI/chat_bubble_tail.svg" id="4_tail"]
 [ext_resource type="PackedScene" uid="uid://bh43jlmr0mvth" path="res://Scenes/Minigames/UI/ResultStar.tscn" id="5_star"]
 [ext_resource type="PackedScene" path="res://Scenes/Minigames/UI/MinigameWinStat.tscn" id="6_stat"]
 [ext_resource type="PackedScene" uid="uid://b1kjq7vxnf2ca" path="res://Scenes/Minigames/UI/ConfettiFireworks.tscn" id="7_fw"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/SplashShadow.tscn" id="8_shadow"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/ScreenGlow.tscn" id="9_glow"]
 
 [node name="MinigameWinScreen" type="CanvasLayer" unique_id=1709414837]
 process_mode = 3
@@ -47,6 +49,15 @@ grow_vertical = 0
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 5
+
+[node name="Shadow" parent="Root/Splash" instance=ExtResource("8_shadow")]
+
+[node name="GlowCopy" type="BackBufferCopy" parent="Root"]
+copy_mode = 2
+
+[node name="Glow" parent="Root" instance=ExtResource("9_glow")]
+threshold = 0.85
+intensity = 0.4
 
 [node name="Bubble" type="Control" parent="Root" unique_id=476304184]
 layout_mode = 1

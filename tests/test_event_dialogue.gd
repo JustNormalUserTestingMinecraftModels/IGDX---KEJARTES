@@ -21,6 +21,10 @@ const _MINIGAME_SCENES := [
 	"res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn",
 ]
 const _THEA_SPLASH := "res://Assets/Images/SplashArtMurid/splash_thea.png"
+## The soft-AO shadow component the speaker splash carries as its first child.
+const _SPLASH_SHADOW_SCENE := "res://Scenes/UI/SplashShadow.tscn"
+## The material that component wears, authored on its root.
+const _SOFT_AO_MATERIAL := "res://Scripts/Shaders/soft_ao_shadow_material.tres"
 
 
 func suite_name() -> String:
@@ -216,6 +220,7 @@ func test_open_dresses_the_screen() -> void:
 	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
 	var d = _dialogue("BuatBatik", thea)
 	assert_eq(d.splash.texture.resource_path, _THEA_SPLASH, "the student's own splash")
+	assert_eq(d.shadow.texture, d.splash.texture, "the shadow follows the speaker's art")
 	assert_true(d.splash.visible and d.blur.visible)
 	assert_eq(d.background.texture.resource_path, EventDialogueCatalog.DEFAULT_BACKGROUND)
 	assert_eq(d.week_label.text, "2/6")
@@ -226,6 +231,7 @@ func test_nama_reaches_the_screen() -> void:
 	var d = _dialogue("nasi_kotak", _student("Thea", "SeniBudaya"))
 	assert_true(d.line_label.text.contains("Kudengar Thea"), d.line_label.text)
 	assert_eq(d.splash.texture.resource_path, EventDialogueCatalog.SPLASH_MOM)
+	assert_eq(d.shadow.texture, d.splash.texture, "Mom's shadow is Mom's silhouette")
 
 
 ## The screen shows the line pick_line drew for the student (2026-09-29
@@ -367,23 +373,35 @@ func test_the_dialogue_keeps_seventy_percent_of_its_colour() -> void:
 		"the knob reaches the shader")
 
 
-## The speaker's shadow is a visible contact glow (2026-09-29). As plain outer
-## AO (alpha 0.34, blur 1.2, scale 1) it sat exactly behind the art and showed
-## as a one-pixel hairline: hiding it changed 0.10% of the frame. Zero offset
-## stays (the 2026-09-23 rule: no drop shadow, the floor darkening where the
-## art occludes it), but this one is denser (0.7), wider (blur 4.0) and 2%
-## larger so it reads against a photographic backdrop. It follows the splash's
-## rect and stretch, so it stays under the art on a tall phone.
-func test_the_speakers_shadow_is_a_visible_contact_glow() -> void:
-	var shadow := Census.entry(Census.of(_SCENE), "World/Room/Splash/Shadow")
-	assert_eq(Census.prop(shadow, "shadow_offset", Vector2.ZERO), Vector2.ZERO,
-		"still outer AO: no drop shadow")
-	assert_true(float(Census.prop(shadow, "shadow_alpha", 0.34)) >= 0.6, "dense enough to read")
-	assert_true(float(Census.prop(shadow, "blur", 1.2)) >= 3.0, "and wide enough to show past the outline")
-	assert_true(float(Census.prop(shadow, "shadow_scale", 1.0)) > 1.0, "a little larger than the art")
-	assert_eq(Census.prop(shadow, "follow_parent_rect", false), true, "it follows the splash's rect")
-	assert_eq(int(Census.prop(shadow, "shadow_stretch_mode", 0)), TextureRect.STRETCH_KEEP_ASPECT_CENTERED,
-		"and its stretch, so the two never diverge")
+## The speaker's shadow is a SplashShadow, the soft ambient-occlusion
+## component (2026-10-01). Its PaperShadow predecessor kept the texture it was
+## authored with, so every speaker stood in front of Mom's silhouette; the
+## component takes whoever speaks now, because open() calls
+## `shadow.follow(splash)` right after it sets the splash. The look (behind
+## its parent, Full Rect, mipmapped filter, the soft AO material) lives on the
+## component's own root, so the instance here must not override it.
+func test_the_speakers_shadow_is_a_soft_ao_that_follows_them() -> void:
+	var c := Census.of(_SCENE)
+	var shadow := Census.entry(c, "World/Room/Splash/Shadow")
+	assert_eq(shadow.get("instance"), _SPLASH_SHADOW_SCENE, "the shadow is a SplashShadow, not a PaperShadow")
+	var kids := Census.children_of(c, "World/Room/Splash")
+	assert_eq(kids.size(), 1, "the splash has just its shadow")
+	assert_eq(kids[0] if kids.size() > 0 else "", "Shadow", "first child, so it draws behind the art")
+	for key in ["show_behind_parent", "texture_filter", "material", "anchor_right", "anchor_bottom"]:
+		assert_false((shadow.get("props", {}) as Dictionary).has(key),
+			"the instance leaves the component's " + key + " alone")
+	var comp := Census.entry(Census.of(_SPLASH_SHADOW_SCENE), ".")
+	assert_eq(Census.prop(comp, "show_behind_parent", false), true, "it draws behind the speaker")
+	assert_eq(float(Census.prop(comp, "anchor_right", 0.0)), 1.0, "Full Rect: right")
+	assert_eq(float(Census.prop(comp, "anchor_bottom", 0.0)), 1.0, "Full Rect: bottom")
+	assert_eq(int(Census.prop(comp, "texture_filter", 0)), CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+		"the shader's textureLod reads mips")
+	assert_eq((Census.prop(comp, "material") as Material).resource_path, _SOFT_AO_MATERIAL, "the soft AO material")
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/EventDialogue.gd")
+	var open_body := _body(src, "open")
+	assert_true(open_body.contains("shadow.follow(splash)"), "open() points the shadow at the speaker it just set")
+	assert_true(open_body.find("shadow.follow(splash)") > open_body.find("splash.texture ="),
+		"and does it after the splash texture changes")
 
 
 # ── theme ────────────────────────────────────────────────────────────────────

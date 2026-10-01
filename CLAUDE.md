@@ -131,7 +131,9 @@ directions by `DISPLAY_ROSTER` in `tests/test_theme_factory.gd` — change
 the roster and `ThemeFactory` together, or the suite fails.
 
 **Illustration plates wear one of two materials** (cutout or backdrop,
-pinned by `tests/test_illustration_ao.gd`); which, the Lobby's lighting and
+pinned by `tests/test_illustration_ao.gd`), except the event dialogue's and
+win screen's speaker splashes, which wear `illustration_grade_splash.tres`
+(owner's softer, warmer grade, no rim); which, the Lobby's lighting and
 live tuning: `style-guide.md`, "Illustration materials".
 
 **The rule: never add a `theme_override_*`.** Use a `ThemeFactory` type

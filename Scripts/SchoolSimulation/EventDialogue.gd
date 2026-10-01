@@ -21,6 +21,7 @@ signal closed(accepted: bool)
 @onready var background: TextureRect = %Background
 @onready var blur: ColorRect = %Blur
 @onready var splash: TextureRect = %Splash
+@onready var shadow: SplashShadow = $World/Room/Splash/Shadow
 @onready var week_label: Label = $Header/Calendar/Text/WeekLabel
 @onready var day_label: Label = $Header/DayBanner/DayLabel
 @onready var dialogue_box: PanelContainer = $DialogueBox
@@ -59,6 +60,7 @@ func open(e: Dictionary, featured: StudentData, week: int, max_weeks: int, day_n
 	var splash_path: String = EventDialogueCatalog.splash_path_for(e, featured, day_name)
 	splash.texture = load(splash_path) if splash_path != "" and ResourceLoader.exists(splash_path) else null
 	splash.visible = splash.texture != null
+	shadow.follow(splash)
 	week_label.text = "%d/%d" % [week, max_weeks]
 	day_label.text = day_name
 	line_label.text = EventDialogueCatalog.fill_line(e.get("line", ""), featured)

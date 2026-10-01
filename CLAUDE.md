@@ -26,7 +26,7 @@ Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
 `TARGET_UPLIFT_BY_GRADE` (ours, paired); `Balance.JUMLAH_MINGGU_KELAS_*` and
 `TARGET_KENAIKAN_KELAS_*` still say 6/12/16 and 15/34/40 but nothing reads them.
 
-**Loop:** **MainMenu (boot)** → LevelSelect (the amplop grade picker, while
+**Loop:** **MainMenu (boot; with a save, ContinuePopup)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →
 **Lobby (hub)** → AturJadwal (assign week; StudentList is its picker) → SchoolDay
 (simulate 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay then
@@ -105,14 +105,18 @@ and `DayOff`→`Istirahat`. Student art goes through `StudentSkins`
 `splash`/`portrait` keys, so the worn skin (`GameState.equipped_skins`) shows;
 event screens and result portraits dress for the day via `splash_for_day`.
 
-Persistence is minimal and deliberate: **only `GameState.inventory`** reaches
-disk (`user://inventory.cfg`, saved by `Transition.change_scene` and on
-quit/pause, loaded by `GameState._ready`), plus achievement
-progress (`user://achievements.cfg`, saved by `Achievements` on every change;
-the debug `RESET_ON_LAUNCH` wipe is in DEBT.md). Roster, money, week,
-grade and schedules are session-scoped by design. **Do not add further
-persistence without being asked.** Debug > General > **🧹 Forget Session** wipes `GameState` and deletes the
-save; the three `*_inventory` functions no-op under `Engine.is_editor_hint()`.
+**Persistence:** the run saves to one file, `user://savegame.cfg`, owned by
+`SaveGame` (`Scripts/Save/SaveGame.gd`; spec
+`docs/superpowers/specs/2026-10-01-save-system-design.md`). It saves around
+hub screens (`Transition` → `SaveGame.checkpoint`), on pause/quit on a hub,
+after every SchoolDay day's result, and at RunResult's exit to StudentCard;
+RunResult's exit to MainMenu deletes it. The title screen's ContinuePopup
+resumes it or wipes the run (`GameState.reset_run()`). **Every GameState
+field is in `SaveGame.SAVE_KEYS` or `EXCLUDED`** (`tests/test_save_game.gd`
+fails otherwise): a new field picks one. Achievements
+(`user://achievements.cfg`) and settings stay their own files. **Do not add
+further persistence without being asked.** Debug > General >
+**🧹 Forget Session** wipes the run, the save and achievements.
 
 `-REFERENCE-/prototype/` is the original prototype — reference only, not built,
 not imported.
@@ -220,8 +224,6 @@ Hard constraints:
    `Scenes/MainMenu/MainMenu.tscn` before trusting a failure.
 
 5. **The suite cannot be run headless** — the bridge is the only way.
-   (`--script` registers no autoloads; running a *scene* makes
-   `Engine.is_editor_hint()` false, so every `@tool` guard fires for real.)
 
 **A full `test_run` writes two tracked files.** The `theme_rebake` suite calls
 `ResourceSaver.save()` in-process, so a full run rebakes
@@ -235,9 +237,7 @@ a full run may just be ordering — re-run that suite alone before believing it.
 
 Many tests are **source-text scans** (`src.contains(...)`) rather than
 behavioral, because a lot of the UI can't be instantiated headlessly. Follow
-that pattern where it's established. Note what that buys and what it does not:
-a scan asserts the value you *set*, so it can confirm you changed what you
-meant to and can never tell you that you changed the wrong things.
+that pattern where it's established.
 
 ## Pull requests
 
@@ -267,8 +267,6 @@ godot-ai`, kill those, leave `Godot_v*.exe` alone. If instead
 log; `source="game"` misses boot-time failures entirely.
 
 ## Working efficiently here
-
-Verification, not implementation, dominates the cost of a session here.
 
 **1. Never play the game to reach a state — seed it.** Debug overlay (`F1`, or
 5 taps top-right) → General → **⚡ Seed Playtest State**: roster approved,
@@ -343,9 +341,8 @@ first (git stores LF either way, `* text=auto eol=lf`).
 `DesignTokens.gd` or similar, `project_run` fails with *Could not find script
 for class* until you `project_manage(op="stop")`, `filesystem_manage(op="scan")`
 and relaunch. Worse, a **changed default on a Resource `@export` needs a full
-editor restart** — `load_default()` keeps serving the cached instance, so the
-new value silently does not take effect and a test asserting it fails for no
-visible reason. Same for a **new** `@export`.
+editor restart** — `load_default()` keeps serving the cached instance. Same
+for a **new** `@export`.
 
 **The bridge is single-client.** Only one client holds the backend at a time. A
 subagent that connects displaces your session and gets nothing itself, and both
@@ -358,10 +355,8 @@ never `git switch` or `git checkout` there on an old reading. Re-check
 `git status` and `git reflog -1` in the same command, or put a second task in a
 worktree.
 
-**A full `test_run` can drop the bridge.** The runner instances scenes test after
-test with no frame between, so deferred layout calls flood the MessageQueue
-and the editor dies. A suite that instances a big scene per test builds it
-once in `suite_setup` instead.
+**A full `test_run` can drop the bridge.** A suite that instances a big scene
+per test builds it once in `suite_setup` instead.
 
 So: **prefer targeted `test_run(suite=...)`** — milliseconds, never dropped.
 Budget one editor restart for each full run you take, and take them at

@@ -482,10 +482,14 @@ func reset_run() -> void:
 	inventory_changed.emit()
 
 
-## Debug: reset_run(), delete the save file, and wipe achievement progress.
+## Wipes all progress: reset_run(), the save file, the legacy inventory file
+## (a new game would merge it back), the shop cart and achievement progress.
+## Settings are kept. Settings' Reset Progres and Debug's Forget Session.
 func forget_session() -> void:
 	reset_run()
 	SaveGame.delete_save()
+	SaveGame.delete_legacy_inventory()
+	Cart.clear()
 	Achievements.reset()
 
 

@@ -113,8 +113,8 @@ fails otherwise): a new field picks one. A new per-week SchoolDay/StudentData
 field joins the `[week]` snapshot (`_week_snapshot`, `SAVED_STAT_KEYS`) or
 resets on resume. Achievements (`achievements.cfg`; debug `RESET_ON_LAUNCH`
 wipes them each launch: DEBT.md) and settings keep their own files. **Do not
-add further persistence without being asked.** **🧹 Forget Session** (Debug >
-General) wipes the run, the save and achievements.
+add further persistence without being asked.** Settings' **Reset Progres**
+and Debug's **🧹 Forget Session** wipe run, save, achievements.
 
 `-REFERENCE-/prototype/` is the original prototype — reference only, not built,
 not imported.

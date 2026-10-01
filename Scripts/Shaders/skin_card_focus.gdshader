@@ -72,8 +72,9 @@ void fragment() {
 			+ vec4(s3.rgb * s3.a, s3.a) + vec4(s4.rgb * s4.a, s4.a)) * 0.15;
 		vec4 soft = vec4(acc.rgb / max(acc.a, 0.0001), acc.a);
 		// Eased in over the first texel of sigma. The sharp read above is
-		// one tap and the soft one averages five spread around it, so a hard switch would
-		// soften the centred card by a visible step the moment a drag begins.
+		// one tap and the soft one averages five spread around it, so a hard
+		// switch would soften the centred card by a visible step the moment
+		// a drag begins.
 		c = mix(texture(TEXTURE, UV), soft, smoothstep(0.05, 1.0, sigma_texels));
 	}
 	// * COLOR reapplies the node's (and every inherited parent's) modulate,

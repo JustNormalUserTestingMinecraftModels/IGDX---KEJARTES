@@ -20,7 +20,7 @@ both values; the setting is now 2. Mip chains are still read, and art with
 a single mip level is back to the plain bilinear look it had before that
 pass. `test_project_hygiene` pins 2; its comment, `test_texture_mipmaps`'s
 and `skin_card_focus.gdshader`'s now name the enum correctly (the
-2026-09-22 entry below keeps the old, wrong label as history).
+2026-09-22 entry below keeps the old label, now marked wrong).
 `SkinSelect.tscn`'s `Frozen` override and the shader's own linear sampler
 stay: harmless now, and they keep those reads linear whatever the default.
 
@@ -1977,7 +1977,9 @@ styleboxes. Probing the imported textures showed that fear was unfounded:
 those assets carry a **single mip level**, and a mipmapped sampler on a 1-mip
 texture can only ever read level 0. So `default_texture_filter = 3` (Linear
 Mipmap) is provably a no-op on all 383 textures that have no chain, and only
-the 29 we deliberately gave one change behaviour.
+the 29 we deliberately gave one change behaviour. *(Wrong: 3 is Nearest
+Mipmap, and it switched every texture to nearest sampling. Corrected to 2 on
+2026-10-01; see that entry.)*
 `tests/test_texture_mipmaps.gd` pins both halves of that argument, so the day
 the premise stops holding the suite says so.
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ckls11l3yiniv"
-path="res://.godot/imported/Andi_Table.png-82901cdea300e027ac3cad5dd999c3ef.ctex"
+uid="uid://c3ngtjf2pc0ka"
+path="res://.godot/imported/Marcel_Arms.png-f12c06c5e06d8635468e4283d3d50b15.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/MuridPortrait/TanganItems/Andi_Table.png"
-dest_files=["res://.godot/imported/Andi_Table.png-82901cdea300e027ac3cad5dd999c3ef.ctex"]
+source_file="res://Assets/Images/MuridPortrait/TanganItems/Marcel_Arms.png"
+dest_files=["res://.godot/imported/Marcel_Arms.png-f12c06c5e06d8635468e4283d3d50b15.ctex"]
 
 [params]
 

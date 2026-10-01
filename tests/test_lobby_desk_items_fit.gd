@@ -3,8 +3,8 @@ extends McpTestSuite
 
 ## The Lobby's seating follows the owner's reference picture
 ## (docs/superpowers/mockups/lobby-seating-reference-2026-09-30.jpg): where
-## each seat's Portrait sits, and how every Hand_<Name> node -- a student's
-## arms and desk items, one texture -- is sized and placed.
+## each seat's Portrait sits, and how every Hand_<Name> node (a student's
+## arms) and Items_<Name> node (its desk items) is sized and placed.
 ##
 ## Until 2026-09-30 this suite kept every desk item inside its desk's width,
 ## with three owner-sized exceptions. The picture replaced that rule: it
@@ -15,6 +15,12 @@ extends McpTestSuite
 ## still run past their desks and off the screen's edge exactly as the
 ## picture's do.
 ##
+## Since 2026-10-01 (the owner's pick) each seat grows the picture's student
+## to the size it had before the picture pass (back 365, front 400 px) about
+## the bottom centre of its Portrait square, where the body meets the desk.
+## Hand_<Name> is now the arms layer and grows with the body. Items_<Name>
+## holds the desk items at exactly the earlier placement.
+##
 ## The picture's numbers are mapped through K = 448 / 429 (game desk width
 ## over the picture's), anchored on each desk's back edge: spec and plan
 ## 2026-09-30-lobby-seating-and-planks. That pass anchored on the top of the
@@ -23,7 +29,7 @@ extends McpTestSuite
 ## read from the plate's own pixels (spec 2026-10-01-lobby-seat-on-desk-edge).
 ##
 ## Measured from the packed scene's SceneState, so the Lobby is never
-## instanced. A Hand_* node draws its texture at native size (stretch_mode 3)
+## instanced. A Hand_* or Items_* node draws its texture at native size (stretch_mode 3)
 ## centred in its box, then scales about pivot_offset; a negative x scale
 ## mirrors it.
 ##
@@ -54,6 +60,9 @@ const DESK_MIN_RUN := 260
 ## Slack between a seat's Portrait bottom and its desk's back edge, px; the
 ## picture's own gap is 1.25 (Thea's square ends at 811.8, her desk at 813).
 const EDGE_TOLERANCE := 1.5
+## Each row's Portrait square side since 2026-10-01, px: the sizes before the
+## picture pass. The picture's square grows to it about its bottom centre.
+const SEAT_SIDE := {"Back": 365.0, "Front": 400.0}
 
 ## What the picture shows in each seat. anchor_picture / anchor_game are one
 ## point in each: vertically the desk's back edge; horizontally, in the front
@@ -99,6 +108,10 @@ const FRONT_INNER_EDGE := {"Slot3": 462.0, "Slot4": 622.0}
 ## is each one's mean placement in the scene before the picture pass
 ## (4ec87bc0^), where each already sat the same in every seat.
 const OWN_PLACE := {"Doni": Vector2(0.010120, 1.166307), "Shinta": Vector2(0.041973, 1.071228)}
+## Owner-tuned moves of a student's arms only, in body sides, on top of its
+## place on the body: Shinta's arms sat a little high, so they hovered above
+## the desk (owner's pick "A", 2026-10-01: down 3% of the body).
+const ARMS_NUDGE := {"Shinta": Vector2(0.0, 0.03)}
 ## The Hand_* nodes drawn mirrored, by hands slot: the picture mirrors
 ## Marcel in Slot3; the rest keep the mirroring they always had.
 const MIRRORED := {
@@ -148,6 +161,25 @@ func _node(path: String) -> Dictionary:
 ## A picture point, in game pixels, for `seat`.
 static func to_game(seat: Dictionary, picture: Vector2) -> Vector2:
 	return (seat["anchor_game"] as Vector2) + (picture - (seat["anchor_picture"] as Vector2)) * K
+
+
+## The picture's Portrait square for `seat`, before the seat grows.
+static func picture_square(seat: Dictionary) -> Rect2:
+	var side: float = PORTRAIT_SIDE * float(seat["portrait_scale"]) * K
+	return Rect2(to_game(seat, seat["portrait_origin"]), Vector2(side, side))
+
+
+## How much `seat` grows the picture's student: its row's SEAT_SIDE over the
+## picture's square.
+static func seat_factor(seat: Dictionary) -> float:
+	var row := "Back" if String(seat["portraits"]).contains("_Back") else "Front"
+	return float(SEAT_SIDE[row]) / picture_square(seat).size.x
+
+
+## `r` grown by `f` about its bottom centre, where a body meets its desk.
+static func grow_about_bottom(r: Rect2, f: float) -> Rect2:
+	var s := r.size * f
+	return Rect2(Vector2(r.get_center().x - s.x / 2.0, r.end.y - s.y), s)
 
 
 ## A slot's rect in classroom pixels: its own offsets inside its container's.
@@ -202,14 +234,15 @@ func _hand_centre(slot_path: String, hand: Dictionary) -> Vector2:
 	return box.position + pivot + (box.size / 2.0 - pivot) * scale
 
 
-## The pictured student's target in `seat`: [scale, drawn centre].
+## The pictured student's target in `seat`, before the seat grows:
+## [scale, drawn centre].
 static func pictured_target(seat: Dictionary) -> Array:
-	var tex := load("res://Assets/Images/MuridPortrait/TanganItems/%s_Table.png" % seat["student"]) as Texture2D
+	var tex := load("res://Assets/Images/MuridPortrait/TanganItems/%s_Arms.png" % seat["student"]) as Texture2D
 	var scale: float = float(seat["hand_scale"]) * K
 	return [scale, to_game(seat, seat["hand_origin"]) + tex.get_size() * scale / 2.0]
 
 
-## The widest desk art `student` can wear: the Lobby swaps each skin's table
+## The widest arms art `student` can wear: the Lobby swaps each skin's arms
 ## image onto the same node, at the same transform, so a placement made for
 ## the scene's texture only holds while every skin's art is that width.
 static func widest_hand_art(student: String) -> float:
@@ -229,8 +262,9 @@ func _place_on_body(student: String) -> Vector2:
 		var seat: Dictionary = SEATS[name]
 		if seat["student"] != student:
 			continue
-		var side: float = PORTRAIT_SIDE * float(seat["portrait_scale"]) * K
-		var top_left := to_game(seat, seat["portrait_origin"])
+		var square := picture_square(seat)
+		var side := square.size.x
+		var top_left := square.position
 		var centre: Vector2 = pictured_target(seat)[1]
 		var mirror := -1.0 if bool(seat["mirrored"]) else 1.0
 		return Vector2((centre.x - top_left.x - side / 2.0) / side * mirror, (centre.y - top_left.y) / side)
@@ -241,8 +275,7 @@ func test_each_seats_portrait_sits_where_the_picture_puts_it() -> void:
 	for name: String in SEATS:
 		var seat: Dictionary = SEATS[name]
 		var got := _portrait_rect(seat["portraits"])
-		var side: float = PORTRAIT_SIDE * float(seat["portrait_scale"]) * K
-		var want := Rect2(to_game(seat, seat["portrait_origin"]), Vector2(side, side))
+		var want := grow_about_bottom(picture_square(seat), seat_factor(seat))
 		assert_true(got.position.distance_to(want.position) < TOLERANCE and got.end.distance_to(want.end) < TOLERANCE,
 			"%s Portrait is %s, the picture puts it at %s" % [name, str(got), str(want)])
 
@@ -252,27 +285,36 @@ func test_the_pictured_students_match_the_picture() -> void:
 		var seat: Dictionary = SEATS[name]
 		var hand: Dictionary = _node("%s/Hand_%s" % [seat["hands"], seat["student"]])
 		var target := pictured_target(seat)
+		var factor := seat_factor(seat)
+		var want_scale: float = float(target[0]) * factor
+		var square := picture_square(seat)
+		var pivot := Vector2(square.get_center().x, square.end.y)
+		var want_centre: Vector2 = pivot + ((target[1] as Vector2) - pivot) * factor
 		var scale: Vector2 = hand.get("scale", Vector2.ONE)
-		assert_true(absf(absf(scale.x) - float(target[0])) < SCALE_TOLERANCE and absf(scale.y - float(target[0])) < SCALE_TOLERANCE,
-			"%s in %s is scaled %s, the picture says %.4f" % [seat["student"], name, str(scale), target[0]])
+		assert_true(absf(absf(scale.x) - want_scale) < SCALE_TOLERANCE and absf(scale.y - want_scale) < SCALE_TOLERANCE,
+			"%s in %s is scaled %s, the picture grown to its seat says %.4f" % [seat["student"], name, str(scale), want_scale])
 		assert_eq(scale.x < 0.0, bool(seat["mirrored"]), "%s in %s is mirrored only where the picture mirrors" % [seat["student"], name])
 		var centre := _hand_centre(seat["hands"], hand)
-		assert_true(centre.distance_to(target[1]) < TOLERANCE,
-			"%s in %s draws at %s, the picture puts it at %s" % [seat["student"], name, str(centre), str(target[1])])
+		assert_true(centre.distance_to(want_centre) < TOLERANCE,
+			"%s in %s draws at %s, the picture grown to its seat puts it at %s" % [seat["student"], name, str(centre), str(want_centre)])
 
 
-## The picture draws both students of a row at one scale, so the whole row
-## wears it. Every student's arms and items sit at one place on its own body
-## in every seat, mirrored with the art. Until 2026-10-01 an unpictured
-## student kept its old x and only rose with its row, so its hands drifted
-## off the smaller bodies. In the front row an item wider than its desk is
-## still pushed off the screen's edge, never over the aisle. The pictured
-## student in its own seat sits exactly where the picture puts it.
-func test_every_student_wears_its_rows_scale_and_sits_the_same_on_its_body() -> void:
+## Where `student`'s art centre belongs on `body` (a Portrait rect), mirrored
+## with the art: the body-relative place of _place_on_body.
+func _on_body(student: String, body: Rect2, mirrored: bool) -> Vector2:
+	var place := _place_on_body(student)
+	return Vector2(body.get_center().x + place.x * body.size.x * (-1.0 if mirrored else 1.0),
+		body.position.y + place.y * body.size.y)
+
+
+## The arms are the student's own and sit at one place on the grown body, at
+## the row's scale grown with the seat, mirrored with the art. The aisle rule
+## is for desk items, so the arms are never pushed off the body.
+func test_every_arms_layer_grows_with_its_body() -> void:
 	var checked := 0
 	for name: String in SEATS:
 		var seat: Dictionary = SEATS[name]
-		var row_scale: float = float(seat["hand_scale"]) * K
+		var arms_scale: float = float(seat["hand_scale"]) * K * seat_factor(seat)
 		var body := _portrait_rect(seat["portraits"])
 		var prefix := "%s/%s/Hand_" % [CLASSROOM, seat["hands"]]
 		for path: String in _props:
@@ -282,34 +324,78 @@ func test_every_student_wears_its_rows_scale_and_sits_the_same_on_its_body() -> 
 			var student := path.trim_prefix(prefix)
 			var hand: Dictionary = _props[path]
 			var scale: Vector2 = hand.get("scale", Vector2.ONE)
-			assert_true(absf(absf(scale.x) - row_scale) < SCALE_TOLERANCE and absf(scale.y - row_scale) < SCALE_TOLERANCE,
-				"%s in %s is scaled %s, its row wears %.4f" % [student, name, str(scale), row_scale])
+			assert_true(absf(absf(scale.x) - arms_scale) < SCALE_TOLERANCE and absf(scale.y - arms_scale) < SCALE_TOLERANCE,
+				"%s in %s is scaled %s, its arms wear %.4f" % [student, name, str(scale), arms_scale])
 			var mirrored: bool = (MIRRORED.get(seat["hands"], []) as Array).has(student)
 			assert_eq(scale.x < 0.0, mirrored, "%s in %s is mirrored only where MIRRORED says" % [student, name])
-			var place := _place_on_body(student)
-			var want := Vector2(body.get_center().x + place.x * body.size.x * (-1.0 if mirrored else 1.0),
-				body.position.y + place.y * body.size.y)
-			var half: float = (hand["texture"] as Texture2D).get_width() * row_scale / 2.0
 			assert_eq(widest_hand_art(student), float((hand["texture"] as Texture2D).get_width()),
-				"%s has a skin whose table art is another width: place it for the widest" % student)
+				"%s has a skin whose arms art is another width: place it for the widest" % student)
+			var want := _on_body(student, body, mirrored) + (ARMS_NUDGE.get(student, Vector2.ZERO) as Vector2) * body.size.x
+			var centre := _hand_centre(seat["hands"], hand)
+			assert_true(centre.distance_to(want) < TOLERANCE,
+				"%s in %s draws arms at %s, expected %s (its place on its grown body)" % [student, name, str(centre), str(want)])
+	assert_eq(checked, EXPECTED_HANDS, "every slot's Hand_* nodes were found")
+
+
+## The desk items keep the size and place they had before the seat grew; they
+## share the arms' canvas, so every skin's arms land on them. In the front row
+## an item wider than its desk is still pushed off the screen's edge, never
+## over the aisle; the pictured student in its own seat sits exactly where the
+## picture puts it.
+func test_every_items_layer_keeps_its_desk_place() -> void:
+	var checked := 0
+	var keys := _props.keys()
+	for name: String in SEATS:
+		var seat: Dictionary = SEATS[name]
+		var row_scale: float = float(seat["hand_scale"]) * K
+		var old_body := grow_about_bottom(_portrait_rect(seat["portraits"]), 1.0 / seat_factor(seat))
+		var prefix := "%s/%s/Hand_" % [CLASSROOM, seat["hands"]]
+		var items_prefix := "%s/%s/Items_" % [CLASSROOM, seat["hands"]]
+		for path: String in _props:
+			if not path.begins_with(prefix):
+				continue
+			checked += 1
+			var student := path.trim_prefix(prefix)
+			var items_path := items_prefix + student
+			assert_true(_props.has(items_path), "%s in %s has an Items_ node" % [student, name])
+			if not _props.has(items_path):
+				continue
+			assert_true(keys.find(items_path) < keys.find(path),
+				"%s's items in %s are drawn under its arms" % [student, name])
+			var arms: Dictionary = _props[path]
+			var items: Dictionary = _props[items_path]
+			var scale: Vector2 = items.get("scale", Vector2.ONE)
+			assert_true(absf(absf(scale.x) - row_scale) < SCALE_TOLERANCE and absf(scale.y - row_scale) < SCALE_TOLERANCE,
+				"%s's items in %s are scaled %s, they keep %.4f" % [student, name, str(scale), row_scale])
+			var arms_scale: Vector2 = arms.get("scale", Vector2.ONE)
+			assert_eq(scale.x < 0.0, arms_scale.x < 0.0, "%s's items in %s are mirrored with its arms" % [student, name])
+			var mirrored: bool = (MIRRORED.get(seat["hands"], []) as Array).has(student)
+			var want := _on_body(student, old_body, mirrored)
+			var items_tex := items["texture"] as Texture2D
+			var half: float = items_tex.get_width() * row_scale / 2.0
 			# The picture governs its own student's seat, aisle included.
 			if FRONT_INNER_EDGE.has(name) and student != seat["student"]:
 				var edge: float = FRONT_INNER_EDGE[name]
 				want.x = minf(want.x, edge - half) if edge < CLASSROOM_SIZE.x / 2.0 else maxf(want.x, edge + half)
-			var centre := _hand_centre(seat["hands"], hand)
+			var centre := _hand_centre(seat["hands"], items)
 			assert_true(centre.distance_to(want) < TOLERANCE,
-				"%s in %s draws at %s, expected %s (its place on its body, kept off the aisle)" % [student, name, str(centre), str(want)])
+				"%s's items in %s draw at %s, expected %s (their place before the seat grew, kept off the aisle)" % [student, name, str(centre), str(want)])
+			for id: String in StudentSkins.SKINS[student]:
+				var arms_tex := load(StudentSkins.layer_path(student, id, "hand")) as Texture2D
+				assert_eq(items_tex.get_size(), arms_tex.get_size(),
+					"%s's items and %s arms are on different canvases" % [student, id])
 	assert_eq(checked, EXPECTED_HANDS, "every slot's Hand_* nodes were found")
 
 
 ## Front-row items may run past their desk and off the screen, as the
-## picture's do, but no item may leave the classroom altogether.
+## picture's do, but no arms or item may leave the classroom altogether.
 func test_no_desk_item_leaves_the_classroom() -> void:
 	for name: String in SEATS:
 		var seat: Dictionary = SEATS[name]
-		var prefix := "%s/%s/Hand_" % [CLASSROOM, seat["hands"]]
+		var hand_prefix := "%s/%s/Hand_" % [CLASSROOM, seat["hands"]]
+		var items_prefix := "%s/%s/Items_" % [CLASSROOM, seat["hands"]]
 		for path: String in _props:
-			if not path.begins_with(prefix):
+			if not path.begins_with(hand_prefix) and not path.begins_with(items_prefix):
 				continue
 			var hand: Dictionary = _props[path]
 			var size: Vector2 = (hand["texture"] as Texture2D).get_size() * (hand.get("scale", Vector2.ONE) as Vector2).abs()

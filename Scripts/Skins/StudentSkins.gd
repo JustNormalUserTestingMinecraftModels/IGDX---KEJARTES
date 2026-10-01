@@ -80,13 +80,13 @@ static func layer_path(student_name: String, id: String, layer: String) -> Strin
 			"splash": return "res://Assets/Images/SplashArtMurid/splash_%s.png" % lower
 			"portrait": return "res://Assets/Images/MuridPortrait/%s.png" % student_name
 			"face_base": return "res://Assets/Images/MuridPortrait/%s/%s_base.png" % [student_name, lower]
-			"hand": return "res://Assets/Images/MuridPortrait/TanganItems/%s_Table.png" % student_name
+			"hand": return "res://Assets/Images/MuridPortrait/TanganItems/%s_Arms.png" % student_name
 	var folder := "res://Assets/Images/Skins/%s/" % student_name
 	match layer:
 		"splash": return folder + "splash_%s_%s.png" % [lower, id]
 		"portrait": return folder + "%s_portrait_%s.png" % [lower, id]
 		"face_base": return folder + "%s_base_%s.png" % [lower, id]
-		"hand": return folder + "%s_table_%s.png" % [lower, id]
+		"hand": return folder + "%s_arms_%s.png" % [lower, id]
 	return ""
 
 
@@ -107,7 +107,9 @@ static func face_base_for(student_name: String) -> String:
 	return _equipped_layer(student_name, "face_base")
 
 
-## The equipped skin's desk-hands art, or "" to keep the scene's own.
+## The equipped skin's arms art (the student's own arms at the desk), or ""
+## to keep the scene's own. Desk items are not part of a skin: each student has
+## one TanganItems/<Name>_Items.png, shared by every skin, set in the Lobby scene.
 static func hand_for(student_name: String) -> String:
 	return _equipped_layer(student_name, "hand")
 

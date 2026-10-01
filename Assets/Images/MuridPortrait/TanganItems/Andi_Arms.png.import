@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c1vwel55rkplt"
-path="res://.godot/imported/doni_table_skin1.png-4e4d62fe7e45bcd4402a0cae5b5e3baf.ctex"
+uid="uid://dn60bpevo176"
+path="res://.godot/imported/Andi_Arms.png-abc4b386beb20b2b9b6a850547c95d76.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Images/Skins/Doni/doni_table_skin1.png"
-dest_files=["res://.godot/imported/doni_table_skin1.png-4e4d62fe7e45bcd4402a0cae5b5e3baf.ctex"]
+source_file="res://Assets/Images/MuridPortrait/TanganItems/Andi_Arms.png"
+dest_files=["res://.godot/imported/Andi_Arms.png-abc4b386beb20b2b9b6a850547c95d76.ctex"]
 
 [params]
 

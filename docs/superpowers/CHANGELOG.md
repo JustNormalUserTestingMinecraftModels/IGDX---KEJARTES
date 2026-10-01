@@ -61,6 +61,26 @@ transparent (an empty card showed at the overlay's corner for a frame, and
 each screen's exit tween played on it); each screen's step entrance fades it
 in.
 
+## 2026-10-01 — Lobby students back to their old size; desk items split from the arms
+
+Branch `feat/lobby-bigger-students`; spec and plan
+`2026-10-01-lobby-bigger-students`. The owner found the students too small.
+Each student's combined desk art (`TanganItems/<Name>_Table.png`, skin
+`<name>_table_skin1.png`) is now two layers on one canvas: `<Name>_Arms.png`
+(the artist's Drive `_Hand` layers, which match the game's arms exactly) with
+`<name>_arms_skin1.png` (the owner's arms-only skin files), and
+`<Name>_Items.png`, cut from the game's picture (the Drive's own item layers
+match only Doni, Marcel and Thea), with holes under the arms filled from the
+skin art. Every `Hand_<Name>` is now the arms and gets an `Items_<Name>`
+sibling at today's exact transform, so the desk items keep their size and
+place. Each seat grows its body and arms about the point where the body meets
+the desk, back to the sizes before the picture pass (back 365, front 400 px);
+the arms follow the body with no aisle clamp, the items keep it. Marcel's book
+is in his hands layer and grows with him. `_show_hand_for` (now static) shows
+the arms and items pair; skins swap only the arms. On review, Shinta's
+arms sat a little high and hovered over the desk; they now sit 3% of her
+body lower (`ARMS_NUDGE`, owner's pick).
+
 ## 2026-10-01 — Lobby students sit at the desk, not on the chair
 
 Branch `fix/lobby-seat-desk-edge`; spec and plan

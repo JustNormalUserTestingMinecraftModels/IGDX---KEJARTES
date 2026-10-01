@@ -182,7 +182,7 @@ func test_the_focus_blur_reads_the_mip_chain_not_a_tap_loop() -> void:
 	assert_true(src.contains("textureLod(blur_source"), "the blur is the splash's own mips")
 	assert_true(src.count("textureLod(blur_source") <= 5, "five taps at most")
 	assert_true(src.contains("uniform sampler2D blur_source : filter_linear_mipmap"),
-		"read smoothly: the project's nearest filter makes a mip read blocky")
+		"the blur reads linearly whatever the project's default filter is")
 
 
 func test_show_skin_hands_the_blur_the_same_splash() -> void:

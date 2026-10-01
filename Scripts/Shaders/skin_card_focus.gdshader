@@ -19,10 +19,10 @@ uniform float splash_gain = 1.25;
 // mid-grey, both before the brightness and the gain.
 uniform float splash_saturation = 0.85;
 uniform float splash_contrast = 0.85;
-// The card's own splash again, read smoothly for the blur. The project draws
-// canvas textures with a nearest filter, which is what the sharp centred card
-// wants and what makes a mip read blocky; this sampler reads the same texture
-// through a linear, mipmapped one. SkinCard.show_skin binds it.
+// The card's own splash again, read for the blur. Written when the project
+// default was Nearest Mipmap (3), which made a mip read blocky; the default is
+// Linear Mipmap (2) since 2026-10-01, and this sampler keeps the blur linear
+// whatever the default says. SkinCard.show_skin binds it.
 uniform sampler2D blur_source : filter_linear_mipmap, repeat_disable;
 
 // Rec. 709 luma, for a saturation that does not shift hues.
@@ -71,10 +71,10 @@ void fragment() {
 			+ (vec4(s1.rgb * s1.a, s1.a) + vec4(s2.rgb * s2.a, s2.a)
 			+ vec4(s3.rgb * s3.a, s3.a) + vec4(s4.rgb * s4.a, s4.a)) * 0.15;
 		vec4 soft = vec4(acc.rgb / max(acc.a, 0.0001), acc.a);
-		// Eased in over the first texel of sigma. The sharp read above goes
-		// through the project's nearest filter and this one is linear, so a
-		// hard switch would soften the centred card by a visible step the
-		// moment a drag begins.
+		// Eased in over the first texel of sigma. The sharp read above is
+		// one tap and the soft one averages five spread around it, so a hard
+		// switch would soften the centred card by a visible step the moment
+		// a drag begins.
 		c = mix(texture(TEXTURE, UV), soft, smoothstep(0.05, 1.0, sigma_texels));
 	}
 	// * COLOR reapplies the node's (and every inherited parent's) modulate,

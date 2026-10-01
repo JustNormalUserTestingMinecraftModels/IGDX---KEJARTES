@@ -145,20 +145,22 @@ func test_the_boot_scene_is_the_main_menu() -> void:
 ## one-line project settings with no other trace in the repo, so nothing else
 ## would notice if a merge or an editor session dropped them.
 ##
-## `default_texture_filter = 3` is Linear Mipmap. It is safe to set globally
-## only because 383 of the project's 412 textures are imported with
-## `mipmaps/generate=false` and therefore carry a single mip level: a
-## mipmapped sampler on a 1-mip texture can only ever read level 0, so the
-## bar-fill tiles, `tray_dots.png` and every 9-sliced StyleBox are provably
-## unaffected. Pinned by tests/test_texture_mipmaps.gd, which fails if that
-## premise stops holding. NOTE the enum here is NOT CanvasItem's: in
-## ProjectSettings 0=Nearest, 1=Linear, 2=Nearest Mipmap, 3=Linear Mipmap,
-## while CanvasItem.TEXTURE_FILTER_LINEAR is 2 and its
-## LINEAR_WITH_MIPMAPS is 4.
+## `default_texture_filter = 2` is Linear Mipmap. The 2026-09-22 pass set 3
+## believing it was Linear Mipmap; 3 is NEAREST Mipmap, and drew every
+## texture in the game with stair-stepped edges until 2026-10-01 (live probe:
+## a 2-texel ramp stretched 64x rendered as a hard step under 3, a smooth
+## gradient under 2). Linear Mipmap on the textures imported with
+## `mipmaps/generate=false` reads level 0 bilinearly -- the plain Linear (1)
+## the project used before that pass -- so the bar-fill tiles,
+## `tray_dots.png` and every 9-sliced StyleBox look as they did then.
+## Pinned by tests/test_texture_mipmaps.gd. NOTE the enum here is NOT
+## CanvasItem's: in ProjectSettings 0=Nearest, 1=Linear, 2=Linear Mipmap,
+## 3=Nearest Mipmap (the engine's own hint string, checked in 4.6.2), while
+## CanvasItem.TEXTURE_FILTER_LINEAR is 2 and its LINEAR_WITH_MIPMAPS is 4.
 func test_the_rendering_crispness_settings_are_on() -> void:
 	assert_eq(
 		ProjectSettings.get_setting("rendering/textures/canvas_textures/default_texture_filter", -1),
-		3, "canvas textures must sample mipmaps, or every generated mip chain is dead weight")
+		2, "canvas textures must sample mipmaps linearly: 3 is Nearest Mipmap and stair-steps every edge")
 	assert_eq(
 		ProjectSettings.get_setting("rendering/anti_aliasing/quality/msaa_2d", -1),
 		1, "MSAA 2D at 2x: antialiases TouchFeedbackEffect's ripple circles on "

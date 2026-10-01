@@ -13,8 +13,8 @@ extends McpTestSuite
 
 const SHADER := "res://Scripts/Shaders/illustration_grade.gdshader"
 const LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
-## The Lobby's three grade materials: backdrop, desks, faces (and, with the
-## faces, the hands and desk items).
+## The Lobby's three grade materials: backdrop, desks (and, with the desks,
+## the arms and desk items), faces.
 const LOBBY_PLAIN := "res://Scripts/Shaders/illustration_grade_material_lobby.tres"
 const LOBBY_CUTOUT := "res://Scripts/Shaders/illustration_grade_cutout_lobby.tres"
 const FACE := "res://Scripts/Shaders/illustration_grade_face.tres"
@@ -129,7 +129,7 @@ func test_split_tone_keeps_brightness_and_is_free_when_off() -> void:
 
 ## The Lobby's backdrop material is the shared backdrop plus split-tone,
 ## nothing else: same five grade values, AO and rim still off.
-func test_the_lobby_backdrop_is_the_plain_grade_plus_split_tone() -> void:
+func test_the_lobby_backdrop_matches_the_plain_grade() -> void:
 	var plain: ShaderMaterial = load(PLAIN)
 	var lobby: ShaderMaterial = load(LOBBY_PLAIN)
 	assert_true(plain != null and lobby != null, "both backdrop materials must exist")
@@ -152,12 +152,13 @@ func test_the_backdrop_wears_the_lobby_backdrop_material() -> void:
 	assert_eq(bg.material, load(LOBBY_PLAIN), "BGLayer must wear the Lobby's own backdrop grade")
 
 
-## Every arms and desk-item plate wears the face grade, so a hand matches the
-## face beside it. Walked from the containers rather than listed, so a new
+## Every arms and desk-item plate wears the Lobby cutout grade: the face
+## grade's colour and light without its eye-hole probes, which arms and items
+## have no holes for. Walked from the containers rather than listed, so a new
 ## student or slot cannot slip through ungraded; the count keeps the walk
 ## from passing on an empty tree.
-func test_every_hand_and_item_wears_the_face_material() -> void:
-	var face: Material = load(FACE)
+func test_every_hand_and_item_wears_the_lobby_cutout() -> void:
+	var cutout: Material = load(LOBBY_CUTOUT)
 	var seen := 0
 	for container_path: String in HAND_CONTAINERS:
 		var container := _lobby.get_node_or_null(container_path)
@@ -168,8 +169,8 @@ func test_every_hand_and_item_wears_the_face_material() -> void:
 			if not (plate.name.begins_with("Hand_") or plate.name.begins_with("Items_")):
 				continue
 			seen += 1
-			assert_eq((plate as CanvasItem).material, face,
-				"%s/%s must wear the face grade" % [container_path, container.get_path_to(plate)])
+			assert_eq((plate as CanvasItem).material, cutout,
+				"%s/%s must wear the Lobby cutout grade" % [container_path, container.get_path_to(plate)])
 	assert_eq(seen, HAND_AND_ITEM_PLATES, "every slot's arms and items, for all six students")
 
 

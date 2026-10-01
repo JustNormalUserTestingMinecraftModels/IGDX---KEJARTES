@@ -319,7 +319,8 @@ const LOBBY_BACKDROP := {
 }
 
 ## The Lobby students' arms and desk items (2026-10-01): cutouts that wear the
-## face material, so under the split-tone a hand matches the face beside it.
+## Lobby cutout material, lit like the faces beside them but without the face
+## material's eye-hole probes, which they have no holes for.
 ## tests/test_lobby_split_tone.gd walks the containers for any it missed.
 const LOBBY_HANDS := {
 	"res://Scenes/Lobby/Lobby.tscn": [

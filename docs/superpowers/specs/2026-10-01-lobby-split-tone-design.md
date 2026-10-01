@@ -70,6 +70,12 @@ split-tone: one colour for shadows, another for highlights.
    material agrees". The Lobby's own backdrop material stays, equal to the
    plain one, as the place for a Lobby-only tweak.
 
+5. **Arms and items wear the Lobby cutout, not the face material** (local
+   review). The face material's eye-hole probes cost up to eight extra taps
+   per transparent AO tap and arms and items have no holes;
+   `illustration_grade_cutout_lobby.tres` has the same grade, light and
+   split-tone without them.
+
 ## 1. Shader: `Scripts/Shaders/illustration_grade.gdshader`
 
 Four new uniforms, each with a `//` line in the existing style:

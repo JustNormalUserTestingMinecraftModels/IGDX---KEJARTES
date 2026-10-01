@@ -19,8 +19,9 @@ split-tone (`shadow_tone`, `highlight_tone`, `split_balance`,
 the Lobby, mean brightness stays put (under 0.05%). Off on every
 material but the Lobby's three; the Lobby backdrop got its own
 `illustration_grade_material_lobby.tres`, and the students' 48 arms and
-desk-item plates now wear the face grade. Tuned live from the Look page's
-Split-Tone Lobby block.
+desk-item plates now wear the Lobby cutout grade (the face grade minus its
+eye-hole probes, which the local review flagged as cost for nothing). Tuned
+live from the Look page's Split-Tone block.
 
 Two things the first live capture caught. Contrast leaves near-black
 channels just under zero, and the luma rescale divided two near-zero numbers:

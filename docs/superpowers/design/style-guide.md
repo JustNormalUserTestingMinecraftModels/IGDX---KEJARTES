@@ -155,8 +155,8 @@ first pulls the darks part-way toward grey, which deepens them against the
 lights; a warm `shadow_tone` (1.08 / 1.00 / 0.86) gives them their warmth
 back. A plum tone was tried first and read too cool. Tuned on the Lobby,
 then carried the same day to all six grade materials (plain, cutout, splash,
-and the Lobby's backdrop `illustration_grade_material_lobby.tres`, desks and
-faces, which also dress its arms and desk items). All six carry the same
+and the Lobby's backdrop `illustration_grade_material_lobby.tres`, desks,
+which also dress its arms and desk items, and faces). All six carry the same
 values, pinned by `tests/test_lobby_split_tone.gd`; the shader's own
 defaults stay off. Tune them on the Look page's **Split-Tone** block (a
 switch, strength, balance, shadow saturation and R/G/B for each tone, which

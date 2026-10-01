@@ -10,7 +10,7 @@ extends RefCounted
 ## Lobby's bloom), ScreenGlow, ScreenSaturation, LightPool and SunShafts in the tree, so the bloom on the shops, the end game
 ## and the minigames can be seen and tuned live. The rest tunes SHARED
 ## materials (AO, rim, the Lobby's shafts and its WorldEnvironment glow, and the
-## Lobby's split-tone), so one drag moves every plate at once. Nothing here persists except the two
+## split-tone on every grade material), so one drag moves every plate at once. Nothing here persists except the two
 ## switches, which are the player's own settings; copy a value into the .tres
 ## or .tscn once it looks right.
 
@@ -40,7 +40,7 @@ const NODE_SLIDERS := [
 ]
 ## Every grade material carries the split-tone (2026-10-01): the shared
 ## backdrop and cutout grades, the speaker splash, and the Lobby's backdrop,
-## desks and faces (which also dress its hands and desk items). Every
+## desks (which also dress its arms and desk items) and faces. Every
 ## split-tone row writes all six, so no screen drifts from another.
 const SPLIT_TONE_MATERIALS := [
 	"res://Scripts/Shaders/illustration_grade_material.tres",
@@ -237,7 +237,7 @@ static func _add_material_slider(vbox: VBoxContainer, mats: Array, uniform: Stri
 			return live.size())
 
 
-# ── The Lobby's split-tone ───────────────────────────────────────────────────
+# ── Split-tone, every grade material ─────────────────────────────────────────
 
 ## A switch and nine sliders over SPLIT_TONE_MATERIALS. The switch remembers
 ## the strength it turned off, so off and on again returns to the tuned look.

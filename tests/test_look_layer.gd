@@ -30,7 +30,7 @@ const GRADED := {
 	"res://Scenes/Lobby/Lobby.tscn": [
 		"World/Classroom/BGLayer", "World/Classroom/Meja_KiriAtas", "World/Classroom/Meja_KananAtas",
 		"World/Classroom/Meja_KiriBawah", "World/Classroom/Meja_KananBawah",
-		# The students' arms and desk items (2026-10-01), in the face grade.
+		# The students' arms and desk items (2026-10-01), in the Lobby cutout grade.
 		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Andi", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Andi",
 		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Citra", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Citra",
 		"World/Classroom/StudentHandsContainer_Back/Slot1/Hand_Doni", "World/Classroom/StudentHandsContainer_Back/Slot1/Items_Doni",

@@ -55,8 +55,9 @@
 // darks and one for the lights, crossfaded around split_balance (the darks
 // first pulled toward grey by shadow_saturation, since a multiplied tone
 // cannot add blue to a dark that has none), and then
-// rescales each pixel to the luma it had before, so it moves hue and never
-// brightness: it cannot make a plate read darker. Tuned on the Lobby first,
+// rescales each pixel to the luma it had before, so it moves hue and not
+// brightness. (Before the final clamp, that is: a near-white whose red is
+// pushed past 1.0 loses that overshoot, a level or two, and nothing else.) Tuned on the Lobby first,
 // where the owner kept the deeper darks but asked for warm, not plum,
 // shadows; then carried to every grade material (2026-10-01). All six carry
 // the same split-tone values (tests/test_lobby_split_tone.gd); the shader's
@@ -78,7 +79,7 @@ uniform vec4 tint : source_color = vec4(1.022, 1.0, 0.972, 1.0);
 // alike -- 0 = off. A single dial for the whole game: at 0 the art renders
 // untouched, not just ungraded.
 uniform float amount : hint_range(0.0, 1.0) = 1.0;
-// Split-tone (2026-10-01, Lobby only for now). The colour the darks lean
+// Split-tone (2026-10-01, every grade material). The colour the darks lean
 // toward, multiplied in; white is no lean.
 uniform vec4 shadow_tone : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 // The colour the lights lean toward, multiplied in; white is no lean.

@@ -3,8 +3,8 @@ extends McpTestSuite
 
 ## ObjectiveHint: the plain-language line behind AturJadwal's objective strip
 ## (2026-09-24 visual polish, D8), and the strip's own numbers. Pure static
-## logic, tested directly. Thresholds come from Balance and the student's own
-## targets, never restated here.
+## logic, tested directly. The pass line is GameState.MIN_TARGETS_PER_STUDENT and the
+## student's own targets, never restated here.
 ##
 ## Must be @tool; no coroutine tests (the runner does not await).
 
@@ -70,7 +70,7 @@ func test_the_title_reads_month_and_week_of_total() -> void:
 		"a week past the calendar clamps to the last month rather than failing")
 
 
-## The title and the star chip are set in the display face, Boohong, which
+## The title and the safe-student chip are set in the display face, Boohong, which
 ## carries no "·" and no "—" (the plan's separator and the old header's). A
 ## glyph the face lacks falls back to the device's fonts or to a box, so
 ## every character these can produce must be one Boohong actually has.

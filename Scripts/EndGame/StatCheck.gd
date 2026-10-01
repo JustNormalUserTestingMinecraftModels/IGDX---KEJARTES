@@ -5,7 +5,8 @@ extends Control
 ## The automated stat check (Plan A, 2026-09-04): one card per student
 ## slides in from the right, its three bars fill in turn -- akademis, seni
 ## budaya, olahraga -- a full bar pops, every cleared stat lights one share
-## of the 3-star meter, the card slides out, the next slides in, and when
+## of the 3-star meter, a student under GameState.MIN_TARGETS_PER_STUDENT is
+## stamped TIDAK LULUS, the card slides out, the next slides in, and when
 ## the roster is done the screen fades to white and hands off by verdict.
 ## Replaces both the exam-intro cutscene beat and the SemesterEnd carousel.
 ##

@@ -224,7 +224,8 @@ so draw from a child (Pattern C, above).
 **End-of-grade rehearsals.** The debug overlay's Scenes tab carries
 **🎭 Gladi Resik Akhir Kelas**: one-click rehearsals of
 the end-of-grade sequence with a fixed roster (*Semua Lulus*, *Semua Gagal*,
-and *Campur*, which ladders 3/2/1/0 cleared targets for 1.5 stars, a loss).
+and *Campur*, which ladders 3/2/1/0 cleared targets: a loss, with its 1- and
+0-target students stamped TIDAK LULUS).
 Arming one snapshots the run; **↩ Pulihkan Run Sebelum Gladi Resik**
 restores it, which matters because RunResult otherwise advances the grade and
 clears the roster on its way out.
@@ -307,9 +308,7 @@ game-facing identifiers and UI strings in Indonesian.
 
 Two suites, source-text scans in the style of `tests/test_project_hygiene.gd`
 — no scene instantiation needed, no main scene required, both run in well
-under a second. Note what that buys and what it does not: a scan asserts the
-value you *set*, so it can confirm you changed what you meant to and can never
-tell you that you changed the wrong things.
+under a second.
 
 - `tests/test_script_documentation.gd` — **a plain rule.** Every non-exempt
   script must have a `##` file header in its first 12 lines, and every

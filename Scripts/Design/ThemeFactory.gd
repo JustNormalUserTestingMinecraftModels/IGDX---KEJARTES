@@ -54,7 +54,7 @@ static func build(tokens: DesignTokens) -> Theme:
 
 
 ## AturJadwal's objective strip (2026-09-24 visual polish, D8). The strip's
-## gradient body and gold star chip are drawn by rounded_gradient.gdshader on
+## gradient body and gold chip are drawn by rounded_gradient.gdshader on
 ## ColorRects inside it, because a StyleBox cannot round a gradient; these
 ## variations are the parts a StyleBox can do.
 ##
@@ -62,7 +62,7 @@ static func build(tokens: DesignTokens) -> Theme:
 ##                          body shows through and the press is Juice's.
 ##   ObjectiveTitleLabel    "Agustus · Minggu 3/6", display face, cream on
 ##                          the brown with a dark rim.
-##   ObjectiveStarLabel     the chip's "1.5 / 2", display face, dark on gold.
+##   ObjectiveStarLabel     the chip's safe-student count, "3 / 4" (name kept from the star chip), display face, dark on gold.
 ##   ObjectiveProgress      the slim always-visible bar toward the pass line.
 ##   ObjectiveHintPanel     the one-line hint the strip expands to: a cream
 ##   ObjectiveHintLabel     card with a brown rim, and its body text.
@@ -432,7 +432,7 @@ const TALLY_GAIN_DARKEN := 0.2
 ##                           in for its beats (owner's pick, 2026-09-24).
 ##   StatusScrimLabel        light text on that strip.
 ##   DayStampPanel           the "<hari> selesai" ink stamp: cream paper, a
-##   DayStampLabel           red rim and red display-face lettering.
+##   DayStampLabel           red rim and red display-face lettering; StatCheckCard's TIDAK LULUS FailStamp wears both too.
 ##   AvatarDisc              the avatar strip's round face frame.
 ##   AvatarNameLabel         the student's name under it, on a StatusScrim.
 static func _build_school_day_liveliness(theme: Theme, tokens: DesignTokens) -> void:

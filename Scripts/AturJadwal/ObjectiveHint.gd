@@ -3,7 +3,7 @@ class_name ObjectiveHint
 extends RefCounted
 
 ## The words and numbers on AturJadwal's objective strip (2026-09-24 visual
-## polish, D8): its title, its star chip, its progress bar, and the one-line
+## polish, D8): its title, its safe-student chip, its progress bar, and the one-line
 ## plain-language hint it expands to. Pure static functions, tested directly.
 ##
 ## Nothing here restates a threshold. The pass line is GameState's

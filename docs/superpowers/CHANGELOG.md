@@ -8,6 +8,12 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-01 — APK launcher icon
+
+- **Why the icon never showed:** `project.godot` still pointed at Godot's default `icon.svg`, and both Android presets left every `launcher_icons/*` slot empty, so the APK shipped the export template's robot.
+- **Now:** the owner's Thea icon lives in `Assets/Images/AppIcon/` as four 432px layers (main, adaptive foreground fitted to the visible middle 288px, cream background, a white-ink monochrome for Android 13 themed icons); `config/icon` points at `app_icon.png`. Verified by exporting a debug APK and reading its `res/mipmap-*` icons back.
+- **Per machine:** `export_presets.cfg` is gitignored, so each exporting PC sets the four slots itself (the folder's README says how). The "Kejartes" preset also refuses to export (it overrides Min SDK without Gradle build); the "Android" preset exports.
+
 ## 2026-10-01 — Save system and Lanjutkan
 
 - **Saved:** one file, `user://savegame.cfg` (`SaveGame`; spec `2026-10-01-save-system-design.md`), written to `savegame.tmp` and renamed over it. It saves on hub-screen visits (`Transition` → `SaveGame.checkpoint`: Lobby, AturJadwal, ShopHub, Koperasi, CosmeticShop, Inventory, ReportCard), on pause/quit on a hub, after every SchoolDay day summary (a `[week]` section, so a quit mid-week resumes on the next day; not while a skip finishes the week) and at RunResult's exit to StudentCard. RunResult's exit to MainMenu deletes it; an unreadable or newer-version file moves to `savegame.bad.cfg`.

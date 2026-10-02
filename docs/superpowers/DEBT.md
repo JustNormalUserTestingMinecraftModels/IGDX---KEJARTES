@@ -638,6 +638,11 @@ widget via `project_run` instead, which exercises it fine.
     Godot stores every `.ctex` uncompressed. `tools/shrink_apk.ps1` deflates
     them after export (`docs/superpowers/apk-build.md`); skip it and the APK
     is back near 400 MB.
+  - **A shrunk APK has not been run on a phone yet (2026-10-02).** Godot
+    reads the deflated `.ctex` through Android's asset manager, which handles
+    them but re-inflates on a backward seek. Do the phone check in
+    `apk-build.md` on the first shrunk build; if loads are slower, deflate
+    only the large `.ctex` (spec: `specs/2026-10-02-apk-size-design.md`).
   - **A phone build cannot unpack ASTC** (the decoder ships in the editor
     only), so `Image.decompress()` fails there. `TraySlot` carries its crops
     baked for that reason; any new runtime pixel read of large art needs the

@@ -14,9 +14,14 @@ byte-identical contents. Design and numbers:
 | Debug | on | the team | on |
 | Release | off | judges, players | off (`OS.is_debug_build()` is false) |
 
-Both are signed with the same key, so either installs over the other and
-the phone keeps its save. Never put a release build on Google Play signed
-this way.
+The script signs with **this PC's** Godot debug keystore. Builds from the
+same PC, debug or release, install over each other and the phone keeps its
+save. A build from **another PC** carries a different key: Android refuses
+to install it over yours, and uninstalling first wipes the save. To share
+one signature across PCs, copy one `debug.keystore` to the other PC and
+point its `export/android/debug_keystore` (and the preset's Release
+keystore) at it; the password and user stay `debug_keystore_pass` /
+`debug_keystore_user`. Never put a build signed this way on Google Play.
 
 ## One-time setup per PC
 

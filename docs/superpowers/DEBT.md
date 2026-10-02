@@ -633,10 +633,11 @@ widget via `project_run` instead, which exercises it fine.
     the twelve 1280x1280 face bases, drawn at about 400 px. All six bases
     load in the Lobby whatever the roster is. Halving the base art, or
     loading only the roster's faces, is the next saving.
-  - **The download size was not measured.** A compressed texture is stored
-    at its video-memory size (about 1 byte per pixel), where a lossless one
-    is stored packed, so the APK probably grows. No export preset exists on
-    the dev PC to build one; compare a build before and after.
+  - **Compressed textures sit in the APK at video-memory size** (about 1 byte
+    per pixel): 132 of them were 247 MB of the 387 MB 2026-09-30 APK, because
+    Godot stores every `.ctex` uncompressed. `tools/shrink_apk.ps1` deflates
+    them after export (`docs/superpowers/apk-build.md`); skip it and the APK
+    is back near 400 MB.
   - **A phone build cannot unpack ASTC** (the decoder ships in the editor
     only), so `Image.decompress()` fails there. `TraySlot` carries its crops
     baked for that reason; any new runtime pixel read of large art needs the
@@ -833,10 +834,9 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
     now covers it, but the preset that builds the APK lives on another machine
     (`export_presets.cfg` is gitignored and absent here): check its resource
     filter carries `Assets/Audio/default_bus_layout.tres`.
-  - **ETC2 is on but nothing is built for Android yet.** There is no
-    `export_presets.cfg`. `import_etc2_astc` is enabled so the committed
-    `.import` files stay deterministic across machines; it costs import time
-    on a desktop that never samples those variants.
+  - **`import_etc2_astc` costs desktop import time.** It is enabled so the
+    committed `.import` files stay deterministic across machines and so the
+    APK gets its ASTC variants.
 
 - **Mipmap follow-ups (2026-09-22, premium-look PR 1).** 29 measured
   downscale offenders now generate mipmaps and the canvas filter samples them

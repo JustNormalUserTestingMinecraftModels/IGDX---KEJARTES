@@ -8,6 +8,13 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-02 — Web build for itch.io
+
+- **Why gzip in place:** itch.io caps a file at 200 MB and the web export's raw `index.pck` is 585.6 MB (desktop and phone textures both packed). itch.io serves gzip content with `content-encoding: gzip` under the file's own name, so `tools/shrink_web.ps1` gzips `*.pck`, `*.wasm` and `*.js` in place, proves each unpacks to a byte-identical original, checks the 200 MB limit and zips the folder for upload. The pck went to 172.8 MB, the zip is 181.8 MB.
+- **Tests:** `tools/test_shrink_web.ps1` (a fake export: over-limit run, good run, repeat run). No Godot suite change; no game code changed.
+- **Verified:** the gzipped build, served the way itch.io serves it, boots in a desktop browser under the Compatibility renderer; the title, grade picker, Lobby, Settings and the Main Bola minigame render. The preset lives per PC (`apk-build.md`, "Web build").
+- **Not verified:** phone browsers (the runtime loads the raw ~586 MB pck into memory), SchoolDay, EndCutscene, audio, and a side-by-side with the Mobile renderer. The web console logs "2D MSAA is not yet supported for GLES3" (the renderer ignores `msaa_2d`).
+
 ## 2026-10-02 — 60 fps cap and Hemat Baterai
 
 - **Why the phone ran warm:** nothing capped the frame rate, so a 90 or 120 Hz phone rendered up to 120 fps, even on still menus. Grafis HD (MSAA and bloom) already had a switch; the frame rate had none.

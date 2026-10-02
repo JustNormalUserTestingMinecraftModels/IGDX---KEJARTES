@@ -119,8 +119,8 @@ and Debug's **🧹 Forget Session** wipe run, save, achievements.
 `-REFERENCE-/prototype/` is the original prototype — reference only, not built,
 not imported.
 
-**APK:** export the `Android` preset, then always run `tools/shrink_apk.ps1`
-on it (`docs/superpowers/apk-build.md`).
+**Builds:** run `tools/shrink_apk.ps1` (Android) or `tools/shrink_web.ps1`
+(Web) on exports: `docs/superpowers/apk-build.md`.
 
 ## Visual system — read this before touching any UI
 

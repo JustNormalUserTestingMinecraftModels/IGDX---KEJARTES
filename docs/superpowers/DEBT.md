@@ -643,6 +643,16 @@ widget via `project_run` instead, which exercises it fine.
     them but re-inflates on a backward seek. Do the phone check in
     `apk-build.md` on the first shrunk build; if loads are slower, deflate
     only the large `.ctex` (spec: `specs/2026-10-02-apk-size-design.md`).
+  - **The web build is only partly checked (2026-10-02).** It boots and the
+    Lobby, Settings and Main Bola render in a desktop browser under the
+    Compatibility renderer; SchoolDay, EndCutscene, audio and every side-by-side
+    with the Mobile renderer are unchecked (Lobby bloom and the screen-reading
+    shaders are the likeliest differences). Phone browsers are untested: the
+    runtime loads the raw ~586 MB pck into memory, so a phone tab may crash;
+    the fallback is `For Mobile` off (see `apk-build.md`, "Web build"). The
+    gzipped pck is 172.8 MB against itch.io's 200 MB limit, so adding more art
+    or a texture format can break the upload. The debug overlay's emoji draw
+    as boxes on the web (no emoji font); debug-only.
   - **A phone build cannot unpack ASTC** (the decoder ships in the editor
     only), so `Image.decompress()` fails there. `TraySlot` carries its crops
     baked for that reason; any new runtime pixel read of large art needs the

@@ -63,3 +63,58 @@ installs without uninstalling, and five taps top-right open nothing.
 
 If loads are visibly slower, the deflated textures are being seeked
 backwards; deflate only the large `.ctex` (see the spec's open risk).
+
+## Web build (itch.io)
+
+itch.io allows 200 MB per file, and the raw `index.pck` is ~586 MB, so the
+export is gzipped in place after Godot writes it: itch.io sends gzip content
+under the file's own name with `content-encoding: gzip`, and the browser
+unpacks it before Godot reads it. `tools/shrink_web.ps1` does this and proves
+each file unpacks to a byte-identical original. Design:
+`specs/2026-10-02-web-build-design.md`.
+
+**One-time setup per PC** (`export_presets.cfg` is not in git): Project >
+Export > Add > **Web**, then:
+
+- **Variant > Thread Support:** off. **Extensions Support:** off.
+- **Vram Texture Compression:** **For Desktop** on **and For Mobile** on.
+  Without For Mobile, phone browsers get no usable textures.
+- Export as **release** (Export With Debug off): no debug overlay for players.
+- The web build runs on the Compatibility (WebGL 2) renderer on its own;
+  Android keeps the Mobile renderer.
+
+**Each build:**
+
+1. Export the Web preset into a folder that holds `index.html`, outside the
+   project (the PC's build used `Downloads/KejarTes-web/release`). Headless:
+   `Godot_console.exe --headless --path <project> --export-release "Web" <folder>/index.html`.
+2. Shrink it:
+
+   ```bash
+   powershell -ExecutionPolicy Bypass -File tools/shrink_web.ps1 "C:/path/to/folder"
+   ```
+
+   It refuses a folder it already processed, restores the originals if any
+   check fails, and writes `<folder>-itch.zip` with `index.html` at the root.
+3. On itch.io: New project > Kind of project **HTML** > upload the zip >
+   tick "This file will be played in the browser". Set the viewport to
+   1080 x 1920 (portrait) and leave SharedArrayBuffer off (the build is
+   single-threaded).
+
+**Measured 2026-10-02:** `index.pck` 585.6 MB to 172.8 MB, `index.wasm`
+37.7 MB to 9.4 MB, the upload zip 181.8 MB. The `.pck` is within 27 MB of
+itch.io's limit: anything that adds more than that (more art, a second phone
+texture format) needs the zip checked again; the script fails loudly if a
+file goes over.
+
+**Checked:** served the gzipped files with `content-encoding: gzip` (a
+throwaway local server, not committed) and played in a desktop browser: the
+game boots to the title, and the Lobby, Settings and a minigame (Main Bola)
+render. **Not checked:** SchoolDay, EndCutscene and the other screens, any
+side-by-side with the Mobile renderer, audio, and **phone browsers**.
+
+**Phone-browser test (decides whether phones stay supported):** Godot's web
+runtime loads the whole raw `.pck` (~586 MB) into the browser's memory. Open
+the itch.io draft page on a phone. If the tab crashes or reloads, export again
+with **For Mobile off** (about 330 MB raw, ~115 MB gzipped) and send phone
+players the APK.

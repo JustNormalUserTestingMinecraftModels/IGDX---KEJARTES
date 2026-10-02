@@ -119,10 +119,13 @@ signal battery_saver_changed(enabled: bool)
 ## Frame rate while Hemat Baterai is on.
 const BATTERY_SAVER_FPS := 30
 
+## Frame rate assumed when project.godot carries no application/run/max_fps.
+const DEFAULT_FPS := 60
+
 
 ## The project's own cap (application/run/max_fps, 60).
 func normal_fps() -> int:
-	return int(ProjectSettings.get_setting("application/run/max_fps", 60))
+	return int(ProjectSettings.get_setting("application/run/max_fps", DEFAULT_FPS))
 
 
 func _apply_frame_cap() -> void:

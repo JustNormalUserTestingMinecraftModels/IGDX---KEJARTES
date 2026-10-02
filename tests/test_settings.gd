@@ -482,3 +482,29 @@ func test_back_with_the_popup_open_closes_only_the_popup() -> void:
 func ", 0)
 	assert_true(note.find("_reset_popup.visible") < note.find("_on_back_pressed()"),
 		"the popup is checked before Back leaves")
+
+
+func test_battery_saver_default_off() -> void:
+	var fresh: Node = (load("res://Scripts/GameSettings.gd") as GDScript).new()
+	assert_false(fresh.get("battery_saver_enabled"), "Hemat Baterai defaults to off")
+	fresh.free()
+
+
+func test_battery_saver_caps_fps_persists_and_announces() -> void:
+	var original_fps := Engine.max_fps
+	var heard: Array = []
+	var on_flip := func(enabled: bool) -> void: heard.append(enabled)
+	GameSettings.battery_saver_changed.connect(on_flip)
+	GameSettings.battery_saver_enabled = true
+	GameSettings.battery_saver_enabled = true
+	assert_eq(Engine.max_fps, GameSettings.BATTERY_SAVER_FPS, "on caps at 30")
+	GameSettings.save_settings()
+	GameSettings.battery_saver_changed.disconnect(on_flip)
+	GameSettings.battery_saver_enabled = false
+	assert_eq(Engine.max_fps, GameSettings.normal_fps(), "off returns to the project cap")
+	GameSettings.load_settings()
+	assert_true(GameSettings.battery_saver_enabled, "round-trips through save/load")
+	assert_eq(heard, [true], "one emit per real flip")
+	GameSettings.battery_saver_enabled = false
+	GameSettings.save_settings()
+	Engine.max_fps = original_fps

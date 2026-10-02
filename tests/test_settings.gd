@@ -22,7 +22,7 @@ const LayoutFrame := preload("res://tests/layout_frame.gd")
 const _SECTIONS := {
 	"AudioCard": ["SUARA", ["MasterRow", "BgmRow", "SfxRow"]],
 	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
-	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
+	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "BatterySaverRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
 	"DataCard": ["DATA", ["ResetProgressButton"]],
 }
 ## Each switch row's words.
@@ -30,14 +30,14 @@ const _ROW_LABELS := {
 	"TutorialRow": "Tutorial Minigame", "SkipDialogRow": "Lewati Dialog Minigame",
 	"LookLayerRow": "Efek Visual", "AmbientRow": "Efek Suasana",
 	"ReduceMotionRow": "Kurangi Gerakan", "HapticsRow": "Getaran (Haptic)",
-	"HdGraphicsRow": "Grafis HD",
+	"HdGraphicsRow": "Grafis HD", "BatterySaverRow": "Hemat Baterai",
 }
 ## Each switch row's GameSettings property.
 const _ROW_SETTINGS := {
 	"TutorialRow": "minigame_tutorial_enabled", "SkipDialogRow": "skip_event_dialogue",
 	"LookLayerRow": "look_layer_enabled", "AmbientRow": "ambient_effects_enabled",
 	"ReduceMotionRow": "reduce_motion", "HapticsRow": "haptics_enabled",
-	"HdGraphicsRow": "hd_graphics_enabled",
+	"HdGraphicsRow": "hd_graphics_enabled", "BatterySaverRow": "battery_saver_enabled",
 }
 const _ROW_SCRIPT := "res://Scripts/UI/SettingsToggleRow.gd"
 
@@ -482,3 +482,29 @@ func test_back_with_the_popup_open_closes_only_the_popup() -> void:
 func ", 0)
 	assert_true(note.find("_reset_popup.visible") < note.find("_on_back_pressed()"),
 		"the popup is checked before Back leaves")
+
+
+func test_battery_saver_default_off() -> void:
+	var fresh: Node = (load("res://Scripts/GameSettings.gd") as GDScript).new()
+	assert_false(fresh.get("battery_saver_enabled"), "Hemat Baterai defaults to off")
+	fresh.free()
+
+
+func test_battery_saver_caps_fps_persists_and_announces() -> void:
+	var original_fps := Engine.max_fps
+	var heard: Array = []
+	var on_flip := func(enabled: bool) -> void: heard.append(enabled)
+	GameSettings.battery_saver_changed.connect(on_flip)
+	GameSettings.battery_saver_enabled = true
+	GameSettings.battery_saver_enabled = true
+	assert_eq(Engine.max_fps, GameSettings.BATTERY_SAVER_FPS, "on caps at 30")
+	GameSettings.save_settings()
+	GameSettings.battery_saver_changed.disconnect(on_flip)
+	GameSettings.battery_saver_enabled = false
+	assert_eq(Engine.max_fps, GameSettings.normal_fps(), "off returns to the project cap")
+	GameSettings.load_settings()
+	assert_true(GameSettings.battery_saver_enabled, "round-trips through save/load")
+	assert_eq(heard, [true], "one emit per real flip")
+	GameSettings.battery_saver_enabled = false
+	GameSettings.save_settings()
+	Engine.max_fps = original_fps

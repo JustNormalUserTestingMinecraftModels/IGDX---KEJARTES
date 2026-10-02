@@ -287,3 +287,10 @@ func test_every_non_null_assertion_caller_extends_the_compat_shim() -> void:
 		"the non-null assertion lives on McpTestSuiteCompat, not the vendored "
 			+ "McpTestSuite -- these call it without extending the shim: "
 			+ ", ".join(offenders))
+
+
+## A 90-120 Hz phone otherwise renders up to 120 fps on still menus and runs
+## warm (spec 2026-10-02-battery-saver-design.md).
+func test_frame_rate_is_capped_at_60() -> void:
+	assert_eq(ProjectSettings.get_setting("application/run/max_fps", 0), 60,
+		"project.godot caps the frame rate at 60")

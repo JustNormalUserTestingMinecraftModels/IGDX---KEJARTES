@@ -79,11 +79,25 @@ function Invoke-Tool([string]$Exe, [string[]]$ToolArgs) {
     if ($LASTEXITCODE -ne 0) { throw "$(Split-Path -Leaf $Exe) failed (exit $LASTEXITCODE)." }
 }
 
+# True when Other is the very file at Path under any spelling (8.3 short names,
+# links): hold Path open exclusively, then see whether Other can still be opened.
+function Test-SameFile([string]$Path, [string]$Other) {
+    if (-not (Test-Path -LiteralPath $Other -PathType Leaf)) { return $false }
+    $lock = [IO.File]::Open($Path, 'Open', 'Read', 'None')
+    try {
+        try { [IO.File]::Open($Other, 'Open', 'Read', 'ReadWrite').Dispose(); return $false }
+        catch [IO.IOException] { return $true }
+    } finally { $lock.Dispose() }
+}
+
 $Apk = (Resolve-Path -LiteralPath $Apk).Path
 if (-not $Out) {
     $Out = Join-Path (Split-Path -Parent $Apk) ([IO.Path]::GetFileNameWithoutExtension($Apk) + "-small.apk")
 }
-if ($Out -eq $Apk) { throw "-Out must differ from the input APK." }
+# Full path (relative to PowerShell's location, `.` and `..` folded), then a
+# same-file check: the input is never written, so -Out may not be it.
+$Out = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Out)
+if ($Out -eq $Apk -or (Test-SameFile $Apk $Out)) { throw "-Out must differ from the input APK." }
 
 if (-not $SdkPath) { $SdkPath = Read-EditorSetting "export/android/android_sdk_path" }
 if (-not $JavaHome) { $JavaHome = Read-EditorSetting "export/android/java_sdk_path" }

@@ -8,6 +8,13 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-02 — APK shrunk after export
+
+- **Why it was 387 MB:** Godot's Android exporter stores every `.ctex` uncompressed, and the 132 VRAM (ASTC) textures were 247 MB of it; that build also carried the 32-bit engine.
+- **Now:** `tools/shrink_apk.ps1` repacks the exported APK with `.ctex` deflated (`tools/ShrinkApk.java`), aligns it (`zipalign -P 16`), re-signs it with Godot's debug key and proves every entry byte-identical. The 2026-09-30 APK went from 387.3 MB to 182.4 MB. Same pixels and GPU memory; the art and audio are untouched.
+- **Builds:** debug for the team, release (no debug overlay) for players, both arm64-only and signed with the exporting PC's debug key (another PC's build will not install over it; `apk-build.md` says how to share one key). How-to and per-PC setup: `docs/superpowers/apk-build.md`; design `specs/2026-10-02-apk-size-design.md`.
+- **Rejected:** lossy/WebP art (4x GPU memory), Basis Universal, a Gradle build, audio re-encodes.
+
 ## 2026-10-01 — APK launcher icon
 
 - **Why the icon never showed:** `project.godot` still pointed at Godot's default `icon.svg`, and both Android presets left every `launcher_icons/*` slot empty, so the APK shipped the export template's robot.

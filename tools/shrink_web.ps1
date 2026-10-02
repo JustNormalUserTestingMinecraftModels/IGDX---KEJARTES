@@ -91,17 +91,25 @@ try {
     $limit = [double]$MaxFileMB * 1e6
     $big = @(Get-ChildItem -LiteralPath $Folder -File | Where-Object { $_.Extension -ne '.orig' -and $_.Length -gt $limit })
     if ($big.Count) { throw ("over itch.io's {0} MB per-file limit: {1}" -f $MaxFileMB, (($big | ForEach-Object Name) -join ', ')) }
-    # Everything verified: the .orig backups go, then the folder is zipped.
+    # Zip a copy of the folder without the .orig backups, and only delete the
+    # backups once the zip exists: a failed zip (disk full) can still restore.
+    if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip }
+    $stage = "$Folder.zip-stage"
+    if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
+    New-Item -ItemType Directory -Path $stage | Out-Null
+    try {
+        Get-ChildItem -LiteralPath $Folder -File | Where-Object { $_.Extension -ne '.orig' } |
+            ForEach-Object { Copy-Item -LiteralPath $_.FullName -Destination $stage }
+        [IO.Compression.ZipFile]::CreateFromDirectory($stage, $zip, [IO.Compression.CompressionLevel]::Optimal, $false)
+    } finally { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
     foreach ($m in $moved) { Remove-Item -LiteralPath "$m.orig" }
     $moved = @()
-    if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip }
-    [IO.Compression.ZipFile]::CreateFromDirectory($Folder, $zip, [IO.Compression.CompressionLevel]::Optimal, $false)
 } catch {
     $failed = $true
     Write-Host "shrink_web: $_" -ForegroundColor Red
 } finally {
     if ($failed) {
-        foreach ($m in $moved) { Move-Item -LiteralPath "$m.orig" -Destination $m -Force }
+        foreach ($m in $moved) { if (Test-Path -LiteralPath "$m.orig") { Move-Item -LiteralPath "$m.orig" -Destination $m -Force } }
         Get-ChildItem -LiteralPath $Folder -Filter "*.gz.tmp" | Remove-Item
         if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip }
     }

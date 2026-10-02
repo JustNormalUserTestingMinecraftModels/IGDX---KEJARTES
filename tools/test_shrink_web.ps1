@@ -58,5 +58,19 @@ Check (@($names | Where-Object { $_ -like "*.orig" -or $_ -like "*.tmp" }).Count
 & powershell -ExecutionPolicy Bypass -File $script $dir | Out-Null
 Check ($LASTEXITCODE -eq 1) "a second run is refused"
 
+# 4. A failure while writing the zip (here: its path is an occupied folder)
+#    restores the originals instead of leaving the export half gzipped.
+$dir2 = Join-Path $root "web2"
+New-Item -ItemType Directory -Force $dir2 | Out-Null
+[IO.File]::WriteAllText((Join-Path $dir2 "index.html"), "<html></html>")
+[IO.File]::WriteAllBytes((Join-Path $dir2 "index.pck"), $pck)
+New-Item -ItemType Directory -Force "$dir2-itch.zip" | Out-Null
+[IO.File]::WriteAllText((Join-Path "$dir2-itch.zip" "keep.txt"), "x")
+& powershell -NonInteractive -ExecutionPolicy Bypass -File $script $dir2 | Out-Null
+Check ($LASTEXITCODE -eq 1) "a failing zip step exits 1"
+$b2 = [IO.File]::ReadAllBytes((Join-Path $dir2 "index.pck"))
+Check ($b2.Length -eq $pck.Length -and -not ($b2[0] -eq 0x1f -and $b2[1] -eq 0x8b)) "a failing zip step restores the original index.pck"
+Check (@(Get-ChildItem $dir2 -Filter "*.orig").Count -eq 0) "a failing zip step leaves no .orig"
+
 Remove-Item -Recurse -Force $root
 if ($fails) { exit 1 } else { Write-Host "ALL PASS"; exit 0 }

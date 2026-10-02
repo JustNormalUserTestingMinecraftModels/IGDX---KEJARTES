@@ -8,6 +8,13 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-02 — 60 fps cap and Hemat Baterai
+
+- **Why the phone ran warm:** nothing capped the frame rate, so a 90 or 120 Hz phone rendered up to 120 fps, even on still menus. Grafis HD (MSAA and bloom) already had a switch; the frame rate had none.
+- **Now:** `application/run/max_fps=60` for everyone, plus a **Hemat Baterai** switch in Settings (TAMPILAN, under Grafis HD) that drops it to 30. `GameSettings.battery_saver_enabled` (default off, saved) applies `Engine.max_fps` itself on load and on every flip and emits `battery_saver_changed`. The debug Look panel has a matching switch. Grafis HD is unchanged and independent.
+- **Not done:** automatic thermal or battery-based quality (Godot cannot read the phone's temperature); `low_processor_mode` (the game animates constantly). Spec `specs/2026-10-02-battery-saver-design.md`.
+- **Hand-edited scene:** the row was added to `Settings.tscn` as text with the editor closed, because a `scene_save` from the editor also baked three `@tool` values (top margin 48 to 132, two audio slider values) into the file.
+
 ## 2026-10-02 — APK shrunk after export
 
 - **Why it was 387 MB:** Godot's Android exporter stores every `.ctex` uncompressed, and the 132 VRAM (ASTC) textures were 247 MB of it; that build also carried the 32-bit engine.

@@ -22,7 +22,7 @@ const LayoutFrame := preload("res://tests/layout_frame.gd")
 const _SECTIONS := {
 	"AudioCard": ["SUARA", ["MasterRow", "BgmRow", "SfxRow"]],
 	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
-	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
+	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "BatterySaverRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
 	"DataCard": ["DATA", ["ResetProgressButton"]],
 }
 ## Each switch row's words.
@@ -30,14 +30,14 @@ const _ROW_LABELS := {
 	"TutorialRow": "Tutorial Minigame", "SkipDialogRow": "Lewati Dialog Minigame",
 	"LookLayerRow": "Efek Visual", "AmbientRow": "Efek Suasana",
 	"ReduceMotionRow": "Kurangi Gerakan", "HapticsRow": "Getaran (Haptic)",
-	"HdGraphicsRow": "Grafis HD",
+	"HdGraphicsRow": "Grafis HD", "BatterySaverRow": "Hemat Baterai",
 }
 ## Each switch row's GameSettings property.
 const _ROW_SETTINGS := {
 	"TutorialRow": "minigame_tutorial_enabled", "SkipDialogRow": "skip_event_dialogue",
 	"LookLayerRow": "look_layer_enabled", "AmbientRow": "ambient_effects_enabled",
 	"ReduceMotionRow": "reduce_motion", "HapticsRow": "haptics_enabled",
-	"HdGraphicsRow": "hd_graphics_enabled",
+	"HdGraphicsRow": "hd_graphics_enabled", "BatterySaverRow": "battery_saver_enabled",
 }
 const _ROW_SCRIPT := "res://Scripts/UI/SettingsToggleRow.gd"
 

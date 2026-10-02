@@ -106,6 +106,8 @@ static func _build_screen_section(vbox: VBoxContainer) -> void:
 		_add_setting_switch(vbox, " Bloom global Efek Visual (bawaan mati) ", "bloom_enabled", look)
 	_add_setting_switch(vbox, " Grafis HD (MSAA, semua bloom) ",
 		"hd_graphics_enabled")
+	_add_setting_switch(vbox, " Hemat Baterai (30 FPS) ",
+		"battery_saver_enabled")
 
 	var count := Label.new()
 	count.add_theme_font_size_override("font_size", CAPTION_FONT)

@@ -407,7 +407,8 @@ it costs context on every single run, so it earns its place or it moves.
 
 ## Conventions
 
-- Game-facing identifiers and all UI text are **Indonesian**; engine and systems code
+- Game-facing identifiers and all UI text are **Indonesian** (one owner-approved
+  exception: Settings' CREDITS tab is English, 2026-10-03); engine and systems code
   is English. Match whatever the surrounding file does. Player-facing Indonesian
   must read naturally and use KBBI-standard words.
 - **File names:** PascalCase `.gd`/`.tscn`; assets `A–Z a–z 0–9 _ - .`

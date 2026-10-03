@@ -23,6 +23,8 @@ extends Control
 
 ## The video's sound fades out to this level, in dB.
 const SILENT_DB := -60.0
+## Extra seconds the backstop waits past the video's own end before leaving.
+const FALLBACK_GRACE_SECONDS := 1.0
 
 @onready var _video: VideoStreamPlayer = %Video
 
@@ -40,6 +42,10 @@ func _ready() -> void:
 	_tween.tween_callback(_video.play)
 	_tween.tween_property(_video, "modulate:a", 1.0, fade_in_seconds) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Backstop: a video that never plays (a codec the platform lacks) never
+	# emits finished, so leave anyway once its length plus the hold has passed.
+	get_tree().create_timer(start_delay + _video.get_stream_length() + hold_seconds
+		+ FALLBACK_GRACE_SECONDS).timeout.connect(_leave)
 
 
 ## A tap or key press skips the rest of the video and fades it out now.

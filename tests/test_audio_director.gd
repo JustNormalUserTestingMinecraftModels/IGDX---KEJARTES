@@ -809,3 +809,21 @@ func test_setup_ensures_its_buses_before_making_players() -> void:
 	assert_true(ensured >= 0, "_ready ensures the mixer buses")
 	assert_true(ensured < body.find("AudioStreamPlayer.new()"), "before the first player exists")
 	assert_true(src.contains("for bus in MIXER_BUSES:"), "every player-facing bus is covered")
+
+
+## The reward jingle plays 15% quieter than its file; other cues stay at 0 dB.
+func test_reward_cue_is_trimmed_to_its_volume_knob() -> void:
+	assert_eq(_director.sfx_reward_volume, 0.85, "reward plays at 85%")
+	assert_true(is_equal_approx(_director._sfx_volume_db(&"reward"), linear_to_db(0.85)))
+	assert_eq(_director._sfx_volume_db(&"tap"), 0.0, "other cues are untrimmed")
+
+
+## The weekly report plays the reward jingle once: the week-end feedback that
+## runs just before it must not play it too.
+func test_week_end_does_not_double_the_report_reward() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Feedback/RewardFeedback.gd")
+	for line in src.split("\n"):
+		if line.contains('&"week_cleared":'):
+			assert_false(line.contains('&"reward"'), "week_cleared must not play reward")
+	var report := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_eq(report.count('play_sfx(&"reward")'), 1, "the report plays reward once")

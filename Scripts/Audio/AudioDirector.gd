@@ -69,6 +69,9 @@ const MIXER_BUSES: Array[StringName] = [&"Master", &"BGM", &"SFX"]
 ## `play_sfx(&"reward")`: a reward is granted (StatCheck, lobby,
 ## SchoolDay).
 @export var sfx_reward: AudioStream
+## Loudness of sfx_reward (the trumpet jingle), 0-1 of the file's own level.
+## 0.85 = 15% quieter (owner's call, 2026-10-03).
+@export_range(0.0, 1.0, 0.01) var sfx_reward_volume: float = 0.85
 ## `play_sfx(&"tally")`: a Daily Results stat row's gold chevron pops in
 ## on a day that gained. Placeholder: aliases SFX/pop.ogg until a real
 ## tick lands.
@@ -373,8 +376,16 @@ func play_sfx(id: StringName, pitch: float = 1.0) -> void:
 	var player := _sfx_pool[_sfx_next]
 	_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
 	player.stream = stream
+	player.volume_db = _sfx_volume_db(id)
 	player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
 	player.play()
+
+
+## A cue's own level trim in dB: 0 for every cue but those given a volume knob.
+func _sfx_volume_db(id: StringName) -> float:
+	if id == &"reward":
+		return linear_to_db(maxf(sfx_reward_volume, 0.0001))
+	return 0.0
 
 
 func _resolve_sfx(id: StringName) -> AudioStream:
@@ -445,6 +456,7 @@ func play_sfx_variant(family: StringName, pitch: float = 1.0) -> void:
 	var player := _sfx_pool[_sfx_next]
 	_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
 	player.stream = stream
+	player.volume_db = 0.0
 	player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
 	player.play()
 
@@ -463,6 +475,7 @@ func play_chord(ids: Array, pitches: Array = []) -> void:
 		var player := _sfx_pool[_sfx_next]
 		_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
 		player.stream = stream
+		player.volume_db = _sfx_volume_db(id)
 		var pitch: float = pitches[i] if i < pitches.size() else 1.0
 		player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
 		player.play()

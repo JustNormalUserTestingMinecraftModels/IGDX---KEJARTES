@@ -71,7 +71,8 @@ const RECIPES := {
 	&"minigame_win":     { "tier": TIER_CELEBRATION, "sfx": &"result_fanfare", "chord": [&"result_fanfare", &"reward"], "no_particles": true },
 	&"achievement_unlocked": { "tier": TIER_POP, "sfx": &"achievement_success" },
 	&"achievement_claimed":  { "tier": TIER_CELEBRATION, "sfx": &"achievement_prize", "chord": [&"achievement_prize", &"reward"], "no_particles": true },
-	&"week_cleared":     { "tier": TIER_CELEBRATION, "sfx": &"reward", "chord": [&"reward", &"sparkle"] },
+	# No `reward` here: the weekly report that follows plays it once itself.
+	&"week_cleared":     { "tier": TIER_CELEBRATION, "sfx": &"sparkle", "chord": [&"sparkle"] },
 	&"run_win":          { "tier": TIER_CELEBRATION, "sfx": &"result_fanfare", "chord": [&"result_fanfare", &"reward"] },
 	# badge_reveal: EndCutscene already plays the band cue via
 	# badge_reveal_stream(); RewardFeedback adds only the physical channels.

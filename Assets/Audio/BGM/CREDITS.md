@@ -10,10 +10,10 @@ records where each one came from, for reference.
 | `introcutscene.mp3` | intro cutscene theme |
 | `result_win.mp3` | sounovamusic — "Nusantara Calling", track 576659 |
 | `result_lose.wav` | extenz — game over stinger |
-| `minigame_senibudaya_menari.mp3` | dance minigame theme |
-| `lobby_song1.mp3`, `lobby_song2.mp3`, `lobby_song3.mp3` | user-supplied (Loby1-3), 2026-10-03; shuffled |
-| `schoolsimulation_intro.ogg` | user-supplied, school day with intro (plays once) |
-| `schoolsimulation_loop.ogg` | user-supplied, school day part 2 (loops; also the exam notice) |
-| `minigame_akademis_1.mp3` .. `_3.mp3` | user-supplied (minigames1-3), 2026-10-03; shuffled |
-| `minigame_olahraga.ogg` | user-supplied (olahraga), 2026-10-03 |
-| `minigame_senibudaya_batik.ogg` | user-supplied (minigamebatik), 2026-10-03 |
+| `minigame_senibudaya_menari.mp3` | griseyo (Yosua Coyo Wagito) — dance minigame theme |
+| `lobby_song1.mp3`, `lobby_song2.mp3`, `lobby_song3.mp3` | griseyo (Yosua Coyo Wagito) — Loby1-3, 2026-10-03; shuffled |
+| `schoolsimulation_intro.ogg` | griseyo (Yosua Coyo Wagito) — school day with intro (plays once) |
+| `schoolsimulation_loop.ogg` | griseyo (Yosua Coyo Wagito) — school day part 2 (loops; also the exam notice) |
+| `minigame_akademis_1.mp3` .. `_3.mp3` | griseyo (Yosua Coyo Wagito) — minigames1-3, 2026-10-03; shuffled |
+| `minigame_olahraga.ogg` | griseyo (Yosua Coyo Wagito) — olahraga, 2026-10-03 |
+| `minigame_senibudaya_batik.ogg` | griseyo (Yosua Coyo Wagito) — minigamebatik, 2026-10-03 |

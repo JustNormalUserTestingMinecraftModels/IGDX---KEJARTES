@@ -24,8 +24,38 @@ const _SECTIONS := {
 	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
 	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "BatterySaverRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
 	"DataCard": ["DATA", ["ResetProgressButton"]],
-	"CreditsCard": ["KREDIT", ["Credit1", "Credit2", "Credit3", "Credit4", "Credit5", "Credit6"]],
 }
+## The KREDIT card under its heading, top to bottom: [node, variation, text].
+## A "Gap" row is a plain spacer Control; ThanksRule is the divider.
+const _CREDIT_ROWS := [
+	["GameTitle", "CreditTitleLabel", "KEJARTES"],
+	["Studio", "CaptionLabel", "oleh 1 MINUS TEAM"],
+	["Gap1", "", ""],
+	["RoleProgrammer", "CreditRoleLabel", "PROGRAMMER & DESAINER UI"],
+	["NameEleazar", "BodyLabel", "Eleazar Evan Putra"],
+	["NameHosea", "BodyLabel", "Hosea Juan Kurniawan"],
+	["NamePanji", "BodyLabel", "I Made Panji Putra"],
+	["Gap2", "", ""],
+	["RoleIllustrator", "CreditRoleLabel", "DESAIN KARAKTER & ILUSTRATOR"],
+	["NameAbdullah", "BodyLabel", "Abdullah A'asiq Satria"],
+	["Gap3", "", ""],
+	["RoleBackground", "CreditRoleLabel", "SENIMAN LATAR & MULTIMEDIA"],
+	["NameAlbertus", "BodyLabel", "Albertus Akmel Bintang Prasetyo"],
+	["Gap4", "", ""],
+	["RoleMusic", "CreditRoleLabel", "MUSIK"],
+	["ArtistFiikuri", "BodyLabel", "fiikuri"],
+	["TrackFiikuri", "CaptionLabel", "\"Epic Nusantara\" \u00b7 Layar Judul"],
+	["ArtistSounova", "BodyLabel", "sounovamusic"],
+	["TrackSounova", "CaptionLabel", "\"Nusantara Calling\" \u00b7 Hasil Menang"],
+	["ArtistExtenz", "BodyLabel", "extenz"],
+	["TrackExtenz", "CaptionLabel", "Musik Kalah \u00b7 Hasil Kalah"],
+	["Gap5", "", ""],
+	["ThanksRule", "SettingsDivider", ""],
+	["RoleThanks", "CreditRoleLabel", "TERIMA KASIH KHUSUS"],
+	["NameYosua", "BodyLabel", "Yosua Coyo Wagito"],
+	["YosuaHandle", "CaptionLabel", "griseyo di Spotify"],
+	["YosuaMusic", "CaptionLabel", "atas musik untuk\nLobi (3 lagu) \u00b7 Hari Sekolah\nMinigame Akademis (3 lagu) \u00b7 Minigame Olahraga\nMembatik \u00b7 Lomba Menari"],
+]
 ## Each switch row's words.
 const _ROW_LABELS := {
 	"TutorialRow": "Tutorial Minigame", "SkipDialogRow": "Lewati Dialog Minigame",
@@ -345,7 +375,8 @@ func test_settings_are_grouped_into_four_titled_cards() -> void:
 	var names: Array = []
 	for card in sections.get_children():
 		names.append(String(card.name))
-	assert_eq(names, _SECTIONS.keys(), "the four sections, in order")
+	# CreditsCard closes the column; test_credits_read_top_to_bottom owns it.
+	assert_eq(names, _SECTIONS.keys() + ["CreditsCard"], "the sections, in order")
 	for card_name in _SECTIONS:
 		var vbox := sections.get_node_or_null("%s/Margin/VBox" % card_name)
 		assert_true(vbox != null, card_name + " needs Margin/VBox")
@@ -515,3 +546,28 @@ func test_battery_saver_caps_fps_persists_and_announces() -> void:
 	GameSettings.battery_saver_enabled = false
 	GameSettings.save_settings()
 	Engine.max_fps = original_fps
+
+
+## The KREDIT tab reads like film credits (spec 2026-10-03-credits-tab):
+## a CardSectionLabel heading, then every row of _CREDIT_ROWS in order,
+## centred and wrapping, in its variation and words.
+func test_credits_read_top_to_bottom() -> void:
+	var vbox := _screen.get_node("%CreditsCard/Margin/VBox")
+	var heading := vbox.get_child(0) as Label
+	assert_eq(heading.theme_type_variation, &"CardSectionLabel")
+	assert_eq(heading.text, "KREDIT")
+	assert_eq(vbox.get_child_count(), _CREDIT_ROWS.size() + 1,
+		"the heading plus exactly the credit rows")
+	for i in _CREDIT_ROWS.size():
+		var row: Array = _CREDIT_ROWS[i]
+		var node := vbox.get_child(i + 1)
+		assert_eq(String(node.name), row[0], "row %d is %s" % [i, row[0]])
+		if String(row[0]).begins_with("Gap"):
+			assert_true(node is Control and not node is Label, row[0] + " is a spacer")
+			continue
+		assert_eq((node as Control).theme_type_variation, StringName(row[1]), row[0] + " variation")
+		if node is Label:
+			var label := node as Label
+			assert_eq(label.text, row[2], row[0] + " text")
+			assert_eq(label.horizontal_alignment, HORIZONTAL_ALIGNMENT_CENTER, row[0] + " is centred")
+			assert_eq(label.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART, row[0] + " wraps")

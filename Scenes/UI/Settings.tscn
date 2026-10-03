@@ -295,127 +295,190 @@ theme_override_constants/margin_bottom = 20
 
 [node name="VBox" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin" unique_id=1026249951]
 layout_mode = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 6
 
 [node name="SectionLabel" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=589394841]
 layout_mode = 2
 theme_type_variation = &"CardSectionLabel"
 text = "KREDIT"
 
-[node name="Credit1" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=246135401]
+[node name="GameTitle" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=604739221]
 layout_mode = 2
-theme_override_constants/separation = 2
+theme_type_variation = &"CreditTitleLabel"
+text = "KEJARTES"
+horizontal_alignment = 1
+autowrap_mode = 3
 
-[node name="Name" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit1" unique_id=1841890601]
+[node name="Studio" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1615769757]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "oleh 1 MINUS TEAM"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Gap1" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1349307568]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoleProgrammer" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1073665680]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "PROGRAMMER & DESAINER UI"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NameEleazar" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1742920718]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Eleazar Evan Putra"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Role" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit1" unique_id=1078757210]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Programmer, Desainer UI"
-autowrap_mode = 3
-
-[node name="Rule1" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=333622692]
-layout_mode = 2
-theme_type_variation = &"SettingsDivider"
-
-[node name="Credit2" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=229743051]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="Name" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit2" unique_id=398360615]
+[node name="NameHosea" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=839385211]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Hosea Juan Kurniawan"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Role" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit2" unique_id=1158985294]
-layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Programmer, Desainer UI"
-autowrap_mode = 3
-
-[node name="Rule2" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=798329195]
-layout_mode = 2
-theme_type_variation = &"SettingsDivider"
-
-[node name="Credit3" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=364524085]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="Name" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit3" unique_id=2139265809]
+[node name="NamePanji" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=100764891]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "I Made Panji Putra"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Role" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit3" unique_id=1498033316]
+[node name="Gap2" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1392028388]
+custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Programmer, Desainer UI"
+mouse_filter = 2
+
+[node name="RoleIllustrator" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=616045958]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "DESAIN KARAKTER & ILUSTRATOR"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Rule3" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=329565862]
-layout_mode = 2
-theme_type_variation = &"SettingsDivider"
-
-[node name="Credit4" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1411967958]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="Name" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit4" unique_id=1001605179]
+[node name="NameAbdullah" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=366897806]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Abdullah A'asiq Satria"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Role" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit4" unique_id=357677024]
+[node name="Gap3" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=178519026]
+custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
-text = "Desain Karakter & Ilustrator"
+mouse_filter = 2
+
+[node name="RoleBackground" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=872338000]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "SENIMAN LATAR & MULTIMEDIA"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Rule4" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1987658595]
-layout_mode = 2
-theme_type_variation = &"SettingsDivider"
-
-[node name="Credit5" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1836873019]
-layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="Name" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit5" unique_id=467969637]
+[node name="NameAlbertus" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1322109047]
 layout_mode = 2
 theme_type_variation = &"BodyLabel"
 text = "Albertus Akmel Bintang Prasetyo"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Role" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit5" unique_id=334021405]
+[node name="Gap4" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=670093262]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoleMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1465534064]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "MUSIK"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ArtistFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1439194220]
+layout_mode = 2
+theme_type_variation = &"BodyLabel"
+text = "fiikuri"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1031388756]
 layout_mode = 2
 theme_type_variation = &"CaptionLabel"
-text = "Seniman Latar & Multimedia"
+text = "\"Epic Nusantara\" · Layar Judul"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Rule5" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1929724553]
+[node name="ArtistSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=348143400]
+layout_mode = 2
+theme_type_variation = &"BodyLabel"
+text = "sounovamusic"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1828764480]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "\"Nusantara Calling\" · Hasil Menang"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ArtistExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1337256387]
+layout_mode = 2
+theme_type_variation = &"BodyLabel"
+text = "extenz"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=174062446]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "Musik Kalah · Hasil Kalah"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Gap5" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1712951561]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ThanksRule" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=451751735]
 layout_mode = 2
 theme_type_variation = &"SettingsDivider"
 
-[node name="Credit6" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1318565681]
+[node name="RoleThanks" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=411965459]
 layout_mode = 2
-theme_override_constants/separation = 2
-
-[node name="Name" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit6" unique_id=1981528728]
-layout_mode = 2
-theme_type_variation = &"BodyLabel"
-text = "Yosua Coyo Wagito (griseyo di Spotify)"
+theme_type_variation = &"CreditRoleLabel"
+text = "TERIMA KASIH KHUSUS"
+horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Role" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox/Credit6" unique_id=643482139]
+[node name="NameYosua" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1503915123]
+layout_mode = 2
+theme_type_variation = &"BodyLabel"
+text = "Yosua Coyo Wagito"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="YosuaHandle" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1562815194]
 layout_mode = 2
 theme_type_variation = &"CaptionLabel"
-text = "Terima kasih khusus untuk musiknya"
+text = "griseyo di Spotify"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="YosuaMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=721517024]
+layout_mode = 2
+theme_type_variation = &"CaptionLabel"
+text = "atas musik untuk
+Lobi (3 lagu) · Hari Sekolah
+Minigame Akademis (3 lagu) · Minigame Olahraga
+Membatik · Lomba Menari"
+horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="ResetProgressPopup" parent="." unique_id=949575835 instance=ExtResource("6_kg15k")]

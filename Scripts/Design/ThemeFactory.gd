@@ -2028,6 +2028,10 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["H2Label", tokens.font_h2, tokens.text_primary, false, true],
 		["TitleLabel", tokens.font_title, tokens.text_primary, false, true],
 		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false, false],
+		# 2026-10-03 credits tab: the KEJARTES line and the role headings, in
+		# the darker red so small text holds its contrast on cream.
+		["CreditTitleLabel", tokens.font_h2, tokens.accent_tomato_lip, false, true],
+		["CreditRoleLabel", tokens.font_caption, tokens.accent_tomato_lip, false, true],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false, false],
 		# PageDotLabel styled the SemesterEnd carousel's page dots and has
 		# had no consumer since Plan A deleted that screen. Kept baked

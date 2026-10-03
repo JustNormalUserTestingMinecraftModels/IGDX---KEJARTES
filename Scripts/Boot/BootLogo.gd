@@ -1,29 +1,30 @@
 @tool
 extends Control
 
-## The boot logo: the first scene the game runs. The KejarTes logo fades
-## (and grows a touch) in on black, holds, fades back out, then hands over to
-## MainMenu. Godot's own boot splash is plain black (project.godot), so the
-## two meet seamlessly. A tap skips straight to the fade-out.
+## The boot logo: the first scene the game runs. The team's minusone_logo
+## video plays on black, fading in at the start and out once it ends, then
+## hands over to MainMenu. Godot's own boot splash is plain black
+## (project.godot), so the two meet seamlessly. A tap skips to the fade-out.
+## The video's size on screen is the Video node's rect in BootLogo.tscn.
 ##
-## @tool so the test suite gets a live instance; the animation and the scene
+## @tool so the test suite gets a live instance; playback and the scene
 ## change are runtime-only, behind Engine.is_editor_hint().
 
 ## Where the logo hands over once it has faded out.
 @export_file("*.tscn") var next_scene: String = "res://Scenes/MainMenu/MainMenu.tscn"
-## Seconds of black before the logo starts to appear.
+## Seconds of black before the video starts.
 @export_range(0.0, 2.0, 0.05) var start_delay: float = 0.3
-## Seconds the logo takes to fade in.
-@export_range(0.05, 3.0, 0.05) var fade_in_seconds: float = 0.8
-## Seconds the logo stays fully shown.
-@export_range(0.0, 5.0, 0.05) var hold_seconds: float = 1.4
-## Seconds the logo takes to fade out.
-@export_range(0.05, 3.0, 0.05) var fade_out_seconds: float = 0.7
-## Scale the logo grows from while fading in (1.0 = no growth). Ignored when
-## Settings' Kurangi Gerakan is on.
-@export_range(0.5, 1.0, 0.01) var start_scale: float = 0.9
+## Seconds the video takes to fade in as it starts.
+@export_range(0.05, 3.0, 0.05) var fade_in_seconds: float = 0.4
+## Seconds the last frame stays up after the video ends.
+@export_range(0.0, 3.0, 0.05) var hold_seconds: float = 0.3
+## Seconds the video takes to fade out.
+@export_range(0.05, 3.0, 0.05) var fade_out_seconds: float = 0.6
 
-@onready var _logo: TextureRect = %Logo
+## The video's sound fades out to this level, in dB.
+const SILENT_DB := -60.0
+
+@onready var _video: VideoStreamPlayer = %Video
 
 var _leaving := false
 var _tween: Tween
@@ -32,21 +33,16 @@ var _tween: Tween
 func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
-	_logo.pivot_offset = _logo.size / 2.0
-	_logo.modulate.a = 0.0
-	if not GameSettings.reduce_motion:
-		_logo.scale = Vector2.ONE * start_scale
+	_video.modulate.a = 0.0
+	_video.finished.connect(_on_video_finished)
 	_tween = create_tween()
 	_tween.tween_interval(start_delay)
-	_tween.tween_property(_logo, "modulate:a", 1.0, fade_in_seconds) \
+	_tween.tween_callback(_video.play)
+	_tween.tween_property(_video, "modulate:a", 1.0, fade_in_seconds) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_tween.parallel().tween_property(_logo, "scale", Vector2.ONE, fade_in_seconds) \
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	_tween.tween_interval(hold_seconds)
-	_tween.tween_callback(_leave)
 
 
-## A tap or key press skips the wait and fades the logo out now.
+## A tap or key press skips the rest of the video and fades it out now.
 func _input(event: InputEvent) -> void:
 	if Engine.is_editor_hint() or _leaving:
 		return
@@ -57,15 +53,23 @@ func _input(event: InputEvent) -> void:
 		_leave()
 
 
-## Fades the logo out from wherever it is, then changes to next_scene.
+## Holds the last frame for hold_seconds, then leaves.
+func _on_video_finished() -> void:
+	get_tree().create_timer(hold_seconds).timeout.connect(_leave)
+
+
+## Fades the video (and its sound) out from wherever it is, then changes to
+## next_scene.
 func _leave() -> void:
 	if _leaving:
 		return
 	_leaving = true
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
-	var out := create_tween()
-	out.tween_property(_logo, "modulate:a", 0.0, fade_out_seconds) \
+	var out := create_tween().set_parallel(true)
+	out.tween_property(_video, "modulate:a", 0.0, fade_out_seconds) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	out.tween_callback(func() -> void:
+	out.tween_property(_video, "volume_db", SILENT_DB, fade_out_seconds)
+	out.chain().tween_callback(func() -> void:
+		_video.stop()
 		Transition.change_scene(next_scene, Transition.Style.FADE))

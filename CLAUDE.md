@@ -2,7 +2,7 @@
 
 Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan.
 Indonesian-language school-management sim. Main scene:
-`Scenes/Boot/BootLogo.tscn` (animated logo on black → MainMenu).
+`Scenes/Boot/BootLogo.tscn` (the minusone_logo video on black → MainMenu).
 
 ## The game
 

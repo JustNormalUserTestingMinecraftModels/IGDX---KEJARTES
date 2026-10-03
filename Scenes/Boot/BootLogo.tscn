@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://d0kgy6t5iapij"]
 
-[ext_resource type="Script" path="res://Scripts/Boot/BootLogo.gd" id="1_l5hen"]
-[ext_resource type="Texture2D" uid="uid://c72nldobl75au" path="res://Assets/Images/UI/logo.png" id="2_8r6mx"]
+[ext_resource type="Script" uid="uid://bjdh15cfmahbt" path="res://Scripts/Boot/BootLogo.gd" id="1_l5hen"]
+[ext_resource type="VideoStream" uid="uid://bxlfihug2r2ci" path="res://Assets/Video/minusone_logo.ogv" id="2_l5hen"]
 
 [node name="BootLogo" type="Control" unique_id=1270545335]
 layout_mode = 3
@@ -22,7 +22,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
 
-[node name="Logo" type="TextureRect" parent="." unique_id=458483081]
+[node name="Video" type="VideoStreamPlayer" parent="." unique_id=1219193166]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
@@ -30,14 +30,13 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -300.0
-offset_top = -300.0
-offset_right = 300.0
-offset_bottom = 300.0
+offset_left = -1080.0
+offset_top = -607.5
+offset_right = 1080.0
+offset_bottom = 607.5
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(300, 300)
 mouse_filter = 2
-texture = ExtResource("2_8r6mx")
-expand_mode = 1
-stretch_mode = 5
+stream = ExtResource("2_l5hen")
+expand = true
+bus = &"SFX"

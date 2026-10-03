@@ -208,6 +208,10 @@ static func _build_need_signal(theme: Theme, tokens: DesignTokens) -> void:
 ## 2026-09-24 mockup. No token matches; single-screen values.
 ## A resting tile's tan rim, px.
 const PICKER_TILE_BORDER := 3
+## CreditMusicLabel's size: the credits' track lines and griseyo's list, one
+## step above CreditDetailLabel (font_body_size) and just under the names
+## (font_title), so a track reads as belonging to the artist above it.
+const CREDIT_MUSIC_SIZE := 32
 ## The selected tile's gold ring, px -- thick enough to read at a glance.
 const PICKER_SELECTED_BORDER := 6
 ## Alpha of the selected tile's gold glow.
@@ -2028,6 +2032,16 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["H2Label", tokens.font_h2, tokens.text_primary, false, true],
 		["TitleLabel", tokens.font_title, tokens.text_primary, false, true],
 		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false, false],
+		# 2026-10-03 credits tab: the KEJARTES line and the role headings, in
+		# the darker red so small text holds its contrast on cream.
+		# Each credit line sits one size step above its usual role (owner,
+		# 2026-10-03: "make the text bigger"): names and details have their own
+		# variations so BodyLabel/CaptionLabel stay put everywhere else.
+		["CreditTitleLabel", tokens.font_h1, tokens.accent_tomato_lip, false, true],
+		["CreditRoleLabel", tokens.font_body_size, tokens.accent_tomato_lip, false, true],
+		["CreditNameLabel", tokens.font_title, tokens.text_primary, false, false],
+		["CreditDetailLabel", tokens.font_body_size, tokens.text_secondary, false, false],
+		["CreditMusicLabel", CREDIT_MUSIC_SIZE, tokens.text_secondary, false, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false, false],
 		# PageDotLabel styled the SemesterEnd carousel's page dots and has
 		# had no consumer since Plan A deleted that screen. Kept baked

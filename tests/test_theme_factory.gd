@@ -318,6 +318,8 @@ const DISPLAY_ROSTER := [
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill",
+	# 2026-10-03 credits tab: the KEJARTES title and the red role headings.
+	"CreditTitleLabel", "CreditRoleLabel",
 	# 2026-09-29: achievement tile titles on the heading face.
 	"AchievementTileTitleLabel",
 	# 2026-09-24 Penjadwalan picker rebuild.

@@ -24,8 +24,48 @@ const _SECTIONS := {
 	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
 	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "BatterySaverRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
 	"DataCard": ["DATA", ["ResetProgressButton"]],
-	"CreditsCard": ["KREDIT", ["Credit1", "Credit2", "Credit3", "Credit4", "Credit5", "Credit6"]],
 }
+## The KREDIT card under its heading, top to bottom: [node, variation, text].
+## A "Gap" row is a plain spacer Control: GapN parts sections (_CREDIT_SECTION_GAP),
+## GapPairN parts the music pairs (_CREDIT_PAIR_GAP).
+## Spacer heights: the airy layout the owner picked on 2026-10-03.
+const _CREDIT_SECTION_GAP := 24.0
+const _CREDIT_PAIR_GAP := 12.0
+## Between griseyo's handle and their list of tracks: the same entry, so tighter.
+const _CREDIT_LIST_GAP := 8.0
+const _CREDIT_ROWS := [
+	["GameTitle", "CreditTitleLabel", "KEJARTES"],
+	["Gap1", "", ""],
+	["RoleProgrammer", "CreditRoleLabel", "PROGRAMMER & UI DESIGNER"],
+	["NameEleazar", "CreditNameLabel", "Eleazar Evan Putra"],
+	["NameHosea", "CreditNameLabel", "Hosea Juan Kurniawan"],
+	["NamePanji", "CreditNameLabel", "I Made Panji Putra"],
+	["Gap2", "", ""],
+	["RoleIllustrator", "CreditRoleLabel", "CHARACTER DESIGN & ILLUSTRATOR"],
+	["NameAbdullah", "CreditNameLabel", "Abdullah A'asiq Satria"],
+	["Gap3", "", ""],
+	["RoleBackground", "CreditRoleLabel", "BACKGROUND ARTIST & MULTIMEDIA"],
+	["NameAlbertus", "CreditNameLabel", "Albertus Akmel Bintang Prasetya"],
+	["Gap4", "", ""],
+	["RoleMusic", "CreditRoleLabel", "MUSIC"],
+	["ArtistFiikuri", "CreditNameLabel", "fiikuri"],
+	["TrackFiikuri", "CreditMusicLabel", "\"Epic Nusantara\" \u00b7 Title Screen"],
+	["GapPair1", "", ""],
+	["ArtistSounova", "CreditNameLabel", "sounovamusic"],
+	["TrackSounova", "CreditMusicLabel", "\"Nusantara Calling\" \u00b7 Win Results"],
+	["GapPair2", "", ""],
+	["ArtistExtenz", "CreditNameLabel", "extenz"],
+	["TrackExtenz", "CreditMusicLabel", "Game Over Music \u00b7 Lose Results"],
+	["GapPair4", "", ""],
+	["ArtistJulius", "CreditNameLabel", "JuliusH"],
+	["TrackJulius", "CreditMusicLabel", "Intro Theme \u00b7 Opening Cutscene"],
+	["Gap5", "", ""],
+	["RoleThanks", "CreditRoleLabel", "SPECIAL THANKS"],
+	["NameYosua", "CreditNameLabel", "Yosua Coyo Wagito"],
+	["YosuaHandle", "CreditDetailLabel", "griseyo on Spotify"],
+	["GapPair3", "", ""],
+	["YosuaMusic", "CreditMusicLabel", "for the music of\nLobby (3 songs) \u00b7 School Day\nAcademic Minigames (3 songs) \u00b7 Sports Minigames\nBatik Making \u00b7 Dance Contest"],
+]
 ## Each switch row's words.
 const _ROW_LABELS := {
 	"TutorialRow": "Tutorial Minigame", "SkipDialogRow": "Lewati Dialog Minigame",
@@ -114,7 +154,7 @@ func test_the_frame_close_is_the_way_back() -> void:
 
 func test_the_tabs_are_suara_main_and_kredit() -> void:
 	var frame := _screen.get_node("SafeArea/Frame") as NotebookFrame
-	assert_eq(Array(frame.tabs), ["SUARA", "MAIN", "KREDIT"])
+	assert_eq(Array(frame.tabs), ["SUARA", "MAIN", "CREDITS"])
 	assert_eq(frame.title_text, "PENGATURAN")
 
 
@@ -345,7 +385,8 @@ func test_settings_are_grouped_into_four_titled_cards() -> void:
 	var names: Array = []
 	for card in sections.get_children():
 		names.append(String(card.name))
-	assert_eq(names, _SECTIONS.keys(), "the four sections, in order")
+	# CreditsCard closes the column; test_credits_read_top_to_bottom owns it.
+	assert_eq(names, _SECTIONS.keys() + ["CreditsCard"], "the sections, in order")
 	for card_name in _SECTIONS:
 		var vbox := sections.get_node_or_null("%s/Margin/VBox" % card_name)
 		assert_true(vbox != null, card_name + " needs Margin/VBox")
@@ -461,6 +502,25 @@ func test_every_card_fits_the_design_screen_without_scrolling() -> void:
 			"DATA ends at %d, below the scroll's %d" % [
 				data.get_global_rect().end.y, scroll.get_global_rect().end.y])
 
+	root.call("show_tab", 2)
+	var credits := stand.find_child("CreditsCard", true, false) as Control
+	assert_true(credits != null, "Settings needs CreditsCard")
+	if credits != null:
+		# A wrapping Label in this headless frame measures a letter per line,
+		# so measure unwrapped: every credit line must fit the card's width on
+		# one line anyway, and then the column's height is the real one.
+		for label in credits.find_children("*", "Label", true, false):
+			(label as Label).autowrap_mode = TextServer.AUTOWRAP_OFF
+		LayoutFrame.settle(root)
+		for label in credits.find_children("*", "Label", true, false):
+			assert_true((label as Label).get_minimum_size().x <= scroll.size.x,
+				"%s fits on one line" % label.name)
+		# The card's settled rect keeps its wrapped height, so measure where its
+		# unwrapped column would end.
+		var end_y := credits.global_position.y + credits.get_combined_minimum_size().y
+		assert_true(end_y <= scroll.get_global_rect().end.y,
+			"CREDITS ends at %d, below the scroll's %d" % [end_y, scroll.get_global_rect().end.y])
+
 
 ## Reset Progres (2026-10-01): a tomato DangerButton opening the confirm popup,
 ## which the scene instances hidden (static chrome lives in the .tscn).
@@ -515,3 +575,32 @@ func test_battery_saver_caps_fps_persists_and_announces() -> void:
 	GameSettings.battery_saver_enabled = false
 	GameSettings.save_settings()
 	Engine.max_fps = original_fps
+
+
+## The KREDIT tab reads like film credits (spec 2026-10-03-credits-tab):
+## a CardSectionLabel heading, then every row of _CREDIT_ROWS in order,
+## centred and wrapping, in its variation and words.
+func test_credits_read_top_to_bottom() -> void:
+	var vbox := _screen.get_node("%CreditsCard/Margin/VBox")
+	var heading := vbox.get_child(0) as Label
+	assert_eq(heading.theme_type_variation, &"CardSectionLabel")
+	assert_eq(heading.text, "CREDITS")
+	assert_eq(vbox.get_child_count(), _CREDIT_ROWS.size() + 1,
+		"the heading plus exactly the credit rows")
+	for i in _CREDIT_ROWS.size():
+		var row: Array = _CREDIT_ROWS[i]
+		var node := vbox.get_child(i + 1)
+		assert_eq(String(node.name), row[0], "row %d is %s" % [i, row[0]])
+		if String(row[0]).begins_with("Gap"):
+			assert_true(node is Control and not node is Label, row[0] + " is a spacer")
+			var gap := _CREDIT_SECTION_GAP
+			if String(row[0]).begins_with("GapPair"):
+				gap = _CREDIT_LIST_GAP if row[0] == "GapPair3" else _CREDIT_PAIR_GAP
+			assert_eq((node as Control).custom_minimum_size.y, gap, row[0] + " height")
+			continue
+		assert_eq((node as Control).theme_type_variation, StringName(row[1]), row[0] + " variation")
+		if node is Label:
+			var label := node as Label
+			assert_eq(label.text, row[2], row[0] + " text")
+			assert_eq(label.horizontal_alignment, HORIZONTAL_ALIGNMENT_CENTER, row[0] + " is centred")
+			assert_eq(label.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART, row[0] + " wraps")

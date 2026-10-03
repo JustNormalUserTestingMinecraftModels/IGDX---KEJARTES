@@ -133,10 +133,20 @@ func test_no_variable_infers_its_type_from_an_autoload() -> void:
 ## Loading.tscn still exist and are still covered by test_boot_screens.gd;
 ## they are simply no longer reached at startup. Pinned here because nothing
 ## else in the suite asserts run/main_scene, so a stray edit would go unseen.
-func test_the_boot_scene_is_the_main_menu() -> void:
+## Since 2026-10-03 the game boots into BootLogo (the animated logo on black),
+## which hands over to MainMenu; Godot's own splash is plain black to match.
+func test_the_boot_scene_is_the_boot_logo() -> void:
 	var main_scene: String = ProjectSettings.get_setting("application/run/main_scene", "")
-	assert_eq(main_scene, "res://Scenes/MainMenu/MainMenu.tscn",
+	assert_eq(main_scene, "res://Scenes/Boot/BootLogo.tscn",
 		"run/main_scene")
+	assert_eq(ProjectSettings.get_setting("application/boot_splash/bg_color"), Color.BLACK,
+		"Godot's splash is black, so BootLogo's black meets it seamlessly")
+	assert_false(ProjectSettings.get_setting("application/boot_splash/show_image"),
+		"no Godot logo")
+	var logo := (load(main_scene) as PackedScene).instantiate()
+	assert_eq(logo.get("next_scene"), "res://Scenes/MainMenu/MainMenu.tscn",
+		"BootLogo hands over to MainMenu")
+	logo.free()
 	assert_true(ResourceLoader.exists(main_scene),
 		"the boot scene must actually exist")
 

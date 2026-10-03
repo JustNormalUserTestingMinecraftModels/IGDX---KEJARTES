@@ -17,6 +17,8 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## chose (a debug-build BGM mute, saved on quit), so a version-1 "0" music
 ## volume loads as full volume, once.
 const VOLUME_SAVE_FORMAT := 2
+## Floor for a cue's volume knob before linear_to_db, which is -inf at 0.
+const MIN_CUE_VOLUME := 0.0001
 ## Every bus the game mixes on: what the Settings sliders turn, what is saved
 ## to and loaded from user://audio.cfg, and what _ensure_mixer_buses() creates
 ## when the loaded bus layout lacks it (Master always exists).
@@ -69,6 +71,9 @@ const MIXER_BUSES: Array[StringName] = [&"Master", &"BGM", &"SFX"]
 ## `play_sfx(&"reward")`: a reward is granted (StatCheck, lobby,
 ## SchoolDay).
 @export var sfx_reward: AudioStream
+## Loudness of sfx_reward (the trumpet jingle), 0-1 of the file's own level.
+## 0.85 = 15% quieter (owner's call, 2026-10-03).
+@export_range(0.0, 1.0, 0.01) var sfx_reward_volume: float = 0.85
 ## `play_sfx(&"tally")`: a Daily Results stat row's gold chevron pops in
 ## on a day that gained. Placeholder: aliases SFX/pop.ogg until a real
 ## tick lands.
@@ -227,12 +232,16 @@ const MIXER_BUSES: Array[StringName] = [&"Master", &"BGM", &"SFX"]
 ## `play_bgm(&"simulation")`: SchoolDay's day-simulation screen, paused
 ## (not stopped) via pause_bgm() whenever a minigame or event interrupts it.
 @export var bgm_simulation: AudioStream
+## What follows bgm_simulation once it ends: bgm_simulation is the opening
+## (its import loop off) and this is the looping rest of the day's music.
+## Empty, bgm_simulation simply ends.
+@export var bgm_simulation_loop: AudioStream
 ## `play_bgm(&"result_win")`: DaySummaryPopup/ResultCheckup's win state.
 @export var bgm_result_win: AudioStream
 ## `play_bgm(&"result_lose")`: DaySummaryPopup/ResultCheckup's loss state.
 @export var bgm_result_lose: AudioStream
 ## `play_bgm(&"exam_notice")`: the Tes Besar announcement screen.
-@export var bgm_exam_notice: AudioStream = preload("res://Assets/Audio/BGM/schoolsimulation.mp3")
+@export var bgm_exam_notice: AudioStream = preload("res://Assets/Audio/BGM/schoolsimulation_loop.ogg")
 ## `play_bgm(&"run_result")`: the end-of-grade run report.
 @export var bgm_run_result: AudioStream = preload("res://Assets/Audio/BGM/result_win.mp3")
 
@@ -244,9 +253,9 @@ const MIXER_BUSES: Array[StringName] = [&"Master", &"BGM", &"SFX"]
 ## `play_minigame_bgm(&"minigame_senibudaya_menari")`: LombaMenari.
 @export var bgm_minigame_senibudaya_menari: AudioStream
 ## `play_minigame_bgm(&"minigame_akademis")`: Menjodohkan, Password,
-## PilihanGanda and Variabel. Not a single track -- loops through this
-## array in sequence via `_on_minigame_bgm_finished`, one entry per
-## Akademis minigame's natural end, instead of crossfading.
+## PilihanGanda, Kalkulator and Variabel. Not a single track -- starts on a
+## random entry and shuffles to a different one at each natural end via
+## `_on_minigame_bgm_finished`, instead of crossfading.
 @export var bgm_minigame_akademis: Array[AudioStream] = []
 
 @export_group("Mixing")
@@ -369,8 +378,16 @@ func play_sfx(id: StringName, pitch: float = 1.0) -> void:
 	var player := _sfx_pool[_sfx_next]
 	_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
 	player.stream = stream
+	player.volume_db = _sfx_volume_db(id)
 	player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
 	player.play()
+
+
+## A cue's own level trim in dB: 0 for every cue but those given a volume knob.
+func _sfx_volume_db(id: StringName) -> float:
+	if id == &"reward":
+		return linear_to_db(maxf(sfx_reward_volume, MIN_CUE_VOLUME))
+	return 0.0
 
 
 func _resolve_sfx(id: StringName) -> AudioStream:
@@ -441,6 +458,7 @@ func play_sfx_variant(family: StringName, pitch: float = 1.0) -> void:
 	var player := _sfx_pool[_sfx_next]
 	_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
 	player.stream = stream
+	player.volume_db = 0.0
 	player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
 	player.play()
 
@@ -459,6 +477,7 @@ func play_chord(ids: Array, pitches: Array = []) -> void:
 		var player := _sfx_pool[_sfx_next]
 		_sfx_next = (_sfx_next + 1) % _sfx_pool.size()
 		player.stream = stream
+		player.volume_db = _sfx_volume_db(id)
 		var pitch: float = pitches[i] if i < pitches.size() else 1.0
 		player.pitch_scale = pitch * (1.0 + randf_range(-sfx_pitch_variance, sfx_pitch_variance))
 		player.play()
@@ -603,6 +622,10 @@ func _pick_playlist_index(exclude: int, count: int) -> int:
 func _on_bgm_finished(player: AudioStreamPlayer) -> void:
 	if player != _bgm_active:
 		return
+	if _bgm_current_id == &"simulation" and bgm_simulation_loop != null:
+		player.stream = bgm_simulation_loop
+		player.play()
+		return
 	if _bgm_playlist_id == &"" or _bgm_current_id != _bgm_playlist_id:
 		return
 	var tracks := _resolve_playlist(_bgm_playlist_id)
@@ -668,8 +691,8 @@ func play_minigame_bgm(id: StringName) -> void:
 	if id == &"minigame_akademis":
 		if bgm_minigame_akademis.is_empty():
 			return
-		_akademis_sequence_index = 0
-		_bgm_minigame.stream = bgm_minigame_akademis[0]
+		_akademis_sequence_index = randi() % bgm_minigame_akademis.size()
+		_bgm_minigame.stream = bgm_minigame_akademis[_akademis_sequence_index]
 		_bgm_minigame.volume_db = -60.0
 		_bgm_minigame.play()
 		var tw := create_tween()
@@ -716,7 +739,8 @@ func _on_minigame_bgm_finished() -> void:
 		return
 	if bgm_minigame_akademis.is_empty():
 		return
-	_akademis_sequence_index = (_akademis_sequence_index + 1) % bgm_minigame_akademis.size()
+	_akademis_sequence_index = _pick_playlist_index(
+		_akademis_sequence_index, bgm_minigame_akademis.size())
 	_bgm_minigame.stream = bgm_minigame_akademis[_akademis_sequence_index]
 	_bgm_minigame.play()
 

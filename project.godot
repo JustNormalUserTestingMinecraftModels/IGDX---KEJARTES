@@ -15,6 +15,8 @@ run/main_scene="res://Scenes/MainMenu/MainMenu.tscn"
 config/quit_on_go_back=false
 config/features=PackedStringArray("4.6", "Mobile")
 run/max_fps=60
+boot_splash/bg_color=Color(0.9764706, 0.92941177, 0.89411765, 1)
+boot_splash/image="res://Assets/Images/UI/logo.png"
 config/icon="res://Assets/Images/AppIcon/app_icon.png"
 
 [audio]

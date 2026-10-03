@@ -309,15 +309,8 @@ text = "KEJARTES"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="Studio" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1615769757]
-layout_mode = 2
-theme_type_variation = &"CreditDetailLabel"
-text = "by 1 MINUS TEAM"
-horizontal_alignment = 1
-autowrap_mode = 3
-
 [node name="Gap1" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1349307568]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 
@@ -350,7 +343,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap2" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1392028388]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 
@@ -369,7 +362,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap3" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=178519026]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 
@@ -388,7 +381,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap4" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=670093262]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 
@@ -414,7 +407,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="GapPair1" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1771525700]
-custom_minimum_size = Vector2(0, 16)
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 mouse_filter = 2
 
@@ -433,7 +426,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="GapPair2" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1333203068]
-custom_minimum_size = Vector2(0, 16)
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 mouse_filter = 2
 
@@ -451,8 +444,27 @@ text = "Game Over Music · Lose Results"
 horizontal_alignment = 1
 autowrap_mode = 3
 
+[node name="GapPair4" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1164585220]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ArtistJulius" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1370779619]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "JuliusH"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackJulius" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1293607622]
+layout_mode = 2
+theme_type_variation = &"CreditMusicLabel"
+text = "Intro Theme · Opening Cutscene"
+horizontal_alignment = 1
+autowrap_mode = 3
+
 [node name="Gap5" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1712951561]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 

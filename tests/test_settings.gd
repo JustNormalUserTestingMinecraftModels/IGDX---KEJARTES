@@ -29,13 +29,12 @@ const _SECTIONS := {
 ## A "Gap" row is a plain spacer Control: GapN parts sections (_CREDIT_SECTION_GAP),
 ## GapPairN parts the music pairs (_CREDIT_PAIR_GAP).
 ## Spacer heights: the airy layout the owner picked on 2026-10-03.
-const _CREDIT_SECTION_GAP := 36.0
-const _CREDIT_PAIR_GAP := 16.0
+const _CREDIT_SECTION_GAP := 24.0
+const _CREDIT_PAIR_GAP := 12.0
 ## Between griseyo's handle and their list of tracks: the same entry, so tighter.
 const _CREDIT_LIST_GAP := 8.0
 const _CREDIT_ROWS := [
 	["GameTitle", "CreditTitleLabel", "KEJARTES"],
-	["Studio", "CreditDetailLabel", "by 1 MINUS TEAM"],
 	["Gap1", "", ""],
 	["RoleProgrammer", "CreditRoleLabel", "PROGRAMMER & UI DESIGNER"],
 	["NameEleazar", "CreditNameLabel", "Eleazar Evan Putra"],
@@ -57,6 +56,9 @@ const _CREDIT_ROWS := [
 	["GapPair2", "", ""],
 	["ArtistExtenz", "CreditNameLabel", "extenz"],
 	["TrackExtenz", "CreditMusicLabel", "Game Over Music \u00b7 Lose Results"],
+	["GapPair4", "", ""],
+	["ArtistJulius", "CreditNameLabel", "JuliusH"],
+	["TrackJulius", "CreditMusicLabel", "Intro Theme \u00b7 Opening Cutscene"],
 	["Gap5", "", ""],
 	["RoleThanks", "CreditRoleLabel", "SPECIAL THANKS"],
 	["NameYosua", "CreditNameLabel", "Yosua Coyo Wagito"],

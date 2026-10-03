@@ -7,7 +7,7 @@ records where each one came from, for reference.
 | File | Source |
 |---|---|
 | `titlescreen.mp3` | fiikuri — "Epic Nusantara" (free gamelan music from Indonesian), track 328513 |
-| `introcutscene.mp3` | intro cutscene theme |
+| `introcutscene.mp3` | JuliusH — intro cutscene theme |
 | `result_win.mp3` | sounovamusic — "Nusantara Calling", track 576659 |
 | `result_lose.wav` | extenz — game over stinger |
 | `minigame_senibudaya_menari.mp3` | griseyo (Yosua Coyo Wagito) — dance minigame theme |

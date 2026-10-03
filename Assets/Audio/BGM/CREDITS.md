@@ -8,16 +8,12 @@ records where each one came from, for reference.
 |---|---|
 | `titlescreen.mp3` | fiikuri — "Epic Nusantara" (free gamelan music from Indonesian), track 328513 |
 | `introcutscene.mp3` | intro cutscene theme |
-| `lobby_song1.mp3` | lofi_nemuko, track 212393 |
-| `lobby_song2.mp3` | viyn — "Cotton Candy" (loop version), track 13253 |
-| `lobby_song3.mp3` | loby song 3 |
-| `lobby_song4.mp3` | loby song 4 |
-| `schoolsimulation.mp3` | school day loop |
 | `result_win.mp3` | sounovamusic — "Nusantara Calling", track 576659 |
 | `result_lose.wav` | extenz — game over stinger |
-| `minigame_akademis_1.wav` | "Loopable Music" — obscure music, level 1 step 1 |
-| `minigame_akademis_2.wav` | "Loopable Music" — obscure music, level 1 step 2 |
-| `minigame_akademis_3.wav` | "Loopable Music" — obscure music, level 1 step 3 |
-| `minigame_olahraga.mp3` | "Loopable Music" — obscure music |
-| `minigame_senibudaya_batik.mp3` | barakelana — "Candi Wening" (Javanese traditional music), track 577770 |
 | `minigame_senibudaya_menari.mp3` | dance minigame theme |
+| `lobby_song1.mp3`, `lobby_song2.mp3`, `lobby_song3.mp3` | user-supplied (Loby1-3), 2026-10-03; shuffled |
+| `schoolsimulation_intro.ogg` | user-supplied, school day with intro (plays once) |
+| `schoolsimulation_loop.ogg` | user-supplied, school day part 2 (loops; also the exam notice) |
+| `minigame_akademis_1.mp3` .. `_3.mp3` | user-supplied (minigames1-3), 2026-10-03; shuffled |
+| `minigame_olahraga.ogg` | user-supplied (olahraga), 2026-10-03 |
+| `minigame_senibudaya_batik.ogg` | user-supplied (minigamebatik), 2026-10-03 |

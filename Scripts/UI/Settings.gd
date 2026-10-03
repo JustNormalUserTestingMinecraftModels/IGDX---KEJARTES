@@ -37,6 +37,8 @@ extends Control
 const TAB_SUARA := 0
 ## The MAIN tab: the gameplay and display switches.
 const TAB_MAIN := 1
+## The KREDIT tab: the team credits.
+const TAB_KREDIT := 2
 
 ## Where Back goes unless the opener says otherwise, and the one opening whose
 ## music this screen starts itself.
@@ -112,7 +114,7 @@ func _ready() -> void:
 
 
 ## Show tab `index`'s sections: SUARA holds AudioCard, MAIN the gameplay,
-## display and data cards. Also keeps _frame.active_tab in step, which only refreshes
+## display and data cards, KREDIT the credits. Also keeps _frame.active_tab in step, which only refreshes
 ## the tab strip's look (its setter never emits tab_selected, so this never
 ## loops back through the connection above). Public so the tests can switch
 ## tabs without a press.
@@ -121,6 +123,7 @@ func show_tab(index: int) -> void:
 	%GameplayCard.visible = index == TAB_MAIN
 	%DisplayCard.visible = index == TAB_MAIN
 	%DataCard.visible = index == TAB_MAIN
+	%CreditsCard.visible = index == TAB_KREDIT
 	_frame.active_tab = index
 
 

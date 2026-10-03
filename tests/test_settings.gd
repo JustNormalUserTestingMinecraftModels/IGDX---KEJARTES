@@ -26,7 +26,13 @@ const _SECTIONS := {
 	"DataCard": ["DATA", ["ResetProgressButton"]],
 }
 ## The KREDIT card under its heading, top to bottom: [node, variation, text].
-## A "Gap" row is a plain spacer Control; ThanksRule is the divider.
+## A "Gap" row is a plain spacer Control: GapN parts sections (_CREDIT_SECTION_GAP),
+## GapPairN parts the music pairs (_CREDIT_PAIR_GAP).
+## Spacer heights: the airy layout the owner picked on 2026-10-03.
+const _CREDIT_SECTION_GAP := 36.0
+const _CREDIT_PAIR_GAP := 16.0
+## Between griseyo's handle and their list of tracks: the same entry, so tighter.
+const _CREDIT_LIST_GAP := 8.0
 const _CREDIT_ROWS := [
 	["GameTitle", "CreditTitleLabel", "KEJARTES"],
 	["Studio", "CreditDetailLabel", "by 1 MINUS TEAM"],
@@ -44,17 +50,19 @@ const _CREDIT_ROWS := [
 	["Gap4", "", ""],
 	["RoleMusic", "CreditRoleLabel", "MUSIC"],
 	["ArtistFiikuri", "CreditNameLabel", "fiikuri"],
-	["TrackFiikuri", "CreditDetailLabel", "\"Epic Nusantara\" \u00b7 Title Screen"],
+	["TrackFiikuri", "CreditMusicLabel", "\"Epic Nusantara\" \u00b7 Title Screen"],
+	["GapPair1", "", ""],
 	["ArtistSounova", "CreditNameLabel", "sounovamusic"],
-	["TrackSounova", "CreditDetailLabel", "\"Nusantara Calling\" \u00b7 Win Results"],
+	["TrackSounova", "CreditMusicLabel", "\"Nusantara Calling\" \u00b7 Win Results"],
+	["GapPair2", "", ""],
 	["ArtistExtenz", "CreditNameLabel", "extenz"],
-	["TrackExtenz", "CreditDetailLabel", "Game Over Music \u00b7 Lose Results"],
+	["TrackExtenz", "CreditMusicLabel", "Game Over Music \u00b7 Lose Results"],
 	["Gap5", "", ""],
-	["ThanksRule", "SettingsDivider", ""],
 	["RoleThanks", "CreditRoleLabel", "SPECIAL THANKS"],
 	["NameYosua", "CreditNameLabel", "Yosua Coyo Wagito"],
 	["YosuaHandle", "CreditDetailLabel", "griseyo on Spotify"],
-	["YosuaMusic", "CreditDetailLabel", "for the music of\nLobby (3 songs) \u00b7 School Day\nAcademic Minigames (3 songs) \u00b7 Sports Minigames\nBatik Making \u00b7 Dance Contest"],
+	["GapPair3", "", ""],
+	["YosuaMusic", "CreditMusicLabel", "for the music of\nLobby (3 songs) \u00b7 School Day\nAcademic Minigames (3 songs) \u00b7 Sports Minigames\nBatik Making \u00b7 Dance Contest"],
 ]
 ## Each switch row's words.
 const _ROW_LABELS := {
@@ -492,6 +500,25 @@ func test_every_card_fits_the_design_screen_without_scrolling() -> void:
 			"DATA ends at %d, below the scroll's %d" % [
 				data.get_global_rect().end.y, scroll.get_global_rect().end.y])
 
+	root.call("show_tab", 2)
+	var credits := stand.find_child("CreditsCard", true, false) as Control
+	assert_true(credits != null, "Settings needs CreditsCard")
+	if credits != null:
+		# A wrapping Label in this headless frame measures a letter per line,
+		# so measure unwrapped: every credit line must fit the card's width on
+		# one line anyway, and then the column's height is the real one.
+		for label in credits.find_children("*", "Label", true, false):
+			(label as Label).autowrap_mode = TextServer.AUTOWRAP_OFF
+		LayoutFrame.settle(root)
+		for label in credits.find_children("*", "Label", true, false):
+			assert_true((label as Label).get_minimum_size().x <= scroll.size.x,
+				"%s fits on one line" % label.name)
+		# The card's settled rect keeps its wrapped height, so measure where its
+		# unwrapped column would end.
+		var end_y := credits.global_position.y + credits.get_combined_minimum_size().y
+		assert_true(end_y <= scroll.get_global_rect().end.y,
+			"CREDITS ends at %d, below the scroll's %d" % [end_y, scroll.get_global_rect().end.y])
+
 
 ## Reset Progres (2026-10-01): a tomato DangerButton opening the confirm popup,
 ## which the scene instances hidden (static chrome lives in the .tscn).
@@ -564,6 +591,10 @@ func test_credits_read_top_to_bottom() -> void:
 		assert_eq(String(node.name), row[0], "row %d is %s" % [i, row[0]])
 		if String(row[0]).begins_with("Gap"):
 			assert_true(node is Control and not node is Label, row[0] + " is a spacer")
+			var gap := _CREDIT_SECTION_GAP
+			if String(row[0]).begins_with("GapPair"):
+				gap = _CREDIT_LIST_GAP if row[0] == "GapPair3" else _CREDIT_PAIR_GAP
+			assert_eq((node as Control).custom_minimum_size.y, gap, row[0] + " height")
 			continue
 		assert_eq((node as Control).theme_type_variation, StringName(row[1]), row[0] + " variation")
 		if node is Label:

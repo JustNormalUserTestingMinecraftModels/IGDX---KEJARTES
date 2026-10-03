@@ -295,7 +295,7 @@ theme_override_constants/margin_bottom = 20
 
 [node name="VBox" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin" unique_id=1026249951]
 layout_mode = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 0
 
 [node name="SectionLabel" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=589394841]
 layout_mode = 2
@@ -317,7 +317,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap1" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1349307568]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 mouse_filter = 2
 
@@ -350,7 +350,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap2" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1392028388]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 mouse_filter = 2
 
@@ -369,7 +369,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap3" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=178519026]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 mouse_filter = 2
 
@@ -388,7 +388,7 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap4" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=670093262]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 mouse_filter = 2
 
@@ -408,10 +408,15 @@ autowrap_mode = 3
 
 [node name="TrackFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1031388756]
 layout_mode = 2
-theme_type_variation = &"CreditDetailLabel"
+theme_type_variation = &"CreditMusicLabel"
 text = "\"Epic Nusantara\" · Title Screen"
 horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="GapPair1" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1771525700]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="ArtistSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=348143400]
 layout_mode = 2
@@ -422,10 +427,15 @@ autowrap_mode = 3
 
 [node name="TrackSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1828764480]
 layout_mode = 2
-theme_type_variation = &"CreditDetailLabel"
+theme_type_variation = &"CreditMusicLabel"
 text = "\"Nusantara Calling\" · Win Results"
 horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="GapPair2" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1333203068]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+mouse_filter = 2
 
 [node name="ArtistExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1337256387]
 layout_mode = 2
@@ -436,19 +446,15 @@ autowrap_mode = 3
 
 [node name="TrackExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=174062446]
 layout_mode = 2
-theme_type_variation = &"CreditDetailLabel"
+theme_type_variation = &"CreditMusicLabel"
 text = "Game Over Music · Lose Results"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="Gap5" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1712951561]
-custom_minimum_size = Vector2(0, 20)
+custom_minimum_size = Vector2(0, 36)
 layout_mode = 2
 mouse_filter = 2
-
-[node name="ThanksRule" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=451751735]
-layout_mode = 2
-theme_type_variation = &"SettingsDivider"
 
 [node name="RoleThanks" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=411965459]
 layout_mode = 2
@@ -471,9 +477,14 @@ text = "griseyo on Spotify"
 horizontal_alignment = 1
 autowrap_mode = 3
 
+[node name="GapPair3" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1691881760]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+
 [node name="YosuaMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=721517024]
 layout_mode = 2
-theme_type_variation = &"CreditDetailLabel"
+theme_type_variation = &"CreditMusicLabel"
 text = "for the music of
 Lobby (3 songs) · School Day
 Academic Minigames (3 songs) · Sports Minigames

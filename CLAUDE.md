@@ -221,8 +221,9 @@ Hard constraints:
    effects in `_ready()` gated behind `if Engine.is_editor_hint(): return`.
    Pure signal wiring stays ungated so tests can exercise it.
 4. Some suites assume the **main scene is open** in the editor; `test_run`
-   returns a `scene_warning` when it isn't, naming the scene it wants. Open
-   `Scenes/MainMenu/MainMenu.tscn` before trusting a failure.
+   returns a `scene_warning` when it isn't. Open
+   `Scenes/MainMenu/MainMenu.tscn` before trusting a failure; the warning
+   names BootLogo (the run/main_scene), which the suites do not need.
 
 5. **The suite cannot be run headless** — the bridge is the only way.
    (`--script` registers no autoloads; a scene run un-gates every `@tool` guard.)

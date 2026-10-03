@@ -2,7 +2,7 @@
 
 Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan.
 Indonesian-language school-management sim. Main scene:
-`Scenes/MainMenu/MainMenu.tscn`.
+`Scenes/Boot/BootLogo.tscn` (animated logo on black → MainMenu).
 
 ## The game
 
@@ -26,7 +26,7 @@ Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
 `TARGET_UPLIFT_BY_GRADE` (ours, paired); `Balance.JUMLAH_MINGGU_KELAS_*` (6/12/16),
 `TARGET_KENAIKAN_KELAS_*` (15/34/40) and `STAR_WIN_THRESHOLD` (2.0) are unread.
 
-**Loop:** **MainMenu (boot; with a save, ContinuePopup → Lobby/SchoolDay/StudentCard)** → LevelSelect (the amplop grade picker, while
+**Loop:** BootLogo → **MainMenu (with a save, ContinuePopup → Lobby/SchoolDay/StudentCard)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →
 **Lobby (hub)** → AturJadwal (assign week; StudentList is its picker) → SchoolDay
 (simulate 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay then

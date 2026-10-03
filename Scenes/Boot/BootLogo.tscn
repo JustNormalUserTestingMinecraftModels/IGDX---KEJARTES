@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://d0kgy6t5iapij"]
+
+[ext_resource type="Script" path="res://Scripts/Boot/BootLogo.gd" id="1_l5hen"]
+[ext_resource type="Texture2D" uid="uid://c72nldobl75au" path="res://Assets/Images/UI/logo.png" id="2_8r6mx"]
+
+[node name="BootLogo" type="Control" unique_id=1270545335]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_l5hen")
+
+[node name="Background" type="ColorRect" parent="." unique_id=228887477]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Logo" type="TextureRect" parent="." unique_id=458483081]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -300.0
+offset_right = 300.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(300, 300)
+mouse_filter = 2
+texture = ExtResource("2_8r6mx")
+expand_mode = 1
+stretch_mode = 5

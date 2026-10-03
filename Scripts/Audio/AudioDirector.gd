@@ -17,6 +17,8 @@ const SETTINGS_PATH := "user://audio.cfg"
 ## chose (a debug-build BGM mute, saved on quit), so a version-1 "0" music
 ## volume loads as full volume, once.
 const VOLUME_SAVE_FORMAT := 2
+## Floor for a cue's volume knob before linear_to_db, which is -inf at 0.
+const MIN_CUE_VOLUME := 0.0001
 ## Every bus the game mixes on: what the Settings sliders turn, what is saved
 ## to and loaded from user://audio.cfg, and what _ensure_mixer_buses() creates
 ## when the loaded bus layout lacks it (Master always exists).
@@ -384,7 +386,7 @@ func play_sfx(id: StringName, pitch: float = 1.0) -> void:
 ## A cue's own level trim in dB: 0 for every cue but those given a volume knob.
 func _sfx_volume_db(id: StringName) -> float:
 	if id == &"reward":
-		return linear_to_db(maxf(sfx_reward_volume, 0.0001))
+		return linear_to_db(maxf(sfx_reward_volume, MIN_CUE_VOLUME))
 	return 0.0
 
 

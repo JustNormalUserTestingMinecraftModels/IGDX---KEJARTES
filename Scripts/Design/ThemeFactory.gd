@@ -2030,8 +2030,13 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["CaptionLabel", tokens.font_caption, tokens.text_secondary, false, false],
 		# 2026-10-03 credits tab: the KEJARTES line and the role headings, in
 		# the darker red so small text holds its contrast on cream.
-		["CreditTitleLabel", tokens.font_h2, tokens.accent_tomato_lip, false, true],
-		["CreditRoleLabel", tokens.font_caption, tokens.accent_tomato_lip, false, true],
+		# Each credit line sits one size step above its usual role (owner,
+		# 2026-10-03: "make the text bigger"): names and details have their own
+		# variations so BodyLabel/CaptionLabel stay put everywhere else.
+		["CreditTitleLabel", tokens.font_h1, tokens.accent_tomato_lip, false, true],
+		["CreditRoleLabel", tokens.font_body_size, tokens.accent_tomato_lip, false, true],
+		["CreditNameLabel", tokens.font_title, tokens.text_primary, false, false],
+		["CreditDetailLabel", tokens.font_body_size, tokens.text_secondary, false, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false, false],
 		# PageDotLabel styled the SemesterEnd carousel's page dots and has
 		# had no consumer since Plan A deleted that screen. Kept baked

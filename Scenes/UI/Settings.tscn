@@ -311,7 +311,7 @@ autowrap_mode = 3
 
 [node name="Studio" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1615769757]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"CreditDetailLabel"
 text = "oleh 1 MINUS TEAM"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -330,21 +330,21 @@ autowrap_mode = 3
 
 [node name="NameEleazar" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1742920718]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "Eleazar Evan Putra"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="NameHosea" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=839385211]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "Hosea Juan Kurniawan"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="NamePanji" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=100764891]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "I Made Panji Putra"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -363,7 +363,7 @@ autowrap_mode = 3
 
 [node name="NameAbdullah" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=366897806]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "Abdullah A'asiq Satria"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -382,7 +382,7 @@ autowrap_mode = 3
 
 [node name="NameAlbertus" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1322109047]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "Albertus Akmel Bintang Prasetyo"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -401,42 +401,42 @@ autowrap_mode = 3
 
 [node name="ArtistFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1439194220]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "fiikuri"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="TrackFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1031388756]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"CreditDetailLabel"
 text = "\"Epic Nusantara\" · Layar Judul"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="ArtistSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=348143400]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "sounovamusic"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="TrackSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1828764480]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"CreditDetailLabel"
 text = "\"Nusantara Calling\" · Hasil Menang"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="ArtistExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1337256387]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "extenz"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="TrackExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=174062446]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"CreditDetailLabel"
 text = "Musik Kalah · Hasil Kalah"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -459,21 +459,21 @@ autowrap_mode = 3
 
 [node name="NameYosua" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1503915123]
 layout_mode = 2
-theme_type_variation = &"BodyLabel"
+theme_type_variation = &"CreditNameLabel"
 text = "Yosua Coyo Wagito"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="YosuaHandle" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1562815194]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"CreditDetailLabel"
 text = "griseyo di Spotify"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="YosuaMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=721517024]
 layout_mode = 2
-theme_type_variation = &"CaptionLabel"
+theme_type_variation = &"CreditDetailLabel"
 text = "atas musik untuk
 Lobi (3 lagu) · Hari Sekolah
 Minigame Akademis (3 lagu) · Minigame Olahraga

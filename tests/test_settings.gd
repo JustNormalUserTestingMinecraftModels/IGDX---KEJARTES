@@ -24,6 +24,7 @@ const _SECTIONS := {
 	"GameplayCard": ["PERMAINAN", ["TutorialRow", "SkipDialogRow"]],
 	"DisplayCard": ["TAMPILAN", ["HdGraphicsRow", "BatterySaverRow", "LookLayerRow", "AmbientRow", "ReduceMotionRow", "HapticsRow"]],
 	"DataCard": ["DATA", ["ResetProgressButton"]],
+	"CreditsCard": ["KREDIT", ["Credit1", "Credit2", "Credit3", "Credit4", "Credit5", "Credit6"]],
 }
 ## Each switch row's words.
 const _ROW_LABELS := {
@@ -111,9 +112,9 @@ func test_the_frame_close_is_the_way_back() -> void:
 		"_frame.close_pressed.connect(_on_back_pressed)")
 
 
-func test_the_tabs_are_suara_and_main() -> void:
+func test_the_tabs_are_suara_main_and_kredit() -> void:
 	var frame := _screen.get_node("SafeArea/Frame") as NotebookFrame
-	assert_eq(Array(frame.tabs), ["SUARA", "MAIN"])
+	assert_eq(Array(frame.tabs), ["SUARA", "MAIN", "KREDIT"])
 	assert_eq(frame.title_text, "PENGATURAN")
 
 
@@ -129,6 +130,12 @@ func test_each_tab_shows_its_sections() -> void:
 	assert_true(_screen.get_node("%DataCard").visible, "MAIN shows Reset Progres too")
 	_screen.show_tab(0)
 	assert_false(_screen.get_node("%DataCard").visible, "SUARA hides it")
+	assert_false(_screen.get_node("%CreditsCard").visible, "SUARA hides the credits")
+	_screen.show_tab(2)
+	assert_true(_screen.get_node("%CreditsCard").visible, "KREDIT shows the credits")
+	assert_false(_screen.get_node("%AudioCard").visible)
+	assert_false(_screen.get_node("%GameplayCard").visible)
+	_screen.show_tab(0)
 
 
 ## show_tab keeps the frame's own active_tab export in step, so the tab strip's

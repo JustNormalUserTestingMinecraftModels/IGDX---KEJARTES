@@ -29,32 +29,32 @@ const _SECTIONS := {
 ## A "Gap" row is a plain spacer Control; ThanksRule is the divider.
 const _CREDIT_ROWS := [
 	["GameTitle", "CreditTitleLabel", "KEJARTES"],
-	["Studio", "CreditDetailLabel", "oleh 1 MINUS TEAM"],
+	["Studio", "CreditDetailLabel", "by 1 MINUS TEAM"],
 	["Gap1", "", ""],
-	["RoleProgrammer", "CreditRoleLabel", "PROGRAMMER & DESAINER UI"],
+	["RoleProgrammer", "CreditRoleLabel", "PROGRAMMER & UI DESIGNER"],
 	["NameEleazar", "CreditNameLabel", "Eleazar Evan Putra"],
 	["NameHosea", "CreditNameLabel", "Hosea Juan Kurniawan"],
 	["NamePanji", "CreditNameLabel", "I Made Panji Putra"],
 	["Gap2", "", ""],
-	["RoleIllustrator", "CreditRoleLabel", "DESAIN KARAKTER & ILUSTRATOR"],
+	["RoleIllustrator", "CreditRoleLabel", "CHARACTER DESIGN & ILLUSTRATOR"],
 	["NameAbdullah", "CreditNameLabel", "Abdullah A'asiq Satria"],
 	["Gap3", "", ""],
-	["RoleBackground", "CreditRoleLabel", "SENIMAN LATAR & MULTIMEDIA"],
-	["NameAlbertus", "CreditNameLabel", "Albertus Akmel Bintang Prasetyo"],
+	["RoleBackground", "CreditRoleLabel", "BACKGROUND ARTIST & MULTIMEDIA"],
+	["NameAlbertus", "CreditNameLabel", "Albertus Akmel Bintang Prasetya"],
 	["Gap4", "", ""],
-	["RoleMusic", "CreditRoleLabel", "MUSIK"],
+	["RoleMusic", "CreditRoleLabel", "MUSIC"],
 	["ArtistFiikuri", "CreditNameLabel", "fiikuri"],
-	["TrackFiikuri", "CreditDetailLabel", "\"Epic Nusantara\" \u00b7 Layar Judul"],
+	["TrackFiikuri", "CreditDetailLabel", "\"Epic Nusantara\" \u00b7 Title Screen"],
 	["ArtistSounova", "CreditNameLabel", "sounovamusic"],
-	["TrackSounova", "CreditDetailLabel", "\"Nusantara Calling\" \u00b7 Hasil Menang"],
+	["TrackSounova", "CreditDetailLabel", "\"Nusantara Calling\" \u00b7 Win Results"],
 	["ArtistExtenz", "CreditNameLabel", "extenz"],
-	["TrackExtenz", "CreditDetailLabel", "Musik Kalah \u00b7 Hasil Kalah"],
+	["TrackExtenz", "CreditDetailLabel", "Game Over Music \u00b7 Lose Results"],
 	["Gap5", "", ""],
 	["ThanksRule", "SettingsDivider", ""],
-	["RoleThanks", "CreditRoleLabel", "TERIMA KASIH KHUSUS"],
+	["RoleThanks", "CreditRoleLabel", "SPECIAL THANKS"],
 	["NameYosua", "CreditNameLabel", "Yosua Coyo Wagito"],
-	["YosuaHandle", "CreditDetailLabel", "griseyo di Spotify"],
-	["YosuaMusic", "CreditDetailLabel", "atas musik untuk\nLobi (3 lagu) \u00b7 Hari Sekolah\nMinigame Akademis (3 lagu) \u00b7 Minigame Olahraga\nMembatik \u00b7 Lomba Menari"],
+	["YosuaHandle", "CreditDetailLabel", "griseyo on Spotify"],
+	["YosuaMusic", "CreditDetailLabel", "for the music of\nLobby (3 songs) \u00b7 School Day\nAcademic Minigames (3 songs) \u00b7 Sports Minigames\nBatik Making \u00b7 Dance Contest"],
 ]
 ## Each switch row's words.
 const _ROW_LABELS := {
@@ -144,7 +144,7 @@ func test_the_frame_close_is_the_way_back() -> void:
 
 func test_the_tabs_are_suara_main_and_kredit() -> void:
 	var frame := _screen.get_node("SafeArea/Frame") as NotebookFrame
-	assert_eq(Array(frame.tabs), ["SUARA", "MAIN", "KREDIT"])
+	assert_eq(Array(frame.tabs), ["SUARA", "MAIN", "CREDITS"])
 	assert_eq(frame.title_text, "PENGATURAN")
 
 
@@ -555,7 +555,7 @@ func test_credits_read_top_to_bottom() -> void:
 	var vbox := _screen.get_node("%CreditsCard/Margin/VBox")
 	var heading := vbox.get_child(0) as Label
 	assert_eq(heading.theme_type_variation, &"CardSectionLabel")
-	assert_eq(heading.text, "KREDIT")
+	assert_eq(heading.text, "CREDITS")
 	assert_eq(vbox.get_child_count(), _CREDIT_ROWS.size() + 1,
 		"the heading plus exactly the credit rows")
 	for i in _CREDIT_ROWS.size():

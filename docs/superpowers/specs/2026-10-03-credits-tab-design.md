@@ -1,6 +1,6 @@
 # Credits tab: movie-style layout with per-track music credits
 
-**Date:** 2026-10-03. **Status:** approved in brainstorming (mockup
+**Date:** 2026-10-03. Text switched to English the same day at the owner's request. **Status:** approved in brainstorming (mockup
 `credits-layout-v2`, option C plus griseyo combined).
 
 ## Goal
@@ -15,7 +15,7 @@ music into one entry.
 2. Team, one role heading then its names:
    - PROGRAMMER & DESAINER UI: Eleazar Evan Putra, Hosea Juan Kurniawan, I Made Panji Putra
    - DESAIN KARAKTER & ILUSTRATOR: Abdullah A'asiq Satria
-   - SENIMAN LATAR & MULTIMEDIA: Albertus Akmel Bintang Prasetyo
+   - SENIMAN LATAR & MULTIMEDIA: Albertus Akmel Bintang Prasetya
 3. **MUSIK** (other artists), name then `"track" · where it plays`:
    - fiikuri: "Epic Nusantara" · Layar Judul
    - sounovamusic: "Nusantara Calling" · Hasil Menang

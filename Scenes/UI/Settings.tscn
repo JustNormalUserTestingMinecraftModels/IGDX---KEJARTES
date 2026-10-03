@@ -46,7 +46,7 @@ extra_margin = Vector4(0, 84, 0, 0)
 unique_name_in_owner = true
 layout_mode = 2
 title_text = "PENGATURAN"
-tabs = PackedStringArray("SUARA", "MAIN", "KREDIT")
+tabs = PackedStringArray("SUARA", "MAIN", "CREDITS")
 
 [node name="Scroll" type="ScrollContainer" parent="SafeArea/Frame" unique_id=1222065779]
 layout_mode = 2
@@ -300,7 +300,7 @@ theme_override_constants/separation = 6
 [node name="SectionLabel" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=589394841]
 layout_mode = 2
 theme_type_variation = &"CardSectionLabel"
-text = "KREDIT"
+text = "CREDITS"
 
 [node name="GameTitle" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=604739221]
 layout_mode = 2
@@ -312,7 +312,7 @@ autowrap_mode = 3
 [node name="Studio" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1615769757]
 layout_mode = 2
 theme_type_variation = &"CreditDetailLabel"
-text = "oleh 1 MINUS TEAM"
+text = "by 1 MINUS TEAM"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -324,7 +324,7 @@ mouse_filter = 2
 [node name="RoleProgrammer" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1073665680]
 layout_mode = 2
 theme_type_variation = &"CreditRoleLabel"
-text = "PROGRAMMER & DESAINER UI"
+text = "PROGRAMMER & UI DESIGNER"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -357,7 +357,7 @@ mouse_filter = 2
 [node name="RoleIllustrator" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=616045958]
 layout_mode = 2
 theme_type_variation = &"CreditRoleLabel"
-text = "DESAIN KARAKTER & ILUSTRATOR"
+text = "CHARACTER DESIGN & ILLUSTRATOR"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -376,14 +376,14 @@ mouse_filter = 2
 [node name="RoleBackground" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=872338000]
 layout_mode = 2
 theme_type_variation = &"CreditRoleLabel"
-text = "SENIMAN LATAR & MULTIMEDIA"
+text = "BACKGROUND ARTIST & MULTIMEDIA"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="NameAlbertus" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1322109047]
 layout_mode = 2
 theme_type_variation = &"CreditNameLabel"
-text = "Albertus Akmel Bintang Prasetyo"
+text = "Albertus Akmel Bintang Prasetya"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -395,7 +395,7 @@ mouse_filter = 2
 [node name="RoleMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1465534064]
 layout_mode = 2
 theme_type_variation = &"CreditRoleLabel"
-text = "MUSIK"
+text = "MUSIC"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -409,7 +409,7 @@ autowrap_mode = 3
 [node name="TrackFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1031388756]
 layout_mode = 2
 theme_type_variation = &"CreditDetailLabel"
-text = "\"Epic Nusantara\" · Layar Judul"
+text = "\"Epic Nusantara\" · Title Screen"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -423,7 +423,7 @@ autowrap_mode = 3
 [node name="TrackSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1828764480]
 layout_mode = 2
 theme_type_variation = &"CreditDetailLabel"
-text = "\"Nusantara Calling\" · Hasil Menang"
+text = "\"Nusantara Calling\" · Win Results"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -437,7 +437,7 @@ autowrap_mode = 3
 [node name="TrackExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=174062446]
 layout_mode = 2
 theme_type_variation = &"CreditDetailLabel"
-text = "Musik Kalah · Hasil Kalah"
+text = "Game Over Music · Lose Results"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -453,7 +453,7 @@ theme_type_variation = &"SettingsDivider"
 [node name="RoleThanks" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=411965459]
 layout_mode = 2
 theme_type_variation = &"CreditRoleLabel"
-text = "TERIMA KASIH KHUSUS"
+text = "SPECIAL THANKS"
 horizontal_alignment = 1
 autowrap_mode = 3
 
@@ -467,17 +467,17 @@ autowrap_mode = 3
 [node name="YosuaHandle" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1562815194]
 layout_mode = 2
 theme_type_variation = &"CreditDetailLabel"
-text = "griseyo di Spotify"
+text = "griseyo on Spotify"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="YosuaMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=721517024]
 layout_mode = 2
 theme_type_variation = &"CreditDetailLabel"
-text = "atas musik untuk
-Lobi (3 lagu) · Hari Sekolah
-Minigame Akademis (3 lagu) · Minigame Olahraga
-Membatik · Lomba Menari"
+text = "for the music of
+Lobby (3 songs) · School Day
+Academic Minigames (3 songs) · Sports Minigames
+Batik Making · Dance Contest"
 horizontal_alignment = 1
 autowrap_mode = 3
 

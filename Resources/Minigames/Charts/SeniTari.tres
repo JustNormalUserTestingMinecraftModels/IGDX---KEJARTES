@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="DanceChart" format=3]
+
+[ext_resource type="Script" uid="uid://2pn11twqkrdv" path="res://Scripts/Minigames/SeniBudaya/DanceChart.gd" id="1_chart"]
+
+[resource]
+script = ExtResource("1_chart")
+bpm = 100.0
+first_beat_offset = 0.0
+song_length = 0.0
+events = Array[Dictionary]([{"beat": 2.0, "type": 0}, {"beat": 3.0, "type": 2}, {"beat": 4.0, "type": 3}, {"beat": 5.0, "type": 1}, {"beat": 6.0, "type": 0}, {"beat": 7.0, "type": 2}, {"beat": 8.0, "type": 3}, {"beat": 9.0, "type": 1}, {"beat": 10.0, "type": 0}, {"beat": 11.0, "type": 2}, {"beat": 12.0, "type": 3}, {"beat": 13.0, "type": 1}, {"beat": 14.0, "type": 0}, {"beat": 15.0, "type": 2}, {"beat": 16.0, "type": 3}, {"beat": 17.0, "type": 1}, {"beat": 18.0, "type": 0}, {"beat": 19.0, "type": 2}, {"beat": 20.0, "type": 3}, {"beat": 21.0, "type": 1}, {"beat": 22.0, "type": 0}, {"beat": 23.0, "type": 2}, {"beat": 24.0, "type": 3}, {"beat": 25.0, "type": 1}, {"beat": 26.0, "type": 0}, {"beat": 27.0, "type": 2}, {"beat": 28.0, "type": 3}, {"beat": 29.0, "type": 1}, {"beat": 30.0, "type": 0}, {"beat": 31.0, "type": 2}, {"beat": 32.0, "type": 3}, {"beat": 33.0, "type": 1}, {"beat": 34.0, "type": 0}, {"beat": 35.0, "type": 2}, {"beat": 36.0, "type": 3}, {"beat": 37.0, "type": 1}, {"beat": 38.0, "type": 0}, {"beat": 39.0, "type": 2}, {"beat": 40.0, "type": 3}, {"beat": 41.0, "type": 1}, {"beat": 42.0, "type": 0}, {"beat": 43.0, "type": 2}, {"beat": 44.0, "type": 3}, {"beat": 45.0, "type": 1}, {"beat": 46.0, "type": 0}, {"beat": 47.0, "type": 2}, {"beat": 48.0, "type": 3}, {"beat": 49.0, "type": 1}, {"beat": 50.0, "type": 0}, {"beat": 51.0, "type": 2}, {"beat": 52.0, "type": 3}, {"beat": 53.0, "type": 1}, {"beat": 54.0, "type": 0}, {"beat": 55.0, "type": 2}, {"beat": 56.0, "type": 3}, {"beat": 57.0, "type": 1}, {"beat": 58.0, "type": 0}, {"beat": 59.0, "type": 2}, {"beat": 60.0, "type": 3}, {"beat": 61.0, "type": 1}, {"beat": 62.0, "type": 0}, {"beat": 63.0, "type": 2}, {"beat": 64.0, "type": 3}, {"beat": 65.0, "type": 1}])

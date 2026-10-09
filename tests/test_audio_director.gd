@@ -827,3 +827,25 @@ func test_week_end_does_not_double_the_report_reward() -> void:
 			assert_false(line.contains('&"reward"'), "week_cleared must not play reward")
 	var report := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/ResultCheckup.gd")
 	assert_eq(report.count('play_sfx(&"reward")'), 1, "the report plays reward once")
+
+
+## Seni Tari beat-sync (2026-10-09): the spawner reads the minigame track's live
+## position, and the menari track fades longer than the 0.4 s others keep.
+func test_minigame_bgm_position_api() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Audio/AudioDirector.gd")
+	assert_true(src.contains("func get_minigame_bgm_position() -> float:"))
+	assert_true(src.contains("AudioServer.get_time_since_last_mix()")
+			and src.contains("AudioServer.get_output_latency()"),
+		"the position is corrected for output latency")
+	assert_true(src.contains("func is_minigame_bgm_playing() -> bool:"))
+	assert_true(src.contains("func play_minigame_bgm(id: StringName, fade: float = -1.0) -> void:"))
+
+
+func test_menari_fades_longer_and_others_keep_theirs() -> void:
+	assert_true(AudioDirector.MINIGAME_BGM_FADE_BY_ID[&"minigame_senibudaya_menari"]
+			> _director.minigame_bgm_fade, "the menari track fades longer")
+	assert_false(AudioDirector.MINIGAME_BGM_FADE_BY_ID.has(&"minigame_olahraga"),
+		"other tracks keep minigame_bgm_fade")
+	assert_eq(_director._fade_for(&"minigame_olahraga", -1.0), _director.minigame_bgm_fade)
+	assert_eq(_director._fade_for(&"minigame_senibudaya_menari", 0.2), 0.2,
+		"an explicit fade wins")

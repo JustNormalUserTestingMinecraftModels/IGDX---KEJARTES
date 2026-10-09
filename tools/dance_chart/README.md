@@ -15,6 +15,8 @@ offline, never at play time. Spec: `docs/superpowers/specs/2026-10-09-seni-tari-
    `events` in the Inspector: thin the verse, thicken the chorus, set each
    arrow's `type` (0 left, 1 right, 2 top-left, 3 top-right). Keep `events`
    sorted by `beat`; `tests/test_lomba_menari_sync.gd` checks it.
+   Leave the first `lead_beats` (2) beats of the track empty: an arrow needs
+   that long to fly in, so beats there are skipped when the track loops.
 
 Also set the track's import `bpm` and `bar_beats` (select the mp3, Import dock)
 to the detected values, so Godot's own beat fields agree with the chart.

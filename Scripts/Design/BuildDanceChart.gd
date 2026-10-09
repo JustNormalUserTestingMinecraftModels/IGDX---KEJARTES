@@ -1,5 +1,4 @@
 @tool
-class_name BuildDanceChart
 extends EditorScript
 
 ## Dev-only: turns tools/dance_chart/beats.json (written by detect_beats.py)

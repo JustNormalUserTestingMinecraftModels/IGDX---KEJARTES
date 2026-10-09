@@ -6,6 +6,11 @@ extends RefCounted
 ## A note must land on its beat, so it spawns `travel` seconds early; the cursor
 ## walks the chart against the song's live position. Static and side-effect
 ## free, so tests drive it without a scene.
+##
+## Limitation: an arrow must leave `travel` seconds before its beat, so a beat in
+## the first lead_beats of the track has its spawn time before the track's start;
+## after each loop it is passed over as stale. Chart arrows from beat
+## lead_beats on (tools/dance_chart/README.md).
 
 ## A due event whose spawn time passed more than this many seconds ago is
 ## skipped, not spawned late: beats that elapsed under the 3-2-1 countdown or a

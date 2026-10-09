@@ -692,6 +692,7 @@ func resume_bgm(fade: float = -1.0) -> void:
 ## already-looping tracks.
 func play_minigame_bgm(id: StringName, fade: float = -1.0) -> void:
 	_bgm_minigame_id = id
+	_bgm_minigame.stream_paused = false
 	if id == &"minigame_akademis":
 		if bgm_minigame_akademis.is_empty():
 			return
@@ -731,6 +732,13 @@ func get_minigame_bgm_position() -> float:
 			+ AudioServer.get_time_since_last_mix() - AudioServer.get_output_latency()
 
 
+## Holds (`paused` true) or releases the minigame track in place, for a
+## minigame's pause menu: LombaMenari's arrows freeze with the game, so the song
+## must too, or every arrow in flight lands late after a resume.
+func set_minigame_bgm_paused(paused: bool) -> void:
+	_bgm_minigame.stream_paused = paused
+
+
 ## True while the minigame track plays (LombaMenari falls back to its own clock
 ## when it does not, e.g. launched from the debug overlay without SchoolDay).
 func is_minigame_bgm_playing() -> bool:
@@ -749,6 +757,7 @@ func _resolve_minigame_bgm(id: StringName) -> AudioStream:
 ## does not need to be preserved here -- a minigame always starts its
 ## music fresh next time, never resumes a previous minigame's track.
 func stop_minigame_bgm(fade: float = -1.0) -> void:
+	_bgm_minigame.stream_paused = false  # a quit from the pause menu still fades out
 	if not _bgm_minigame.playing:
 		return
 	var duration := _fade_for(_bgm_minigame_id, fade)

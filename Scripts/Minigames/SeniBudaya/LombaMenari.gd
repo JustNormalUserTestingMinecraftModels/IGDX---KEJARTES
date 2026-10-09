@@ -201,7 +201,9 @@ var best_combo: int = 0
 var time_elapsed: float = 0.0
 
 var active_notes: Array = []
-var note_speed: float = 220.0 # Lower speed for balanced reaction time
+## Pixels a second a note flies: derived each frame from the chart's bpm and
+## lead_beats (DanceSync.note_speed_for), so it lands on the beat.
+var note_speed: float = 0.0
 
 @export_group("Beat Sync")
 ## The beat chart the arrows follow (Resources/Minigames/Charts/SeniTari.tres).
@@ -429,12 +431,27 @@ func _spawn_due_beats(song_pos: float) -> void:
 	if DanceSync.wrapped(_last_song_pos, song_pos):
 		_chart_cursor = 0
 	_last_song_pos = song_pos
-	var travel := _spawn_distance() / note_speed
+	# Recomputed each frame, so a resize keeps flight time equal to the lead.
+	note_speed = DanceSync.note_speed_for(_spawn_distance(), chart.bpm, lead_beats)
+	var travel := lead_beats * DanceSync.SECONDS_PER_MINUTE / chart.bpm
 	var step := DanceSync.events_due(chart.events, _chart_cursor, song_pos, travel,
 			chart.bpm, chart.first_beat_offset)
 	_chart_cursor = step["cursor"]
 	for event: Dictionary in step["due"]:
 		_spawn_single_note(event["type"])
+
+
+## The pause menu freezes the arrows, so it holds the song too: in-flight arrows
+## would otherwise land late against it after a resume.
+func pause_minigame() -> void:
+	super.pause_minigame()
+	AudioDirector.set_minigame_bgm_paused(true)
+
+
+## The resume countdown is over: the song picks up where the arrows stopped.
+func _on_countdown_end() -> void:
+	super._on_countdown_end()
+	AudioDirector.set_minigame_bgm_paused(false)
 
 
 ## How far off the hit zone's centre a note spawns, in pixels.

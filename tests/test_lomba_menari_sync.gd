@@ -95,6 +95,11 @@ func test_the_shipped_chart_is_valid() -> void:
 	assert_true(chart.events.size() > 0, "and has arrows")
 
 
+## The importer is an EditorScript with no class_name (like BakeTheme.gd), so
+## the test loads it by path.
+const BuildDanceChart := preload("res://Scripts/Design/BuildDanceChart.gd")
+
+
 func test_the_importer_turns_detected_beats_into_a_valid_chart() -> void:
 	var json := '{"bpm": 120.0, "first_beat_offset": 0.5, "song_length": 90.0, "beats": [0, 1, 2, 3, 4]}'
 	var chart := BuildDanceChart.chart_from_json(json)
@@ -102,3 +107,23 @@ func test_the_importer_turns_detected_beats_into_a_valid_chart() -> void:
 	assert_eq(chart.first_beat_offset, 0.5)
 	assert_eq(chart.events.size(), 5, "one arrow per detected beat")
 	assert_true(chart.is_valid(), "sorted, round-robin types")
+
+
+## Review fix (2026-10-09): the pause menu freezes the arrows, so it holds the
+## song too and the resume countdown releases it; and the flight time is the
+## lead in beats, recomputed each frame, so a resize cannot desync it.
+func test_pause_holds_the_song_and_resize_keeps_the_lead() -> void:
+	var src := FileAccess.get_file_as_string(MENARI_PATH)
+	var pause_at := src.find("func pause_minigame() -> void:")
+	assert_true(pause_at != -1 and src.find("AudioDirector.set_minigame_bgm_paused(true)", pause_at) != -1,
+		"pausing holds the song")
+	var resume_at := src.find("func _on_countdown_end() -> void:")
+	assert_true(resume_at != -1 and src.find("AudioDirector.set_minigame_bgm_paused(false)", resume_at) != -1,
+		"the resume countdown releases it")
+	assert_true(src.contains("var travel := lead_beats * DanceSync.SECONDS_PER_MINUTE / chart.bpm"),
+		"flight time is the lead, whatever the viewport")
+	var audio := FileAccess.get_file_as_string("res://Scripts/Audio/AudioDirector.gd")
+	assert_true(audio.contains("func set_minigame_bgm_paused(paused: bool) -> void:"))
+	var stop_at := audio.find("func stop_minigame_bgm(")
+	assert_true(audio.find("_bgm_minigame.stream_paused = false", stop_at) != -1,
+		"a quit from the pause menu still stops a held track")

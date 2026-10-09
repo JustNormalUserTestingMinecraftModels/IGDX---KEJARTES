@@ -182,7 +182,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Skins/SkinCard.gd": 1,
 	"res://Scripts/Skins/SkinSelect.gd": 1,
 	"res://Scripts/Splashscreen/Splashscreen.gd": 1,
-	"res://Scripts/StudentCard/StudentCard.gd": 109,
+	"res://Scripts/StudentCard/StudentCard.gd": 108,
 	"res://Scripts/StudentCard/StudentCardView.gd": 37,
 	"res://Scripts/StudentList/StudentList.gd": 26,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 28,

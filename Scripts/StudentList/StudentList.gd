@@ -529,7 +529,7 @@ func _on_deck_settled(front: RosterCard, landed: bool) -> void:
 	# The Navigasi Card step (index 2 since the Status Jadwal step was
 	# inserted at 1) auto-advances once the card slide it asked for lands.
 	if tutorial_active and current_step == 2:
-		_next_step()
+		_advance_step()
 
 func _on_card_pressed(student_data: Dictionary, card_node: Control):
 	# The deck read this same release first: a drag is not a tap.
@@ -681,6 +681,11 @@ func _next_step():
 	if is_instance_valid(_tutorial_panel) and _tutorial_panel.is_typing():
 		_tutorial_panel.skip_typing()  # the first tap fills the line
 		return
+	_advance_step()
+
+## The next step, or the end after the last. The navigation step calls this
+## straight from its landed slide, which a typing line must not swallow.
+func _advance_step() -> void:
 	current_step += 1
 	if current_step >= tutorial_steps.size():
 		_end_tutorial()

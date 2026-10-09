@@ -736,3 +736,17 @@ func test_transition_gating_preserved() -> void:
 	var card := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	assert_contains(_function_source(card, "_show_step"), "GameState.current_grade != FirstRunTutorial.GRADE)",
 		"the grade 8/9 pick wears TUGAS")
+
+
+## Bug (2026-10-09): the Sifat beat arms its badge hand-off after the card's
+## 0.3 s pop-in, but a badge tap was allowed as soon as the step began; a quick
+## tap opened the trait pop-up over the untucked note and never advanced. A
+## badge now opens only once the beat is armed (its gate set).
+func test_a_badge_opens_only_once_the_sifat_beat_is_armed() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var guard := _function_source(src, "_on_trait_btn_pressed")
+	assert_contains(guard, "if tutorial_active and (_gate_targets.is_empty() or current_step != FirstRunTutorial.STEP_TRAITS):",
+		"an unarmed badge does nothing during the tutorial")
+	var body := _function_source(src, "_show_step")
+	assert_true(body.find("_gate_targets = targets") > body.find("await tween_in.finished"),
+		"and the gate is set only after the pop-in")

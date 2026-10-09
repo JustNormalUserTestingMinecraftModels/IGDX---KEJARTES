@@ -1174,7 +1174,6 @@ func _arm_tutorial_badges() -> void:
 		_active_popup.tree_exited.connect(func():
 			tutorial_idle.resume()
 			_advance_step(), CONNECT_ONE_SHOT)
-
 	for badge: Button in badges:
 		badge.pressed.connect(handler)
 	_tutorial_badge_cleanup = func():
@@ -1432,7 +1431,8 @@ func _play_erase_stamp_effect():
 	stamp.modulate.a = 1.0
 
 func _on_trait_btn_pressed(kertas: Control, type: String, trait_name: String):
-	if tutorial_active and not (GameState.current_grade == 7 and current_step == FirstRunTutorial.STEP_TRAITS):
+	# In the tutorial a badge opens only on the armed Sifat beat (note tucks first).
+	if tutorial_active and (_gate_targets.is_empty() or current_step != FirstRunTutorial.STEP_TRAITS):
 		return
 
 	if type == "quirk":

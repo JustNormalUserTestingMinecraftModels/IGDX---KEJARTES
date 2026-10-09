@@ -267,6 +267,10 @@ const MIXER_BUSES: Array[StringName] = [&"Master", &"BGM", &"SFX"]
 ## minigame music itself. Deliberately quicker than default_bgm_fade so
 ## ducking for a minigame doesn't feel sluggish.
 @export var minigame_bgm_fade: float = 0.4
+## Per-track fades, in seconds, that override minigame_bgm_fade. The revised Seni
+## Tari track starts and stops over a longer swell (spec 2026-10-09 section 5);
+## every other minigame keeps minigame_bgm_fade.
+const MINIGAME_BGM_FADE_BY_ID := {&"minigame_senibudaya_menari": 1.0}
 
 var _sfx_pool: Array[AudioStreamPlayer] = []
 ## The single looping ambience voice. On the SFX bus -- see play_ambience().
@@ -686,7 +690,7 @@ func resume_bgm(fade: float = -1.0) -> void:
 ## &"minigame_akademis" is handled by Task 4's extension to this
 ## function (a looping 3-track sequence); the ids here are single,
 ## already-looping tracks.
-func play_minigame_bgm(id: StringName) -> void:
+func play_minigame_bgm(id: StringName, fade: float = -1.0) -> void:
 	_bgm_minigame_id = id
 	if id == &"minigame_akademis":
 		if bgm_minigame_akademis.is_empty():
@@ -696,7 +700,7 @@ func play_minigame_bgm(id: StringName) -> void:
 		_bgm_minigame.volume_db = -60.0
 		_bgm_minigame.play()
 		var tw := create_tween()
-		tw.tween_property(_bgm_minigame, "volume_db", 0.0, minigame_bgm_fade)
+		tw.tween_property(_bgm_minigame, "volume_db", 0.0, _fade_for(id, fade))
 		return
 
 	var stream := _resolve_minigame_bgm(id)
@@ -706,7 +710,31 @@ func play_minigame_bgm(id: StringName) -> void:
 	_bgm_minigame.volume_db = -60.0
 	_bgm_minigame.play()
 	var tw := create_tween()
-	tw.tween_property(_bgm_minigame, "volume_db", 0.0, minigame_bgm_fade)
+	tw.tween_property(_bgm_minigame, "volume_db", 0.0, _fade_for(id, fade))
+
+
+## The fade for track `id`: an explicit `fade` (>= 0), else the track's own
+## (MINIGAME_BGM_FADE_BY_ID), else minigame_bgm_fade.
+func _fade_for(id: StringName, fade: float) -> float:
+	if fade >= 0.0:
+		return fade
+	return MINIGAME_BGM_FADE_BY_ID.get(id, minigame_bgm_fade)
+
+
+## The live playback position of the minigame track, in seconds, corrected for
+## output latency so on-beat spawns line up with what the player hears. 0.0 when
+## nothing plays. Read every frame by LombaMenari.
+func get_minigame_bgm_position() -> float:
+	if not _bgm_minigame.playing:
+		return 0.0
+	return _bgm_minigame.get_playback_position() \
+			+ AudioServer.get_time_since_last_mix() - AudioServer.get_output_latency()
+
+
+## True while the minigame track plays (LombaMenari falls back to its own clock
+## when it does not, e.g. launched from the debug overlay without SchoolDay).
+func is_minigame_bgm_playing() -> bool:
+	return _bgm_minigame.playing
 
 
 func _resolve_minigame_bgm(id: StringName) -> AudioStream:
@@ -723,7 +751,7 @@ func _resolve_minigame_bgm(id: StringName) -> AudioStream:
 func stop_minigame_bgm(fade: float = -1.0) -> void:
 	if not _bgm_minigame.playing:
 		return
-	var duration := minigame_bgm_fade if fade < 0.0 else fade
+	var duration := _fade_for(_bgm_minigame_id, fade)
 	var tw := create_tween()
 	tw.tween_property(_bgm_minigame, "volume_db", -60.0, duration)
 	tw.tween_callback(_bgm_minigame.stop)

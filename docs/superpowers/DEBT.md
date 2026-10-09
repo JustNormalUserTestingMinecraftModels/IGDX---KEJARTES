@@ -218,6 +218,14 @@ the same path with no code change; real art is owed by the artist/owner
   824x520 in a keep-aspect `TextureRect`; any 16:10-ish picture fits.
 - `mark_check.svg`, `mark_cross.svg` -- a cleared and a missed target on the
   comic plates (`TutorialComic.mark_cleared` / `mark_missed`), 96x96.
+- **Not placed yet (owed, spec section 7):** the Pak Kepsek mascot with its
+  2-3 expressions (senang / serius / bangga), the idle nudge's pointing hand
+  and the reward star. This pass has no node for them: the Nota Guru's name tab
+  names the speaker, and the idle nudge pulses the existing tutorial arrow
+  (`TutorialIdle` cues) instead of sliding a hand in. Adding them means a node
+  on `TutorialPanel.tscn` (mascot) and a cue node per screen (hand) -- confirm
+  with the owner first (spec section 0.1). The idle nudge's one-line text is
+  also unwritten: neither the spec nor the mockup gives the copy.
 
 ## Asset notes
 

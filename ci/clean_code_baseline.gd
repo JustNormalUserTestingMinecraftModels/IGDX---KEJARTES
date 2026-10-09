@@ -55,7 +55,7 @@ const LONG_FUNCTIONS: Dictionary = {
 ## Untyped vars, signatures without ->, untyped parameters, per script.
 const UNTYPED: Dictionary = {
 	"res://Scripts/AnimUtils.gd": 27,
-	"res://Scripts/AturJadwal/AturJadwal.gd": 150,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 146,
 	"res://Scripts/CutScene/CutScene.gd": 12,
 	"res://Scripts/CutScene/HintLabel.gd": 3,
 	"res://Scripts/Debug/DebugManager.gd": 167,
@@ -102,7 +102,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Achievements/AchievementsScreen.gd": 1,
 	"res://Scripts/AnimUtils.gd": 126,
 	"res://Scripts/AturJadwal/ActivityPreview.gd": 6,
-	"res://Scripts/AturJadwal/AturJadwal.gd": 78,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 76,
 	"res://Scripts/AturJadwal/DayStickyNote.gd": 10,
 	"res://Scripts/AturJadwal/ObjectiveHint.gd": 3,
 	"res://Scripts/AturJadwal/SpecialtyMatchBurst.gd": 1,
@@ -216,7 +216,7 @@ const DUPLICATE_GROUPS: Array[String] = [
 
 ## Scripts over 1,000 lines -> their line count.
 const LARGE_SCRIPTS: Dictionary = {
-	"res://Scripts/AturJadwal/AturJadwal.gd": 1468,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 1464,
 	"res://Scripts/Debug/DebugManager.gd": 1745,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1628,
 	"res://Scripts/StudentCard/StudentCard.gd": 1443,

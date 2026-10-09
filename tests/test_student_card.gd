@@ -293,7 +293,7 @@ func test_show_step_hands_its_number_and_count_to_the_panels_pill() -> void:
 	var body := _function_source(src, "_show_step")
 	assert_false(body.is_empty(), "_show_step was found")
 	assert_contains(body,
-		"_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size())",
+		"_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size(), GameState.current_grade != FirstRunTutorial.GRADE)",
 		"every step goes through the panel with its 1-based number and the step count")
 
 
@@ -720,3 +720,19 @@ func test_first_run_steps_name_the_student_and_gate_two_beats() -> void:
 	for index in steps.size():
 		var gated := index == FirstRunTutorial.STEP_TRAITS or index == FirstRunTutorial.STEP_APPROVE
 		assert_eq(FirstRunTutorial.is_gated(index), gated, "beat %d gating" % index)
+
+
+## Task 8: the grade-transition beats wear the Nota Guru box with no change
+## of content; the story beats never read the tutorial toggle, and the pick
+## instruction is a TUGAS card (and is the one that respects the toggle,
+## through _begin_tutorial).
+func test_transition_gating_preserved() -> void:
+	var src := FileAccess.get_file_as_string(_BEAT_PATH)
+	assert_false(src.contains("tutorials_bypassed"),
+		"story beats must NOT read the tutorial toggle")
+	assert_true(src.contains("HEADMASTER_BEATS") and src.contains("PICK_STEPS"),
+		"transition content unchanged")
+	assert_contains(src, "_panel.show_beat(", "the beats ride the shared box (typewriter, PENGUMUMAN)")
+	var card := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_contains(_function_source(card, "_show_step"), "GameState.current_grade != FirstRunTutorial.GRADE)",
+		"the grade 8/9 pick wears TUGAS")

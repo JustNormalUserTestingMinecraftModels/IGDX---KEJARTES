@@ -32,6 +32,9 @@ const STEPS := [
 	["Mulai", "Mantap! Terima dulu %s dengan Approve, lalu kita mulai minggu pertama.",
 		"KertasMurid1/Aprove", "KETUK APPROVE"],
 ]
+## The grade whose first run these beats teach; grades 8 and 9 get the
+## promotion beats (HeadmasterBeat) and the pick TUGAS instead.
+const GRADE := 7
 ## The Sifat beat: it waits for a tap on a trait badge, which hands off to the
 ## real TraitDetailPopup (the note tucks away while it is up).
 const STEP_TRAITS := 3

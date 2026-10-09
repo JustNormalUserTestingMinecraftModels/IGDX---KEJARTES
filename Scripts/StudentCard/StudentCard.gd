@@ -432,8 +432,8 @@ func _show_step(index: int):
 	var prompt := TutorialPanel.DEFAULT_PROMPT
 	if step.prompt_text != "":
 		prompt = step.prompt_text
-	# The panel's own step pill is this screen's one counter ("Langkah n / N").
-	_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size())
+	# The pill is this screen's one counter; grade 8/9's only step, the pick, is a TUGAS.
+	_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size(), GameState.current_grade != FirstRunTutorial.GRADE)
 
 	_position_tutorial_panel()
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0

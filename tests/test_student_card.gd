@@ -402,7 +402,7 @@ func test_the_arrow_keeps_off_the_card_this_screen_places() -> void:
 	assert_true(_function_source(src, "_position_tutorial_panel").contains(
 			"_tutorial_panel.position = _tutorial_card_position(_tutorial_panel.size)"),
 		"the card itself is placed by that same rule, so the two cannot drift apart")
-	assert_true(_function_source(src, "_tutorial_card_position").contains("current_step >= 7"),
+	assert_true(_function_source(src, "_tutorial_card_position").contains("current_step >= FirstRunTutorial.STEP_TRAITS"),
 		"and the rule still centres the card down the screen from step 7 on")
 
 
@@ -551,7 +551,8 @@ func test_a_tap_on_the_overlay_belongs_to_the_beat_while_it_plays() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var step := _function_source(src, "_next_step")
 	var routed := step.find("_beat.advance()")
-	var stepped := step.find("current_step += 1")
+	# The count itself lives in _advance_step() (the gated beats call it directly).
+	var stepped := step.find("_advance_step()")
 	assert_true(routed != -1 and stepped > routed,
 		"_next_step hands the tap to the beat before it counts a tutorial step")
 	assert_contains(step, "_beat.is_playing()")
@@ -561,7 +562,7 @@ func test_the_beat_card_is_centred_down_the_screen() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
 	var where := _function_source(src, "_tutorial_card_position")
 	assert_contains(where, "_beat.is_playing()", "the beat's card is centred, with no arrow to make room for")
-	assert_contains(where, "current_step >= 7", "and the tutorial's own rule is still there")
+	assert_contains(where, "current_step >= FirstRunTutorial.STEP_TRAITS", "and the tutorial's own rule is still there")
 
 
 # ------------------------------------------ the beat's flag lives on GameState
@@ -649,3 +650,73 @@ func test_comic_beats_carry_the_spec_copy() -> void:
 			"satu kelas kena nilai D."]:
 		assert_contains(src, line, "the comic says: " + line)
 	assert_contains(src, "GameState.MIN_TARGETS_PER_STUDENT", "the 2-of-3 rule comes from the game")
+
+
+## Task 6: the 14-card grade-7 text wall is gone; the comic cold-open opens
+## the show-and-do beats, the Sifat beat tucks the note for the trait pop-up,
+## and grades 8/9 still route through HeadmasterBeat.
+func test_grade7_textwall_removed_and_beats_present() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_false(src.contains("Ini adalah bar Mood murid"),
+		"old 14-step wall copy must be gone")
+	assert_true(src.contains("TutorialComic") or src.contains("tutorial_comic"),
+		"comic cold-open must be wired")
+	assert_true(src.contains("tuck("), "trait hand-off must tuck the note")
+	assert_true(src.contains("HeadmasterBeat"), "grade 8/9 still routes via HeadmasterBeat")
+
+
+## The beats carry the spec's copy and play in its order: three Kenalan
+## spotlights on the real bars, Sifat (gated on a badge), its follow-up, and
+## Mulai (gated on Approve).
+func test_grade7_beats_follow_the_spec() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/FirstRunTutorial.gd")
+	var card := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	for line: String in ["Kalau bagus, dia belajar dengan semangat; kalau habis, gampang ngambek.",
+			"Tiap kegiatan menguras energi. Kalau habis, %s terpaksa izin istirahat.",
+			"Inilah yang kamu kejar biar dia lulus.",
+			"juga punya Quirk dan Persona, sifat khasnya. Coba ketuk salah satunya.",
+			"Nah, begitu cara baca sifat murid. Sesuaikan jadwalnya, ya!",
+			"Terima dulu %s dengan Approve, lalu kita mulai minggu pertama."]:
+		assert_contains(src, line, "the beat says: " + line)
+	assert_contains(card, "FirstRunTutorial.steps_for(", "StudentCard plays them")
+	var begin := _function_source(card, "_begin_tutorial")
+	assert_contains(begin, "tutorial_comic.play()", "grade 7 opens on the comic")
+	assert_contains(begin, "tutorial_comic.finished.connect(_show_step.bind(0)",
+		"and its first step follows the comic")
+
+
+## One focal box: the coach layer sits below the trait pop-up's (100), and
+## the Sifat hand-off tucks the note and holds the idle nudge.
+func test_the_note_and_the_trait_popup_are_never_both_up() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_contains(src, "tut_canvas.layer = 99", "the coach layer is below the trait popup")
+	var arm := _function_source(src, "_arm_tutorial_badges")
+	assert_contains(arm, "_tutorial_panel.tuck(true)", "the note tucks before the pop-up shows")
+	assert_contains(arm, "tutorial_idle.pause()", "the nudge holds while it is up")
+	assert_contains(_function_source(src, "_show_step"), "_tutorial_panel.tuck(false)",
+		"and springs back with the follow-up line")
+
+
+## Approve is the Mulai beat's one way forward, and a tap off a gated control
+## is answered, never dead; any tap types the line out first.
+func test_gated_beats_answer_wrong_taps_and_approve_ends_the_tutorial() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_contains(_function_source(src, "_on_approve_pressed"), "_is_approve_beat()",
+		"Approve ends the tutorial on the Mulai beat")
+	assert_contains(_function_source(src, "_answer_gate_tap"), "TutorialPanel.answer_wrong_tap",
+		"a wrong tap is answered")
+	assert_contains(_function_source(src, "_next_step"), "_tutorial_panel.skip_typing()",
+		"a tap on a typing line fills it first")
+
+
+## FirstRunTutorial's pure helpers: the name lands in every line that names a
+## student, and only Sifat and Mulai are gated.
+func test_first_run_steps_name_the_student_and_gate_two_beats() -> void:
+	var steps := FirstRunTutorial.steps_for("Andi")
+	assert_eq(steps.size(), FirstRunTutorial.STEPS.size(), "one entry per beat")
+	assert_true((steps[0][1] as String).begins_with("Ini Mood Andi."), "the first student is named")
+	for entry: Array in steps:
+		assert_false((entry[1] as String).contains("%s"), "no unfilled name is left")
+	for index in steps.size():
+		var gated := index == FirstRunTutorial.STEP_TRAITS or index == FirstRunTutorial.STEP_APPROVE
+		assert_eq(FirstRunTutorial.is_gated(index), gated, "beat %d gating" % index)

@@ -22,6 +22,10 @@ extends Control
 ## Emitted once, when the last plate is tapped past or the comic is skipped.
 signal finished
 
+## The tap prompt's blink: the alpha it dips to, and seconds for each half.
+const BLINK_LOW_ALPHA := 0.25
+const BLINK_HALF_PERIOD := 0.65
+
 ## Plate 1's illustration: the class Pak Guru will guide (placeholder art).
 @export var plate_class: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/comic/plate_kelas.svg")
 ## Plate 2's illustration: a happy student who passes (placeholder art).
@@ -150,9 +154,9 @@ func _start_blink() -> void:
 	if _blink_tween != null and _blink_tween.is_valid():
 		_blink_tween.kill()
 	_blink_tween = create_tween().set_loops()
-	_blink_tween.tween_property(prompt, "modulate:a", 0.25, 0.65) \
+	_blink_tween.tween_property(prompt, "modulate:a", BLINK_LOW_ALPHA, BLINK_HALF_PERIOD) \
 			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_blink_tween.tween_property(prompt, "modulate:a", 1.0, 0.65) \
+	_blink_tween.tween_property(prompt, "modulate:a", 1.0, BLINK_HALF_PERIOD) \
 			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 

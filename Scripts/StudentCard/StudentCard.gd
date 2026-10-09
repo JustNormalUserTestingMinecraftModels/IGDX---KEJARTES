@@ -32,14 +32,6 @@ extends Control
 
 # ================= TOKENS =================
 
-## The project's modal scrim. `alpha_scale` of 0 gives the same hue at
-## zero opacity, which is what both popup fades tween from and back to --
-## tweening between two different hues would flash mid-fade.
-func _scrim_color(alpha_scale: float = 1.0) -> Color:
-	var c := DesignTokens.load_default().scrim_color()
-	c.a *= alpha_scale
-	return c
-
 
 # ================= ACTIVE POPUP & TUTORIAL BADGE =================
 var _active_popup: Node = null
@@ -71,6 +63,15 @@ var _tutorial_arrow: Control = null
 
 ## The headmaster's congratulation while it plays on this card, else null.
 var _beat: HeadmasterBeat
+
+## Grade 7's first-run beats live in FirstRunTutorial (data + pure helpers).
+## The controls the current gated beat waits for; a tap anywhere else is a
+## wrong tap (TutorialPanel.answer_wrong_tap). Empty on a tap-anywhere beat.
+var _gate_targets: Array[Control] = []
+## The cold-open comic (Scenes/UI/TutorialComic.tscn), authored in the overlay.
+@onready var tutorial_comic: TutorialComic = %TutorialComic
+## The idle layer: resting cues and the 2.5 s nudge (Scripts/UI/TutorialIdle.gd).
+@onready var tutorial_idle: TutorialIdle = %TutorialIdle
 
 # --- Paginasi Kertas Murid ---
 @onready var kertas_murid: Array = [$KertasMurid1, $KertasMurid2, $KertasMurid3, $KertasMurid4, $KertasMurid5, $KertasMurid6]
@@ -121,10 +122,10 @@ func _ready():
 	if tutorial_steps.is_empty():
 		_populate_default_tutorial_steps()
 
-	# Wrap color_rect in a CanvasLayer to ensure tutorial overlay and panel always render on top of popups
+	# Just BELOW the game pop-ups: the one-focal-box backstop (TutorialPanel).
 	var tut_canvas = CanvasLayer.new()
 	tut_canvas.name = "TutorialCanvasLayer"
-	tut_canvas.layer = 101 # Trait popups are layer 100
+	tut_canvas.layer = 99 # Trait popups are layer 100
 	add_child(tut_canvas)
 	color_rect.get_parent().remove_child(color_rect)
 	tut_canvas.add_child(color_rect)
@@ -216,6 +217,8 @@ var is_swiping: bool = false
 const SWIPE_THRESHOLD: float = 60.0
 
 func _input(event: InputEvent):
+	if tutorial_active:
+		_answer_gate_tap(event)
 	if tutorial_active or is_animating or (_active_popup != null and is_instance_valid(_active_popup)):
 		is_swiping = false
 		return
@@ -238,6 +241,17 @@ func _input(event: InputEvent):
 				is_swiping = false
 				_evaluate_swipe(event.position)
 
+## Any press calms the idle nudge; on a gated beat, one that misses its controls
+## is a wrong tap (TutorialPanel.answer_wrong_tap). A pop-up owns its own taps.
+func _answer_gate_tap(event: InputEvent) -> void:
+	if not FirstRunTutorial.is_press(event):
+		return
+	tutorial_idle.reset()
+	if _gate_targets.is_empty() or (_active_popup != null and is_instance_valid(_active_popup)):
+		return
+	if not FirstRunTutorial.hits(_gate_targets, event.position):
+		TutorialPanel.answer_wrong_tap(_gate_targets[0])
+
 func _evaluate_swipe(end_pos: Vector2):
 	if _active_popup != null and is_instance_valid(_active_popup):
 		return
@@ -255,23 +269,8 @@ func _populate_default_tutorial_steps() -> void:
 	tutorial_steps.clear()
 	var defaults: Array = []
 	if GameState.current_grade == 7:
-		defaults = [
-			["Selamat Datang!", "Di sini ada laporan tentang berbagai murid yang bisa kamu pilih untuk kamu ajar!\n\nKemampuan dan sifat mereka berbeda-beda, jadi pilihlah dengan bijak!", "", ""],
-			["Mood Murid", "Ini adalah bar Mood murid. Mood menunjukkan tingkat kebahagiaan murid.\n\nJika mood rendah, murid akan sulit untuk belajar dengan baik.", "KertasMurid1/Mood", ""],
-			["Energy Murid", "Ini adalah bar Energy murid. Energy menunjukkan kapasitas seberapa banyak murid untuk dapat diajar berbagai mata pelajaran.", "KertasMurid1/Energy", ""],
-			["Skill Murid", "Sekarang kita lihat bagian Skill. Skill menunjukkan kemampuan murid di berbagai bidang pelajaran.", "KertasMurid1/Akademis,KertasMurid1/SeniBudaya,KertasMurid1/Olahraga", ""],
-			["Akademis", "Bar Akademis menunjukkan kemampuan murid dalam pelajaran akademis.\n\nSemakin tinggi nilainya, semakin mudah murid memahami pelajaran.", "KertasMurid1/Akademis", ""],
-			["Seni Budaya", "Bar Seni Budaya menunjukkan kemampuan murid dalam bidang seni dan kebudayaan.", "KertasMurid1/SeniBudaya", ""],
-			["Olahraga", "Bar Olahraga menunjukkan kemampuan fisik dan ketangkasan murid dalam bidang olahraga.", "KertasMurid1/Olahraga", ""],
-			["Quirk Murid", "Setiap murid punya Quirk — sifat unik yang memengaruhi cara mereka berkembang!\n\nQuirk bisa jadi keunggulan atau tantangan tersendiri saat menyusun jadwal belajar.", "KertasMurid1/KutuBuku", ""],
-			["Coba Quirk!", "Sekarang coba sentuh badge Quirk milik murid ini untuk melihat langsung efeknya pada gameplay!", "KertasMurid1/KutuBuku", "TEKAN BADGE QUIRK UNTUK LIHAT EFEKNYA!"],
-			["Efek Quirk", "Pop-up ini menjelaskan efek dari Quirk yang akan memengaruhi gameplay ke depannya.\n\nSilakan baca efeknya lalu tutup pop-up ini untuk melanjutkan.", "KertasMurid1/PopupCanvas/TraitOverlay/TraitPopupPanel", "TUTUP POP-UP UNTUK LANJUT!"],
-			["Persona Murid", "Persona adalah kepribadian dasar murid yang menentukan kebutuhan mereka setiap minggu.\n\nPilih jadwal yang cocok dengan Persona murid agar mereka tetap semangat!", "KertasMurid1/KutuBuku2", ""],
-			["Coba Persona!", "Sekarang sentuh badge Persona untuk melihat efeknya pada jadwal mingguan murid!", "KertasMurid1/KutuBuku2", "TEKAN BADGE PERSONA UNTUK LIHAT EFEKNYA!"],
-			["Efek Persona", "Sama seperti Quirk, pop-up ini menjelaskan efek Persona yang memengaruhi gameplay.\n\nSilakan baca dan tutup pop-up ini untuk melanjutkan.", "KertasMurid1/PopupCanvas/TraitOverlay/TraitPopupPanel", "TUTUP POP-UP UNTUK LANJUT!"],
-			["Memilih Murid", "Kamu bisa memilih hingga 2 murid untuk diajar.\n\nGunakan tombol panah untuk melihat murid lainnya dan pilih dengan bijak!", "NextButtonKanan", "Tekan tombol panah Kanan untuk lanjut!"],
-			["Approve Murid", "Tekan tombol APPROVE untuk memilih murid ini.\n\nSetelah memilih 2 murid, tombol BELAJAR akan muncul untuk melanjutkan!", "KertasMurid1/Aprove", "Tekan tombol 'APPROVE' untuk lanjut!"]
-		]
+		var first: Dictionary = student_data_list[0] if not student_data_list.is_empty() else {}
+		defaults = FirstRunTutorial.steps_for(str(first.get("name", "")))
 	elif HeadmasterBeat.PICK_STEPS.has(GameState.current_grade):
 		defaults = [HeadmasterBeat.PICK_STEPS[GameState.current_grade]]
 	for entry in defaults:
@@ -332,13 +331,13 @@ func _position_tutorial_panel():
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 
 ## Where the card's top-left corner goes at the current step, for a card of
-## `panel_size`: at the bottom, or centred down the screen (from step 7 on, and
-## during the headmaster's beat).
+## `panel_size`: at the bottom, or centred down the screen (from the grade-7
+## Sifat beat on, and during the headmaster's beat).
 func _tutorial_card_position(panel_size: Vector2) -> Vector2:
 	var viewport_size := get_viewport_rect().size
 	var centred_y := (viewport_size.y - panel_size.y) / 2.0
 	var bottom_y := maxf(viewport_size.y * 0.55, viewport_size.y - panel_size.y - 40)
-	var centred := (_beat != null and _beat.is_playing()) or current_step >= 7
+	var centred := (_beat != null and _beat.is_playing()) or current_step >= FirstRunTutorial.STEP_TRAITS
 	return Vector2((viewport_size.x - panel_size.x) / 2.0, centred_y if centred else bottom_y)
 
 ## The rectangle the card will cover at the current step, for the arrow to keep off.
@@ -367,11 +366,23 @@ func _fit_color_rect_to_viewport():
 	if tutorial_active and _tutorial_panel and is_instance_valid(_tutorial_panel):
 		call_deferred("_position_tutorial_panel")
 
-## A tap on the overlay: the headmaster's next card while it plays, else the next step.
+## A tap on the overlay: first it fills a line still typing (tap-to-skip), then
+## it is the headmaster's next card while that plays, else the next step.
 func _next_step():
+	tutorial_idle.reset()
+	if is_instance_valid(_tutorial_panel) and _tutorial_panel.is_typing():
+		_tutorial_panel.skip_typing()
+		return
 	if _beat != null and _beat.is_playing():
 		_beat.advance()
 		return
+	_advance_step()
+
+## The next step, or the end after the last. The gated beats call this straight
+## from their real control, where a tap-to-skip must not swallow the hand-off.
+func _advance_step() -> void:
+	if not tutorial_active:
+		return  # a pop-up that closes after the tutorial ended counts nothing
 	current_step += 1
 	if current_step >= tutorial_steps.size():
 		_end_tutorial()
@@ -384,18 +395,19 @@ func _show_step(index: int):
 	var step = tutorial_steps[index]
 	
 	click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	var tween_out = create_tween().set_parallel(true)
-	tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.15)\
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tween_out.tween_property(_tutorial_panel, "modulate:a", 0.0, 0.15)
-	
-	await tween_out.finished
-	
-	if GameState.current_grade == 7:
-		next_kanan.visible = (index == 11)
+	_gate_targets.clear()
+
+	# Back from a trait pop-up, the tucked note springs back with the next line.
+	if _tutorial_panel.is_tucked():
+		_tutorial_panel.tuck(false)
 	else:
-		next_kanan.visible = false
+		var tween_out = create_tween().set_parallel(true)
+		tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.15)\
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		tween_out.tween_property(_tutorial_panel, "modulate:a", 0.0, 0.15)
+		await tween_out.finished
+
+	next_kanan.visible = false  # the page arrows wait for the tutorial to end
 
 	var targets: Array[Control] = []
 	if step.target_node_path != "":
@@ -411,59 +423,46 @@ func _show_step(index: int):
 				if target and target is Control:
 					targets.append(target)
 		if not targets.is_empty():
-			if GameState.current_grade == 7 and index == 13 and next_kanan:
-				next_kanan.show() # Force it visible just in case
-			
-			var padding = 16.0 # increased default padding
-			if GameState.current_grade == 7 and index == 13:
-				padding = 64.0 # Huge padding to ensure arrow is seen
-			elif GameState.current_grade == 7 and index in [9, 12]:
-				padding = 40.0 # generous padding for popups
-			_highlight_multiple(targets, padding)
+			_highlight_multiple(targets, 16.0)
 		else:
 			_clear_highlight()
 	else:
 		_clear_highlight()
 
-	# Dynamic Prompt Text
-	var requires_button_press = (GameState.current_grade == 7 and index == tutorial_steps.size() - 1 and step.target_node_path != "") or (GameState.current_grade == 7 and index == 11)
 	var prompt := TutorialPanel.DEFAULT_PROMPT
 	if step.prompt_text != "":
 		prompt = step.prompt_text
-	elif requires_button_press and not targets.is_empty():
-		var btn_name = _get_button_display_name(targets[0])
-		prompt = "TEKAN TOMBOL '%s' UNTUK LANJUT!" % btn_name.to_upper()
 	# The panel's own step pill is this screen's one counter ("Langkah n / N").
 	_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size())
 
 	_position_tutorial_panel()
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
-	
+
 	# Transition In: cute bouncy scale-up pop-in
 	var tween_in = create_tween().set_parallel(true)
 	tween_in.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.3)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.2)
-	
+
 	await tween_in.finished
-	
-	# Badge-gated steps (8, 11) and popup-gated steps (9, 12) require manual interaction
-	if GameState.current_grade == 7 and index in [8, 9, 11, 12]:
+
+	# The arrow breathes; 2.5 s without a tap nudges the spotlit control.
+	var idle_target: Control = targets[0] if not targets.is_empty() else _tutorial_panel
+	tutorial_idle.start(idle_target, [_tutorial_arrow])
+
+	# A gated beat lets taps through to its real control (_answer_gate_tap).
+	if GameState.current_grade == 7 and FirstRunTutorial.is_gated(index):
 		click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		if index == 8 or index == 11:
-			_arm_tutorial_badge(index)
+		_gate_targets = targets
+		if index == FirstRunTutorial.STEP_TRAITS:
+			_arm_tutorial_badges()
 	else:
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
 
-func _get_button_display_name(node: Node) -> String:
-	if not node:
-		return ""
-	if node is Button and node.text.strip_edges() != "":
-		return node.text.strip_edges()
-	for child in node.get_children():
-		if child is Label and child.text.strip_edges() != "":
-			return child.text.strip_edges().split("\n")[0]
-	return node.name
+## True on the grade-7 Mulai beat, which the one Approve press ends.
+func _is_approve_beat() -> bool:
+	return tutorial_active and GameState.current_grade == 7 \
+			and current_step == FirstRunTutorial.STEP_APPROVE and not (_beat != null and _beat.is_playing())
 
 func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 	# Defer one frame so layout is resolved and control sizes are accurate
@@ -554,6 +553,10 @@ func _clear_highlight():
 
 func _end_tutorial():
 	tutorial_active = false
+	_gate_targets.clear()
+	tutorial_idle.stop()
+	if _tutorial_badge_cleanup.is_valid():
+		_tutorial_badge_cleanup.call()
 	click_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if _blink_tween and _blink_tween.is_valid():
 		_blink_tween.kill()
@@ -564,10 +567,15 @@ func _end_tutorial():
 
 ## Starts this grade's tutorial steps, or -- with tutorials bypassed -- drops
 ## the overlay. The one place the tutorial toggle is read; the beat never asks.
+## Grade 7 opens on the comic (TutorialComic); its first step follows it.
 func _begin_tutorial() -> void:
 	if GameState.tutorials_bypassed:
 		tutorial_active = false
 		color_rect.hide()
+	elif GameState.current_grade == 7 and is_instance_valid(tutorial_comic):
+		_clear_highlight()  # no spotlight hole showing through the comic's dim
+		tutorial_comic.finished.connect(_show_step.bind(0), CONNECT_ONE_SHOT)
+		tutorial_comic.play()
 	else:
 		_show_step(0)
 
@@ -1064,9 +1072,6 @@ func _get_stat_icon(bname: String) -> Texture2D:
 
 ## The accent colour a given bar wears, from DesignTokens via StatInfo.
 ## Affects: the tint of the bars drawn on the card itself.
-func _get_bar_color(bname: String) -> Color:
-	return DesignTokens.load_default().category_color(StatInfo.token_category(bname))
-
 func _on_bar_gui_input(ev: InputEvent, kertas: Control, bname: String, s_data: Dictionary) -> void:
 	if tutorial_active or is_animating or _active_popup != null:
 		return
@@ -1099,13 +1104,13 @@ func _show_bar_popup(kertas: Control, bname: String, s_data: Dictionary) -> void
 ## Clear the guard and restore the page-turn arrows once a modal finishes
 ## its exit animation. Shared by the stat and trait popups.
 ##
-## During the onboarding tutorial only forward navigation is allowed, so the
-## restore forces next_kanan visible / next_kiri hidden instead of asking
+## During the onboarding tutorial the page arrows wait for it to end (the note
+## is the only way forward), so the restore keeps both hidden instead of asking
 ## _update_nav_buttons what the current page would normally show.
 func _on_detail_popup_closed() -> void:
 	_active_popup = null
 	if tutorial_active:
-		if next_kanan: next_kanan.show()
+		if next_kanan: next_kanan.hide()
 		if next_kiri: next_kiri.hide()
 	else:
 		_update_nav_buttons(current_page)
@@ -1134,7 +1139,7 @@ func _show_trait_popup(kertas: Control, type: String, name: String,
 	popup.closed.connect(func() -> void:
 		_active_popup = null
 		if tutorial_active:
-			if next_kanan: next_kanan.show()
+			if next_kanan: next_kanan.hide()
 			if next_kiri: next_kiri.hide()
 		else:
 			_update_nav_buttons(current_page)
@@ -1144,41 +1149,38 @@ func _show_trait_popup(kertas: Control, type: String, name: String,
 
 # ================= TUTORIAL BADGE GATING =================
 
-func _arm_tutorial_badge(step_index: int) -> void:
-	# Clean up any previous connection
+## The Sifat hand-off (one focal box): a badge's own handler opens its real
+## TraitDetailPopup first, then this tucks the note and holds the idle nudge
+## until the pop-up leaves and the next step brings the note back.
+func _arm_tutorial_badges() -> void:
 	if _tutorial_badge_cleanup.is_valid():
 		_tutorial_badge_cleanup.call()
 	_tutorial_badge_cleanup = func(): pass
-
-	var badge_name := "KutuBuku" if step_index == 8 else "KutuBuku2"
-	var badge_type := "quirk"   if step_index == 8 else "persona"
-	var badge = get_node_or_null("KertasMurid1/" + badge_name)
-
-	if not badge or not badge is Button:
-		# Badge not found — fall back to click-anywhere
+	var badges := FirstRunTutorial.trait_badges(get_node_or_null("KertasMurid1"))
+	if badges.is_empty():
+		# No badge to wait for: fall back to a tap anywhere.
+		_gate_targets.clear()
 		click_area.mouse_filter = Control.MOUSE_FILTER_STOP
 		return
 
-	var s_data    = student_data_list[0]
-	var trait_key: String = s_data.get("quirk" if badge_type == "quirk" else "persona", "")
-	var desc: String
-	if badge_type == "quirk":
-		desc = StudentCardView.quirk_description(trait_key)
-	else:
-		desc = StudentCardView.persona_description(trait_key)
-	if desc == "":
-		desc = "Tidak ada info."
-
 	var handler := func():
-		# The badge's own pressed handler runs first and sets _active_popup synchronously.
-		if is_instance_valid(_active_popup):
-			_next_step() # Advance to the "Highlight popup" step
-			_active_popup.tree_exited.connect(func(): _next_step()) # Advance when popup closes
+		if not is_instance_valid(_active_popup):
+			return
+		if _tutorial_badge_cleanup.is_valid():
+			_tutorial_badge_cleanup.call()
+		_gate_targets.clear()
+		_tutorial_panel.tuck(true)
+		tutorial_idle.pause()
+		_active_popup.tree_exited.connect(func():
+			tutorial_idle.resume()
+			_advance_step(), CONNECT_ONE_SHOT)
 
-	badge.pressed.connect(handler)
+	for badge: Button in badges:
+		badge.pressed.connect(handler)
 	_tutorial_badge_cleanup = func():
-		if is_instance_valid(badge) and badge.pressed.is_connected(handler):
-			badge.pressed.disconnect(handler)
+		for badge: Button in badges:
+			if is_instance_valid(badge) and badge.pressed.is_connected(handler):
+				badge.pressed.disconnect(handler)
 
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -1302,8 +1304,13 @@ func _animate_button_click_bounce(btn: Control, flash_color: Color = Color.TRANS
 	return scale_tw
 
 func _on_approve_pressed(page_index: int):
-	if tutorial_active or is_animating:
+	if is_animating:
 		return
+	if tutorial_active:
+		# The Mulai beat waits for this press: it ends the tutorial, then approves.
+		if not _is_approve_beat():
+			return
+		_end_tutorial()
 	if approved[page_index]:
 		return
 	if approved_count >= MAX_APPROVE:
@@ -1424,18 +1431,10 @@ func _play_erase_stamp_effect():
 	stamp.rotation_degrees = 0.0
 	stamp.modulate.a = 1.0
 
-
-
 func _on_trait_btn_pressed(kertas: Control, type: String, trait_name: String):
-	if tutorial_active:
-		if GameState.current_grade == 7:
-			if type == "quirk" and current_step != 8:
-				return
-			if type == "persona" and current_step != 11:
-				return
-		else:
-			return
-			
+	if tutorial_active and not (GameState.current_grade == 7 and current_step == FirstRunTutorial.STEP_TRAITS):
+		return
+
 	if type == "quirk":
 		var desc = StudentCardView.quirk_description(trait_name)
 		_show_trait_popup(kertas, "quirk", trait_name, desc if desc != "" else "Tidak ada info.")

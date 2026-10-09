@@ -1171,3 +1171,28 @@ func test_a_card_tap_before_the_last_step_is_answered_not_dropped() -> void:
 		.get_slice("func answer_wrong_tap(", 1).get_slice("\nstatic func ", 0)
 	assert_true(answer.contains('AudioDirector.play_sfx(&"error")'), "with the error cue")
 	assert_true(answer.contains("Juice.shake(target)"), "and a shake on the target")
+
+
+## Task 9 (2026-10-07 tutorial overhaul): StudentList keeps its teaching content and
+## adopts the shared Nota Guru box -- no runtime-built panel, a first tap fills
+## a typing line, and the idle layer arms on each step.
+func test_student_list_tutorial_uses_shared_box() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentList/StudentList.gd")
+	assert_true(src.contains("TutorialPanel"), "StudentList tutorial uses the shared panel")
+	assert_false(src.contains("PanelContainer.new()"), "no runtime-built tutorial panel")
+	assert_true(src.contains("_tutorial_panel.skip_typing()"), "a tap fills a typing line first")
+	assert_true(src.contains("TutorialIdle.attach(self)") and src.contains("_idle.stop()"),
+		"the idle nudge arms on a step and stops with the tutorial")
+
+
+## Bug (2026-10-09): the navigation step advances itself when the card slide
+## lands. Routed through _next_step, a slide made while the line was still
+## typing only filled the line, and the tutorial stuck on that step. A real
+## control's advance must bypass tap-to-skip.
+func test_the_slide_advance_is_not_swallowed_by_tap_to_skip() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	var landed := _function_body("_on_deck_settled")
+	assert_true(landed.contains("_advance_step()"), "the landed slide advances directly")
+	assert_false(landed.contains("_next_step()"), "not through the tap handler")
+	assert_false(_function_body("_advance_step").contains("skip_typing"),
+		"the direct advance never stops at a typing line")

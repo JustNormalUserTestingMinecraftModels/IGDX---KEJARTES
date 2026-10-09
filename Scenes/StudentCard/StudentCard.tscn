@@ -13,12 +13,14 @@
 [ext_resource type="Texture2D" uid="uid://whtj1qktee40" path="res://Assets/Images/StudentCard/portrait_frame.png" id="6_kiyav"]
 [ext_resource type="Texture2D" uid="uid://coqfeb2ip5uu1" path="res://Assets/Images/UI/stamp_original.png" id="8_6vhdp"]
 [ext_resource type="Texture2D" uid="uid://fdq3uwxukpdu" path="res://Assets/Images/StudentCard/card_bg.png" id="8_hodfn"]
+[ext_resource type="PackedScene" uid="uid://dr1ccdng5dioe" path="res://Scenes/UI/TutorialComic.tscn" id="15_6aruc"]
 [ext_resource type="Script" uid="uid://88qrfscj2817" path="res://Scripts/UI/SafeAreaMargin.gd" id="15_jyy3b"]
-[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
-[ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
 [ext_resource type="Texture2D" uid="uid://b7uie5ch7i7os" path="res://Assets/Images/UI/Icons/chevron_left.svg" id="20_chevl"]
 [ext_resource type="Texture2D" uid="uid://bge3qhtji6lh4" path="res://Assets/Images/UI/Icons/chevron_right.svg" id="21_chevr"]
-[ext_resource type="Script" path="res://Scripts/UI/ButtonGlyph.gd" id="glyph_follow"]
+[ext_resource type="Script" uid="uid://brmj26f27js7n" path="res://Scripts/UI/TutorialIdle.gd" id="21_rv68q"]
+[ext_resource type="PackedScene" path="res://Scenes/Look/DeskAmbience.tscn" id="amb_desk"]
+[ext_resource type="Script" uid="uid://dubfgs8jhk55n" path="res://Scripts/UI/ButtonGlyph.gd" id="glyph_follow"]
+[ext_resource type="Script" uid="uid://c2ok5cw7wfquf" path="res://Scripts/UI/StatBar.gd" id="statbar"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_jsirh"]
 shader = ExtResource("3_ovxc5")
@@ -37,11 +39,10 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ao2t8")
 
-[node name="World" type="CanvasLayer" parent="."]
+[node name="World" type="CanvasLayer" parent="." unique_id=319527268]
 layer = -1
 
 [node name="Backdrop" type="TextureRect" parent="World" unique_id=1581590975]
-layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -52,7 +53,8 @@ texture = ExtResource("2_ly60b")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Desk" parent="World" instance=ExtResource("amb_desk")]
+[node name="Desk" parent="World" unique_id=1407938663 instance=ExtResource("amb_desk")]
+layout_mode = 3
 
 [node name="KertasMurid6" type="TextureRect" parent="." unique_id=1627899928]
 visible = false
@@ -1635,6 +1637,8 @@ offset_left = -142.0
 offset_top = 780.0
 offset_right = 348.0
 offset_bottom = 940.0
+grow_horizontal = 2
+grow_vertical = 2
 theme_type_variation = &"PrimaryButtonL"
 text = "BELAJAR"
 
@@ -1665,6 +1669,12 @@ offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="TutorialComic" parent="ColorRect" unique_id=1180170923 instance=ExtResource("15_6aruc")]
+unique_name_in_owner = true
+layout_mode = 1
+grow_horizontal = 2
+grow_vertical = 2
+
 [node name="StampApprove" type="TextureRect" parent="." unique_id=1739287175]
 visible = false
 layout_mode = 1
@@ -1690,6 +1700,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
 script = ExtResource("15_jyy3b")
 
 [node name="UI" type="Control" parent="Safe" unique_id=1700152361]
@@ -1785,6 +1799,10 @@ offset_bottom = 146.0
 grow_horizontal = 2
 theme_type_variation = &"DisplayLabel"
 text = "Pilih Muridmu"
+
+[node name="TutorialIdle" type="Node" parent="." unique_id=1609764791]
+unique_name_in_owner = true
+script = ExtResource("21_rv68q")
 
 [connection signal="pressed" from="Safe/UI/BottomBar/NextButtonKiri" to="." method="_on_next_button_kiri_pressed"]
 [connection signal="pressed" from="Safe/UI/BottomBar/NextButtonKanan" to="." method="_on_next_button_kanan_pressed"]

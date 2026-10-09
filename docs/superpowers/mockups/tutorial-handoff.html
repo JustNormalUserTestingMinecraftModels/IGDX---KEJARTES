@@ -1,0 +1,354 @@
+<title>Tutorial Hari Pertama</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: a live phone prototype on the left, the build rules on the right; stacks on phones. */
+:root{
+--bg:#f6f3ec;--panel:#ffffff;--panel2:#faf7f1;--fg:#2c2521;--muted:#6c645c;--line:#e6dfd3;
+--accent:#157a5c;--accent-bg:#e4f4ec;--chip:#efe7da;--warn-bg:#fdeede;--warn-fg:#9a5b06;
+--gm-cream:#FBF1E3;--gm-card:#FFFDF8;--gm-sunk:#EFE0CB;--gm-brown:#7A4A2B;--gm-ink:#3B2412;--gm-ink2:#7A5C40;--gm-mint:#2EC99A;--gm-mintlip:#178A68;--gm-gold:#FFC93C;--gm-pink:#E86FA8;--gm-yellow:#F5D423;--gm-blue:#1F6FBA;--gm-green:#3D7F12;--gm-red:#E03A18;--gm-purple:#7C3AED;
+--d-head:'Baloo 2',system-ui,sans-serif;--d-body:'Nunito',system-ui,sans-serif;--d-hand:'Patrick Hand',cursive;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+--bg:#17130f;--panel:#221d18;--panel2:#1d1813;--fg:#ece4d9;--muted:#a99e91;--line:#352c25;
+--accent:#53d6ab;--accent-bg:#17352b;--chip:#2a231d;--warn-bg:#3a2a12;--warn-fg:#f0b45e;color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+--bg:#17130f;--panel:#221d18;--panel2:#1d1813;--fg:#ece4d9;--muted:#a99e91;--line:#352c25;
+--accent:#53d6ab;--accent-bg:#17352b;--chip:#2a231d;--warn-bg:#3a2a12;--warn-fg:#f0b45e;color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--d-body);margin:0;line-height:1.6}
+.wrap{max-width:1060px;margin:0 auto;padding-block:28px;padding-left:16px;padding-right:16px}
+.phead h1{font-family:var(--d-head);font-weight:700;font-size:30px;margin:0 0 4px;text-wrap:balance}
+.phead p{margin:0;color:var(--muted);max-width:60ch}
+.badges-top{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.chip{font-family:var(--d-head);font-weight:600;font-size:12px;background:var(--chip);color:var(--fg);padding:4px 11px;border-radius:20px}
+.chip.ac{background:var(--accent-bg);color:var(--accent)}
+.grid{display:grid;grid-template-columns:352px 1fr;gap:30px;align-items:start;margin-top:26px}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.stagecol{position:sticky;top:16px}
+@media (max-width:860px){.stagecol{position:static}}
+.caption{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px}
+.rulecard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.rulecard h2{font-family:var(--d-head);font-weight:700;font-size:18px;margin:0 0 10px}
+.rulecard h3{font-family:var(--d-head);font-weight:600;font-size:14px;margin:14px 0 4px;color:var(--accent)}
+.rulecard p{margin:0 0 8px}
+.rulecard ul{margin:0 0 4px;padding-left:18px}
+.rulecard li{margin:5px 0}
+.rulecard code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;background:var(--chip);padding:1px 6px;border-radius:5px}
+.beatlist{counter-reset:b;list-style:none;padding:0;margin:0}
+.beatlist li{counter-increment:b;position:relative;padding:8px 0 8px 34px;border-top:1px solid var(--line)}
+.beatlist li:first-child{border-top:none}
+.beatlist li:before{content:counter(b);position:absolute;left:0;top:8px;width:23px;height:23px;background:var(--accent-bg);color:var(--accent);font-family:var(--d-head);font-weight:700;font-size:12px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.beatlist b{font-family:var(--d-head)}
+.tblwrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:460px}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--d-head);font-weight:600;color:var(--muted);font-size:12px}
+td code{font-size:12px}
+.quote{font-family:var(--d-hand);font-size:16px;color:var(--fg)}
+.pfoot{color:var(--muted);font-size:12.5px;margin-top:8px}
+
+.gm{font-family:var(--d-body)}
+.phone{width:330px;max-width:100%;margin:0 auto;background:var(--gm-cream);border:3px solid var(--gm-brown);border-radius:30px;padding:10px;color:var(--gm-ink)}
+.ptop{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.pttl{font-family:var(--d-head);font-weight:700;font-size:11px;color:var(--gm-ink2)}
+.pskip{font-size:10px;color:var(--gm-ink2);text-decoration:underline;cursor:pointer;background:none;border:none}
+.pdots{display:flex;gap:4px;justify-content:center;margin-bottom:6px}
+.pdots i{width:6px;height:6px;border-radius:50%;background:var(--gm-sunk)}
+.pdots i.on{background:var(--gm-brown);width:15px;border-radius:4px}
+.pwrap{position:relative;height:452px;border-radius:16px;overflow:hidden;border:2px solid #E7D4B8;background:var(--gm-cream);cursor:pointer}
+.pscreen{position:absolute;inset:0;padding:12px;overflow:hidden}
+.shead{font-family:var(--d-head);font-weight:700;font-size:12px;text-align:center;color:var(--gm-ink2);margin-bottom:8px}
+.rcard{background:var(--gm-card);border:2px solid #E7D4B8;border-radius:14px;padding:11px}
+.rtop{display:flex;align-items:center;gap:8px}
+.nav{font-family:var(--d-head);font-weight:700;font-size:20px;color:var(--gm-brown);width:22px;text-align:center}
+.port{width:52px;height:52px;border-radius:13px;background:#FFE08A;border:2px solid #C9801A}
+.rnm{font-family:var(--d-head);font-weight:700;font-size:15px;flex:1}
+.cnt{font-size:10px;color:var(--gm-ink2);text-align:right}
+.brow{display:flex;align-items:center;gap:6px;margin-top:7px}
+.lbl{font-size:10px;font-weight:700;width:52px;color:var(--gm-ink2)}
+.bar{flex:1;height:11px;border-radius:6px;background:var(--gm-sunk);overflow:hidden}
+.bar span{display:block;height:100%;transition:width .6s cubic-bezier(.33,1.3,.5,1)}
+.grp{border-radius:8px;padding:2px 0}
+.pbadges{display:flex;gap:8px;margin-top:9px;border-radius:9px}
+.bg{flex:1;font-family:var(--d-head);font-weight:700;font-size:11px;text-align:center;padding:9px 4px;border-radius:9px;border:2px solid;cursor:pointer}
+.approve{display:block;width:100%;margin-top:10px;background:var(--gm-mint);color:#063d2c;font-family:var(--d-head);font-weight:700;font-size:15px;border:none;border-bottom:4px solid var(--gm-mintlip);border-radius:11px;padding:11px;cursor:pointer}
+.days{display:flex;gap:5px;margin-bottom:10px}
+.day{flex:1;font-family:var(--d-head);font-weight:700;font-size:11px;text-align:center;padding:6px 0;border-radius:8px;background:var(--gm-sunk);color:var(--gm-ink2)}
+.day.on{background:var(--gm-brown);color:#FFF6E8}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;border-radius:10px;padding:2px}
+.act{font-family:var(--d-head);font-weight:700;font-size:13px;color:#fff;border:none;border-radius:11px;padding:12px 6px;cursor:pointer}
+.act.ak{background:var(--gm-blue);border-bottom:4px solid #134a7e}
+.act.is{background:var(--gm-purple);border-bottom:4px solid #4c1d95}
+.scr{position:absolute;background:rgba(46,33,24,.66);z-index:2}
+.ring{position:absolute;z-index:3;border:3px solid var(--gm-mint);border-radius:12px;box-shadow:0 0 0 3px rgba(46,201,154,.35);pointer-events:none;display:none;animation:oring 1.5s ease-in-out infinite}
+@keyframes oring{0%,100%{box-shadow:0 0 0 3px rgba(46,201,154,.35)}50%{box-shadow:0 0 0 8px rgba(46,201,154,0)}}
+.parrow{position:absolute;z-index:3;font-size:24px;color:var(--gm-mint);display:none;animation:oarr .9s ease-in-out infinite;pointer-events:none}
+@keyframes oarr{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+.comic{position:absolute;left:24px;right:24px;top:84px;z-index:4;background:var(--gm-card);border:3px solid var(--gm-ink);border-radius:16px;padding:12px;display:none}
+.comic .ctag{position:absolute;top:-13px;left:12px;background:var(--gm-gold);color:#5a3a00;font-family:var(--d-head);font-weight:700;font-size:10px;padding:2px 10px;border-radius:5px;border:2px solid var(--gm-ink)}
+.comic .crow{display:flex;align-items:center;gap:10px}
+.comic .ctext{font-family:var(--d-head);font-weight:700;font-size:15px;line-height:1.3;flex:1}
+.comic .ctext b{color:var(--gm-mintlip)} .comic .ctext .bad{color:var(--gm-red)}
+.tg{display:inline-flex;gap:4px;margin-top:5px}
+.tg i{width:17px;height:17px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-style:normal;border:2px solid}
+.ok{background:#DBF0E2;border-color:#35A05A;color:#35A05A}.no{background:#F7DDDA;border-color:#C0392B;color:#C0392B}
+.cprompt{font-family:var(--d-head);font-weight:700;font-size:11px;letter-spacing:.4px;color:var(--gm-mintlip);text-align:center;margin-top:9px}
+.dimpop{position:absolute;inset:0;background:rgba(46,33,24,.5);opacity:0;pointer-events:none;transition:opacity .3s;z-index:5}
+.dimpop.on{opacity:1}
+.pop{position:absolute;left:22px;right:22px;top:92px;z-index:6;background:var(--gm-card);border:3px solid var(--gm-brown);border-radius:14px;padding:0 0 13px;opacity:0;transform:scale(.4);pointer-events:none;transform-origin:center}
+.pop.on{opacity:1;transform:scale(1);transition:opacity .3s,transform .4s cubic-bezier(.34,1.56,.64,1)}
+.poptab{color:#FFF6E8;font-family:var(--d-head);font-weight:700;font-size:11px;text-align:center;padding:4px;border-radius:10px 10px 0 0;background:var(--gm-brown)}
+.pt{font-family:var(--d-head);font-weight:700;font-size:16px;text-align:center;margin:11px 10px 0}
+.pb{font-size:12.5px;color:var(--gm-ink2);text-align:center;line-height:1.35;margin:7px 14px 12px}
+.pc{display:block;margin:0 auto;background:var(--gm-mint);color:#063d2c;font-family:var(--d-head);font-weight:700;font-size:13px;border:none;border-bottom:3px solid var(--gm-mintlip);border-radius:10px;padding:8px 20px;cursor:pointer}
+.coach{position:absolute;left:12px;right:12px;bottom:12px;z-index:7;display:flex;align-items:flex-end;gap:7px;transition:transform .35s cubic-bezier(.4,1.3,.5,1),opacity .3s}
+.coach.tuck{transform:translateY(135%);opacity:0}
+.coach.hidden{display:none}
+.pak{width:44px;flex:0 0 auto}
+.note{flex:1;background:var(--gm-card);border:2px solid #E7D4B8;padding:13px 12px 8px;position:relative;clip-path:polygon(0 8px,8% 0,18% 9px,30% 1px,42% 9px,54% 0,66% 9px,78% 1px,88% 9px,96% 0,100% 6px,100% 100%,0 100%);background-image:repeating-linear-gradient(transparent,transparent 19px,#efe3cf 19px,#efe3cf 20px)}
+.ntab{position:absolute;top:10px;left:-4px;background:var(--gm-gold);color:#5a3a00;font-family:var(--d-head);font-weight:700;font-size:10px;padding:2px 9px;border-radius:4px;transform:rotate(-3deg)}
+.nsay{font-family:var(--d-hand);font-size:16px;line-height:1.3;color:var(--gm-ink);min-height:44px;margin-top:3px}
+.ncue{font-family:var(--d-head);font-weight:700;font-size:11px;color:var(--gm-mintlip);text-align:right;opacity:0}
+.ncue.on{opacity:1;animation:hbl 1.2s ease-in-out infinite}
+.nhint{font-family:var(--d-head);font-weight:700;font-size:11px;color:var(--gm-brown);text-align:right;min-height:13px}
+@keyframes hbl{0%,100%{opacity:1}50%{opacity:.4}}
+.flt{position:absolute;font-family:var(--d-head);font-weight:700;font-size:13px;opacity:0;pointer-events:none;z-index:7}
+.flt.go{animation:oflt 1s ease-out}
+@keyframes oflt{0%{opacity:0;transform:translateY(5px)}25%{opacity:1}100%{opacity:0;transform:translateY(-16px)}}
+.fin{position:absolute;inset:0;z-index:8;background:var(--gm-cream);display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+.fin .st{color:var(--gm-gold);font-size:40px;letter-spacing:2px}
+.fin .ft{font-family:var(--d-head);font-weight:700;font-size:19px;margin-top:6px}
+.fin .fb{font-size:12.5px;color:var(--gm-ink2);margin-top:6px}
+.fin .fr{margin-top:14px;font-size:11px;color:var(--gm-ink2);text-decoration:underline;background:none;border:none;cursor:pointer}
+.pakbob{animation:pbob 2.8s ease-in-out infinite}
+@keyframes pbob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-2px) rotate(-2deg)}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important}}
+</style>
+
+<div class="wrap">
+<div class="phead">
+<h1>Tutorial Hari Pertama</h1>
+<p>Build reference for the KejarTes onboarding overhaul — an interactive prototype of the exact look and behavior, with the rules a teammate needs to build it the same way. Tap the phone to play through it.</p>
+<div class="badges-top">
+<span class="chip ac">Overlay, not a new scene</span>
+<span class="chip">Pak Kepsek · Nota Guru box</span>
+<span class="chip">Tap-anywhere prompt</span>
+<span class="chip">One focal box</span>
+<span class="chip">Idle nudge</span>
+<span class="chip">Touch-first</span>
+</div>
+</div>
+
+<div class="grid">
+<div class="stagecol">
+<div class="gm">
+<div class="phone">
+<div class="ptop"><span class="pttl" id="o-ttl">Kartu Murid</span><button class="pskip" id="o-skip">Lewati</button></div>
+<div class="pdots" id="o-dots"></div>
+<div class="pwrap" id="o-wrap">
+<div class="pscreen" id="o-screen"></div>
+<div class="scr" id="o-sT"></div><div class="scr" id="o-sB"></div><div class="scr" id="o-sL"></div><div class="scr" id="o-sR"></div>
+<div class="ring" id="o-ring"></div>
+<div class="parrow" id="o-arr" aria-hidden="true">&#9650;</div>
+<div class="comic" id="o-comic"></div>
+<div class="dimpop" id="o-dimpop"></div>
+<div class="pop" id="o-pop"><div class="poptab" id="o-ptab">QUIRK</div><div class="pt" id="o-ptitle"></div><div class="pb" id="o-pbody"></div><button class="pc" id="o-pc">Oke, mengerti</button></div>
+<div class="coach" id="o-coach"><div class="pak pakbob" aria-hidden="true"></div><div class="note"><div class="ntab">Pak Kepsek</div><div class="nsay" id="o-say"></div><div class="ncue" id="o-cue">ketuk &#9656;</div><div class="nhint" id="o-hint"></div></div></div>
+</div>
+</div>
+</div>
+<p class="caption">Interactive — the real screen sits underneath, dimmed; the spotlight lands on actual controls.</p>
+</div>
+
+<div class="rulescol">
+
+<div class="rulecard">
+<h2>What this is</h2>
+<p>A replacement for the Grade-7 onboarding, which today is 14 sequential text cards. It teaches by <b>showing and doing</b> instead of reading, voiced by the headmaster, laid over the live screen.</p>
+<h3>Non-negotiables</h3>
+<ul>
+<li><b>It is an overlay, not a new scene.</b> A <code>CanvasLayer</code> dims the live StudentCard / AturJadwal and cuts a spotlight hole over the real control — the shipped <code>TutorialPanel</code> spotlight, arrow and wrong-tap shake already do this.</li>
+<li><b>One voice, one box everywhere:</b> the "Nota Guru" torn-note dialogue box (build it as a <code>NotebookFrame</code> variant so <code>test_popup_frames.gd</code> keeps guarding it).</li>
+<li><b>Touch-first, no hover.</b> Every cue fires on tap or an inactivity timer; targets ≥44px; nothing relies on pointer-enter.</li>
+<li><b>No persistence added</b> beyond a session flag; respects <code>GameState.tutorials_bypassed</code> and the "Lewati Dialog Minigame" setting for typewriter skip.</li>
+<li><b>No emoji as iconography</b> — drawn SVG. Art (mascot expressions, paperclip, hand, comic plates) ships as drop-replaceable placeholders.</li>
+</ul>
+</div>
+
+<div class="rulecard">
+<h2>The first-run flow</h2>
+<ol class="beatlist">
+<li><b>Misi (cold-open, 3 beats).</b> Full dim, centered comic plate states the goal: <span class="quote">"Capai minimal 2 dari 3 target → lulus"</span> then the stakes <span class="quote">"satu murid gagal, satu kelas kena nilai D."</span> Tap anywhere.</li>
+<li><b>Kenalan (3 spotlights).</b> One traveling note hops Mood → Energi → Skill on the real card; each a short line. Replaces ~7 old text cards.</li>
+<li><b>Sifat (handoff).</b> Spotlight the Quirk/Persona badges; tapping one hands off to the real trait popup (see the overlap rule).</li>
+<li><b>Jadwal (learn-by-doing).</b> On the real AturJadwal screen, the player assigns Senin and the bars move live with floating deltas.</li>
+<li><b>Mulai.</b> Spotlight Approve; tap to finish into the first week.</li>
+</ol>
+</div>
+
+<div class="rulecard">
+<h2>Advancing & the overlap fix</h2>
+<h3>Advance</h3>
+<p>Teaching/comic beats show the blinking <code>KETUK DI MANA SAJA UNTUK LANJUT</code> prompt and advance on a tap anywhere on the dimmed screen. Action beats (badge, activity, Approve) gate on that one real control, then switch to the prompt.</p>
+<h3>One focal box (the bug you flagged)</h3>
+<p>The coach note and any game popup are <b>mutually exclusive</b>. Tapping a badge makes the note <b>tuck away</b> (slide down + fade) before the trait popup springs in; closing the popup slides the note back with the follow-up line. Never both on screen. Z-order backstop: the coach layer sits below game popups regardless.</p>
+</div>
+
+<div class="rulecard">
+<h2>Idles (catch a stuck player)</h2>
+<ul>
+<li><b>Resting loops, always on:</b> note sway ±1.4°, mascot breathe + blink, a soft highlight ring, breathing CTA.</li>
+<li><b>Escalation nudge</b> after <code>idle_nudge_seconds</code> (default ~2.5s) of no input: pointing hand slides in, target wiggles harder, ring intensifies, Pak Kepsek drops a one-liner. Any tap resets it.</li>
+<li>Capped at one level (no endless nagging). <b>Pauses</b> while a popup/comic/beat is on screen.</li>
+</ul>
+</div>
+
+<div class="rulecard">
+<h2>Animation map (reuse existing APIs)</h2>
+<div class="tblwrap"><table>
+<tr><th>Moment</th><th>Feel</th><th>API</th></tr>
+<tr><td>Box entrance</td><td>spring, slight overshoot</td><td><code>AnimUtils.popup_spring_in</code></td></tr>
+<tr><td>Text reveal</td><td>typewriter ~30ms/char, tap-to-skip</td><td>timer; 1st tap fills, 2nd advances</td></tr>
+<tr><td>Bar react</td><td>ease-out-back + floating delta</td><td><code>Juice.fill_bar</code> · <code>AnimUtils.create_floating_text</code> · <code>Juice.count_up</code></td></tr>
+<tr><td>Wrong tap</td><td>target shakes, siblings dim</td><td><code>Juice.shake</code> · <code>TutorialPanel.dim_others</code></td></tr>
+<tr><td>Box exit</td><td>shrink + fade</td><td><code>AnimUtils.popup_spring_out</code></td></tr>
+<tr><td>Idle loops</td><td>sway / breathe / blink / pulse</td><td>looped <code>create_tween().set_loops()</code></td></tr>
+</table></div>
+</div>
+
+<div class="rulecard">
+<h2>Scope</h2>
+<p><b>Shared system — every tutorial screen, Lobby included:</b> adopt the Nota Guru box, tap-anywhere prompt, one-focal-box rule, idle tiers and touch-first behavior, so no screen looks like the old style. Keep each screen's current teaching content; only re-skin and re-behave it.</p>
+<p><b>Deep redesign — Grade-7 first-run only</b> (StudentCard + first AturJadwal): the comic cold-open and learn-by-doing beats above.</p>
+<p class="pfoot">Out of scope: EndCutscene graduation; minigame how-to (<code>MinigameTutorial</code>) is a separate system.</p>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+(function(){
+var S=document.getElementById('o-screen'),wrap=document.getElementById('o-wrap'),dots=document.getElementById('o-dots'),ttl=document.getElementById('o-ttl'),ring=document.getElementById('o-ring'),arr=document.getElementById('o-arr'),comic=document.getElementById('o-comic'),coach=document.getElementById('o-coach'),sayEl=document.getElementById('o-say'),cue=document.getElementById('o-cue'),hint=document.getElementById('o-hint'),pop=document.getElementById('o-pop'),dimpop=document.getElementById('o-dimpop');
+var sT=document.getElementById('o-sT'),sB=document.getElementById('o-sB'),sL=document.getElementById('o-sL'),sR=document.getElementById('o-sR');
+var pakSVG='<svg width="44" height="50" viewBox="0 0 44 50"><ellipse cx="22" cy="41" rx="16" ry="8" fill="#3C6E9E"/><circle cx="22" cy="24" r="13" fill="#F0C79B" stroke="#9C6440" stroke-width="2"/><path d="M9 22 Q22 7 35 22 Q35 11 22 9 Q9 11 9 22Z" fill="#4A3728"/><circle cx="18" cy="24" r="4" fill="none" stroke="#3B2412" stroke-width="1.6"/><circle cx="26" cy="24" r="4" fill="none" stroke="#3B2412" stroke-width="1.6"/><circle cx="18" cy="24" r="1.4" fill="#3B2412"/><circle cx="26" cy="24" r="1.4" fill="#3B2412"/><path d="M18 32 Q22 35 26 32" fill="none" stroke="#7A4A2B" stroke-width="1.8" stroke-linecap="round"/></svg>';
+coach.querySelector('.pak').innerHTML=pakSVG;
+var classScene='<svg width="50" height="46" viewBox="0 0 50 46" aria-hidden="true"><rect x="2" y="2" width="30" height="17" rx="2" fill="#4A3728"/><rect x="5" y="5" width="24" height="11" rx="1" fill="#2f5d3a"/><rect x="2" y="30" width="46" height="14" rx="3" fill="#B6D7B0"/><circle cx="12" cy="28" r="6" fill="#FFE08A" stroke="#C9801A" stroke-width="2"/><circle cx="25" cy="28" r="6" fill="#F4C0D1" stroke="#993556" stroke-width="2"/><circle cx="38" cy="28" r="6" fill="#B5D4F4" stroke="#185FA5" stroke-width="2"/></svg>';
+var faceHappy='<svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="19" fill="#FFE08A" stroke="#C9801A" stroke-width="2.5"/><circle cx="16" cy="20" r="3" fill="#3B2412"/><circle cx="30" cy="20" r="3" fill="#3B2412"/><path d="M15 28 Q23 36 31 28" fill="none" stroke="#3B2412" stroke-width="3.3" stroke-linecap="round"/></svg>';
+var faceSad='<svg width="46" height="46" viewBox="0 0 46 46" aria-hidden="true"><circle cx="23" cy="23" r="19" fill="#E7D0B4" stroke="#A66A07" stroke-width="2.5"/><path d="M12 17 l6 3 M34 17 l-6 3" stroke="#3B2412" stroke-width="2.8" stroke-linecap="round"/><path d="M15 33 Q23 26 31 33" fill="none" stroke="#3B2412" stroke-width="3.3" stroke-linecap="round"/></svg>';
+
+var beats=[
+{sc:'card',ph:0,kind:'comic',vis:classScene,vt:'Selamat datang, Pak Guru! Ini kelas yang akan kamu bimbing.'},
+{sc:'card',ph:0,kind:'comic',vis:faceHappy,vt:'Tiap murid punya <b>3 target</b>. Capai minimal <b>2</b>, dia lulus.<div class="tg"><i class="ok">&#10003;</i><i class="ok">&#10003;</i><i class="no">&#10007;</i></div>'},
+{sc:'card',ph:0,kind:'comic',vis:faceSad,vt:'<span class="bad">Hati-hati:</span> satu murid saja gagal, <span class="bad">satu kelas kena nilai D.</span><div class="tg"><i class="ok">&#10003;</i><i class="no">&#10007;</i><i class="no">&#10007;</i></div>'},
+{sc:'card',ph:1,kind:'teach',spot:'#o-mood',say:'Ini Mood Siti. Kalau bagus, dia belajar dengan semangat; kalau habis, gampang ngambek.'},
+{sc:'card',ph:1,kind:'teach',spot:'#o-energy',say:'Ini Energi. Tiap kegiatan menguras energi. Kalau habis, Siti terpaksa izin istirahat.'},
+{sc:'card',ph:1,kind:'teach',spot:'#o-skill',say:'Dan ini tiga skill-nya: Akademis, Seni Budaya, Olahraga. Inilah yang kamu kejar biar dia lulus.'},
+{sc:'card',ph:2,kind:'traits',spot:'#o-badges',say:'Siti juga punya Quirk dan Persona, sifat khasnya. Coba ketuk salah satunya.'},
+{sc:'sched',ph:3,kind:'do',spot:'#o-acts',say:'Sekarang giliranmu. Pilih satu kegiatan untuk Siti di hari Senin.'},
+{sc:'card',ph:4,kind:'approve',spot:'#o-approve',say:'Mantap! Terima dulu Siti dengan Approve, lalu kita mulai minggu pertama.'}
+];
+var i=0,curScreen='',typing=false,typeTimer=null,canAdvance=false,idle=null,last=Date.now(),fullText='';
+
+function buildCard(){curScreen='card';ttl.textContent='Kartu Murid';S.innerHTML='<div class="shead">MURID-MURIDMU</div>'+
+'<div class="rcard"><div class="rtop"><span class="nav">&#8249;</span><div class="port"></div><div class="rnm">Siti Rahma</div><span class="nav">&#8250;</span></div>'+
+'<div class="cnt">Dipilih 0 / 2</div>'+
+'<div id="o-mood" class="grp brow"><span class="lbl">Mood</span><div class="bar"><span style="width:78%;background:var(--gm-pink)"></span></div></div>'+
+'<div id="o-energy" class="grp brow"><span class="lbl">Energi</span><div class="bar"><span style="width:60%;background:var(--gm-yellow)"></span></div></div>'+
+'<div id="o-skill" class="grp">'+
+'<div class="brow"><span class="lbl">Akademis</span><div class="bar"><span style="width:45%;background:var(--gm-blue)"></span></div></div>'+
+'<div class="brow"><span class="lbl">Seni</span><div class="bar"><span style="width:70%;background:var(--gm-green)"></span></div></div>'+
+'<div class="brow"><span class="lbl">Olahraga</span><div class="bar"><span style="width:30%;background:var(--gm-red)"></span></div></div></div>'+
+'<div id="o-badges" class="pbadges"><div class="bg" id="o-q" style="border-color:#C9801A;background:#FBE6BE;color:#7a4a08">Kutu Buku</div><div class="bg" id="o-p" style="border-color:#7E5BD6;background:#E7DCFA;color:#3b2473">Tekun</div></div>'+
+'<button class="approve" id="o-approve">APPROVE</button></div>';}
+function buildSched(){curScreen='sched';ttl.textContent='Atur Jadwal';S.innerHTML='<div class="shead">JADWAL SITI</div>'+
+'<div class="days"><div class="day on">Sen</div><div class="day">Sel</div><div class="day">Rab</div><div class="day">Kam</div><div class="day">Jum</div></div>'+
+'<div id="o-acts-pre"></div>'+
+'<div id="o-mood" class="grp brow"><span class="lbl">Akademis</span><div class="bar"><span id="o-ak" style="width:45%;background:var(--gm-blue)"></span></div></div>'+
+'<div class="grp brow"><span class="lbl">Energi</span><div class="bar"><span id="o-en" style="width:72%;background:var(--gm-yellow)"></span></div></div>'+
+'<div class="grp brow"><span class="lbl">Mood</span><div class="bar"><span id="o-mo" style="width:80%;background:var(--gm-pink)"></span></div></div>'+
+'<div id="o-acts" class="acts" style="margin-top:12px"><button class="act ak" id="o-learn">Belajar</button><button class="act is" id="o-rest">Istirahat</button></div>';}
+
+function drawDots(ph){var h='';for(var k=0;k<5;k++)h+='<i class="'+(k===ph?'on':'')+'"></i>';dots.innerHTML=h;}
+function clearIdle(){if(idle){clearInterval(idle);idle=null;}ring.style.animationDuration='1.5s';arr.style.animationDuration='.9s';}
+function armIdle(){clearIdle();last=Date.now();idle=setInterval(function(){if(Date.now()-last>2500){ring.style.animationDuration='.5s';arr.style.animationDuration='.45s';}},300);}
+function stripTags(h){var d=document.createElement('div');d.innerHTML=h;return d.textContent;}
+
+function typeNote(text){fullText=text;typing=true;cue.classList.remove('on');sayEl.textContent='';if(typeTimer)clearInterval(typeTimer);var n=0;typeTimer=setInterval(function(){n++;sayEl.textContent=text.slice(0,n);if(n>=text.length){clearInterval(typeTimer);typing=false;if(canAdvance)cue.classList.add('on');}},30);}
+function finishType(){if(typeTimer)clearInterval(typeTimer);sayEl.textContent=fullText;typing=false;if(canAdvance)cue.classList.add('on');}
+
+function spotlight(sel){
+var W=wrap.clientWidth,H=wrap.clientHeight;
+if(!sel){sT.style.cssText='position:absolute;background:rgba(46,33,24,.66);z-index:2;inset:0';sB.style.display=sL.style.display=sR.style.display='none';ring.style.display='none';arr.style.display='none';return false;}
+sB.style.display=sL.style.display=sR.style.display='block';
+var el=S.querySelector(sel);if(!el)return false;var r=el.getBoundingClientRect(),wr=wrap.getBoundingClientRect(),pad=7;
+var x=r.left-wr.left-pad,y=r.top-wr.top-pad,w=r.width+2*pad,h=r.height+2*pad;
+function box(e,l,t,ww,hh){e.style.cssText='position:absolute;background:rgba(46,33,24,.66);z-index:2;left:'+l+'px;top:'+t+'px;width:'+ww+'px;height:'+hh+'px';}
+box(sT,0,0,W,Math.max(0,y));box(sB,0,y+h,W,Math.max(0,H-(y+h)));box(sL,0,y,Math.max(0,x),h);box(sR,x+w,y,Math.max(0,W-(x+w)),h);
+ring.style.display='block';ring.style.left=x+'px';ring.style.top=y+'px';ring.style.width=w+'px';ring.style.height=h+'px';
+var below=(y+h/2)>H/2;
+arr.style.display='block';arr.innerHTML=below?'&#9660;':'&#9650;';arr.style.left=(x+w/2-12)+'px';
+if(below){arr.style.top=(y-26)+'px';}else{arr.style.top=(y+h+4)+'px';}
+return below;}
+function placeCoach(below){if(below){coach.style.bottom='';coach.style.top='12px';}else{coach.style.top='';coach.style.bottom='12px';}}
+
+function render(){
+if(i>=beats.length){finish();return;}
+var b=beats[i];clearIdle();pop.classList.remove('on');dimpop.classList.remove('on');
+if(curScreen!==b.sc){if(b.sc==='card')buildCard();else buildSched();}
+drawDots(b.ph);hint.textContent='';cue.classList.remove('on');
+if(b.kind==='comic'){
+spotlight(null);coach.classList.add('hidden');
+comic.style.display='block';comic.innerHTML='<div class="ctag">Pak Kepsek</div><div class="crow">'+b.vis+'<div class="ctext">'+b.vt+'</div></div><div class="cprompt">KETUK DI MANA SAJA UNTUK LANJUT</div>';
+canAdvance=true;typing=false;return;
+}
+comic.style.display='none';coach.classList.remove('hidden','tuck');
+var gated=(b.kind==='traits'||b.kind==='do'||b.kind==='approve');
+canAdvance=!gated;
+requestAnimationFrame(function(){
+var below=spotlight(b.spot||null);placeCoach(below);
+typeNote(b.say);
+if(gated){hint.textContent=(b.kind==='traits'?'▸ Ketuk sebuah sifat':b.kind==='do'?'▸ Pilih kegiatan':'▸ Ketuk APPROVE');}
+if(b.kind==='traits'){wireTraits();armIdle();}
+else if(b.kind==='do'){wireDo();armIdle();}
+else if(b.kind==='approve'){wireApprove();}
+});
+}
+
+function ungate(txt){clearIdle();canAdvance=true;hint.textContent='';typeNote(txt);}
+
+function wireTraits(){
+var data={q:['QUIRK','Kutu Buku','Belajar akademis jadi lebih hemat energi. Namanya juga kutu buku, betah membaca!','#C9801A'],p:['PERSONA','Tekun','Semangatnya awet, moodnya menurun lebih pelan setiap hari.','#7E5BD6']};
+var busy=false;
+function show(k){if(busy)return;busy=true;var d=data[k];coach.classList.add('tuck');clearIdle();
+setTimeout(function(){document.getElementById('o-ptab').textContent=d[0];document.getElementById('o-ptab').style.background=d[3];pop.style.borderColor=d[3];document.getElementById('o-ptitle').textContent=d[1];document.getElementById('o-pbody').textContent=d[2];dimpop.classList.add('on');pop.classList.add('on');},330);}
+document.getElementById('o-q').addEventListener('click',function(e){e.stopPropagation();last=Date.now();show('q');});
+document.getElementById('o-p').addEventListener('click',function(e){e.stopPropagation();last=Date.now();show('p');});
+document.getElementById('o-pc').addEventListener('click',function(e){e.stopPropagation();pop.classList.remove('on');dimpop.classList.remove('on');setTimeout(function(){coach.classList.remove('tuck');ungate('Nah, begitu cara baca sifat murid. Sesuaikan jadwalnya, ya!');busy=false;},260);});
+}
+function wireDo(){
+var done=false;
+function flt(x,y,txt,col){var s=document.createElement('span');s.className='flt';s.style.cssText='left:'+x+'px;top:'+y+'px;color:'+col;s.textContent=txt;wrap.appendChild(s);requestAnimationFrame(function(){s.classList.add('go');});setTimeout(function(){s.remove();},1000);}
+function choose(learn){if(done)return;done=true;var ak=S.querySelector('#o-ak'),en=S.querySelector('#o-en'),mo=S.querySelector('#o-mo');
+if(learn){ak.style.width='60%';en.style.width='61%';mo.style.width='72%';flt(150,150,'+15','#1F6FBA');flt(150,174,'−6','#8a6d00');ungate('Lihat, kan? Belajar menaikkan skill, tapi menguras energi dan mood. Di situ serunya!');}
+else{en.style.width='96%';mo.style.width='96%';flt(150,174,'+21','#2b8a3e');ungate('Istirahat memulihkan energi dan mood, tapi skill tidak naik. Pintar-pintar mengatur, ya!');}}
+S.querySelector('#o-learn').addEventListener('click',function(e){e.stopPropagation();choose(true);});
+S.querySelector('#o-rest').addEventListener('click',function(e){e.stopPropagation();choose(false);});
+}
+function wireApprove(){S.querySelector('#o-approve').addEventListener('click',function(e){e.stopPropagation();finish();});}
+
+function finish(){clearIdle();canAdvance=false;sT.style.display=sB.style.display=sL.style.display=sR.style.display='none';ring.style.display='none';arr.style.display='none';coach.classList.add('hidden');comic.style.display='none';pop.classList.remove('on');dimpop.classList.remove('on');
+var fin=wrap.querySelector('.fin');if(fin){fin.style.display='flex';return;}
+var d=document.createElement('div');d.className='fin';d.style.display='flex';d.innerHTML='<div class="st" aria-hidden="true">&#9733;&#9733;&#9733;</div><div class="ft">Selamat mengajar,<br>Pak Guru!</div><div class="fb">Tutorial beres — kamu siap mulai minggu pertama.</div><button class="fr" id="o-restart">Ulang dari awal</button>';
+wrap.appendChild(d);
+document.getElementById('o-restart').addEventListener('click',function(e){e.stopPropagation();d.style.display='none';coach.classList.remove('hidden');i=0;render();});}
+
+function next(){last=Date.now();i++;render();}
+document.getElementById('o-skip').addEventListener('click',function(e){e.stopPropagation();i=beats.length;render();});
+wrap.addEventListener('click',function(){last=Date.now();if(typing){finishType();return;}if(canAdvance)next();});
+render();
+})();
+</script>

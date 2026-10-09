@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="128" viewBox="0 0 64 128">
+  <!-- PLACEHOLDER (tutorial art, DEBT.md): Nota Guru paperclip. Replace at this path. -->
+  <path d="M40 18 V96 a14 14 0 0 1 -28 0 V30 a9 9 0 0 1 18 0 V90" fill="none" stroke="#7A5C40" stroke-width="7" stroke-linecap="round"/>
+  <path d="M40 18 V96 a14 14 0 0 1 -28 0 V30 a9 9 0 0 1 18 0 V90" fill="none" stroke="#BFA88C" stroke-width="3" stroke-linecap="round"/>
+</svg>

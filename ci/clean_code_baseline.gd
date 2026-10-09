@@ -47,7 +47,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_minigame_result": 68,
 	"res://Scripts/SchoolSimulation/StudentManager.gd::apply_daily_decay_all": 85,
 	"res://Scripts/StudentCard/StudentCard.gd::_ready": 71,
-	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 58,
+	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 51,
 	"res://Scripts/StudentCard/StudentCard.gd::_transition_page": 61,
 	"res://Scripts/StudentList/StudentList.gd::_setup_students": 55,
 }
@@ -55,7 +55,7 @@ const LONG_FUNCTIONS: Dictionary = {
 ## Untyped vars, signatures without ->, untyped parameters, per script.
 const UNTYPED: Dictionary = {
 	"res://Scripts/AnimUtils.gd": 27,
-	"res://Scripts/AturJadwal/AturJadwal.gd": 150,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 146,
 	"res://Scripts/CutScene/CutScene.gd": 12,
 	"res://Scripts/CutScene/HintLabel.gd": 3,
 	"res://Scripts/Debug/DebugManager.gd": 167,
@@ -89,7 +89,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/SchoolSimulation/SimulationBackground.gd": 36,
 	"res://Scripts/SchoolSimulation/StudentData.gd": 8,
 	"res://Scripts/SchoolSimulation/StudentManager.gd": 38,
-	"res://Scripts/StudentCard/StudentCard.gd": 128,
+	"res://Scripts/StudentCard/StudentCard.gd": 123,
 	"res://Scripts/StudentCard/StudentCardView.gd": 13,
 	"res://Scripts/StudentList/StudentList.gd": 59,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 17,
@@ -102,7 +102,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Achievements/AchievementsScreen.gd": 1,
 	"res://Scripts/AnimUtils.gd": 126,
 	"res://Scripts/AturJadwal/ActivityPreview.gd": 6,
-	"res://Scripts/AturJadwal/AturJadwal.gd": 78,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 76,
 	"res://Scripts/AturJadwal/DayStickyNote.gd": 10,
 	"res://Scripts/AturJadwal/ObjectiveHint.gd": 3,
 	"res://Scripts/AturJadwal/SpecialtyMatchBurst.gd": 1,
@@ -182,7 +182,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Skins/SkinCard.gd": 1,
 	"res://Scripts/Skins/SkinSelect.gd": 1,
 	"res://Scripts/Splashscreen/Splashscreen.gd": 1,
-	"res://Scripts/StudentCard/StudentCard.gd": 132,
+	"res://Scripts/StudentCard/StudentCard.gd": 108,
 	"res://Scripts/StudentCard/StudentCardView.gd": 37,
 	"res://Scripts/StudentList/StudentList.gd": 26,
 	"res://Scripts/TouchFeedback/TouchFeedbackEffect.gd": 28,
@@ -194,7 +194,7 @@ const BARE_NUMBERS: Dictionary = {
 ## Function bodies (5+ code lines) identical in two or more files.
 const DUPLICATE_GROUPS: Array[String] = [
 	"res://Scripts/AturJadwal/AturJadwal.gd::_clear_highlight | res://Scripts/Lobby/Lobby.gd::_clear_highlight | res://Scripts/StudentList/StudentList.gd::_clear_highlight",
-	"res://Scripts/AturJadwal/AturJadwal.gd::_get_button_display_name | res://Scripts/Lobby/Lobby.gd::_get_button_display_name | res://Scripts/StudentCard/StudentCard.gd::_get_button_display_name",
+	"res://Scripts/AturJadwal/AturJadwal.gd::_get_button_display_name | res://Scripts/Lobby/Lobby.gd::_get_button_display_name",
 	"res://Scripts/Lobby/Lobby.gd::_on_btn_mouse_entered | res://Scripts/StudentList/StudentList.gd::_on_btn_mouse_entered",
 	"res://Scripts/Lobby/Lobby.gd::_setup_button_juice | res://Scripts/ReportCard/ReportCard.gd::_setup_button_juice | res://Scripts/StudentCard/StudentCard.gd::_setup_button_juice | res://Scripts/StudentList/StudentList.gd::_setup_button_juice",
 	"res://Scripts/Lobby/Lobby.gd::_start_prompt_blink | res://Scripts/StudentList/StudentList.gd::_start_prompt_blink",
@@ -216,10 +216,10 @@ const DUPLICATE_GROUPS: Array[String] = [
 
 ## Scripts over 1,000 lines -> their line count.
 const LARGE_SCRIPTS: Dictionary = {
-	"res://Scripts/AturJadwal/AturJadwal.gd": 1468,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 1464,
 	"res://Scripts/Debug/DebugManager.gd": 1745,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1628,
-	"res://Scripts/StudentCard/StudentCard.gd": 1444,
+	"res://Scripts/StudentCard/StudentCard.gd": 1443,
 }
 
 ## Must reach zero: .gd/.tscn names that are not PascalCase.

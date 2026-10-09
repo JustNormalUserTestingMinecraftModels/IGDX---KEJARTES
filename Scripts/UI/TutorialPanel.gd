@@ -35,6 +35,14 @@ extends MarginContainer
 ## forced step does with a tap on the wrong control, which used to be nothing
 ## at all. rect_in() and spot_in() turn controls into the rectangles those
 ## work from.
+##
+## ONE FOCAL BOX (spec 2026-10-07 section 3c). The note and a game pop-up
+## (TraitDetailPopup, the stat popup) are never on screen together: the caller
+## calls tuck(true) before it opens the pop-up -- the note slides down and
+## fades -- and tuck(false) when the pop-up closes. As the backstop, a
+## screen's coach layer sits BELOW its game pop-ups (StudentCard's tutorial
+## CanvasLayer is under the trait popup's), so even a missed tuck cannot put
+## the note over the pop-up.
 
 ## What the pill reads: the step number, then how many steps there are.
 const STEP_PILL_FORMAT := "Langkah %d / %d"
@@ -50,6 +58,9 @@ const DEFAULT_PROMPT := "KETUK DI MANA SAJA UNTUK LANJUT"
 const ArrowScript := preload("res://Scripts/TutorialArrow.gd")
 ## How far the spotlight hole stands off the control it frames, in pixels.
 const SPOT_PADDING := 12.0
+## Seconds between two characters of the typewriter reveal: about 30 ms a
+## character (spec 2026-10-07 section 3b). A tap fills the line at once (skip_typing).
+const TYPE_INTERVAL := 0.03
 ## The share of its own alpha a control keeps while a wrong tap dims it.
 const DIM_ALPHA := 0.4
 ## Meta on a control a wrong tap has dimmed: the modulate it had before, which
@@ -94,6 +105,25 @@ enum Mode {
 		beat_sticker_text = value
 		if is_inside_tree():
 			_apply_mode()
+
+## The title on the frame's sticker while a task heads the card: an
+## instruction the player must carry out (the grade 8/9 roster pick), as
+## opposed to a lesson (TUTORIAL) or a story beat (PENGUMUMAN). show_step()
+## wears it when called with `task` true.
+@export var task_sticker_text: String = "TUGAS":
+	set(value):
+		task_sticker_text = value
+		if is_inside_tree():
+			_apply_mode()
+
+## Who the Nota Guru's name tab names: the one voice of every tutorial in the
+## game (spec 2026-10-07 section 3a). The tab steps aside while the headmaster
+## beat's own name plate names its speaker (mode HEADMASTER).
+@export var speaker_name: String = "Pak Kepsek":
+	set(value):
+		speaker_name = value
+		if is_inside_tree():
+			name_tab_label.text = value
 
 ## Panel width as a fraction of the viewport width, before max_width clamps
 ## it. StudentCard ships 0.92; SchoolDay ships 0.85.
@@ -180,6 +210,9 @@ enum Mode {
 @onready var step_label: Label = $Frame/Margin/Layout/StepPill/StepLabel
 @onready var name_plate: PanelContainer = $Frame/Margin/Layout/NamePlate
 @onready var speaker_label: Label = $Frame/Margin/Layout/NamePlate/Row/SpeakerLabel
+## The Nota Guru's name tab (placeholder art: DEBT.md, "Tutorial art").
+@onready var name_tab: PanelContainer = $Decor/NameTab
+@onready var name_tab_label: Label = $Decor/NameTab/NameTabLabel
 
 ## Whether the pill shows while mode is STEP: show_step() hides it for a
 ## flow of one step or none. True until then, so the authored pill shows.
@@ -191,6 +224,17 @@ var _content_shown := false
 var _step_tween: Tween
 ## The entrance spring play_in() started, while it plays. play_out() kills it.
 var _entrance_tween: Tween
+## The typewriter reveal of the body, while it plays.
+var _type_tween: Tween
+## True while the card shows a task (show_step() with `task`): its sticker
+## reads task_sticker_text instead of step_sticker_text.
+var _task := false
+## True while tuck(true) holds the note away for a pop-up.
+var _tucked := false
+## Where the note stood when it tucked, so tuck(false) returns it there.
+var _tuck_home := Vector2.ZERO
+## The tuck slide, while it plays.
+var _tuck_tween: Tween
 
 
 func _ready() -> void:
@@ -198,6 +242,9 @@ func _ready() -> void:
 	title_label.theme_type_variation = title_variation
 	body_label.theme_type_variation = body_variation
 	prompt_label.theme_type_variation = prompt_variation
+	# Hidden characters keep their room, so a card placed for a typed line is
+	# already the size of the whole line and does not grow as it types.
+	body_label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	_apply_prompt_tint()
 	_apply_mode()
 	_apply_geometry()
@@ -249,7 +296,11 @@ func _apply_prompt_tint() -> void:
 func _apply_mode() -> void:
 	step_pill.visible = mode == Mode.STEP and _pill_wanted
 	name_plate.visible = mode == Mode.HEADMASTER
-	var sticker := step_sticker_text if mode == Mode.STEP else beat_sticker_text
+	name_tab.visible = mode != Mode.HEADMASTER
+	name_tab_label.text = speaker_name
+	var sticker := beat_sticker_text
+	if mode == Mode.STEP:
+		sticker = task_sticker_text if _task else step_sticker_text
 	if frame.title_text != sticker:
 		frame.title_text = sticker
 
@@ -260,30 +311,75 @@ func _apply_mode() -> void:
 ## `step` is 1-based; a `step_count` of one or less (the default) hides the
 ## pill, so a caller with one step, or one that predates the pill, shows
 ## none. Switches the card back to STEP mode, so a panel that just showed a
-## beat can go on to teach.
+## beat can go on to teach. A `task` step (an instruction the player carries
+## out, like the grade 8/9 pick) wears task_sticker_text. The body types
+## itself out (type_line).
 func show_step(title: String, body: String, prompt: String, step: int = 0,
-		step_count: int = 0) -> void:
+		step_count: int = 0, task: bool = false) -> void:
 	_set_texts(title, body, prompt)
+	_task = task
 	_pill_wanted = step_count > 1
 	if _pill_wanted:
 		step_label.text = STEP_PILL_FORMAT % [step, step_count]
 	mode = Mode.STEP
 	_play_step_change()
+	type_line(body)
 
 
 ## Fills all three labels for one line of a headmaster beat and shows the
 ## name plate reading `speaker`. Switches the card to HEADMASTER mode.
 func show_beat(speaker: String, title: String, body: String, prompt: String) -> void:
 	_set_texts(title, body, prompt)
+	_task = false
 	speaker_label.text = speaker
 	mode = Mode.HEADMASTER
 	_play_step_change()
+	type_line(body)
 
 
 func _set_texts(title: String, body: String, prompt: String) -> void:
 	title_label.text = title
 	body_label.text = body
 	prompt_label.text = prompt
+
+
+## Types `text` into the body one character every TYPE_INTERVAL seconds. A
+## tap mid-line belongs to skip_typing(), the next to the caller's advance
+## (is_typing() tells them apart). The line shows whole at once when Settings'
+## Lewati Dialog is on (GameSettings.skip_event_dialogue), in the editor, and
+## outside the tree. Hidden characters keep their room
+## (VC_CHARS_AFTER_SHAPING, set in _ready), so the card does not grow.
+func type_line(text: String) -> void:
+	_stop_typing()
+	body_label.text = text
+	body_label.visible_characters = -1
+	if text.is_empty() or GameSettings.skip_event_dialogue \
+			or Engine.is_editor_hint() or not is_inside_tree():
+		return
+	var count := body_label.get_total_character_count()
+	body_label.visible_characters = 0
+	_type_tween = create_tween()
+	_type_tween.tween_property(body_label, "visible_characters", count,
+			float(count) * TYPE_INTERVAL).from(0)
+	_type_tween.tween_callback(func() -> void: body_label.visible_characters = -1)
+
+
+## Fills the line being typed at once and stops the reveal. Safe to call when
+## nothing is typing.
+func skip_typing() -> void:
+	_stop_typing()
+	body_label.visible_characters = -1
+
+
+## True while type_line() is still revealing the body.
+func is_typing() -> bool:
+	return _type_tween != null and _type_tween.is_valid() and _type_tween.is_running()
+
+
+func _stop_typing() -> void:
+	if _type_tween != null and _type_tween.is_valid():
+		_type_tween.kill()
+	_type_tween = null
 
 
 ## The entrance: the card springs up from a little under full size with a
@@ -308,6 +404,40 @@ func play_out() -> Tween:
 		done.tween_interval(0.0)
 		return done
 	return AnimUtils.popup_spring_out(self, self)
+
+
+## How far, in pixels, a tucked note slides down as it fades.
+const TUCK_DROP := 160.0
+
+## Tucks the note away for a game pop-up (`hidden` true: it slides down
+## TUCK_DROP and fades to nothing) or brings it back (`hidden` false: a spring
+## back to where it was, fully opaque). The one-focal-box rule: see the header.
+## In the editor, or outside the tree, it lands at once.
+func tuck(hidden: bool) -> void:
+	if hidden == _tucked:
+		return
+	_tucked = hidden
+	if _tuck_tween != null and _tuck_tween.is_valid():
+		_tuck_tween.kill()
+	if hidden:
+		_stop_entering()
+		_tuck_home = position
+	var target_y := _tuck_home.y + (TUCK_DROP if hidden else 0.0)
+	var target_a := 0.0 if hidden else 1.0
+	if Engine.is_editor_hint() or not is_inside_tree():
+		position = Vector2(_tuck_home.x, target_y) if hidden else _tuck_home
+		modulate.a = target_a
+		return
+	var tokens := Juice.tokens()
+	_tuck_tween = create_tween().set_parallel(true)
+	_tuck_tween.tween_property(self, "position:y", target_y, tokens.dur_normal) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN if hidden else Tween.EASE_OUT)
+	_tuck_tween.tween_property(self, "modulate:a", target_a, tokens.dur_fast)
+
+
+## True while the note is tucked away for a pop-up.
+func is_tucked() -> bool:
+	return _tucked
 
 
 ## Kills the entrance and the step-change fade, whichever is still running.

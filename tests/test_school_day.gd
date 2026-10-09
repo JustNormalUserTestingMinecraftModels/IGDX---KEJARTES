@@ -983,3 +983,13 @@ func test_the_dialogue_remembers_its_featured_student() -> void:
 	var keep := dlg.find("_last_featured = featured")
 	assert_true(reset != -1 and keep != -1 and reset < keep,
 		"cleared on entry (a skipped line leaves nobody), set once picked")
+
+
+## Task 9 (2026-10-07 tutorial overhaul): SchoolDay keeps its teaching content and
+## adopts the shared Nota Guru box -- no runtime-built panel, a first tap fills
+## a typing line.
+func test_school_day_tutorial_uses_shared_box() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd")
+	assert_true(src.contains("TutorialPanel"), "SchoolDay tutorial uses the shared panel")
+	assert_false(src.contains("PanelContainer.new()"), "no runtime-built tutorial panel")
+	assert_true(src.contains("_tutorial_panel.skip_typing()"), "a tap fills a typing line first")

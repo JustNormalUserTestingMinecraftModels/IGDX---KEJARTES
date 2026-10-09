@@ -201,6 +201,32 @@ StickyNote's actual 172x200 instance rect (`RosterCard.tscn`'s offsets), so
 `EmptyFrame` is a plain `TextureRect` (`STRETCH_KEEP_ASPECT_CENTERED`) that
 renders it near enough 1:1; a 9-slice would stretch or tile the dashes.
 
+**Tutorial art (placeholder, 2026-10-07 overhaul).** Every drawn element of
+the Nota Guru tutorial is a stand-in, hand-written SVG, drop-replaceable at
+the same path with no code change; real art is owed by the artist/owner
+(spec `specs/2026-10-07-tutorial-visual-overhaul-design.md` sections 0.2 and
+7). No emoji: each is a transparent SVG. Under
+`Assets/Images/UI/Placeholders/tutorial/`:
+
+- `paperclip.svg` -- the Nota Guru's paperclip (`TutorialPanel` `Decor/Paperclip`).
+- `torn_edge.svg` -- the note's torn top edge, tiled across the card
+  (`Decor/TornEdge`, `STRETCH_TILE`: a replacement must tile horizontally).
+- The name tab is not art: it reuses the `TutorialNamePlate` variation.
+- `comic/plate_kelas.svg`, `comic/plate_senang.svg`, `comic/plate_waspada.svg`
+  -- the Grade-7 cold-open's three plates (the class; a happy student who
+  passes; a worried one who fails), `TutorialComic` exports. Shown at up to
+  824x520 in a keep-aspect `TextureRect`; any 16:10-ish picture fits.
+- `mark_check.svg`, `mark_cross.svg` -- a cleared and a missed target on the
+  comic plates (`TutorialComic.mark_cleared` / `mark_missed`), 96x96.
+- **Not placed yet (owed, spec section 7):** the Pak Kepsek mascot with its
+  2-3 expressions (senang / serius / bangga), the idle nudge's pointing hand
+  and the reward star. This pass has no node for them: the Nota Guru's name tab
+  names the speaker, and the idle nudge pulses the existing tutorial arrow
+  (`TutorialIdle` cues) instead of sliding a hand in. Adding them means a node
+  on `TutorialPanel.tscn` (mascot) and a cue node per screen (hand) -- confirm
+  with the owner first (spec section 0.1). The idle nudge's one-line text is
+  also unwritten: neither the spec nor the mockup gives the copy.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but

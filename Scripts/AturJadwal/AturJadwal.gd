@@ -272,13 +272,7 @@ func _populate_default_tutorial_steps():
 			["Penjadwalan Murid", "Di sini kamu akan menjadwalkan mata pelajaran apa yang perlu ditingkatkan tiap murid agar lolos ujian!", "", ""],
 			["Pilih Murid", "Kamu akan menjadwalkan \"Nama Murid\" terlebih dahulu.", "TextureButton", "Tekan kartu murid untuk lanjut!"]
 		]
-		for entry in p1_data:
-			var step = TutorialStepData.new()
-			step.title = entry[0]
-			step.text = entry[1]
-			step.target_node_path = entry[2]
-			step.prompt_text = entry[3]
-			tutorial_phase1_steps.append(step)
+		tutorial_phase1_steps = _steps_from(p1_data)
 
 	if tutorial_phase2_steps.is_empty():
 		var p2_data = [
@@ -287,13 +281,7 @@ func _populate_default_tutorial_steps():
 			["Hari Kosong", "Hari berwarnakan Ungu Muda mempunyai arti hari tersebut kosong bagi murid tersebut!", "BGHari/Senin,BGHari/Selasa,BGHari/Rabu,BGHari/Kamis,BGHari/Jumat", ""],
 			["Jadwal Hari Senin", "Mari kita jadwalkan hari senin untuk diisikan mata pelajaran yang mereka sedang butuhkan!", "BGHari/Senin", "Tekan tombol 'Senin' untuk lanjut!"]
 		]
-		for entry in p2_data:
-			var step = TutorialStepData.new()
-			step.title = entry[0]
-			step.text = entry[1]
-			step.target_node_path = entry[2]
-			step.prompt_text = entry[3]
-			tutorial_phase2_steps.append(step)
+		tutorial_phase2_steps = _steps_from(p2_data)
 
 	if not tutorial_phase2_alt_step:
 		var alt = TutorialStepData.new()
@@ -310,13 +298,19 @@ func _populate_default_tutorial_steps():
 			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "BGStat/Akademis/ValueLabel,BGStat/SeniBudaya/ValueLabel,BGStat/Olahraga/ValueLabel,BGStat/Mood/ValueLabel,BGStat/Energy/ValueLabel", ""],
 			["Siap Mengajar!", "Wow, dirimu sangat cepat untuk beradaptasi di lingkungan sekolah ini.\nKamu punya potensi besar untuk sukses mendidik lebih jauh di sini!", "", ""]
 		]
-		for entry in p3_data:
-			var step = TutorialStepData.new()
-			step.title = entry[0]
-			step.text = entry[1]
-			step.target_node_path = entry[2]
-			step.prompt_text = entry[3]
-			tutorial_phase3_steps.append(step)
+		tutorial_phase3_steps = _steps_from(p3_data)
+
+## One TutorialStepData per [title, text, target paths, prompt] row.
+func _steps_from(rows: Array) -> Array[TutorialStepData]:
+	var out: Array[TutorialStepData] = []
+	for entry: Array in rows:
+		var step := TutorialStepData.new()
+		step.title = entry[0]
+		step.text = entry[1]
+		step.target_node_path = entry[2]
+		step.prompt_text = entry[3]
+		out.append(step)
+	return out
 
 ## Mounts the shared TutorialPanel in the spotlight overlay. Keeps its prompt
 ## label, which _start_prompt_blink fades; every step's text goes through
@@ -413,8 +407,13 @@ func _setup_phase2_tutorial():
 		current_phase_steps[1] = tutorial_phase2_alt_step
 	_start_tutorial_overlay()
 
-func _setup_phase3_tutorial():
+## `lead_line` (FirstAssignmentBeat.line_for) replaces the first card's body.
+func _setup_phase3_tutorial(lead_line: String = ""):
 	current_phase_steps = tutorial_phase3_steps.duplicate()
+	if lead_line != "" and not current_phase_steps.is_empty():
+		var lead := current_phase_steps[0].duplicate() as TutorialStepData
+		lead.text = lead_line
+		current_phase_steps[0] = lead
 	_start_tutorial_overlay()
 
 func _start_tutorial_overlay():
@@ -1037,7 +1036,8 @@ func _on_activity_selected(category: String):
 	if not tutorial_phase3_done and tutorial_phase1_done:
 		var schedules = _get_current_schedules()
 		if schedules.has("Senin"):
-			_setup_phase3_tutorial()
+			FirstAssignmentBeat.play(self, FirstAssignmentBeat.deltas_for(category, student, GameState.current_grade))
+			_setup_phase3_tutorial(FirstAssignmentBeat.line_for(category))
 
 func _on_blur_overlay_input(event: InputEvent):
 	if not penjadwalan_popup_open:
@@ -1123,20 +1123,16 @@ func _on_click_area_gui_input(event: InputEvent):
 		_next_step()
 
 func _next_step():
+	if is_instance_valid(_tutorial_panel) and _tutorial_panel.is_typing():
+		_tutorial_panel.skip_typing()  # the first tap fills the line
+		return
 	current_step += 1
 	if current_step >= current_phase_steps.size():
 		if not tutorial_phase1_done:
 			tutorial_phase1_done = true
-			_end_tutorial()
-		elif not tutorial_phase3_done:
-			var schedules = _get_current_schedules()
-			if schedules.has("Senin"):
-				tutorial_phase3_done = true
-				_end_tutorial()
-			else:
-				_end_tutorial()
-		else:
-			_end_tutorial()
+		elif not tutorial_phase3_done and _get_current_schedules().has("Senin"):
+			tutorial_phase3_done = true
+		_end_tutorial()
 		return
 	_show_step(current_step)
 

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <!-- PLACEHOLDER (tutorial art, DEBT.md): comic plate 1, the class Pak Guru will guide. Replace at this path. -->
+  <rect x="8" y="8" width="624" height="384" rx="24" fill="#FBF1E3" stroke="#7A4A2B" stroke-width="6"/>
+  <rect x="160" y="40" width="320" height="120" rx="10" fill="#3D6B4F" stroke="#56321B" stroke-width="6"/>
+  <path d="M190 90 h80 M190 120 h140 M300 90 h120" stroke="#FFF6E8" stroke-width="6" stroke-linecap="round"/>
+  <g fill="#FFE08A" stroke="#C9801A" stroke-width="5">
+    <circle cx="170" cy="250" r="40"/><circle cx="320" cy="250" r="40"/><circle cx="470" cy="250" r="40"/>
+  </g>
+  <g fill="#3B2412"><circle cx="156" cy="244" r="5"/><circle cx="184" cy="244" r="5"/><circle cx="306" cy="244" r="5"/><circle cx="334" cy="244" r="5"/><circle cx="456" cy="244" r="5"/><circle cx="484" cy="244" r="5"/></g>
+  <g fill="none" stroke="#3B2412" stroke-width="5" stroke-linecap="round"><path d="M154 262 q16 14 32 0"/><path d="M304 262 q16 14 32 0"/><path d="M454 262 q16 14 32 0"/></g>
+  <g fill="#9C6440"><rect x="110" y="300" width="120" height="60" rx="8"/><rect x="260" y="300" width="120" height="60" rx="8"/><rect x="410" y="300" width="120" height="60" rx="8"/></g>
+</svg>

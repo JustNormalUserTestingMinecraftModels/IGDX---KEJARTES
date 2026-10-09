@@ -972,3 +972,114 @@ func test_an_empty_fill_leaves_the_first_real_fill_to_come() -> void:
 	assert_false(panel._content_shown, "mount()'s empty fill is not the card's first fill")
 	panel.show_beat("Pak Kepala Sekolah", "Judul", "Isi", TutorialPanel.DEFAULT_PROMPT)
 	assert_true(panel._content_shown, "the first real fill is")
+
+
+# ------------------------------------------- 2026-10-07 Nota Guru overhaul
+
+## Task 1: the body types itself out (~30 ms a character), a tap fills it at
+## once, and the instruction ribbon (TUGAS) joins TUTORIAL and PENGUMUMAN.
+func test_panel_exposes_typewriter_and_task_sticker() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_true(src.contains("func type_line("), "type_line() must exist")
+	assert_true(src.contains("func skip_typing("), "skip_typing() must exist")
+	assert_true(src.contains("func is_typing("), "is_typing() must exist")
+	assert_true(src.contains("task_sticker_text"), "TUGAS ribbon mode must exist")
+
+
+## The typewriter honours Settings' Lewati Dialog toggle, and a typed line
+## keeps its shaped size, so the card is placed for the whole line up front.
+func test_typewriter_honours_skip_setting_and_keeps_its_size() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_contains(_function_source(src, "type_line"), "GameSettings.skip_event_dialogue",
+		"Lewati Dialog fills the line at once")
+	assert_contains(src, "const TYPE_INTERVAL := 0.03", "about 30 ms a character")
+	assert_contains(src, "VC_CHARS_AFTER_SHAPING", "the hidden characters still take their room")
+
+
+## skip_typing() fills the line and stops the reveal; a panel outside the tree
+## types nothing and is never mid-line.
+func test_skip_typing_fills_the_line() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	panel.type_line("Halo, Pak Guru!")
+	panel.skip_typing()
+	assert_false(panel.is_typing(), "a skipped line is not typing")
+	assert_eq(panel.body_label.visible_characters, -1, "every character shows")
+	assert_eq(panel.body_label.text, "Halo, Pak Guru!", "the whole line is there")
+
+
+## A task card (the grade 8/9 pick instruction) wears TUGAS, a lesson TUTORIAL.
+func test_task_steps_wear_the_tugas_ribbon() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	panel.show_step("Pilih", "Pilih satu murid lagi.", TutorialPanel.DEFAULT_PROMPT, 0, 0, true)
+	assert_eq(panel.frame.title_text, panel.task_sticker_text, "a task wears TUGAS")
+	panel.show_step("Mood", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT)
+	assert_eq(panel.frame.title_text, panel.step_sticker_text, "a lesson wears TUTORIAL")
+
+
+## Task 2: the Nota Guru skin -- a paperclip, a torn top edge and a name tab
+## reading the speaker sit on the card as authored scene nodes (placeholder
+## art, drop-replaceable at stable paths; DEBT.md "Tutorial art").
+func test_nota_guru_nodes_present() -> void:
+	var inst := (load(SCENE_PATH) as PackedScene).instantiate()
+	assert_not_null(inst.find_child("NameTab", true, false), "name tab node required")
+	assert_not_null(inst.find_child("Paperclip", true, false), "paperclip placeholder required")
+	assert_not_null(inst.find_child("TornEdge", true, false), "torn top edge placeholder required")
+	inst.free()
+
+
+## The name tab reads speaker_name (Pak Kepsek, the one voice game-wide), and
+## steps aside while the headmaster beat's own name plate names him.
+func test_name_tab_reads_the_speaker_and_yields_to_the_name_plate() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	var tab_label := panel.find_child("NameTabLabel", true, false) as Label
+	assert_not_null(tab_label, "the tab carries a label")
+	assert_eq(tab_label.text, panel.speaker_name, "the tab reads the speaker")
+	panel.show_step("Mood", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT)
+	assert_true((panel.find_child("NameTab", true, false) as Control).visible, "a step shows the tab")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat", "Isi", TutorialPanel.DEFAULT_PROMPT)
+	assert_false((panel.find_child("NameTab", true, false) as Control).visible,
+		"a beat names its speaker on the plate, not twice")
+
+
+## Every Nota Guru decoration ignores taps, like the rest of the card.
+func test_nota_guru_decor_lets_taps_through() -> void:
+	var inst := (load(SCENE_PATH) as PackedScene).instantiate()
+	for node_name: String in ["Decor", "NameTab", "Paperclip", "TornEdge"]:
+		var node := inst.find_child(node_name, true, false) as Control
+		assert_not_null(node, node_name + " exists")
+		if node != null:
+			assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE, node_name + " ignores taps")
+	inst.free()
+
+
+## Task 3: one focal box. The note tucks away (slides down and fades) before a
+## game pop-up opens and comes back when it closes; the coach layer sits below
+## game pop-ups as the backstop.
+func test_panel_has_tuck_and_sits_below_popups() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_true(src.contains("func tuck("), "tuck() must exist for the focal-box handoff")
+	assert_true(src.to_lower().contains("below") or src.contains("z_index"),
+		"panel must document sitting below game popups")
+
+
+## In the editor (no motion) a tuck lands at once: hidden and invisible, then
+## back where it was and opaque.
+func test_tuck_hides_and_restores_the_card() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	panel.position = Vector2(40, 900)
+	panel.modulate.a = 1.0
+	panel.tuck(true)
+	assert_true(panel.is_tucked(), "a tucked card says so")
+	assert_eq(panel.modulate.a, 0.0, "and cannot be seen")
+	panel.tuck(false)
+	assert_false(panel.is_tucked(), "an untucked card is back")
+	assert_eq(panel.position, Vector2(40, 900), "where it was")
+	assert_eq(panel.modulate.a, 1.0, "and opaque")

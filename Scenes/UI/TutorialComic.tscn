@@ -1,0 +1,128 @@
+[gd_scene format=3 uid="uid://dr1ccdng5dioe"]
+
+[ext_resource type="Script" uid="uid://d37afdor1pkc4" path="res://Scripts/UI/TutorialComic.gd" id="1_t12ss"]
+[ext_resource type="Texture2D" uid="uid://c8nld5lbfcmmi" path="res://Assets/Images/UI/Placeholders/tutorial/comic/plate_kelas.svg" id="2_4nvt3"]
+[ext_resource type="Texture2D" uid="uid://c3ng4a6kr5byo" path="res://Assets/Images/UI/Placeholders/tutorial/mark_check.svg" id="3_xg634"]
+[ext_resource type="Texture2D" uid="uid://b55b5axdsyjhr" path="res://Assets/Images/UI/Placeholders/tutorial/mark_cross.svg" id="4_ymum6"]
+
+[node name="TutorialComic" type="Control" unique_id=1180170923]
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_t12ss")
+
+[node name="Scrim" type="Panel" parent="." unique_id=1973455916]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_type_variation = &"Scrim"
+
+[node name="Plate" type="Panel" parent="." unique_id=104023247]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -460.0
+offset_top = -560.0
+offset_right = 460.0
+offset_bottom = 380.0
+pivot_offset = Vector2(460, 470)
+mouse_filter = 2
+theme_type_variation = &"Card"
+
+[node name="Margin" type="MarginContainer" parent="Plate" unique_id=1773705381]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_constants/margin_left = 48
+theme_override_constants/margin_top = 48
+theme_override_constants/margin_right = 48
+theme_override_constants/margin_bottom = 48
+
+[node name="Layout" type="VBoxContainer" parent="Plate/Margin" unique_id=1400602329]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 36
+
+[node name="Illustration" type="TextureRect" parent="Plate/Margin/Layout" unique_id=276903084]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 520)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("2_4nvt3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Line" type="RichTextLabel" parent="Plate/Margin/Layout" unique_id=1549433615]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"EventDialogueText"
+bbcode_enabled = true
+text = "Selamat datang, Pak Guru! Ini kelas yang akan kamu bimbing."
+fit_content = true
+scroll_active = false
+horizontal_alignment = 1
+
+[node name="Marks" type="HBoxContainer" parent="Plate/Margin/Layout" unique_id=217568529]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="Mark0" type="TextureRect" parent="Plate/Margin/Layout/Marks" unique_id=429525309]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("3_xg634")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Mark1" type="TextureRect" parent="Plate/Margin/Layout/Marks" unique_id=1041924122]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("3_xg634")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Mark2" type="TextureRect" parent="Plate/Margin/Layout/Marks" unique_id=1403259454]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("4_ymum6")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Prompt" type="Label" parent="." unique_id=1484211926]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -280.0
+offset_bottom = -200.0
+grow_vertical = 0
+theme_type_variation = &"StatusScrimLabel"
+text = "KETUK DI MANA SAJA UNTUK LANJUT"
+horizontal_alignment = 1
+
+[node name="Skip" type="Button" parent="." unique_id=1388690543]
+unique_name_in_owner = true
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -320.0
+offset_top = 140.0
+offset_right = -56.0
+offset_bottom = 236.0
+grow_horizontal = 0
+theme_type_variation = &"SecondaryButton"
+text = "LEWATI"

@@ -1393,3 +1393,50 @@ func _then_returns(body: String, statement: String) -> bool:
 	if at == -1:
 		return false
 	return body.substr(at + statement.length()).strip_edges(true, false).begins_with("return")
+
+
+# ------------------------------------------- 2026-10-07 tutorial overhaul
+
+const _BEAT_PATH := "res://Scripts/AturJadwal/FirstAssignmentBeat.gd"
+
+
+## Task 7: the first Senin pick teaches by doing -- the deltas float over the
+## refilled bars and the note names the trade-off (spec copy, both branches).
+func test_first_assignment_learn_by_doing_gate() -> void:
+	var beat := FileAccess.get_file_as_string(_BEAT_PATH)
+	assert_true(beat.contains("create_floating_text"), "floating delta on the taught pick")
+	assert_true(beat.contains("Di situ serunya") and beat.contains("Pintar-pintar"),
+		"trade-off teaching lines present (spec copy, both branches)")
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd")
+	assert_true(src.contains("FirstAssignmentBeat.play(self, FirstAssignmentBeat.deltas_for(category"),
+		"the first pick floats its deltas")
+	assert_true(src.contains("_setup_phase3_tutorial(FirstAssignmentBeat.line_for(category))"),
+		"and the next card opens on the trade-off")
+
+
+## The branch a pick gets: a study pick, Istirahat, or none (Wirausaha keeps
+## the tutorial's own card); a study day costs mood and energy and Istirahat
+## gives them back.
+func test_first_assignment_lines_and_deltas() -> void:
+	assert_eq(FirstAssignmentBeat.line_for("Akademis"), FirstAssignmentBeat.LINE_STUDY)
+	assert_eq(FirstAssignmentBeat.line_for("Olahraga"), FirstAssignmentBeat.LINE_STUDY)
+	assert_eq(FirstAssignmentBeat.line_for("Istirahat"), FirstAssignmentBeat.LINE_REST)
+	assert_eq(FirstAssignmentBeat.line_for("Wirausaha"), "")
+	var student := {"hobby_category": "Akademik"}
+	var study := FirstAssignmentBeat.deltas_for("Akademis", student, 7)
+	assert_true(study["akademis"] > 0.0, "a study day raises its skill")
+	assert_true(study["energy"] < 0.0 and study["mood"] < 0.0, "and costs energy and mood")
+	var rest := FirstAssignmentBeat.deltas_for("Istirahat", student, 7)
+	assert_false(rest.has("akademis"), "a rest day raises no skill")
+	assert_true(rest["energy"] > 0.0 and rest["mood"] > 0.0, "and gives energy and mood back")
+	assert_eq(FirstAssignmentBeat.label_for(15.0), "+15")
+	assert_eq(FirstAssignmentBeat.label_for(-6.0), "\u22126")
+
+
+## A tap on a line still typing fills it before it advances.
+func test_a_tap_fills_a_typing_line_first() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd")
+	var at := src.find("func _next_step():")
+	assert_true(src.find("_tutorial_panel.skip_typing()", at) != -1
+			and src.find("_tutorial_panel.skip_typing()", at) < src.find("current_step += 1", at),
+		"skip_typing() comes before the step counts")

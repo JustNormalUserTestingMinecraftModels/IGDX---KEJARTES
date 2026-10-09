@@ -612,3 +612,40 @@ func test_seen_beats_travel_with_the_run_save() -> void:
 	for path: String in ["res://Scripts/GameSettings.gd", "res://Scripts/Achievements/Achievements.gd"]:
 		assert_false(FileAccess.get_file_as_string(path).contains("headmaster_beats_seen"),
 			path + " is not where the run lives")
+
+
+# ------------------------------------------- 2026-10-07 tutorial overhaul
+
+const _COMIC_SCENE := "res://Scenes/UI/TutorialComic.tscn"
+const _COMIC_SCRIPT := "res://Scripts/UI/TutorialComic.gd"
+
+
+## Task 5: the Grade-7 cold-open is an authored overlay scene that says when
+## it is done.
+func test_comic_scene_exists_and_is_authored() -> void:
+	assert_true(ResourceLoader.exists(_COMIC_SCENE), "comic cold-open scene must exist")
+	var src := FileAccess.get_file_as_string(_COMIC_SCRIPT)
+	assert_true(src.contains("signal finished"), "comic must emit finished")
+
+
+## Its chrome is all in the .tscn: scrim, plate, illustration, line, three
+## target marks, the prompt and the owner's skip (2026-10-09: skippable).
+func test_comic_chrome_is_in_the_scene() -> void:
+	var comic := (load(_COMIC_SCENE) as PackedScene).instantiate()
+	for node_name: String in ["Scrim", "Plate", "Illustration", "Line", "Marks", "Mark0",
+			"Mark1", "Mark2", "Prompt", "Skip"]:
+		assert_true(comic.find_child(node_name, true, false) != null, node_name + " is authored")
+	comic.free()
+	var src := FileAccess.get_file_as_string(_COMIC_SCRIPT)
+	for built: String in [".new()", "add_child("]:
+		assert_false(src.contains(built), "the comic builds nothing at runtime: " + built)
+
+
+## The three beats carry the spec's copy verbatim and the rule they teach.
+func test_comic_beats_carry_the_spec_copy() -> void:
+	var src := FileAccess.get_file_as_string(_COMIC_SCRIPT)
+	for line: String in ["Selamat datang, Pak Guru! Ini kelas yang akan kamu bimbing.",
+			"Capai minimal [b]%d[/b], dia lulus.",
+			"satu kelas kena nilai D."]:
+		assert_contains(src, line, "the comic says: " + line)
+	assert_contains(src, "GameState.MIN_TARGETS_PER_STUDENT", "the 2-of-3 rule comes from the game")

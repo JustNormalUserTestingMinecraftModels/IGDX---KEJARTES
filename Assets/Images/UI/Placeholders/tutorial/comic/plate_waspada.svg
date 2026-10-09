@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+  <!-- PLACEHOLDER (tutorial art, DEBT.md): comic plate 3, a worried student whose targets fail. Replace at this path. -->
+  <rect x="8" y="8" width="624" height="384" rx="24" fill="#FBF1E3" stroke="#7A4A2B" stroke-width="6"/>
+  <circle cx="320" cy="200" r="130" fill="#E7D0B4" stroke="#A66A07" stroke-width="8"/>
+  <path d="M250 150 l40 20 M390 150 l-40 20" stroke="#3B2412" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="275" cy="190" r="12" fill="#3B2412"/><circle cx="365" cy="190" r="12" fill="#3B2412"/>
+  <path d="M255 275 Q320 225 385 275" fill="none" stroke="#3B2412" stroke-width="14" stroke-linecap="round"/>
+</svg>

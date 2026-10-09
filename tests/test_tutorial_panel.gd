@@ -1050,11 +1050,11 @@ func test_name_tab_reads_the_speaker_and_yields_to_the_name_plate() -> void:
 ## Every Nota Guru decoration ignores taps, like the rest of the card.
 func test_nota_guru_decor_lets_taps_through() -> void:
 	var inst := (load(SCENE_PATH) as PackedScene).instantiate()
-	for name: String in ["Decor", "NameTab", "Paperclip", "TornEdge"]:
-		var node := inst.find_child(name, true, false) as Control
-		assert_not_null(node, name + " exists")
+	for node_name: String in ["Decor", "NameTab", "Paperclip", "TornEdge"]:
+		var node := inst.find_child(node_name, true, false) as Control
+		assert_not_null(node, node_name + " exists")
 		if node != null:
-			assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE, name + " ignores taps")
+			assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE, node_name + " ignores taps")
 	inst.free()
 
 

@@ -212,6 +212,12 @@ the same path with no code change; real art is owed by the artist/owner
 - `torn_edge.svg` -- the note's torn top edge, tiled across the card
   (`Decor/TornEdge`, `STRETCH_TILE`: a replacement must tile horizontally).
 - The name tab is not art: it reuses the `TutorialNamePlate` variation.
+- `comic/plate_kelas.svg`, `comic/plate_senang.svg`, `comic/plate_waspada.svg`
+  -- the Grade-7 cold-open's three plates (the class; a happy student who
+  passes; a worried one who fails), `TutorialComic` exports. Shown at up to
+  824x520 in a keep-aspect `TextureRect`; any 16:10-ish picture fits.
+- `mark_check.svg`, `mark_cross.svg` -- a cleared and a missed target on the
+  comic plates (`TutorialComic.mark_cleared` / `mark_missed`), 96x96.
 
 ## Asset notes
 

@@ -1300,7 +1300,6 @@ func _on_back_pressed() -> void:
 # ── End Simulation Tutorial Implementation ──────────────────────────────────────
 func _show_end_simulation_tutorial() -> void:
 	_is_tutorial_active = true
-	
 	# Dimmer overlay -- a themed Scrim rather than a hand-colored ColorRect.
 	var overlay = Panel.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -1352,10 +1351,11 @@ func _show_end_simulation_tutorial() -> void:
 	tween_in.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.25)
 	await tween_in.finished
-	
-	# Wait for click
+
 	await _tutorial_closed
-	
+	while _tutorial_panel.is_typing():  # a first tap only fills the line
+		_tutorial_panel.skip_typing()
+		await _tutorial_closed
 	# Bounce scale-out
 	var tween_out = create_tween().set_parallel(true)
 	tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)

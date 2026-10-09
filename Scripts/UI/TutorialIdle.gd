@@ -42,6 +42,14 @@ var _escalated := false
 var _rest_tweens: Array[Tween] = []
 
 
+## A new TutorialIdle as a child of `owner`, for a screen that builds its
+## tutorial at runtime (Lobby, StudentList). StudentCard authors its own node.
+static func attach(owner: Node) -> TutorialIdle:
+	var idle := TutorialIdle.new()
+	owner.add_child(idle)
+	return idle
+
+
 ## Starts the resting loop on `cues` (Controls; anything else is skipped) and
 ## arms the countdown toward a nudge on `target`. Calling it again moves both
 ## to the new step.

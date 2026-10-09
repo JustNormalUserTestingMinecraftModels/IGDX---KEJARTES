@@ -845,3 +845,15 @@ func test_each_phase_shows_the_button_its_last_step_points_at() -> void:
 	assert_eq(last_two[2], "Jadwal", "phase 2 ends on the button that leaves for AturJadwal")
 	assert_true(phase_one_part.contains("student_button.visible = true"), "phase 1 shows Student")
 	assert_true(phase_two_part.contains("jadwal_button.visible = true"), "phase 2 shows Jadwal")
+
+
+## Task 9 (2026-10-07 tutorial overhaul): Lobby keeps its teaching content and
+## adopts the shared Nota Guru box -- no runtime-built panel, a first tap fills
+## a typing line, and the idle layer arms on each step.
+func test_lobby_tutorial_uses_shared_box() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Lobby/Lobby.gd")
+	assert_true(src.contains("TutorialPanel"), "Lobby tutorial uses the shared panel")
+	assert_false(src.contains("PanelContainer.new()"), "no runtime-built tutorial panel")
+	assert_true(src.contains("_tutorial_panel.skip_typing()"), "a tap fills a typing line first")
+	assert_true(src.contains("TutorialIdle.attach(self)") and src.contains("_idle.stop()"),
+		"the idle nudge arms on a step and stops with the tutorial")

@@ -120,6 +120,8 @@ var current_step := 0
 var current_phase_steps: Array[TutorialStepData] = []
 var tutorial_active := true
 var _tutorial_panel: TutorialPanel
+## The idle nudge (TutorialIdle), made the first time a step shows.
+var _idle: TutorialIdle
 var _tutorial_prompt_label: Label
 ## The controls the current step highlights; the card and the arrow are placed from them.
 var _step_targets: Array[Control] = []
@@ -833,6 +835,10 @@ func _tutorial_refuses(button: Control) -> bool:
 	return true
 
 func _next_step():
+	if _idle: _idle.reset()
+	if is_instance_valid(_tutorial_panel) and _tutorial_panel.is_typing():
+		_tutorial_panel.skip_typing()  # the first tap fills the line
+		return
 	current_step += 1
 	if current_step >= current_phase_steps.size():
 		_end_tutorial()
@@ -879,6 +885,11 @@ func _show_step(index: int) -> void:
 	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.2)
 
 	await tween_in.finished
+
+	# The idle layer: the arrow breathes; 2.5 s without a tap nudges the spot.
+	if _idle == null:
+		_idle = TutorialIdle.attach(self)
+	_idle.start(_step_targets[0] if not _step_targets.is_empty() else _tutorial_panel, [_tutorial_arrow])
 
 	if index == current_phase_steps.size() - 1:
 		# The last step of either phase names the button that leaves the Lobby
@@ -936,6 +947,7 @@ func _clear_highlight():
 		_tutorial_arrow.hide()
 
 func _end_tutorial() -> void:
+	if _idle: _idle.stop()
 	GameState.lobby_tutorial_completed = true
 	hud.activate(false)
 	tutorial_active = false

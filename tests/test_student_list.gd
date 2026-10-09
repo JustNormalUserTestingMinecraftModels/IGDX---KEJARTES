@@ -1171,3 +1171,15 @@ func test_a_card_tap_before_the_last_step_is_answered_not_dropped() -> void:
 		.get_slice("func answer_wrong_tap(", 1).get_slice("\nstatic func ", 0)
 	assert_true(answer.contains('AudioDirector.play_sfx(&"error")'), "with the error cue")
 	assert_true(answer.contains("Juice.shake(target)"), "and a shake on the target")
+
+
+## Task 9 (2026-10-07 tutorial overhaul): StudentList keeps its teaching content and
+## adopts the shared Nota Guru box -- no runtime-built panel, a first tap fills
+## a typing line, and the idle layer arms on each step.
+func test_student_list_tutorial_uses_shared_box() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/StudentList/StudentList.gd")
+	assert_true(src.contains("TutorialPanel"), "StudentList tutorial uses the shared panel")
+	assert_false(src.contains("PanelContainer.new()"), "no runtime-built tutorial panel")
+	assert_true(src.contains("_tutorial_panel.skip_typing()"), "a tap fills a typing line first")
+	assert_true(src.contains("TutorialIdle.attach(self)") and src.contains("_idle.stop()"),
+		"the idle nudge arms on a step and stops with the tutorial")

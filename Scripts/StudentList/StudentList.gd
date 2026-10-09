@@ -200,6 +200,8 @@ const CATEGORY_ICONS := {
 var current_step := 0
 var tutorial_active := true
 var _tutorial_panel: TutorialPanel
+## The idle nudge (TutorialIdle), made the first time a step shows.
+var _idle: TutorialIdle
 var _tutorial_prompt_label: Label
 ## The controls the current step highlights; the card and the arrow are placed from them.
 var _step_targets: Array[Control] = []
@@ -675,6 +677,10 @@ func _fit_color_rect_to_viewport():
 		_position_tutorial_panel()
 
 func _next_step():
+	if _idle: _idle.reset()
+	if is_instance_valid(_tutorial_panel) and _tutorial_panel.is_typing():
+		_tutorial_panel.skip_typing()  # the first tap fills the line
+		return
 	current_step += 1
 	if current_step >= tutorial_steps.size():
 		_end_tutorial()
@@ -713,6 +719,11 @@ func _show_step(index: int) -> void:
 	_panel_tween = create_tween().set_parallel(true)
 	_panel_tween.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.12)
 	_panel_tween.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.10)
+
+	# The idle layer: the arrow breathes; 2.5 s without a tap nudges the spot.
+	if _idle == null:
+		_idle = TutorialIdle.attach(self)
+	_idle.start(_step_targets[0] if not _step_targets.is_empty() else _tutorial_panel, [_tutorial_arrow])
 
 	if index == 0 or index == 1:
 		# Muridmu and Status Jadwal are spotlight-only: the scrim
@@ -802,6 +813,7 @@ func _clear_highlight():
 		_tutorial_arrow.hide()
 
 func _end_tutorial():
+	if _idle: _idle.stop()
 	tutorial_shown = true
 	tutorial_active = false
 	if _blink_tween and _blink_tween.is_valid():

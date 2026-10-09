@@ -1018,3 +1018,41 @@ func test_task_steps_wear_the_tugas_ribbon() -> void:
 	assert_eq(panel.frame.title_text, panel.task_sticker_text, "a task wears TUGAS")
 	panel.show_step("Mood", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT)
 	assert_eq(panel.frame.title_text, panel.step_sticker_text, "a lesson wears TUTORIAL")
+
+
+## Task 2: the Nota Guru skin -- a paperclip, a torn top edge and a name tab
+## reading the speaker sit on the card as authored scene nodes (placeholder
+## art, drop-replaceable at stable paths; DEBT.md "Tutorial art").
+func test_nota_guru_nodes_present() -> void:
+	var inst := (load(SCENE_PATH) as PackedScene).instantiate()
+	assert_not_null(inst.find_child("NameTab", true, false), "name tab node required")
+	assert_not_null(inst.find_child("Paperclip", true, false), "paperclip placeholder required")
+	assert_not_null(inst.find_child("TornEdge", true, false), "torn top edge placeholder required")
+	inst.free()
+
+
+## The name tab reads speaker_name (Pak Kepsek, the one voice game-wide), and
+## steps aside while the headmaster beat's own name plate names him.
+func test_name_tab_reads_the_speaker_and_yields_to_the_name_plate() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	var tab_label := panel.find_child("NameTabLabel", true, false) as Label
+	assert_not_null(tab_label, "the tab carries a label")
+	assert_eq(tab_label.text, panel.speaker_name, "the tab reads the speaker")
+	panel.show_step("Mood", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT)
+	assert_true((panel.find_child("NameTab", true, false) as Control).visible, "a step shows the tab")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat", "Isi", TutorialPanel.DEFAULT_PROMPT)
+	assert_false((panel.find_child("NameTab", true, false) as Control).visible,
+		"a beat names its speaker on the plate, not twice")
+
+
+## Every Nota Guru decoration ignores taps, like the rest of the card.
+func test_nota_guru_decor_lets_taps_through() -> void:
+	var inst := (load(SCENE_PATH) as PackedScene).instantiate()
+	for name: String in ["Decor", "NameTab", "Paperclip", "TornEdge"]:
+		var node := inst.find_child(name, true, false) as Control
+		assert_not_null(node, name + " exists")
+		if node != null:
+			assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE, name + " ignores taps")
+	inst.free()

@@ -1,18 +1,22 @@
 [gd_scene format=3 uid="uid://exobac6lqnug"]
 
 [ext_resource type="Script" uid="uid://cx4jdatm5v8i" path="res://Scripts/UI/TutorialPanel.gd" id="1_v0ojc"]
+[ext_resource type="Texture2D" uid="uid://bbkxi87rswqi0" path="res://Assets/Images/UI/Icons/school.svg" id="3_school"]
+[ext_resource type="Texture2D" uid="uid://bmremdu0628fd" path="res://Assets/Images/UI/Placeholders/tutorial/torn_edge.svg" id="4_bbugx"]
+[ext_resource type="Texture2D" uid="uid://doe7bsikah4lc" path="res://Assets/Images/UI/Placeholders/tutorial/paperclip.svg" id="5_ojetn"]
 [ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Icons/school.svg" id="3_school"]
 
 [node name="TutorialPanel" type="MarginContainer" unique_id=221373627]
+custom_minimum_size = Vector2(1.84, 0)
 mouse_filter = 2
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 script = ExtResource("1_v0ojc")
+task_sticker_text = null
 
-[node name="Frame" parent="." instance=ExtResource("nb_frame")]
+[node name="Frame" parent="." unique_id=25906949 instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 360)
 layout_mode = 2
@@ -25,37 +29,41 @@ show_close = false
 [node name="Margin" type="MarginContainer" parent="Frame" unique_id=1626375456]
 layout_mode = 2
 mouse_filter = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
 
 [node name="Layout" type="VBoxContainer" parent="Frame/Margin" unique_id=1522478353]
 layout_mode = 2
 mouse_filter = 2
+theme_override_constants/separation = 10
 
-[node name="StepPill" type="PanelContainer" parent="Frame/Margin/Layout"]
+[node name="StepPill" type="PanelContainer" parent="Frame/Margin/Layout" unique_id=1914380596]
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 theme_type_variation = &"TutorialStepPill"
 
-[node name="StepLabel" type="Label" parent="Frame/Margin/Layout/StepPill"]
+[node name="StepLabel" type="Label" parent="Frame/Margin/Layout/StepPill" unique_id=175966056]
 layout_mode = 2
-mouse_filter = 2
 theme_type_variation = &"TutorialStepPillLabel"
 text = "Langkah 1 / 3"
 horizontal_alignment = 1
 
-[node name="NamePlate" type="PanelContainer" parent="Frame/Margin/Layout"]
+[node name="NamePlate" type="PanelContainer" parent="Frame/Margin/Layout" unique_id=1752983005]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 mouse_filter = 2
 theme_type_variation = &"TutorialNamePlate"
 
-[node name="Row" type="HBoxContainer" parent="Frame/Margin/Layout/NamePlate"]
+[node name="Row" type="HBoxContainer" parent="Frame/Margin/Layout/NamePlate" unique_id=1313352514]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="Icon" type="TextureRect" parent="Frame/Margin/Layout/NamePlate/Row"]
+[node name="Icon" type="TextureRect" parent="Frame/Margin/Layout/NamePlate/Row" unique_id=885977808]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_vertical = 4
@@ -64,9 +72,8 @@ texture = ExtResource("3_school")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="SpeakerLabel" type="Label" parent="Frame/Margin/Layout/NamePlate/Row"]
+[node name="SpeakerLabel" type="Label" parent="Frame/Margin/Layout/NamePlate/Row" unique_id=1867326464]
 layout_mode = 2
-mouse_filter = 2
 theme_type_variation = &"TutorialNamePlateLabel"
 text = "Pak Kepala Sekolah"
 
@@ -80,6 +87,7 @@ layout_mode = 2
 mouse_filter = 2
 
 [node name="BodyLabel" type="Label" parent="Frame/Margin/Layout" unique_id=189272566]
+custom_minimum_size = Vector2(-170.16, 0)
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
 theme_override_constants/line_spacing = 8
@@ -93,4 +101,49 @@ mouse_filter = 2
 [node name="PromptLabel" type="Label" parent="Frame/Margin/Layout" unique_id=1899479792]
 layout_mode = 2
 theme_type_variation = &"TitleLabel"
+horizontal_alignment = 1
+
+[node name="Decor" type="Control" parent="." unique_id=1978418657]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TornEdge" type="TextureRect" parent="Decor" unique_id=313970993]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 64.0
+offset_top = -6.0
+offset_right = -24.0
+offset_bottom = 22.0
+mouse_filter = 2
+texture = ExtResource("4_bbugx")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Paperclip" type="TextureRect" parent="Decor" unique_id=138274511]
+layout_mode = 0
+offset_left = 96.0
+offset_top = -44.0
+offset_right = 144.0
+offset_bottom = 52.0
+mouse_filter = 2
+texture = ExtResource("5_ojetn")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameTab" type="PanelContainer" parent="Decor" unique_id=808285619]
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = -30.0
+offset_right = -48.0
+offset_bottom = 30.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"TutorialNamePlate"
+
+[node name="NameTabLabel" type="Label" parent="Decor/NameTab" unique_id=1897661991]
+layout_mode = 2
+theme_type_variation = &"TutorialNamePlateLabel"
+text = "Pak Kepsek"
 horizontal_alignment = 1

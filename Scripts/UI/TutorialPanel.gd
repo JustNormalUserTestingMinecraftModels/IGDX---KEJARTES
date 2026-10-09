@@ -108,6 +108,15 @@ enum Mode {
 		if is_inside_tree():
 			_apply_mode()
 
+## Who the Nota Guru's name tab names: the one voice of every tutorial in the
+## game (spec 2026-10-07 section 3a). The tab steps aside while the headmaster
+## beat's own name plate names its speaker (mode HEADMASTER).
+@export var speaker_name: String = "Pak Kepsek":
+	set(value):
+		speaker_name = value
+		if is_inside_tree():
+			name_tab_label.text = value
+
 ## Panel width as a fraction of the viewport width, before max_width clamps
 ## it. StudentCard ships 0.92; SchoolDay ships 0.85.
 @export var width_fraction: float = 0.92:
@@ -193,6 +202,9 @@ enum Mode {
 @onready var step_label: Label = $Frame/Margin/Layout/StepPill/StepLabel
 @onready var name_plate: PanelContainer = $Frame/Margin/Layout/NamePlate
 @onready var speaker_label: Label = $Frame/Margin/Layout/NamePlate/Row/SpeakerLabel
+## The Nota Guru's name tab (placeholder art: DEBT.md, "Tutorial art").
+@onready var name_tab: PanelContainer = $Decor/NameTab
+@onready var name_tab_label: Label = $Decor/NameTab/NameTabLabel
 
 ## Whether the pill shows while mode is STEP: show_step() hides it for a
 ## flow of one step or none. True until then, so the authored pill shows.
@@ -270,6 +282,8 @@ func _apply_prompt_tint() -> void:
 func _apply_mode() -> void:
 	step_pill.visible = mode == Mode.STEP and _pill_wanted
 	name_plate.visible = mode == Mode.HEADMASTER
+	name_tab.visible = mode != Mode.HEADMASTER
+	name_tab_label.text = speaker_name
 	var sticker := beat_sticker_text
 	if mode == Mode.STEP:
 		sticker = task_sticker_text if _task else step_sticker_text

@@ -201,6 +201,18 @@ StickyNote's actual 172x200 instance rect (`RosterCard.tscn`'s offsets), so
 `EmptyFrame` is a plain `TextureRect` (`STRETCH_KEEP_ASPECT_CENTERED`) that
 renders it near enough 1:1; a 9-slice would stretch or tile the dashes.
 
+**Tutorial art (placeholder, 2026-10-07 overhaul).** Every drawn element of
+the Nota Guru tutorial is a stand-in, hand-written SVG, drop-replaceable at
+the same path with no code change; real art is owed by the artist/owner
+(spec `specs/2026-10-07-tutorial-visual-overhaul-design.md` sections 0.2 and
+7). No emoji: each is a transparent SVG. Under
+`Assets/Images/UI/Placeholders/tutorial/`:
+
+- `paperclip.svg` -- the Nota Guru's paperclip (`TutorialPanel` `Decor/Paperclip`).
+- `torn_edge.svg` -- the note's torn top edge, tiled across the card
+  (`Decor/TornEdge`, `STRETCH_TILE`: a replacement must tile horizontally).
+- The name tab is not art: it reuses the `TutorialNamePlate` variation.
+
 ## Asset notes
 
 **`paper.png` cannot be a full-bleed card surface.** It is 1080x1920 but

@@ -93,3 +93,12 @@ func test_the_shipped_chart_is_valid() -> void:
 	assert_true(chart != null, "the chart loads as a DanceChart")
 	assert_true(chart.is_valid(), "and is sorted, typed and has a tempo")
 	assert_true(chart.events.size() > 0, "and has arrows")
+
+
+func test_the_importer_turns_detected_beats_into_a_valid_chart() -> void:
+	var json := '{"bpm": 120.0, "first_beat_offset": 0.5, "song_length": 90.0, "beats": [0, 1, 2, 3, 4]}'
+	var chart := BuildDanceChart.chart_from_json(json)
+	assert_eq(chart.bpm, 120.0)
+	assert_eq(chart.first_beat_offset, 0.5)
+	assert_eq(chart.events.size(), 5, "one arrow per detected beat")
+	assert_true(chart.is_valid(), "sorted, round-robin types")

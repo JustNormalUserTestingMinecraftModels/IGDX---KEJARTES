@@ -264,6 +264,17 @@ and the artifact sits at radius ~1041, so any `sky_cover_margin` at or above
 
 ## Audio and copy
 
+**Lomba Menari beat chart is a placeholder (2026-10-09).** The arrows now
+spawn from `Resources/Minigames/Charts/SeniTari.tres`, but that chart is 64
+even arrows at 100 bpm that match no track: they keep an even pulse, not the
+song's beat. Owed by the team, on a machine with audio tooling: swap the
+owner's revised track (`seniTariRevisi.mpeg`, really an MP3) into
+`bgm_minigame_senibudaya_menari` (loop on), then generate, import and
+hand-tune its chart (`tools/dance_chart/README.md`) and set the mp3's import
+`bpm`/`bar_beats`. Spec `specs/2026-10-09-seni-tari-beat-sync-design.md`
+section 7. Note `MINIGAME_BGM_FADE_BY_ID` (1.0 s) in `AudioDirector.gd` is a
+first guess at "slightly longer"; tune it by ear with the real track.
+
 **Audio placeholders.** Mostly resolved by the 2026-09-21 Drive sound pack,
 which gave real streams to `sparkle`, `star_earn_1/2/3`, `result_fanfare`,
 `coin` and `event_announce`. Still aliasing existing streams:

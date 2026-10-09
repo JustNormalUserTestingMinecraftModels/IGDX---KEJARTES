@@ -101,6 +101,36 @@ var look_layer_enabled: bool = false:
 ## polling the setting every frame.
 signal look_layer_changed(enabled: bool)
 
+## Hemat Baterai (2026-10-02, spec 2026-10-02-battery-saver-design.md): on,
+## the game renders at BATTERY_SAVER_FPS instead of the project's cap (60),
+## halving GPU work so the phone runs cooler. DEFAULT OFF. GameSettings
+## applies it itself, at load and on every flip.
+var battery_saver_enabled: bool = false:
+	set(value):
+		if battery_saver_enabled == value:
+			return
+		battery_saver_enabled = value
+		_apply_frame_cap()
+		battery_saver_changed.emit(value)
+
+## Emitted when battery_saver_enabled flips.
+signal battery_saver_changed(enabled: bool)
+
+## Frame rate while Hemat Baterai is on.
+const BATTERY_SAVER_FPS := 30
+
+## Frame rate assumed when project.godot carries no application/run/max_fps.
+const DEFAULT_FPS := 60
+
+
+## The project's own cap (application/run/max_fps, 60).
+func normal_fps() -> int:
+	return int(ProjectSettings.get_setting("application/run/max_fps", DEFAULT_FPS))
+
+
+func _apply_frame_cap() -> void:
+	Engine.max_fps = BATTERY_SAVER_FPS if battery_saver_enabled else normal_fps()
+
 
 const SAVE_PATH: String = "user://settings.cfg"
 
@@ -118,6 +148,7 @@ func save_settings() -> void:
 	config.set_value("pengaturan", "skip_dialog", skip_event_dialogue)
 	config.set_value("pengaturan", "look_layer", look_layer_enabled)
 	config.set_value("pengaturan", "hd_graphics", hd_graphics_enabled)
+	config.set_value("pengaturan", "battery_saver", battery_saver_enabled)
 	config.set_value("pengaturan", "ambient_effects", ambient_effects_enabled)
 	config.set_value("pengaturan", "haptics", haptics_enabled)
 	config.set_value("pengaturan", "reduce_motion", reduce_motion)
@@ -133,6 +164,7 @@ func load_settings() -> void:
 		skip_event_dialogue = config.get_value("pengaturan", "skip_dialog", false)
 		look_layer_enabled = config.get_value("pengaturan", "look_layer", false)
 		hd_graphics_enabled = config.get_value("pengaturan", "hd_graphics", true)
+		battery_saver_enabled = config.get_value("pengaturan", "battery_saver", false)
 		ambient_effects_enabled = config.get_value("pengaturan", "ambient_effects", true)
 		haptics_enabled = config.get_value("pengaturan", "haptics", true)
 		reduce_motion = config.get_value("pengaturan", "reduce_motion", false)

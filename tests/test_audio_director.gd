@@ -245,11 +245,11 @@ func test_bgm_loop_tracks_actually_loop() -> void:
 	var should_loop := [
 		"res://Assets/Audio/BGM/titlescreen.mp3",
 		"res://Assets/Audio/BGM/introcutscene.mp3",
-		"res://Assets/Audio/BGM/schoolsimulation.mp3",
+		"res://Assets/Audio/BGM/schoolsimulation_loop.ogg",
 		"res://Assets/Audio/BGM/result_win.mp3",
 		"res://Assets/Audio/BGM/result_lose.wav",
-		"res://Assets/Audio/BGM/minigame_olahraga.mp3",
-		"res://Assets/Audio/BGM/minigame_senibudaya_batik.mp3",
+		"res://Assets/Audio/BGM/minigame_olahraga.ogg",
+		"res://Assets/Audio/BGM/minigame_senibudaya_batik.ogg",
 		"res://Assets/Audio/BGM/minigame_senibudaya_menari.mp3",
 	]
 	for path in should_loop:
@@ -258,6 +258,9 @@ func test_bgm_loop_tracks_actually_loop() -> void:
 		if stream is AudioStreamMP3:
 			assert_true((stream as AudioStreamMP3).loop,
 				"must loop (mp3): " + path)
+		elif stream is AudioStreamOggVorbis:
+			assert_true((stream as AudioStreamOggVorbis).loop,
+				"must loop (ogg): " + path)
 		elif stream is AudioStreamWAV:
 			assert_true((stream as AudioStreamWAV).loop_mode != AudioStreamWAV.LOOP_DISABLED,
 				"must loop (wav): " + path)
@@ -299,10 +302,10 @@ func test_bgm_chain_tracks_do_not_loop() -> void:
 		"res://Assets/Audio/BGM/lobby_song1.mp3",
 		"res://Assets/Audio/BGM/lobby_song2.mp3",
 		"res://Assets/Audio/BGM/lobby_song3.mp3",
-		"res://Assets/Audio/BGM/lobby_song4.mp3",
-		"res://Assets/Audio/BGM/minigame_akademis_1.wav",
-		"res://Assets/Audio/BGM/minigame_akademis_2.wav",
-		"res://Assets/Audio/BGM/minigame_akademis_3.wav",
+		"res://Assets/Audio/BGM/minigame_akademis_1.mp3",
+		"res://Assets/Audio/BGM/minigame_akademis_2.mp3",
+		"res://Assets/Audio/BGM/minigame_akademis_3.mp3",
+		"res://Assets/Audio/BGM/schoolsimulation_intro.ogg",
 	]
 	for path in should_not_loop:
 		var stream: AudioStream = load(path)
@@ -310,6 +313,9 @@ func test_bgm_chain_tracks_do_not_loop() -> void:
 		if stream is AudioStreamMP3:
 			assert_true(not (stream as AudioStreamMP3).loop,
 				"must NOT loop (mp3): " + path)
+		elif stream is AudioStreamOggVorbis:
+			assert_true(not (stream as AudioStreamOggVorbis).loop,
+				"must NOT loop (ogg): " + path)
 		elif stream is AudioStreamWAV:
 			assert_true((stream as AudioStreamWAV).loop_mode == AudioStreamWAV.LOOP_DISABLED,
 				"must NOT loop (wav): " + path)
@@ -431,7 +437,7 @@ func test_akademis_slot_is_exported() -> void:
 		"must expose export slot: bgm_minigame_akademis")
 
 
-func test_akademis_sequence_plays_in_fixed_order_and_wraps() -> void:
+func test_akademis_tracks_shuffle_without_repeating() -> void:
 	# NOTE: must be assigned through a locally-typed Array[AudioStream]
 	# rather than a bare `[...]` literal. _director is statically typed
 	# as Node (AudioDirector.gd has no class_name), so the assignment
@@ -446,32 +452,39 @@ func test_akademis_sequence_plays_in_fixed_order_and_wraps() -> void:
 	]
 	_director.bgm_minigame_akademis = tracks
 	_director.play_minigame_bgm(&"minigame_akademis")
-	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[0],
-		"must start at index 0")
-
-	_director._on_minigame_bgm_finished()
-	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[1],
-		"must advance to index 1")
-
-	_director._on_minigame_bgm_finished()
-	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[2],
-		"must advance to index 2")
-
-	_director._on_minigame_bgm_finished()
-	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[0],
-		"must wrap back to index 0")
+	assert_true(tracks.has(_director._bgm_minigame.stream),
+		"must start on one of the Akademis tracks")
+	for i in 20:
+		var before: AudioStream = _director._bgm_minigame.stream
+		_director._on_minigame_bgm_finished()
+		assert_true(tracks.has(_director._bgm_minigame.stream), "must stay in the set")
+		assert_true(_director._bgm_minigame.stream != before,
+			"must never repeat the track that just ended")
 
 
-func test_akademis_sequence_restarts_at_index_zero_on_fresh_play() -> void:
-	# See the typed-local note in test_akademis_sequence_plays_in_fixed_order_and_wraps.
-	var tracks: Array[AudioStream] = [_make_test_stream(), _make_test_stream()]
+func test_akademis_fresh_play_starts_on_a_random_track() -> void:
+	# See the typed-local note in test_akademis_tracks_shuffle_without_repeating.
+	var tracks: Array[AudioStream] = [
+		_make_test_stream(), _make_test_stream(), _make_test_stream()
+	]
 	_director.bgm_minigame_akademis = tracks
-	_director.play_minigame_bgm(&"minigame_akademis")
-	_director._on_minigame_bgm_finished()  # now at index 1
-	_director.stop_minigame_bgm(0.0)
-	_director.play_minigame_bgm(&"minigame_akademis")
-	assert_true(_director._bgm_minigame.stream == _director.bgm_minigame_akademis[0],
-		"a fresh minigame launch must restart the sequence at index 0")
+	var seen := {}
+	for i in 40:
+		_director.play_minigame_bgm(&"minigame_akademis")
+		seen[_director._bgm_minigame.stream] = true
+		_director.stop_minigame_bgm(0.0)
+	assert_true(seen.size() > 1, "a fresh launch must not always pick the same track")
+
+
+func test_simulation_intro_hands_over_to_its_loop() -> void:
+	var intro := _make_test_stream()
+	var loop := _make_test_stream()
+	_director.bgm_simulation = intro
+	_director.bgm_simulation_loop = loop
+	_director.play_bgm(&"simulation", 0.0)
+	assert_true(_director._bgm_active.stream == intro, "the day opens on the intro")
+	_director._on_bgm_finished(_director._bgm_active)
+	assert_true(_director._bgm_active.stream == loop, "the intro hands over to the loop")
 
 
 func test_non_akademis_minigame_finished_signal_is_a_no_op() -> void:
@@ -535,8 +548,8 @@ func test_lobby_playlist_finished_signal_advances_and_avoids_repeat() -> void:
 
 
 func test_bgm_finished_signal_is_a_no_op_outside_playlist_mode() -> void:
-	_director.bgm_simulation = _make_test_stream()
-	_director.play_bgm(&"simulation", 0.0)
+	_director.bgm_result_win = _make_test_stream()
+	_director.play_bgm(&"result_win", 0.0)
 	var stream_before: AudioStream = _director._bgm_active.stream
 	_director._on_bgm_finished(_director._bgm_active)
 	assert_true(_director._bgm_active.stream == stream_before,
@@ -796,3 +809,21 @@ func test_setup_ensures_its_buses_before_making_players() -> void:
 	assert_true(ensured >= 0, "_ready ensures the mixer buses")
 	assert_true(ensured < body.find("AudioStreamPlayer.new()"), "before the first player exists")
 	assert_true(src.contains("for bus in MIXER_BUSES:"), "every player-facing bus is covered")
+
+
+## The reward jingle plays 15% quieter than its file; other cues stay at 0 dB.
+func test_reward_cue_is_trimmed_to_its_volume_knob() -> void:
+	assert_eq(_director.sfx_reward_volume, 0.85, "reward plays at 85%")
+	assert_true(is_equal_approx(_director._sfx_volume_db(&"reward"), linear_to_db(0.85)))
+	assert_eq(_director._sfx_volume_db(&"tap"), 0.0, "other cues are untrimmed")
+
+
+## The weekly report plays the reward jingle once: the week-end feedback that
+## runs just before it must not play it too.
+func test_week_end_does_not_double_the_report_reward() -> void:
+	var src := FileAccess.get_file_as_string("res://Scripts/Feedback/RewardFeedback.gd")
+	for line in src.split("\n"):
+		if line.contains('&"week_cleared":'):
+			assert_false(line.contains('&"reward"'), "week_cleared must not play reward")
+	var report := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/ResultCheckup.gd")
+	assert_eq(report.count('play_sfx(&"reward")'), 1, "the report plays reward once")

@@ -2,7 +2,7 @@
 
 Godot **4.6** mobile game, portrait 1080×1920, `mobile` renderer, Vulkan.
 Indonesian-language school-management sim. Main scene:
-`Scenes/MainMenu/MainMenu.tscn`.
+`Scenes/Boot/BootLogo.tscn` (the minusone_logo video on black → MainMenu).
 
 ## The game
 
@@ -26,7 +26,7 @@ Weeks and target uplift are `GameState.WEEKS_BY_GRADE` and
 `TARGET_UPLIFT_BY_GRADE` (ours, paired); `Balance.JUMLAH_MINGGU_KELAS_*` (6/12/16),
 `TARGET_KENAIKAN_KELAS_*` (15/34/40) and `STAR_WIN_THRESHOLD` (2.0) are unread.
 
-**Loop:** **MainMenu (boot; with a save, ContinuePopup → Lobby/SchoolDay/StudentCard)** → LevelSelect (the amplop grade picker, while
+**Loop:** BootLogo → **MainMenu (with a save, ContinuePopup → Lobby/SchoolDay/StudentCard)** → LevelSelect (the amplop grade picker, while
 `GameState.is_level_select_enabled()`) → CutScene → StudentCard (approve roster) →
 **Lobby (hub)** → AturJadwal (assign week; StudentList is its picker) → SchoolDay
 (simulate 5 days) → ResultCheckup → Lobby. On a grade's final week SchoolDay then
@@ -118,6 +118,9 @@ and Debug's **🧹 Forget Session** wipe run, save, achievements.
 
 `-REFERENCE-/prototype/` is the original prototype — reference only, not built,
 not imported.
+
+**Builds:** run `tools/shrink_apk.ps1` (Android) or `tools/shrink_web.ps1`
+(Web) on exports: `docs/superpowers/apk-build.md`.
 
 ## Visual system — read this before touching any UI
 
@@ -218,8 +221,9 @@ Hard constraints:
    effects in `_ready()` gated behind `if Engine.is_editor_hint(): return`.
    Pure signal wiring stays ungated so tests can exercise it.
 4. Some suites assume the **main scene is open** in the editor; `test_run`
-   returns a `scene_warning` when it isn't, naming the scene it wants. Open
-   `Scenes/MainMenu/MainMenu.tscn` before trusting a failure.
+   returns a `scene_warning` when it isn't. Open
+   `Scenes/MainMenu/MainMenu.tscn` before trusting a failure; the warning
+   names BootLogo (the run/main_scene), which the suites do not need.
 
 5. **The suite cannot be run headless** — the bridge is the only way.
    (`--script` registers no autoloads; a scene run un-gates every `@tool` guard.)
@@ -403,7 +407,8 @@ it costs context on every single run, so it earns its place or it moves.
 
 ## Conventions
 
-- Game-facing identifiers and all UI text are **Indonesian**; engine and systems code
+- Game-facing identifiers and all UI text are **Indonesian** (one owner-approved
+  exception: Settings' CREDITS tab is English, 2026-10-03); engine and systems code
   is English. Match whatever the surrounding file does. Player-facing Indonesian
   must read naturally and use KBBI-standard words.
 - **File names:** PascalCase `.gd`/`.tscn`; assets `A–Z a–z 0–9 _ - .`

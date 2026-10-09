@@ -36,7 +36,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 48
-theme_override_constants/margin_top = 48
+theme_override_constants/margin_top = 132
 theme_override_constants/margin_right = 48
 theme_override_constants/margin_bottom = 48
 script = ExtResource("2_safe")
@@ -46,7 +46,7 @@ extra_margin = Vector4(0, 84, 0, 0)
 unique_name_in_owner = true
 layout_mode = 2
 title_text = "PENGATURAN"
-tabs = PackedStringArray("SUARA", "MAIN")
+tabs = PackedStringArray("SUARA", "MAIN", "CREDITS")
 
 [node name="Scroll" type="ScrollContainer" parent="SafeArea/Frame" unique_id=1222065779]
 layout_mode = 2
@@ -215,6 +215,15 @@ label_text = "Grafis HD"
 layout_mode = 2
 theme_type_variation = &"SettingsDivider"
 
+[node name="BatterySaverRow" parent="SafeArea/Frame/Scroll/Pad/Sections/DisplayCard/Margin/VBox" unique_id=741017960 instance=ExtResource("5_row")]
+unique_name_in_owner = true
+layout_mode = 2
+label_text = "Hemat Baterai"
+
+[node name="RuleBattery" type="HSeparator" parent="SafeArea/Frame/Scroll/Pad/Sections/DisplayCard/Margin/VBox" unique_id=227882630]
+layout_mode = 2
+theme_type_variation = &"SettingsDivider"
+
 [node name="LookLayerRow" parent="SafeArea/Frame/Scroll/Pad/Sections/DisplayCard/Margin/VBox" unique_id=614151840 instance=ExtResource("5_row")]
 unique_name_in_owner = true
 layout_mode = 2
@@ -272,6 +281,228 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"DangerButton"
 text = "Reset Progres"
+
+[node name="CreditsCard" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections" unique_id=1612006047]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard" unique_id=594226976]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin" unique_id=1026249951]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="SectionLabel" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=589394841]
+layout_mode = 2
+theme_type_variation = &"CardSectionLabel"
+text = "CREDITS"
+
+[node name="GameTitle" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=604739221]
+layout_mode = 2
+theme_type_variation = &"CreditTitleLabel"
+text = "KEJARTES"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Gap1" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1349307568]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoleProgrammer" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1073665680]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "PROGRAMMER & UI DESIGNER"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NameEleazar" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1742920718]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "Eleazar Evan Putra"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NameHosea" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=839385211]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "Hosea Juan Kurniawan"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NamePanji" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=100764891]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "I Made Panji Putra"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Gap2" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1392028388]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoleIllustrator" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=616045958]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "CHARACTER DESIGN & ILLUSTRATOR"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NameAbdullah" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=366897806]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "Abdullah A'asiq Satria"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Gap3" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=178519026]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoleBackground" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=872338000]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "BACKGROUND ARTIST & MULTIMEDIA"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NameAlbertus" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1322109047]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "Albertus Akmel Bintang Prasetya"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Gap4" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=670093262]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoleMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1465534064]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "MUSIC"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ArtistFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1439194220]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "fiikuri"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackFiikuri" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1031388756]
+layout_mode = 2
+theme_type_variation = &"CreditMusicLabel"
+text = "\"Epic Nusantara\" · Title Screen"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GapPair1" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1771525700]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ArtistSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=348143400]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "sounovamusic"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackSounova" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1828764480]
+layout_mode = 2
+theme_type_variation = &"CreditMusicLabel"
+text = "\"Nusantara Calling\" · Win Results"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GapPair2" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1333203068]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ArtistExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1337256387]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "extenz"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackExtenz" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=174062446]
+layout_mode = 2
+theme_type_variation = &"CreditMusicLabel"
+text = "Game Over Music · Lose Results"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GapPair4" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1164585220]
+custom_minimum_size = Vector2(0, 12)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ArtistJulius" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1370779619]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "JuliusH"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TrackJulius" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1293607622]
+layout_mode = 2
+theme_type_variation = &"CreditMusicLabel"
+text = "Intro Theme · Opening Cutscene"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Gap5" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1712951561]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="RoleThanks" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=411965459]
+layout_mode = 2
+theme_type_variation = &"CreditRoleLabel"
+text = "SPECIAL THANKS"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NameYosua" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1503915123]
+layout_mode = 2
+theme_type_variation = &"CreditNameLabel"
+text = "Yosua Coyo Wagito"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="YosuaHandle" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1562815194]
+layout_mode = 2
+theme_type_variation = &"CreditDetailLabel"
+text = "griseyo on Spotify"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GapPair3" type="Control" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=1691881760]
+custom_minimum_size = Vector2(0, 8)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="YosuaMusic" type="Label" parent="SafeArea/Frame/Scroll/Pad/Sections/CreditsCard/Margin/VBox" unique_id=721517024]
+layout_mode = 2
+theme_type_variation = &"CreditMusicLabel"
+text = "for the music of
+Lobby (3 songs) · School Day
+Academic Minigames (3 songs) · Sports Minigames
+Batik Making · Dance Contest"
+horizontal_alignment = 1
+autowrap_mode = 3
 
 [node name="ResetProgressPopup" parent="." unique_id=949575835 instance=ExtResource("6_kg15k")]
 unique_name_in_owner = true

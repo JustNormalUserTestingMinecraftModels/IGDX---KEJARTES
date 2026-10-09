@@ -24,6 +24,7 @@ extends Control
 @onready var _tutorial: CheckButton = %TutorialRow.toggle
 @onready var _skip_dialog: CheckButton = %SkipDialogRow.toggle
 @onready var _hd_graphics: CheckButton = %HdGraphicsRow.toggle
+@onready var _battery_saver: CheckButton = %BatterySaverRow.toggle
 @onready var _look_layer: CheckButton = %LookLayerRow.toggle
 @onready var _ambient: CheckButton = %AmbientRow.toggle
 @onready var _haptics: CheckButton = %HapticsRow.toggle
@@ -36,6 +37,8 @@ extends Control
 const TAB_SUARA := 0
 ## The MAIN tab: the gameplay and display switches.
 const TAB_MAIN := 1
+## The KREDIT tab: the team credits.
+const TAB_KREDIT := 2
 
 ## Where Back goes unless the opener says otherwise, and the one opening whose
 ## music this screen starts itself.
@@ -70,6 +73,7 @@ func _ready() -> void:
 	_tutorial.button_pressed = GameSettings.minigame_tutorial_enabled
 	_skip_dialog.button_pressed = GameSettings.skip_event_dialogue
 	_hd_graphics.button_pressed = GameSettings.hd_graphics_enabled
+	_battery_saver.button_pressed = GameSettings.battery_saver_enabled
 	_look_layer.button_pressed = GameSettings.look_layer_enabled
 	_ambient.button_pressed = GameSettings.ambient_effects_enabled
 	_haptics.button_pressed = GameSettings.haptics_enabled
@@ -81,6 +85,7 @@ func _ready() -> void:
 	_tutorial.toggled.connect(_on_tutorial_toggled)
 	_skip_dialog.toggled.connect(_on_skip_dialog_toggled)
 	_hd_graphics.toggled.connect(_on_hd_graphics_toggled)
+	_battery_saver.toggled.connect(_on_battery_saver_toggled)
 	_look_layer.toggled.connect(_on_look_layer_toggled)
 	_ambient.toggled.connect(_on_ambient_toggled)
 	_haptics.toggled.connect(_on_haptics_toggled)
@@ -109,7 +114,7 @@ func _ready() -> void:
 
 
 ## Show tab `index`'s sections: SUARA holds AudioCard, MAIN the gameplay,
-## display and data cards. Also keeps _frame.active_tab in step, which only refreshes
+## display and data cards, KREDIT the credits. Also keeps _frame.active_tab in step, which only refreshes
 ## the tab strip's look (its setter never emits tab_selected, so this never
 ## loops back through the connection above). Public so the tests can switch
 ## tabs without a press.
@@ -118,6 +123,7 @@ func show_tab(index: int) -> void:
 	%GameplayCard.visible = index == TAB_MAIN
 	%DisplayCard.visible = index == TAB_MAIN
 	%DataCard.visible = index == TAB_MAIN
+	%CreditsCard.visible = index == TAB_KREDIT
 	_frame.active_tab = index
 
 
@@ -161,6 +167,14 @@ func _on_skip_dialog_toggled(pressed: bool) -> void:
 ## Saved.
 func _on_hd_graphics_toggled(pressed: bool) -> void:
 	GameSettings.hd_graphics_enabled = pressed
+	if not Engine.is_editor_hint():
+		GameSettings.save_settings()
+
+
+## "Hemat Baterai": caps the frame rate at 30 so the phone stays cooler. Off
+## by default. Setting the property applies the cap at once. Saved.
+func _on_battery_saver_toggled(pressed: bool) -> void:
+	GameSettings.battery_saver_enabled = pressed
 	if not Engine.is_editor_hint():
 		GameSettings.save_settings()
 

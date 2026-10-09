@@ -8,6 +8,27 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-02 — Web build for itch.io
+
+- **Why gzip in place:** itch.io caps a file at 200 MB and the web export's raw `index.pck` is 585.6 MB (desktop and phone textures both packed). itch.io serves gzip content with `content-encoding: gzip` under the file's own name, so `tools/shrink_web.ps1` gzips `*.pck`, `*.wasm` and `*.js` in place, proves each unpacks to a byte-identical original, checks the 200 MB limit and zips the folder for upload. The pck went to 172.8 MB, the zip is 181.8 MB.
+- **Tests:** `tools/test_shrink_web.ps1` (a fake export: over-limit run, good run, repeat run). No Godot suite change; no game code changed.
+- **Verified:** the gzipped build, served the way itch.io serves it, boots in a desktop browser under the Compatibility renderer; the title, grade picker, Lobby, Settings and the Main Bola minigame render. The preset lives per PC (`apk-build.md`, "Web build").
+- **Not verified:** phone browsers (the runtime loads the raw ~586 MB pck into memory), SchoolDay, EndCutscene, audio, and a side-by-side with the Mobile renderer. The web console logs "2D MSAA is not yet supported for GLES3" (the renderer ignores `msaa_2d`).
+
+## 2026-10-02 — 60 fps cap and Hemat Baterai
+
+- **Why the phone ran warm:** nothing capped the frame rate, so a 90 or 120 Hz phone rendered up to 120 fps, even on still menus. Grafis HD (MSAA and bloom) already had a switch; the frame rate had none.
+- **Now:** `application/run/max_fps=60` for everyone, plus a **Hemat Baterai** switch in Settings (TAMPILAN, under Grafis HD) that drops it to 30. `GameSettings.battery_saver_enabled` (default off, saved) applies `Engine.max_fps` itself on load and on every flip and emits `battery_saver_changed`. The debug Look panel has a matching switch. Grafis HD is unchanged and independent.
+- **Not done:** automatic thermal or battery-based quality (Godot cannot read the phone's temperature); `low_processor_mode` (the game animates constantly). Spec `specs/2026-10-02-battery-saver-design.md`.
+- **Hand-edited scene:** the row was added to `Settings.tscn` as text with the editor closed, because a `scene_save` from the editor also baked three `@tool` values (top margin 48 to 132, two audio slider values) into the file.
+
+## 2026-10-02 — APK shrunk after export
+
+- **Why it was 387 MB:** Godot's Android exporter stores every `.ctex` uncompressed, and the 132 VRAM (ASTC) textures were 247 MB of it; that build also carried the 32-bit engine.
+- **Now:** `tools/shrink_apk.ps1` repacks the exported APK with `.ctex` deflated (`tools/ShrinkApk.java`), aligns it (`zipalign -P 16`), re-signs it with Godot's debug key and proves every entry byte-identical. The 2026-09-30 APK went from 387.3 MB to 182.4 MB. Same pixels and GPU memory; the art and audio are untouched.
+- **Builds:** debug for the team, release (no debug overlay) for players, both arm64-only and signed with the exporting PC's debug key (another PC's build will not install over it; `apk-build.md` says how to share one key). How-to and per-PC setup: `docs/superpowers/apk-build.md`; design `specs/2026-10-02-apk-size-design.md`.
+- **Rejected:** lossy/WebP art (4x GPU memory), Basis Universal, a Gradle build, audio re-encodes.
+
 ## 2026-10-01 — APK launcher icon
 
 - **Why the icon never showed:** `project.godot` still pointed at Godot's default `icon.svg`, and both Android presets left every `launcher_icons/*` slot empty, so the APK shipped the export template's robot.

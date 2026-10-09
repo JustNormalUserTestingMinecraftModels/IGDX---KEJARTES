@@ -58,3 +58,38 @@ func test_chart_validity() -> void:
 	chart.events = []
 	chart.bpm = 0.0
 	assert_false(chart.is_valid(), "bpm must be positive")
+
+
+const MENARI_PATH := "res://Scripts/Minigames/SeniBudaya/LombaMenari.gd"
+const CHART_PATH := "res://Resources/Minigames/Charts/SeniTari.tres"
+
+
+func test_the_random_pattern_spawner_is_gone() -> void:
+	var src := FileAccess.get_file_as_string(MENARI_PATH)
+	for gone: String in ["rhythm_patterns", "next_spawn_time", "_spawn_rhythm_beat",
+			"active_pattern_index", "pattern_step_index", "note_speed = 220.0",
+			"note_speed = 270.0", "note_speed = 320.0"]:
+		assert_false(src.contains(gone), "LombaMenari still carries " + gone)
+
+
+func test_notes_spawn_off_the_song_position_and_the_chart() -> void:
+	var src := FileAccess.get_file_as_string(MENARI_PATH)
+	assert_true(src.contains("AudioDirector.get_minigame_bgm_position()"), "reads the live song")
+	assert_true(src.contains("DanceSync.events_due("), "walks the chart cursor")
+	assert_true(src.contains("DanceSync.note_speed_for("), "speed comes from the bpm")
+	assert_true(src.contains("@export var chart: DanceChart"), "the chart is an inspector slot")
+
+
+func test_grades_differ_by_score_target_only() -> void:
+	var src := FileAccess.get_file_as_string(MENARI_PATH)
+	for target: String in ["target_score = 1500", "target_score = 2000", "target_score = 2500"]:
+		assert_true(src.contains(target), "the score target stays: " + target)
+	assert_true(src.contains("MISS_LIMIT_BY_DIFFICULTY: Dictionary = { 1: 10, 2: 8, 3: 6 }"),
+		"owner kept the per-grade miss limit (2026-10-09)")
+
+
+func test_the_shipped_chart_is_valid() -> void:
+	var chart := load(CHART_PATH) as DanceChart
+	assert_true(chart != null, "the chart loads as a DanceChart")
+	assert_true(chart.is_valid(), "and is sorted, typed and has a tempo")
+	assert_true(chart.events.size() > 0, "and has arrows")

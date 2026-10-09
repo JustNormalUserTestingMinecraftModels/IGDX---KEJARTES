@@ -1,7 +1,8 @@
 extends BaseMinigame
 
-## SeniBudaya minigame: a 4-direction rhythm game. Notes spawn per
-## rhythm_patterns and travel toward the hit zone; the player swipes the
+## SeniBudaya minigame: a 4-direction rhythm game. Notes spawn on the beat of
+## the track, from `chart` (DanceChart, via DanceSync), and travel toward the
+## hit zone; the player swipes the
 ## matching direction (LEFT/RIGHT/TOP_LEFT/TOP_RIGHT) as each one arrives.
 ## The dancer character's pose reflects the most recent swipe result.
 ##
@@ -197,51 +198,30 @@ var current_combo: int = 0
 ## balance pass once real playtest numbers exist.
 var best_combo: int = 0
 
-var next_spawn_time: float = 1.0
 var time_elapsed: float = 0.0
 
 var active_notes: Array = []
 var note_speed: float = 220.0 # Lower speed for balanced reaction time
 
-# Rhythm pattern sequence configuration (no simultaneous opposite notes)
-var rhythm_patterns: Array = [
-	# Pattern 1: Basic Groove (Single beat sequence)
-	[
-		{"types": [NoteType.LEFT], "interval": 1.2},
-		{"types": [NoteType.RIGHT], "interval": 1.2},
-		{"types": [NoteType.TOP_LEFT], "interval": 1.2},
-		{"types": [NoteType.TOP_RIGHT], "interval": 1.6}
-	],
-	# Pattern 2: Rapid Staggered Steps (Left -> Top-Left -> Top-Right -> Right)
-	[
-		{"types": [NoteType.LEFT], "interval": 0.8},
-		{"types": [NoteType.TOP_LEFT], "interval": 0.8},
-		{"types": [NoteType.TOP_RIGHT], "interval": 0.8},
-		{"types": [NoteType.RIGHT], "interval": 1.6}
-	],
-	# Pattern 3: Corner Pair Steps (Compatible adjacent pairs)
-	[
-		{"types": [NoteType.LEFT, NoteType.TOP_LEFT], "interval": 1.5},
-		{"types": [NoteType.RIGHT, NoteType.TOP_RIGHT], "interval": 1.8}
-	],
-	# Pattern 4: Syncopated Single Beats
-	[
-		{"types": [NoteType.TOP_LEFT], "interval": 0.7},
-		{"types": [NoteType.RIGHT], "interval": 1.1},
-		{"types": [NoteType.TOP_RIGHT], "interval": 0.7},
-		{"types": [NoteType.LEFT], "interval": 1.6}
-	],
-	# Pattern 5: Dance Wave (Flowing across the stage)
-	[
-		{"types": [NoteType.LEFT], "interval": 0.7},
-		{"types": [NoteType.RIGHT], "interval": 0.7},
-		{"types": [NoteType.LEFT], "interval": 1.2},
-		{"types": [NoteType.TOP_RIGHT], "interval": 1.6}
-	]
-]
+@export_group("Beat Sync")
+## The beat chart the arrows follow (Resources/Minigames/Charts/SeniTari.tres).
+## Every grade plays the same chart; only target_score differs.
+@export var chart: DanceChart = preload("res://Resources/Minigames/Charts/SeniTari.tres")
+## How many beats a note is on screen before it lands; note speed follows from
+## the chart's bpm, so a faster song moves notes faster and they still land on
+## the beat.
+@export_range(0.5, 8.0, 0.25) var lead_beats: float = 2.0
 
-var active_pattern_index: int = 0
-var pattern_step_index: int = 0
+## How far off the hit zone's centre a note spawns, as a share of the
+## viewport's longer side.
+const SPAWN_DISTANCE_RATIO := 0.55
+
+## Where the chart cursor stands: the next event not yet spawned or skipped.
+var _chart_cursor: int = 0
+## Last frame's song position, to catch the track looping.
+var _last_song_pos: float = 0.0
+## The song clock used when no track plays (a standalone or debug launch).
+var _own_clock: float = 0.0
 
 @onready var background_rect: TextureRect = %Background
 @onready var score_hud: MinigameHeader = %MinigameHeader
@@ -302,15 +282,17 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 	good_hits = 0
 	missed_notes = 0
 	miss_limit = miss_limit_for(difficulty)
+	# Grades differ by score target only: every grade plays the same chart.
 	if difficulty == 2:
 		target_score = 2000
-		note_speed = 270.0
 	elif difficulty >= 3:
 		target_score = 2500
-		note_speed = 320.0
 	else:
 		target_score = 1500
-		note_speed = 220.0
+	_chart_cursor = 0
+	_last_song_pos = 0.0
+	_own_clock = 0.0
+	note_speed = DanceSync.note_speed_for(_spawn_distance(), chart.bpm, lead_beats)
 	
 	current_combo = 0
 	best_combo = 0
@@ -325,8 +307,6 @@ func start_minigame(game_difficulty: int, _time_limit: float = 30.0) -> void:
 			character_display.resized.connect(_anchor_dancer_pivot)
 		_set_dancer_idle()
 	
-	# Start spawning beats
-	next_spawn_time = 1.0
 
 ## Pins the dancer's scaling origin to her feet -- bottom-centre, not the
 ## middle. A standing figure scaled about its centre drifts up and down as
@@ -362,9 +342,8 @@ func _process(delta: float) -> void:
 		
 	time_elapsed += delta
 	
-	# Spawn notes procedurally based on rhythm pattern
-	if time_elapsed >= next_spawn_time:
-		_spawn_rhythm_beat()
+	# Spawn every chart beat whose arrow must leave now to land on time.
+	_spawn_due_beats(_song_position(delta))
 		
 	# The FNF note camera. It leans toward each successful arrow, and the
 	# stage -- backdrop and dancer -- slides the other way, as the world does
@@ -432,27 +411,37 @@ func _process(delta: float) -> void:
 	if missed_notes >= miss_limit:
 		lose_game()
 
-func _spawn_rhythm_beat() -> void:
-	if rhythm_patterns.is_empty():
+## The song's position now: the minigame track's latency-corrected position, or
+## this run's own clock when no track plays.
+func _song_position(delta: float) -> float:
+	_own_clock += delta
+	if AudioDirector.is_minigame_bgm_playing():
+		return AudioDirector.get_minigame_bgm_position()
+	return _own_clock
+
+
+## Spawns every chart event whose arrow must leave now to land on its beat. A
+## loop of the track restarts the chart; beats that went by under the countdown
+## or a pause are skipped (DanceSync.STALE_SECONDS).
+func _spawn_due_beats(song_pos: float) -> void:
+	if chart == null or chart.events.is_empty():
 		return
-		
-	var pattern = rhythm_patterns[active_pattern_index]
-	var beat_info = pattern[pattern_step_index]
-	
-	# Spawn notes for this beat
-	for type in beat_info["types"]:
-		_spawn_single_note(type)
-		
-	# Schedule next beat time based on the rhythm pattern's interval
-	var next_interval: float = beat_info.get("interval", 1.2)
-	next_spawn_time = time_elapsed + next_interval
-	
-	# Advance pattern step
-	pattern_step_index += 1
-	if pattern_step_index >= pattern.size():
-		pattern_step_index = 0
-		# Pick next pattern
-		active_pattern_index = (active_pattern_index + randi_range(1, rhythm_patterns.size() - 1)) % rhythm_patterns.size()
+	if DanceSync.wrapped(_last_song_pos, song_pos):
+		_chart_cursor = 0
+	_last_song_pos = song_pos
+	var travel := _spawn_distance() / note_speed
+	var step := DanceSync.events_due(chart.events, _chart_cursor, song_pos, travel,
+			chart.bpm, chart.first_beat_offset)
+	_chart_cursor = step["cursor"]
+	for event: Dictionary in step["due"]:
+		_spawn_single_note(event["type"])
+
+
+## How far off the hit zone's centre a note spawns, in pixels.
+func _spawn_distance() -> float:
+	var view := get_viewport_rect().size
+	return maxf(view.x, view.y) * SPAWN_DISTANCE_RATIO
+
 
 func _spawn_single_note(type: int) -> void:
 	var note: Control = NOTE_SCENE.instantiate()
@@ -497,7 +486,7 @@ func _spawn_single_note(type: int) -> void:
 	arrow.self_modulate = tint
 	
 	# Compute spawn position far enough away along the reverse movement direction
-	var spawn_distance = max(get_viewport_rect().size.x, get_viewport_rect().size.y) * 0.55
+	var spawn_distance := _spawn_distance()
 	var spawn_center = hz_center - move_dir * spawn_distance
 	note.global_position = spawn_center - note_size / 2.0
 	

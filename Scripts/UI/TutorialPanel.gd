@@ -50,6 +50,9 @@ const DEFAULT_PROMPT := "KETUK DI MANA SAJA UNTUK LANJUT"
 const ArrowScript := preload("res://Scripts/TutorialArrow.gd")
 ## How far the spotlight hole stands off the control it frames, in pixels.
 const SPOT_PADDING := 12.0
+## Seconds between two characters of the typewriter reveal: about 30 ms a
+## character (spec 2026-10-07 section 3b). A tap fills the line at once (skip_typing).
+const TYPE_INTERVAL := 0.03
 ## The share of its own alpha a control keeps while a wrong tap dims it.
 const DIM_ALPHA := 0.4
 ## Meta on a control a wrong tap has dimmed: the modulate it had before, which
@@ -92,6 +95,16 @@ enum Mode {
 @export var beat_sticker_text: String = "PENGUMUMAN":
 	set(value):
 		beat_sticker_text = value
+		if is_inside_tree():
+			_apply_mode()
+
+## The title on the frame's sticker while a task heads the card: an
+## instruction the player must carry out (the grade 8/9 roster pick), as
+## opposed to a lesson (TUTORIAL) or a story beat (PENGUMUMAN). show_step()
+## wears it when called with `task` true.
+@export var task_sticker_text: String = "TUGAS":
+	set(value):
+		task_sticker_text = value
 		if is_inside_tree():
 			_apply_mode()
 
@@ -191,6 +204,11 @@ var _content_shown := false
 var _step_tween: Tween
 ## The entrance spring play_in() started, while it plays. play_out() kills it.
 var _entrance_tween: Tween
+## The typewriter reveal of the body, while it plays.
+var _type_tween: Tween
+## True while the card shows a task (show_step() with `task`): its sticker
+## reads task_sticker_text instead of step_sticker_text.
+var _task := false
 
 
 func _ready() -> void:
@@ -198,6 +216,9 @@ func _ready() -> void:
 	title_label.theme_type_variation = title_variation
 	body_label.theme_type_variation = body_variation
 	prompt_label.theme_type_variation = prompt_variation
+	# Hidden characters keep their room, so a card placed for a typed line is
+	# already the size of the whole line and does not grow as it types.
+	body_label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	_apply_prompt_tint()
 	_apply_mode()
 	_apply_geometry()
@@ -249,7 +270,9 @@ func _apply_prompt_tint() -> void:
 func _apply_mode() -> void:
 	step_pill.visible = mode == Mode.STEP and _pill_wanted
 	name_plate.visible = mode == Mode.HEADMASTER
-	var sticker := step_sticker_text if mode == Mode.STEP else beat_sticker_text
+	var sticker := beat_sticker_text
+	if mode == Mode.STEP:
+		sticker = task_sticker_text if _task else step_sticker_text
 	if frame.title_text != sticker:
 		frame.title_text = sticker
 
@@ -260,30 +283,75 @@ func _apply_mode() -> void:
 ## `step` is 1-based; a `step_count` of one or less (the default) hides the
 ## pill, so a caller with one step, or one that predates the pill, shows
 ## none. Switches the card back to STEP mode, so a panel that just showed a
-## beat can go on to teach.
+## beat can go on to teach. A `task` step (an instruction the player carries
+## out, like the grade 8/9 pick) wears task_sticker_text. The body types
+## itself out (type_line).
 func show_step(title: String, body: String, prompt: String, step: int = 0,
-		step_count: int = 0) -> void:
+		step_count: int = 0, task: bool = false) -> void:
 	_set_texts(title, body, prompt)
+	_task = task
 	_pill_wanted = step_count > 1
 	if _pill_wanted:
 		step_label.text = STEP_PILL_FORMAT % [step, step_count]
 	mode = Mode.STEP
 	_play_step_change()
+	type_line(body)
 
 
 ## Fills all three labels for one line of a headmaster beat and shows the
 ## name plate reading `speaker`. Switches the card to HEADMASTER mode.
 func show_beat(speaker: String, title: String, body: String, prompt: String) -> void:
 	_set_texts(title, body, prompt)
+	_task = false
 	speaker_label.text = speaker
 	mode = Mode.HEADMASTER
 	_play_step_change()
+	type_line(body)
 
 
 func _set_texts(title: String, body: String, prompt: String) -> void:
 	title_label.text = title
 	body_label.text = body
 	prompt_label.text = prompt
+
+
+## Types `text` into the body one character every TYPE_INTERVAL seconds. A
+## tap mid-line belongs to skip_typing(), the next to the caller's advance
+## (is_typing() tells them apart). The line shows whole at once when Settings'
+## Lewati Dialog is on (GameSettings.skip_event_dialogue), in the editor, and
+## outside the tree. Hidden characters keep their room
+## (VC_CHARS_AFTER_SHAPING, set in _ready), so the card does not grow.
+func type_line(text: String) -> void:
+	_stop_typing()
+	body_label.text = text
+	body_label.visible_characters = -1
+	if text.is_empty() or GameSettings.skip_event_dialogue \
+			or Engine.is_editor_hint() or not is_inside_tree():
+		return
+	var count := body_label.get_total_character_count()
+	body_label.visible_characters = 0
+	_type_tween = create_tween()
+	_type_tween.tween_property(body_label, "visible_characters", count,
+			float(count) * TYPE_INTERVAL).from(0)
+	_type_tween.tween_callback(func() -> void: body_label.visible_characters = -1)
+
+
+## Fills the line being typed at once and stops the reveal. Safe to call when
+## nothing is typing.
+func skip_typing() -> void:
+	_stop_typing()
+	body_label.visible_characters = -1
+
+
+## True while type_line() is still revealing the body.
+func is_typing() -> bool:
+	return _type_tween != null and _type_tween.is_valid() and _type_tween.is_running()
+
+
+func _stop_typing() -> void:
+	if _type_tween != null and _type_tween.is_valid():
+		_type_tween.kill()
+	_type_tween = null
 
 
 ## The entrance: the card springs up from a little under full size with a

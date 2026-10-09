@@ -972,3 +972,49 @@ func test_an_empty_fill_leaves_the_first_real_fill_to_come() -> void:
 	assert_false(panel._content_shown, "mount()'s empty fill is not the card's first fill")
 	panel.show_beat("Pak Kepala Sekolah", "Judul", "Isi", TutorialPanel.DEFAULT_PROMPT)
 	assert_true(panel._content_shown, "the first real fill is")
+
+
+# ------------------------------------------- 2026-10-07 Nota Guru overhaul
+
+## Task 1: the body types itself out (~30 ms a character), a tap fills it at
+## once, and the instruction ribbon (TUGAS) joins TUTORIAL and PENGUMUMAN.
+func test_panel_exposes_typewriter_and_task_sticker() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_true(src.contains("func type_line("), "type_line() must exist")
+	assert_true(src.contains("func skip_typing("), "skip_typing() must exist")
+	assert_true(src.contains("func is_typing("), "is_typing() must exist")
+	assert_true(src.contains("task_sticker_text"), "TUGAS ribbon mode must exist")
+
+
+## The typewriter honours Settings' Lewati Dialog toggle, and a typed line
+## keeps its shaped size, so the card is placed for the whole line up front.
+func test_typewriter_honours_skip_setting_and_keeps_its_size() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_contains(_function_source(src, "type_line"), "GameSettings.skip_event_dialogue",
+		"Lewati Dialog fills the line at once")
+	assert_contains(src, "const TYPE_INTERVAL := 0.03", "about 30 ms a character")
+	assert_contains(src, "VC_CHARS_AFTER_SHAPING", "the hidden characters still take their room")
+
+
+## skip_typing() fills the line and stops the reveal; a panel outside the tree
+## types nothing and is never mid-line.
+func test_skip_typing_fills_the_line() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	panel.type_line("Halo, Pak Guru!")
+	panel.skip_typing()
+	assert_false(panel.is_typing(), "a skipped line is not typing")
+	assert_eq(panel.body_label.visible_characters, -1, "every character shows")
+	assert_eq(panel.body_label.text, "Halo, Pak Guru!", "the whole line is there")
+
+
+## A task card (the grade 8/9 pick instruction) wears TUGAS, a lesson TUTORIAL.
+func test_task_steps_wear_the_tugas_ribbon() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	panel.show_step("Pilih", "Pilih satu murid lagi.", TutorialPanel.DEFAULT_PROMPT, 0, 0, true)
+	assert_eq(panel.frame.title_text, panel.task_sticker_text, "a task wears TUGAS")
+	panel.show_step("Mood", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT)
+	assert_eq(panel.frame.title_text, panel.step_sticker_text, "a lesson wears TUTORIAL")

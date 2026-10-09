@@ -1056,3 +1056,30 @@ func test_nota_guru_decor_lets_taps_through() -> void:
 		if node != null:
 			assert_eq(node.mouse_filter, Control.MOUSE_FILTER_IGNORE, name + " ignores taps")
 	inst.free()
+
+
+## Task 3: one focal box. The note tucks away (slides down and fades) before a
+## game pop-up opens and comes back when it closes; the coach layer sits below
+## game pop-ups as the backstop.
+func test_panel_has_tuck_and_sits_below_popups() -> void:
+	var src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
+	assert_true(src.contains("func tuck("), "tuck() must exist for the focal-box handoff")
+	assert_true(src.to_lower().contains("below") or src.contains("z_index"),
+		"panel must document sitting below game popups")
+
+
+## In the editor (no motion) a tuck lands at once: hidden and invisible, then
+## back where it was and opaque.
+func test_tuck_hides_and_restores_the_card() -> void:
+	var panel: TutorialPanel = (load(SCENE_PATH) as PackedScene).instantiate()
+	Engine.get_main_loop().root.add_child(panel)
+	track(panel)
+	panel.position = Vector2(40, 900)
+	panel.modulate.a = 1.0
+	panel.tuck(true)
+	assert_true(panel.is_tucked(), "a tucked card says so")
+	assert_eq(panel.modulate.a, 0.0, "and cannot be seen")
+	panel.tuck(false)
+	assert_false(panel.is_tucked(), "an untucked card is back")
+	assert_eq(panel.position, Vector2(40, 900), "where it was")
+	assert_eq(panel.modulate.a, 1.0, "and opaque")

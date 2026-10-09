@@ -35,6 +35,14 @@ extends MarginContainer
 ## forced step does with a tap on the wrong control, which used to be nothing
 ## at all. rect_in() and spot_in() turn controls into the rectangles those
 ## work from.
+##
+## ONE FOCAL BOX (spec 2026-10-07 section 3c). The note and a game pop-up
+## (TraitDetailPopup, the stat popup) are never on screen together: the caller
+## calls tuck(true) before it opens the pop-up -- the note slides down and
+## fades -- and tuck(false) when the pop-up closes. As the backstop, a
+## screen's coach layer sits BELOW its game pop-ups (StudentCard's tutorial
+## CanvasLayer is under the trait popup's), so even a missed tuck cannot put
+## the note over the pop-up.
 
 ## What the pill reads: the step number, then how many steps there are.
 const STEP_PILL_FORMAT := "Langkah %d / %d"
@@ -221,6 +229,12 @@ var _type_tween: Tween
 ## True while the card shows a task (show_step() with `task`): its sticker
 ## reads task_sticker_text instead of step_sticker_text.
 var _task := false
+## True while tuck(true) holds the note away for a pop-up.
+var _tucked := false
+## Where the note stood when it tucked, so tuck(false) returns it there.
+var _tuck_home := Vector2.ZERO
+## The tuck slide, while it plays.
+var _tuck_tween: Tween
 
 
 func _ready() -> void:
@@ -390,6 +404,40 @@ func play_out() -> Tween:
 		done.tween_interval(0.0)
 		return done
 	return AnimUtils.popup_spring_out(self, self)
+
+
+## How far, in pixels, a tucked note slides down as it fades.
+const TUCK_DROP := 160.0
+
+## Tucks the note away for a game pop-up (`hidden` true: it slides down
+## TUCK_DROP and fades to nothing) or brings it back (`hidden` false: a spring
+## back to where it was, fully opaque). The one-focal-box rule: see the header.
+## In the editor, or outside the tree, it lands at once.
+func tuck(hidden: bool) -> void:
+	if hidden == _tucked:
+		return
+	_tucked = hidden
+	if _tuck_tween != null and _tuck_tween.is_valid():
+		_tuck_tween.kill()
+	if hidden:
+		_stop_entering()
+		_tuck_home = position
+	var target_y := _tuck_home.y + (TUCK_DROP if hidden else 0.0)
+	var target_a := 0.0 if hidden else 1.0
+	if Engine.is_editor_hint() or not is_inside_tree():
+		position = Vector2(_tuck_home.x, target_y) if hidden else _tuck_home
+		modulate.a = target_a
+		return
+	var tokens := Juice.tokens()
+	_tuck_tween = create_tween().set_parallel(true)
+	_tuck_tween.tween_property(self, "position:y", target_y, tokens.dur_normal) \
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN if hidden else Tween.EASE_OUT)
+	_tuck_tween.tween_property(self, "modulate:a", target_a, tokens.dur_fast)
+
+
+## True while the note is tucked away for a pop-up.
+func is_tucked() -> bool:
+	return _tucked
 
 
 ## Kills the entrance and the step-change fade, whichever is still running.

@@ -429,10 +429,8 @@ func _show_step(index: int):
 	else:
 		_clear_highlight()
 
-	var prompt := TutorialPanel.DEFAULT_PROMPT
-	if step.prompt_text != "":
-		prompt = step.prompt_text
-	# The pill is this screen's one counter; grade 8/9's only step, the pick, is a TUGAS.
+	var prompt: String = step.prompt_text if step.prompt_text != "" else TutorialPanel.DEFAULT_PROMPT
+	FirstRunTutorial.dress(_tutorial_panel, index, GameState.current_grade)  # 8/9's pick is a TUGAS
 	_tutorial_panel.show_step(step.title, step.text, prompt, index + 1, tutorial_steps.size(), GameState.current_grade != FirstRunTutorial.GRADE)
 
 	_position_tutorial_panel()

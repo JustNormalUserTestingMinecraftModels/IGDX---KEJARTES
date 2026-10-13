@@ -213,19 +213,26 @@ the same path with no code change; real art is owed by the artist/owner
   (`Decor/TornEdge`, `STRETCH_TILE`: a replacement must tile horizontally).
 - The name tab is not art: it reuses the `TutorialNamePlate` variation.
 - `comic/plate_kelas.svg`, `comic/plate_senang.svg`, `comic/plate_waspada.svg`
-  -- the Grade-7 cold-open's three plates (the class; a happy student who
-  passes; a worried one who fails), `TutorialComic` exports. Shown at up to
-  824x520 in a keep-aspect `TextureRect`; any 16:10-ish picture fits.
+  -- the Grade-7 cold-open's three icons (the class; a happy student who
+  passes; a worried one who fails), `TutorialComic` exports. Shown at 220x220
+  beside the line in the compact card (2026-10-13); any square picture fits.
 - `mark_check.svg`, `mark_cross.svg` -- a cleared and a missed target on the
-  comic plates (`TutorialComic.mark_cleared` / `mark_missed`), 96x96.
-- **Not placed yet (owed, spec section 7):** the Pak Kepsek mascot with its
-  2-3 expressions (senang / serius / bangga), the idle nudge's pointing hand
-  and the reward star. This pass has no node for them: the Nota Guru's name tab
-  names the speaker, and the idle nudge pulses the existing tutorial arrow
-  (`TutorialIdle` cues) instead of sliding a hand in. Adding them means a node
-  on `TutorialPanel.tscn` (mascot) and a cue node per screen (hand) -- confirm
-  with the owner first (spec section 0.1). The idle nudge's one-line text is
-  also unwritten: neither the spec nor the mockup gives the copy.
+  comic card (`TutorialComic.mark_cleared` / `mark_missed`), shown at 64x64.
+- `kepsek/kepsek_senang.svg`, `kepsek_serius.svg`, `kepsek_bangga.svg` -- Pak
+  Kepsek's three faces (`TutorialPanel` `Decor/Mascot`, swapped by
+  `expression`; per-beat faces in `FirstRunTutorial.EXPRESSIONS`), 196x196
+  over the note's top-left corner; any square picture fits.
+- `hand_point.svg` -- the idle nudge's pointing hand, fingertip top-left
+  (`TutorialArrow` `Hand`, slid in by `TutorialIdle` on the escalation).
+- **Known gap (2026-10-13 review):** the mascot stands 196px above the
+  card's own rect, which `TutorialPanel.placement()` and StudentCard's
+  `_tutorial_card_rect()` do not know about. Where `placement()` puts the card
+  at the top of Safe/UI (Lobby/StudentList steps with a low spot) the mascot
+  rides above the safe area, and a low card's mascot can cover what sits just
+  above it. A root top margin fixes it but breaks the popup-floor height guard;
+  the real fix is head room in `placement()` (its pinned tests move with it).
+- **Still owed:** the reward star (spec section 7), and the idle nudge's
+  one-line text: neither the spec nor the mockup gives the copy.
 
 ## Asset notes
 

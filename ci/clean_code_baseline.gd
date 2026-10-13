@@ -47,7 +47,6 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/SchoolSimulation/StudentData.gd::apply_minigame_result": 68,
 	"res://Scripts/SchoolSimulation/StudentManager.gd::apply_daily_decay_all": 85,
 	"res://Scripts/StudentCard/StudentCard.gd::_ready": 71,
-	"res://Scripts/StudentCard/StudentCard.gd::_show_step": 51,
 	"res://Scripts/StudentCard/StudentCard.gd::_transition_page": 61,
 	"res://Scripts/StudentList/StudentList.gd::_setup_students": 55,
 }

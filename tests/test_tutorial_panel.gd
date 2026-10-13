@@ -1083,3 +1083,58 @@ func test_tuck_hides_and_restores_the_card() -> void:
 	assert_false(panel.is_tucked(), "an untucked card is back")
 	assert_eq(panel.position, Vector2(40, 900), "where it was")
 	assert_eq(panel.modulate.a, 1.0, "and opaque")
+
+
+## 2026-10-13 visual fix: Pak Kepsek stands over the note, his face follows
+## `expression`, and a headmaster beat wears the proud one.
+func test_the_mascot_wears_the_face_expression_names() -> void:
+	var panel := _make()
+	var mascot := panel.get_node("Decor/Mascot") as TextureRect
+	assert_true(mascot != null, "Decor/Mascot exists")
+	assert_eq(mascot.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the mascot never takes a tap")
+	assert_eq(mascot.texture, panel.mascot_senang, "warm by default")
+	panel.expression = TutorialPanel.Face.SERIUS
+	assert_eq(mascot.texture, panel.mascot_serius)
+	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik kelas.", TutorialPanel.DEFAULT_PROMPT)
+	assert_eq(mascot.texture, panel.mascot_bangga, "a beat is proud")
+
+
+## nota_style is the first-run look: no TUTORIAL sticker, no pill, the body face.
+func test_nota_style_drops_the_sticker_and_pill() -> void:
+	var panel := _make()
+	panel.nota_style = true
+	panel.show_step("Kenalan", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT, 1, 6)
+	assert_eq(panel.frame.title_text, "", "no sticker")
+	assert_false(panel.step_pill.visible, "no pill")
+	assert_eq(panel.body_label.theme_type_variation, TutorialPanel.NOTA_BODY_VARIATION)
+	assert_eq(panel.title_label.theme_type_variation, TutorialPanel.NOTA_TITLE_VARIATION)
+	panel.show_step("Pilih", "Ambil dua.", TutorialPanel.DEFAULT_PROMPT, 1, 2, true)
+	assert_eq(panel.frame.title_text, panel.task_sticker_text, "a task keeps TUGAS")
+	panel.nota_style = false
+	assert_eq(panel.body_label.theme_type_variation, panel.body_variation, "off restores the export")
+
+
+## The idle nudge's hand rides the arrow, hidden until the escalation.
+func test_the_arrow_carries_a_hidden_hand() -> void:
+	var arrow: Control = load(ARROW_SCENE_PATH).instantiate()
+	track(arrow)
+	var hand := arrow.get_node_or_null(TutorialIdle.HAND_NODE) as TextureRect
+	assert_true(hand != null, "TutorialArrow has a Hand")
+	assert_false(hand.visible, "hidden until the nudge")
+	assert_true(hand.texture != null, "with its placeholder art")
+
+
+## Every first-run beat names a face.
+func test_every_first_run_beat_has_a_face() -> void:
+	assert_eq(FirstRunTutorial.EXPRESSIONS.size(), FirstRunTutorial.STEPS.size())
+	assert_eq(FirstRunTutorial.expression_for(99), TutorialPanel.Face.SENANG)
+
+
+## The cold-open is the mockup's compact card: the icon beside the line.
+func test_the_comic_is_a_compact_row() -> void:
+	var comic: Control = load("res://Scenes/UI/TutorialComic.tscn").instantiate()
+	track(comic)
+	var row := comic.get_node("Plate/Margin/Layout/Row")
+	assert_true(row is HBoxContainer, "a row, not a stack")
+	assert_eq(comic.get_node("%Illustration").get_parent(), row, "the icon heads the row")
+	assert_eq(comic.get_node("%Line").get_parent().get_parent(), row, "the line sits beside it")

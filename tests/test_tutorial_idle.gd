@@ -55,6 +55,24 @@ func test_a_tap_resets_and_a_pause_holds() -> void:
 	idle.tick(idle.idle_nudge_seconds + 0.1)
 	assert_eq(counter[0], 1, "and the countdown starts over when it closes")
 
+## 2026-10-13: the escalation shows a cue's pointing Hand; a tap hides it again.
+func test_the_nudge_shows_the_hand_and_a_tap_hides_it() -> void:
+	var idle := _idle()
+	var arrow: Control = load("res://Scenes/UI/TutorialArrow.tscn").instantiate()
+	idle.add_child(arrow)
+	var hand := arrow.get_node(TutorialIdle.HAND_NODE) as Control
+	var home := hand.position
+	idle.start(arrow, [arrow])
+	assert_false(hand.visible, "hidden while the player is busy")
+	idle.tick(idle.idle_nudge_seconds + 0.1)
+	assert_true(hand.visible, "the nudge brings the hand in")
+	idle.reset()
+	assert_false(hand.visible, "a tap sends it away")
+	assert_eq(hand.position, home, "back on its spot")
+	idle.tick(idle.idle_nudge_seconds + 0.1)
+	idle.stop()
+	assert_false(hand.visible, "stop hides it too")
+
 
 func _idle() -> TutorialIdle:
 	var idle := TutorialIdle.new()

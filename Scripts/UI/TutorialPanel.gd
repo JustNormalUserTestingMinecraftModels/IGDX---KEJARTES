@@ -341,9 +341,13 @@ func _apply_variations() -> void:
 
 ## Puts the face `expression` names on the mascot.
 func _apply_expression() -> void:
-	var faces := {Face.SENANG: mascot_senang, Face.SERIUS: mascot_serius,
-			Face.BANGGA: mascot_bangga}
-	mascot.texture = faces.get(expression, mascot_senang)
+	match expression:
+		Face.SERIUS:
+			mascot.texture = mascot_serius
+		Face.BANGGA:
+			mascot.texture = mascot_bangga
+		_:
+			mascot.texture = mascot_senang
 
 
 func _apply_prompt_tint() -> void:

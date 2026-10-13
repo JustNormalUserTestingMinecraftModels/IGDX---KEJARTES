@@ -36,6 +36,8 @@ const HAND_SLIDE := Vector2(70, 70)
 const HAND_SLIDE_SECONDS := 0.45
 ## How many times the hand slides in before it rests on its spot.
 const HAND_SLIDES := 3
+## Meta on a Hand: its slide tween while one plays, so a new one can kill it.
+const HAND_TWEEN_META := &"tutorial_hand_slide"
 ## How much a cue grows at the escalation's pulse.
 const NUDGE_PULSE := 1.18
 
@@ -139,6 +141,9 @@ func _input(event: InputEvent) -> void:
 func _escalate() -> void:
 	_escalated = true
 	nudged.emit()
+	for cue: Variant in _cues:
+		if is_instance_valid(cue) and cue is Control:
+			_slide_hand(cue as Control)
 	if Engine.is_editor_hint() or not is_inside_tree():
 		return
 	if is_instance_valid(_target):
@@ -152,7 +157,6 @@ func _escalate() -> void:
 		pulse.tween_property(control, "scale", Vector2.ONE * NUDGE_PULSE, REST_HALF_PERIOD / 2.0) \
 				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		pulse.tween_property(control, "scale", Vector2.ONE, REST_HALF_PERIOD / 2.0)
-		_slide_hand(control)
 
 
 ## Shows `cue`'s Hand child, if it has one, and slides it in toward its spot
@@ -164,11 +168,23 @@ func _slide_hand(cue: Control) -> void:
 	if not hand.has_meta(&"home"):
 		hand.set_meta(&"home", hand.position)
 	var home: Vector2 = hand.get_meta(&"home")
+	_kill_hand_slide(hand)
 	hand.visible = true
+	if Engine.is_editor_hint() or not is_inside_tree():
+		return
 	var slide := hand.create_tween()
+	hand.set_meta(HAND_TWEEN_META, slide)
 	for i in HAND_SLIDES:
 		slide.tween_property(hand, "position", home, HAND_SLIDE_SECONDS) \
 				.from(home + HAND_SLIDE).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+
+
+## Stops `hand`'s slide, if one is playing, so two slides never fight.
+func _kill_hand_slide(hand: Control) -> void:
+	var slide: Variant = hand.get_meta(HAND_TWEEN_META, null)
+	if slide is Tween and (slide as Tween).is_valid():
+		(slide as Tween).kill()
+	hand.remove_meta(HAND_TWEEN_META)
 
 
 ## Hides every cue's Hand and puts it back on its spot.
@@ -179,6 +195,7 @@ func _hide_hands() -> void:
 		var hand := (cue as Node).get_node_or_null(HAND_NODE) as Control
 		if hand == null:
 			continue
+		_kill_hand_slide(hand)
 		hand.visible = false
 		if hand.has_meta(&"home"):
 			hand.position = hand.get_meta(&"home")

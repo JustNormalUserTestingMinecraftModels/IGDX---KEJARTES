@@ -181,7 +181,9 @@ func _slide_hand(cue: Control) -> void:
 
 ## Stops `hand`'s slide, if one is playing, so two slides never fight.
 func _kill_hand_slide(hand: Control) -> void:
-	var slide: Variant = hand.get_meta(HAND_TWEEN_META, null)
+	if not hand.has_meta(HAND_TWEEN_META):
+		return
+	var slide: Variant = hand.get_meta(HAND_TWEEN_META)
 	if slide is Tween and (slide as Tween).is_valid():
 		(slide as Tween).kill()
 	hand.remove_meta(HAND_TWEEN_META)

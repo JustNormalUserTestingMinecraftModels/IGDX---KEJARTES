@@ -1,20 +1,34 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://cdb3syus5byiu"]
 
-[ext_resource type="Script" path="res://Scripts/TutorialArrow.gd" id="1_arrow"]
-[ext_resource type="Texture2D" path="res://Assets/Images/UI/Placeholders/arrow.png" id="2_arrow"]
+[ext_resource type="Script" uid="uid://d3gem4ny0x0fh" path="res://Scripts/TutorialArrow.gd" id="1_arrow"]
+[ext_resource type="Texture2D" uid="uid://csj35cdysqpki" path="res://Assets/Images/UI/Placeholders/arrow.png" id="2_arrow"]
+[ext_resource type="Texture2D" uid="uid://ca6u3g7e7h4kl" path="res://Assets/Images/UI/Placeholders/tutorial/hand_point.svg" id="3_54pxt"]
 
-[node name="TutorialArrow" type="Control"]
+[node name="TutorialArrow" type="Control" unique_id=2116626820]
+layout_mode = 3
+anchors_preset = 0
 mouse_filter = 2
 script = ExtResource("1_arrow")
 
-[node name="Visual" type="TextureRect" parent="."]
+[node name="Visual" type="TextureRect" parent="." unique_id=1345809815]
 layout_mode = 0
 offset_left = -90.0
 offset_top = -180.0
 offset_right = 90.0
-offset_bottom = 0.0
 pivot_offset = Vector2(90, 180)
 mouse_filter = 2
 texture = ExtResource("2_arrow")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Hand" type="TextureRect" parent="." unique_id=1908787674]
+visible = false
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 132.0
+offset_bottom = 132.0
+mouse_filter = 2
+texture = ExtResource("3_54pxt")
 expand_mode = 1
 stretch_mode = 5

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <!-- PLACEHOLDER (tutorial art, DEBT.md): Pak Kepsek mascot, happy (senang). Replace at this path. -->
+  <path d="M44 256 C44 200 84 178 128 178 C172 178 212 200 212 256 Z" fill="#5B6E8C" stroke="#33415A" stroke-width="5"/>
+  <path d="M104 180 L128 214 L152 180 Z" fill="#FFF6E8" stroke="#33415A" stroke-width="4"/>
+  <path d="M122 200 L134 200 L140 246 L128 256 L116 246 Z" fill="#C0392B" stroke="#7E2219" stroke-width="3"/>
+  <ellipse cx="128" cy="112" rx="74" ry="80" fill="#F2C9A0" stroke="#7A4A2B" stroke-width="5"/>
+  <ellipse cx="54" cy="118" rx="12" ry="18" fill="#E8B88C" stroke="#7A4A2B" stroke-width="4"/>
+  <ellipse cx="202" cy="118" rx="12" ry="18" fill="#E8B88C" stroke="#7A4A2B" stroke-width="4"/>
+  <path d="M58 92 C60 50 92 30 128 30 C164 30 196 50 198 92 C186 70 170 60 150 58 C140 66 116 66 106 58 C86 60 70 70 58 92 Z" fill="#9A9A9A" stroke="#5E5E5E" stroke-width="4"/>
+  <g fill="#FFFFFF" fill-opacity="0.35" stroke="#3B2412" stroke-width="5"><circle cx="100" cy="112" r="22"/><circle cx="156" cy="112" r="22"/></g>
+  <path d="M122 112 h12" stroke="#3B2412" stroke-width="5"/>
+  <path d="M100 150 C112 142 122 146 128 150 C134 146 144 142 156 150 C146 160 110 160 100 150 Z" fill="#6E6E6E" stroke="#4A4A4A" stroke-width="3"/>
+  <g fill="#3B2412"><circle cx="100" cy="114" r="6"/><circle cx="156" cy="114" r="6"/></g>
+  <path d="M82 84 q18 -10 34 0 M140 84 q18 -10 34 0" fill="none" stroke="#5E5E5E" stroke-width="6" stroke-linecap="round"/>
+  <path d="M108 166 Q128 186 148 166" fill="none" stroke="#3B2412" stroke-width="6" stroke-linecap="round"/>
+  <g fill="#E88A7A" fill-opacity="0.5"><circle cx="78" cy="140" r="10"/><circle cx="178" cy="140" r="10"/></g>
+</svg>

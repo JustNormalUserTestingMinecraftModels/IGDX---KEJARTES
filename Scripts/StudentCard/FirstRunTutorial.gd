@@ -32,6 +32,14 @@ const STEPS := [
 	["Mulai", "Mantap! Terima dulu %s dengan Approve, lalu kita mulai minggu pertama.",
 		"KertasMurid1/Aprove", "KETUK APPROVE"],
 ]
+## Pak Kepsek's face for each beat in STEPS, index for index
+## (TutorialPanel.Face): warm for the stat tour, stern for the trait
+## rule he wants obeyed, proud once the player has done it.
+const EXPRESSIONS := [
+	TutorialPanel.Face.SENANG, TutorialPanel.Face.SENANG,
+	TutorialPanel.Face.SERIUS, TutorialPanel.Face.SERIUS,
+	TutorialPanel.Face.BANGGA, TutorialPanel.Face.BANGGA,
+]
 ## The grade whose first run these beats teach; grades 8 and 9 get the
 ## promotion beats (HeadmasterBeat) and the pick TUGAS instead.
 const GRADE := 7
@@ -53,6 +61,22 @@ static func steps_for(student_name: String) -> Array:
 			line = line % student_name
 		out.append([entry[TITLE], line, entry[TARGETS], entry[PROMPT]])
 	return out
+
+
+## Pak Kepsek's face for beat `index`; SENANG past the end of the table.
+static func expression_for(index: int) -> TutorialPanel.Face:
+	if index < 0 or index >= EXPRESSIONS.size():
+		return TutorialPanel.Face.SENANG
+	return EXPRESSIONS[index]
+
+
+## Dresses `panel` for StudentCard's step `index` in `grade`: grade 7's first
+## run wears the mockup's Nota Guru look and the beat's face; grade 8/9's lone
+## pick keeps the pill and a stern face.
+static func dress(panel: TutorialPanel, index: int, grade: int) -> void:
+	var first_run := grade == GRADE
+	panel.nota_style = first_run
+	panel.expression = expression_for(index) if first_run else TutorialPanel.Face.SERIUS
 
 
 ## True for a beat that waits for a real control rather than a tap anywhere.

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- PLACEHOLDER (tutorial art, DEBT.md): idle nudge pointing hand, fingertip at the top-left. Replace at this path. -->
+  <path d="M14 10 C8 4 0 12 6 18 L46 62 L36 64 C26 66 24 78 34 80 L70 82 C78 102 92 118 112 120 C124 112 126 96 120 80 L106 54 C100 46 90 48 88 56 C84 46 74 46 70 54 C66 44 56 44 52 52 Z" fill="#F2C9A0" stroke="#7A4A2B" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M70 54 L80 72 M88 56 L96 72" fill="none" stroke="#7A4A2B" stroke-width="4" stroke-linecap="round"/>
+</svg>

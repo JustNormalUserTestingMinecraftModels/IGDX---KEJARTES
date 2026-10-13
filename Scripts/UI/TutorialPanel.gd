@@ -26,6 +26,13 @@ extends MarginContainer
 ## parent in the real hierarchy, not a sibling inside it, so it stays
 ## owned by the caller.
 ##
+## PAK KEPSEK. The note's speaker stands over its top-left corner as a
+## Decor/Mascot picture (placeholder art: DEBT.md, "Tutorial art") wearing one
+## of three faces, `expression`. A headmaster beat (show_beat) is a
+## congratulation and wears BANGGA. `nota_style` is the first-run look from the
+## mockup (docs/superpowers/mockups/tutorial-handoff.html): no TUTORIAL sticker,
+## no step pill, a smaller title and the body face for the line.
+##
 ## The screens that spotlight a control (AturJadwal, StudentList, Lobby) share
 ## a handful of static helpers from here instead of each carrying its own
 ## copy. mount() puts the card into the spotlight overlay; cut_hole() cuts the
@@ -70,6 +77,21 @@ const DIM_ORIGIN_META := &"tutorial_dim_origin"
 ## Meta on the control a wrong tap shook, for as long as that answer plays, so
 ## a second tap cannot start another shake from the first one's offset.
 const ANSWERING_META := &"tutorial_answering"
+
+## The title's variation in nota_style.
+const NOTA_TITLE_VARIATION := &"H2Label"
+## The line's variation in nota_style: the body face, at title size.
+const NOTA_BODY_VARIATION := &"TutorialNoteLabel"
+
+## Pak Kepsek's face on the mascot.
+enum Face {
+	## Warm: the default, for an ordinary lesson line.
+	SENANG,
+	## Stern: a warning or a rule the player must not miss.
+	SERIUS,
+	## Proud: praise, a promotion, the end of a lesson.
+	BANGGA,
+}
 
 ## Which badge heads the card.
 enum Mode {
@@ -125,6 +147,30 @@ enum Mode {
 		if is_inside_tree():
 			name_tab_label.text = value
 
+## Pak Kepsek's face: which of the three mascot textures Decor/Mascot wears.
+@export var expression: Face = Face.SENANG:
+	set(value):
+		expression = value
+		if is_inside_tree():
+			_apply_expression()
+
+## The mascot's warm face (placeholder: DEBT.md, "Tutorial art").
+@export var mascot_senang: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_senang.svg")
+## The mascot's stern face.
+@export var mascot_serius: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_serius.svg")
+## The mascot's proud face.
+@export var mascot_bangga: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_bangga.svg")
+
+## The first-run Nota Guru look (header): a STEP card drops the sticker and
+## the pill, the title is NOTA_TITLE_VARIATION and the line NOTA_BODY_VARIATION.
+## A task card keeps its TUGAS sticker; a headmaster beat is untouched.
+@export var nota_style: bool = false:
+	set(value):
+		nota_style = value
+		if is_inside_tree():
+			_apply_variations()
+			_apply_mode()
+
 ## Panel width as a fraction of the viewport width, before max_width clamps
 ## it. StudentCard ships 0.92; SchoolDay ships 0.85.
 @export var width_fraction: float = 0.92:
@@ -162,7 +208,7 @@ enum Mode {
 	set(value):
 		title_variation = value
 		if is_inside_tree():
-			title_label.theme_type_variation = value
+			_apply_variations()
 
 ## Theme variation for the body label. StudentCard uses TitleLabel;
 ## SchoolDay sets none (plain default Label styling).
@@ -170,7 +216,7 @@ enum Mode {
 	set(value):
 		body_variation = value
 		if is_inside_tree():
-			body_label.theme_type_variation = value
+			_apply_variations()
 
 ## How much narrower the body label is than the panel's own outer width,
 ## on top of the frame's horizontal content_padding (subtracted separately
@@ -213,6 +259,8 @@ enum Mode {
 ## The Nota Guru's name tab (placeholder art: DEBT.md, "Tutorial art").
 @onready var name_tab: PanelContainer = $Decor/NameTab
 @onready var name_tab_label: Label = $Decor/NameTab/NameTabLabel
+## Pak Kepsek, over the note's top-left corner (placeholder art).
+@onready var mascot: TextureRect = $Decor/Mascot
 
 ## Whether the pill shows while mode is STEP: show_step() hides it for a
 ## flow of one step or none. True until then, so the authored pill shows.
@@ -239,8 +287,8 @@ var _tuck_tween: Tween
 
 func _ready() -> void:
 	layout.add_theme_constant_override("separation", vbox_separation)
-	title_label.theme_type_variation = title_variation
-	body_label.theme_type_variation = body_variation
+	_apply_variations()
+	_apply_expression()
 	prompt_label.theme_type_variation = prompt_variation
 	# Hidden characters keep their room, so a card placed for a typed line is
 	# already the size of the whole line and does not grow as it types.
@@ -285,6 +333,19 @@ func _apply_geometry() -> void:
 	body_label.custom_minimum_size = Vector2(body_width, 0)
 
 
+## The title and body variations: the exports, or nota_style's pair.
+func _apply_variations() -> void:
+	title_label.theme_type_variation = NOTA_TITLE_VARIATION if nota_style else title_variation
+	body_label.theme_type_variation = NOTA_BODY_VARIATION if nota_style else body_variation
+
+
+## Puts the face `expression` names on the mascot.
+func _apply_expression() -> void:
+	var faces := {Face.SENANG: mascot_senang, Face.SERIUS: mascot_serius,
+			Face.BANGGA: mascot_bangga}
+	mascot.texture = faces.get(expression, mascot_senang)
+
+
 func _apply_prompt_tint() -> void:
 	prompt_label.self_modulate = Juice.tokens().state_success if prompt_success_tint else Color.WHITE
 
@@ -294,13 +355,15 @@ func _apply_prompt_tint() -> void:
 ## match. The sticker is only written when it changes: each write re-sorts the
 ## frame, and show_step() lands here on every step.
 func _apply_mode() -> void:
-	step_pill.visible = mode == Mode.STEP and _pill_wanted
+	step_pill.visible = mode == Mode.STEP and _pill_wanted and not nota_style
 	name_plate.visible = mode == Mode.HEADMASTER
 	name_tab.visible = mode != Mode.HEADMASTER
 	name_tab_label.text = speaker_name
 	var sticker := beat_sticker_text
 	if mode == Mode.STEP:
 		sticker = task_sticker_text if _task else step_sticker_text
+		if nota_style and not _task:
+			sticker = ""
 	if frame.title_text != sticker:
 		frame.title_text = sticker
 
@@ -332,6 +395,7 @@ func show_beat(speaker: String, title: String, body: String, prompt: String) -> 
 	_set_texts(title, body, prompt)
 	_task = false
 	speaker_label.text = speaker
+	expression = Face.BANGGA
 	mode = Mode.HEADMASTER
 	_play_step_change()
 	type_line(body)

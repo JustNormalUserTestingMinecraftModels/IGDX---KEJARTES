@@ -2043,6 +2043,9 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["CreditDetailLabel", tokens.font_body_size, tokens.text_secondary, false, false],
 		["CreditMusicLabel", CREDIT_MUSIC_SIZE, tokens.text_secondary, false, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false, false],
+		# 2026-10-13: the first-run Nota Guru's line (TutorialPanel.nota_style),
+		# the body face at title size, so the note reads as handwriting, not a heading.
+		["TutorialNoteLabel", tokens.font_title, tokens.text_primary, false, false],
 		# PageDotLabel styled the SemesterEnd carousel's page dots and has
 		# had no consumer since Plan A deleted that screen. Kept baked
 		# rather than removed: dropping a variation needs a theme rebake,

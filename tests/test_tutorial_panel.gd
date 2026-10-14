@@ -129,10 +129,7 @@ func test_layout_knobs_default_to_student_cards_shipped_numbers() -> void:
 	assert_eq(panel.max_width, 1000.0)
 	assert_eq(panel.content_margin, 0)
 	assert_eq(panel.vbox_separation, 10)
-	assert_eq(panel.title_variation, &"H1Label")
-	assert_eq(panel.body_variation, &"TitleLabel")
 	assert_eq(panel.body_width_offset, 60.0)
-	assert_eq(panel.prompt_variation, &"TitleLabel")
 	assert_false(panel.prompt_success_tint)
 
 
@@ -140,9 +137,6 @@ func test_overriding_layout_knobs_reaches_the_nodes() -> void:
 	var panel := _make()
 	panel.content_margin = 30
 	panel.vbox_separation = 20
-	panel.title_variation = &"H2Label"
-	panel.body_variation = &""
-	panel.prompt_variation = &"CaptionLabel"
 	panel.prompt_success_tint = true
 
 	var margin := panel.get_node("Frame/Margin") as MarginContainer
@@ -151,9 +145,9 @@ func test_overriding_layout_knobs_reaches_the_nodes() -> void:
 	assert_eq(margin.get_theme_constant("margin_right"), 30)
 	assert_eq(margin.get_theme_constant("margin_bottom"), 30)
 	assert_eq((panel.get_node("Frame/Margin/Layout") as VBoxContainer).get_theme_constant("separation"), 20)
-	assert_eq((panel.get_node("Frame/Margin/Layout/TitleLabel") as Label).theme_type_variation, &"H2Label")
-	assert_eq((panel.get_node("Frame/Margin/Layout/BodyLabel") as Label).theme_type_variation, &"")
-	assert_eq((panel.get_node("Frame/Margin/Layout/PromptLabel") as Label).theme_type_variation, &"CaptionLabel")
+	assert_eq((panel.get_node("Frame/Margin/Layout/TitleLabel") as Label).theme_type_variation, TutorialPanel.TITLE_VARIATION)
+	assert_eq((panel.get_node("Frame/Margin/Layout/BodyLabel") as Label).theme_type_variation, TutorialPanel.BODY_VARIATION)
+	assert_eq((panel.get_node("Frame/Margin/Layout/PromptLabel") as Label).theme_type_variation, TutorialPanel.PROMPT_VARIATION)
 
 
 func test_each_screen_still_sets_its_own_shipped_numbers() -> void:
@@ -1106,12 +1100,8 @@ func test_nota_style_drops_the_sticker_and_pill() -> void:
 	panel.show_step("Kenalan", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT, 1, 6)
 	assert_eq(panel.frame.title_text, "", "no sticker")
 	assert_false(panel.step_pill.visible, "no pill")
-	assert_eq(panel.body_label.theme_type_variation, TutorialPanel.NOTA_BODY_VARIATION)
-	assert_eq(panel.title_label.theme_type_variation, TutorialPanel.NOTA_TITLE_VARIATION)
 	panel.show_step("Pilih", "Ambil dua.", TutorialPanel.DEFAULT_PROMPT, 1, 2, true)
 	assert_eq(panel.frame.title_text, panel.task_sticker_text, "a task keeps TUGAS")
-	panel.nota_style = false
-	assert_eq(panel.body_label.theme_type_variation, panel.body_variation, "off restores the export")
 
 
 ## The idle nudge's hand rides the arrow, hidden until the escalation.
@@ -1138,3 +1128,20 @@ func test_the_comic_is_a_compact_row() -> void:
 	assert_true(row is HBoxContainer, "a row, not a stack")
 	assert_eq(comic.get_node("%Illustration").get_parent(), row, "the icon heads the row")
 	assert_eq(comic.get_node("%Line").get_parent().get_parent(), row, "the line sits beside it")
+
+
+## 2026-10-15 text ladder: every card wears the same three faces, whatever the
+## chrome (nota_style) says, and the scene authors them too.
+func test_every_card_wears_the_one_text_ladder() -> void:
+	var panel := _make()
+	for nota: bool in [false, true]:
+		panel.nota_style = nota
+		panel.show_step("Judul", "Isi.", TutorialPanel.DEFAULT_PROMPT, 1, 2)
+		assert_eq(panel.title_label.theme_type_variation, TutorialPanel.TITLE_VARIATION)
+		assert_eq(panel.body_label.theme_type_variation, TutorialPanel.BODY_VARIATION)
+		assert_eq(panel.prompt_label.theme_type_variation, TutorialPanel.PROMPT_VARIATION)
+	var scene := FileAccess.get_file_as_string("res://Scenes/UI/TutorialPanel.tscn")
+	for name: String in [&"TutorialTitleLabel", &"TutorialNoteLabel", &"TutorialPromptLabel"]:
+		assert_contains(scene, name, "the scene authors %s" % name)
+	for old: String in ["H1Label", "H2Label", "&\"TitleLabel\"", "CaptionLabel"]:
+		assert_false(scene.contains(old), "the scene no longer names %s" % old)

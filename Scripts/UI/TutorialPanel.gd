@@ -78,10 +78,12 @@ const DIM_ORIGIN_META := &"tutorial_dim_origin"
 ## a second tap cannot start another shake from the first one's offset.
 const ANSWERING_META := &"tutorial_answering"
 
-## The title's variation in nota_style.
-const NOTA_TITLE_VARIATION := &"H2Label"
-## The line's variation in nota_style: the body face, at title size.
-const NOTA_BODY_VARIATION := &"TutorialNoteLabel"
+## The title's variation, on every card: the fat display face with its rim.
+const TITLE_VARIATION := &"TutorialTitleLabel"
+## The line's variation, on every card: the body face, easy to read at length.
+const BODY_VARIATION := &"TutorialNoteLabel"
+## The prompt's variation, on every card: a quiet secondary hint.
+const PROMPT_VARIATION := &"TutorialPromptLabel"
 
 ## Pak Kepsek's face on the mascot.
 enum Face {
@@ -161,14 +163,14 @@ enum Mode {
 ## The mascot's proud face.
 @export var mascot_bangga: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_bangga.svg")
 
-## The first-run Nota Guru look (header): a STEP card drops the sticker and
-## the pill, the title is NOTA_TITLE_VARIATION and the line NOTA_BODY_VARIATION.
-## A task card keeps its TUGAS sticker; a headmaster beat is untouched.
+## The first-run Nota Guru chrome (header): a STEP card drops the sticker and
+## the pill. The text faces are the same on every card (TITLE_VARIATION and
+## friends), whatever this says. A task card keeps its TUGAS sticker; a
+## headmaster beat is untouched.
 @export var nota_style: bool = false:
 	set(value):
 		nota_style = value
 		if is_inside_tree():
-			_apply_variations()
 			_apply_mode()
 
 ## Panel width as a fraction of the viewport width, before max_width clamps
@@ -202,22 +204,6 @@ enum Mode {
 		if is_inside_tree():
 			layout.add_theme_constant_override("separation", value)
 
-## Theme variation for the title label. StudentCard uses H1Label;
-## SchoolDay uses the smaller H2Label.
-@export var title_variation: StringName = &"H1Label":
-	set(value):
-		title_variation = value
-		if is_inside_tree():
-			_apply_variations()
-
-## Theme variation for the body label. StudentCard uses TitleLabel;
-## SchoolDay sets none (plain default Label styling).
-@export var body_variation: StringName = &"TitleLabel":
-	set(value):
-		body_variation = value
-		if is_inside_tree():
-			_apply_variations()
-
 ## How much narrower the body label is than the panel's own outer width,
 ## on top of the frame's horizontal content_padding (subtracted separately
 ## in _apply_geometry() so the two insets never double up) -- the room its
@@ -229,14 +215,6 @@ enum Mode {
 		body_width_offset = value
 		if is_inside_tree():
 			_apply_geometry()
-
-## Theme variation for the prompt label. StudentCard uses TitleLabel;
-## SchoolDay uses the quieter CaptionLabel.
-@export var prompt_variation: StringName = &"TitleLabel":
-	set(value):
-		prompt_variation = value
-		if is_inside_tree():
-			prompt_label.theme_type_variation = value
 
 ## When true, tints the prompt label with the design tokens' success
 ## color. Only SchoolDay's end-of-week tutorial does this.
@@ -289,7 +267,6 @@ func _ready() -> void:
 	layout.add_theme_constant_override("separation", vbox_separation)
 	_apply_variations()
 	_apply_expression()
-	prompt_label.theme_type_variation = prompt_variation
 	# Hidden characters keep their room, so a card placed for a typed line is
 	# already the size of the whole line and does not grow as it types.
 	body_label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
@@ -333,10 +310,11 @@ func _apply_geometry() -> void:
 	body_label.custom_minimum_size = Vector2(body_width, 0)
 
 
-## The title and body variations: the exports, or nota_style's pair.
+## The one text ladder every card wears: title, line and prompt.
 func _apply_variations() -> void:
-	title_label.theme_type_variation = NOTA_TITLE_VARIATION if nota_style else title_variation
-	body_label.theme_type_variation = NOTA_BODY_VARIATION if nota_style else body_variation
+	title_label.theme_type_variation = TITLE_VARIATION
+	body_label.theme_type_variation = BODY_VARIATION
+	prompt_label.theme_type_variation = PROMPT_VARIATION
 
 
 ## Puts the face `expression` names on the mascot.

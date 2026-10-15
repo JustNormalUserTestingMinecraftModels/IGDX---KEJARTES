@@ -491,8 +491,8 @@ func test_the_grade_is_fifteen_percent_less_saturated() -> void:
 
 
 ## The splash grade's colour values, the owner's picks from the live previews
-## (2026-10-01): softer (saturation 0.78, contrast 0.9), brighter (exposure
-## 1.16) and warmer (tint 1.08 / 1.005 / 0.875) than the shared grades. Worn
+## (2026-10-01; 2026-10-15 the owner matched it to the Lobby cutout's colour,
+## saturation 0.865, contrast 1.0087, exposure 0.995, tint 1.022 / 1 / 0.972). Worn
 ## only by the event dialogue's and the win screen's speaker splashes. Change
 ## them only on the owner's say-so.
 func test_the_splash_grade_is_the_owners_pick() -> void:
@@ -500,12 +500,12 @@ func test_the_splash_grade_is_the_owners_pick() -> void:
 	assert_true(mat != null, "the splash grade material must exist")
 	if mat == null:
 		return
-	assert_true(is_equal_approx(mat.get_shader_parameter("saturation"), 0.78), "saturation")
-	assert_true(is_equal_approx(mat.get_shader_parameter("contrast"), 0.9), "contrast")
-	assert_true(is_equal_approx(mat.get_shader_parameter("exposure"), 1.16), "exposure")
+	assert_true(is_equal_approx(mat.get_shader_parameter("saturation"), 0.865), "saturation")
+	assert_true(is_equal_approx(mat.get_shader_parameter("contrast"), 1.0086625), "contrast")
+	assert_true(is_equal_approx(mat.get_shader_parameter("exposure"), 0.995), "exposure")
 	var tint: Color = mat.get_shader_parameter("tint")
-	assert_true(is_equal_approx(tint.r, 1.08) and is_equal_approx(tint.g, 1.005) and is_equal_approx(tint.b, 0.875),
-		"tint is the warm 1.08 / 1.005 / 0.875, not %s" % tint)
+	assert_true(is_equal_approx(tint.r, 1.022) and is_equal_approx(tint.g, 1.0) and is_equal_approx(tint.b, 0.972),
+		"tint is the Lobby cutout's 1.022 / 1 / 0.972, not %s" % tint)
 
 
 func test_the_grade_stays_subtle() -> void:

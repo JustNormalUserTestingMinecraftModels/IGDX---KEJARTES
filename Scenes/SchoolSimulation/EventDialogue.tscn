@@ -58,6 +58,11 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
+[node name="GradeCopy" type="BackBufferCopy" parent="World/Room"]
+copy_mode = 2
+
+[node name="Desaturate" parent="World/Room" instance=ExtResource("look_sat")]
+
 [node name="Splash" type="TextureRect" parent="World/Room" unique_id=1499473738]
 unique_name_in_owner = true
 material = ExtResource("illus_grade_cut")
@@ -79,11 +84,6 @@ stretch_mode = 5
 
 [node name="Shadow" parent="World/Room/Splash" unique_id=802972880 instance=ExtResource("splash_shadow")]
 texture = ExtResource("4_5xvqv")
-
-[node name="GradeCopy" type="BackBufferCopy" parent="World/Room"]
-copy_mode = 2
-
-[node name="Desaturate" parent="World/Room" instance=ExtResource("look_sat")]
 
 [node name="Light" parent="World/Room" instance=ExtResource("look_pool")]
 center = Vector2(0.2, 0.15)

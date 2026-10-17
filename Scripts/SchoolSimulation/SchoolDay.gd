@@ -62,17 +62,23 @@ signal _summary_closed
 ## Replaced the runtime-built status cards (2026-09-24 liveliness pass).
 @export var avatar_chip_scene: PackedScene = preload("res://Scenes/SchoolSimulation/AvatarChip.tscn")
 ## The end-of-week tutorial's coach-mark. Overridden below to SchoolDay's
-## shipped 0.85/900 width, 30px content margin, H2Label title, unstyled
-## body and success-tinted CaptionLabel prompt -- everything TutorialPanel
-## doesn't default to.
+## shipped 0.85/900 width, 30px content margin and success-tinted prompt --
+## everything TutorialPanel doesn't default to. The text faces are the
+## panel's own, the same as every other tutorial card.
 @export var tutorial_panel_scene: PackedScene = preload("res://Scenes/UI/TutorialPanel.tscn")
 
 @export_group("End Simulation Tutorial (Week 1)")
 ## Title on the one-time tutorial shown after week 1's simulation ends
 ## (_show_end_simulation_tutorial) -- see TutorialPanel.show_step().
 @export var end_tutorial_title: String = "Selamat Menyelesaikan Minggu Pertama!"
-## Body text for the same end-of-week-1 tutorial.
-@export_multiline var end_tutorial_text: String = "Kerja bagus, Guru! Kamu telah berhasil membimbing murid-muridmu melewati simulasi minggu pertama.\n\nMulai sekarang, alur permainan akan terus berlanjut dalam siklus:\nAtur Jadwal, Simulasi Hari Sekolah, lalu Evaluasi Mingguan\n\nMisi Utamamu:\nTingkatkan seluruh kemampuan murid (Akademis, Olahraga, dan Seni Budaya) hingga melampaui Target Ambang Batas masing-masing sebelum minggu terakhir kelas ini selesai!\n\nPada akhir minggu terakhir, akan diadakan Ujian Kenaikan Kelas untuk menentukan kelulusan murid-muridmu ke jenjang berikutnya. Rencanakan jadwal belajar dan istirahat dengan taktis!"
+## The pages of the same end-of-week-1 tutorial: one short card each, a tap
+## apart (the old single card was a ninety-word block).
+@export var end_tutorial_pages: Array[String] = [
+	"Kerja bagus, Guru! Kamu sudah membimbing murid-muridmu melewati simulasi minggu pertama.",
+	"Alurnya akan terus berulang:\nAtur Jadwal, Simulasi Hari Sekolah, lalu Evaluasi Mingguan.",
+	"Misimu: tingkatkan kemampuan murid hingga melampaui target masing-masing sebelum minggu terakhir kelas ini selesai.",
+	"Di akhir minggu terakhir ada Ujian Kenaikan Kelas. Rencanakan jadwal belajar dan istirahat dengan taktis!",
+]
 ## Prompt text for the same tutorial.
 @export var end_tutorial_prompt: String = "KETUK DI MANA SAJA UNTUK MELANJUTKAN"
 
@@ -1319,16 +1325,14 @@ func _show_end_simulation_tutorial() -> void:
 	_tutorial_panel.max_width = 900.0
 	_tutorial_panel.content_margin = 30
 	_tutorial_panel.vbox_separation = 20
-	_tutorial_panel.title_variation = &"H2Label"
-	_tutorial_panel.body_variation = &""
 	_tutorial_panel.body_width_offset = 100.0
-	_tutorial_panel.prompt_variation = &"CaptionLabel"
 	_tutorial_panel.prompt_success_tint = true
 
 	var viewport_size = get_viewport_rect().size
 
 	overlay.add_child(_tutorial_panel)
-	_tutorial_panel.show_step(end_tutorial_title, end_tutorial_text, end_tutorial_prompt)
+	var page_count: int = end_tutorial_pages.size()
+	_tutorial_panel.show_step(end_tutorial_title, end_tutorial_pages[0], end_tutorial_prompt, 1, page_count)
 
 	# Pulsing Prompt Tween -- same hint pulse as the Splashscreen (Task 10).
 	_tutorial_panel.prompt_label.modulate.a = 1.0
@@ -1352,10 +1356,14 @@ func _show_end_simulation_tutorial() -> void:
 	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.25)
 	await tween_in.finished
 
-	await _tutorial_closed
-	while _tutorial_panel.is_typing():  # a first tap only fills the line
-		_tutorial_panel.skip_typing()
+	for page in page_count:
+		if page > 0:
+			_tutorial_panel.show_step(end_tutorial_title, end_tutorial_pages[page],
+				end_tutorial_prompt, page + 1, page_count)
 		await _tutorial_closed
+		while _tutorial_panel.is_typing():  # a first tap only fills the line
+			_tutorial_panel.skip_typing()
+			await _tutorial_closed
 	# Bounce scale-out
 	var tween_out = create_tween().set_parallel(true)
 	tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)

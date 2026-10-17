@@ -2046,6 +2046,13 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		# 2026-10-13: the first-run Nota Guru's line (TutorialPanel.nota_style),
 		# the body face at title size, so the note reads as handwriting, not a heading.
 		["TutorialNoteLabel", tokens.font_title, tokens.text_primary, false, false],
+		# 2026-10-15 tutorial text ladder: every tutorial card wears the same
+		# three faces. The title keeps the fat, playful display face and its
+		# rim (H2 size, smaller than the old 64px H1); the line above reads in
+		# the body face; the prompt is a quiet secondary hint, not a second line
+		# of the lesson.
+		["TutorialTitleLabel", tokens.font_h2, tokens.text_primary, true, true],
+		["TutorialPromptLabel", tokens.font_body_size, tokens.text_secondary, false, false],
 		# PageDotLabel styled the SemesterEnd carousel's page dots and has
 		# had no consumer since Plan A deleted that screen. Kept baked
 		# rather than removed: dropping a variation needs a theme rebake,

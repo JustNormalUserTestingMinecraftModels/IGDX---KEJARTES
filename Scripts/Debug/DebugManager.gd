@@ -130,8 +130,9 @@ func _ready() -> void:
 	log_message("Debug System Initialized. Press '~' or F1, or tap top-right 5x to toggle.")
 
 ## Runs once per launch, before the overlay UI exists. Every playtest should
-## start the same way: the screen tutorials bypassed (GameState.tutorials_bypassed,
-## which a new game keeps) and the window filling the screen. Music and
+## start the same way: the window filling the screen. The tutorials are NOT
+## bypassed here (they were until 2026-10-14, so a debug run never showed
+## them); Seed Playtest State / the bypass toggle skips them on demand. Music and
 ## the minigame CARA MAIN card are left to the Settings screen: a BGM mute here
 ## (2026-08-31 to 2026-09-30) was saved as "Musik 0" on every quit, and a forced
 ## minigame_tutorial_enabled = false would be saved by the next save_settings()
@@ -139,12 +140,10 @@ func _ready() -> void:
 ## which is always false, since `in` tests properties, not child nodes.)
 ##
 ## Guarded to debug builds only: a real player's release export must never
-## boot fullscreen with every tutorial silently bypassed.
+## boot fullscreen.
 func _apply_playtest_defaults() -> void:
 	if not OS.is_debug_build():
 		return
-	GameState.tutorials_bypassed = true
-	GameState.lobby_tutorial_completed = true
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 func _input(event: InputEvent) -> void:

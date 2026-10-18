@@ -392,7 +392,7 @@ func test_the_arrow_is_placed_from_its_own_size_not_a_hard_coded_clamp() -> void
 
 func test_the_arrow_keeps_off_the_card_this_screen_places() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	assert_true(_function_source(src, "_highlight_multiple").contains("_tutorial_card_rect())"),
+	assert_true(_function_source(src, "_highlight_multiple").contains("_tutorial_card_rect(),"),
 		"the arrow is handed the card's rectangle to avoid")
 	var rect := _function_source(src, "_tutorial_card_rect")
 	assert_false(rect.is_empty(), "_tutorial_card_rect was found")
@@ -404,6 +404,10 @@ func test_the_arrow_keeps_off_the_card_this_screen_places() -> void:
 		"the card itself is placed by that same rule, so the two cannot drift apart")
 	assert_true(_function_source(src, "_tutorial_card_position").contains("current_step >= FirstRunTutorial.STEP_TRAITS"),
 		"and the rule still centres the card down the screen from step 7 on")
+	assert_true(_function_source(src, "_tutorial_card_position").contains("TutorialPanel.placement("),
+		"the rule is the shared placement every tutorial screen uses")
+	assert_true(_function_source(src, "_tutorial_card_position").contains("MASCOT_HEAD_ROOM"),
+		"with the mascot's head room")
 
 
 # ----------------------------------------- the headmaster's beat (grades 8, 9)

@@ -60,6 +60,12 @@ var _tutorial_prompt_label: Label
 var _blink_tween: Tween
 var _highlight_tween: Tween
 var _tutorial_arrow: Control = null
+## The current step's padded spotlight hole in the overlay's space (empty for
+## none), which _tutorial_card_position() keeps the card opposite.
+var _tutorial_spot := Rect2()
+## How far the tutorial card's bounds stop short of the screen's bottom, px
+## (the shipped bottom card's 40px gap).
+const TUTORIAL_CARD_BOTTOM_GAP := 40.0
 
 ## The headmaster's congratulation while it plays on this card, else null.
 var _beat: HeadmasterBeat
@@ -331,20 +337,29 @@ func _position_tutorial_panel():
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 
 ## Where the card's top-left corner goes at the current step, for a card of
-## `panel_size`: at the bottom, or centred down the screen (from the grade-7
-## Sifat beat on, and during the headmaster's beat).
+## `panel_size`, by the one rule every tutorial screen shares,
+## TutorialPanel.placement(), with the mascot's head room: against the half of
+## the screen opposite the spotlit control, or centred down the screen (from
+## the grade-7 Sifat beat on, and during the headmaster's beat, which give it
+## no spot). The bounds stop TUTORIAL_CARD_BOTTOM_GAP short of the bottom edge.
 func _tutorial_card_position(panel_size: Vector2) -> Vector2:
 	var viewport_size := get_viewport_rect().size
-	var centred_y := (viewport_size.y - panel_size.y) / 2.0
-	var bottom_y := maxf(viewport_size.y * 0.55, viewport_size.y - panel_size.y - 40)
+	var bounds := Rect2(Vector2.ZERO, viewport_size - Vector2(0.0, TUTORIAL_CARD_BOTTOM_GAP))
 	var centred := (_beat != null and _beat.is_playing()) or current_step >= FirstRunTutorial.STEP_TRAITS
-	return Vector2((viewport_size.x - panel_size.x) / 2.0, centred_y if centred else bottom_y)
+	var spot := Rect2() if centred else _tutorial_spot
+	var arrow_size := Vector2.ZERO
+	if is_instance_valid(_tutorial_arrow):
+		arrow_size = _tutorial_arrow.arrow_size
+	return TutorialPanel.placement(bounds, panel_size, spot, arrow_size,
+			TutorialNoteChrome.MASCOT_HEAD_ROOM)
 
-## The rectangle the card will cover at the current step, for the arrow to keep off.
+## The rectangle the card and its mascot will cover at the current step, for
+## the arrow to keep off.
 func _tutorial_card_rect() -> Rect2:
 	if not is_instance_valid(_tutorial_panel): return Rect2()
 	var card_size := _tutorial_panel.get_combined_minimum_size()
-	return Rect2(_tutorial_card_position(card_size), card_size)
+	var head := Vector2(0.0, TutorialNoteChrome.MASCOT_HEAD_ROOM)
+	return Rect2(_tutorial_card_position(card_size) - head, card_size + head)
 
 func _on_click_area_gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -509,10 +524,12 @@ func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 	var current_size = mat.get_shader_parameter("hole_size")
 	# The arrow sizes itself from arrow_size and stands its tip beside the hole
 	# (above, or below when there is no room), inside the overlay and off the card.
+	_tutorial_spot = Rect2(local_pos, size_with_padding)
 	var arrow_pos := Vector2.ZERO
 	if _tutorial_arrow:
 		arrow_pos = _tutorial_arrow.point_at(Rect2(local_pos, size_with_padding),
-				Rect2(Vector2.ZERO, color_rect.size), _tutorial_card_rect())
+				Rect2(Vector2.ZERO, color_rect.size), _tutorial_card_rect(),
+				TutorialPanel.neighbours_in(valid_controls, color_rect))
 	if current_size == null or (current_size is Vector2 and current_size.length_squared() < 1.0):
 		# If coming from a cleared state, warp the position to center immediately to avoid swiping across screen
 		var center = local_pos + size_with_padding / 2.0
@@ -530,6 +547,7 @@ func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 		_highlight_tween.tween_property(_tutorial_arrow, "position", arrow_pos, 0.45)
 
 func _clear_highlight():
+	_tutorial_spot = Rect2()
 	var mat := color_rect.material as ShaderMaterial
 	if not mat:
 		return

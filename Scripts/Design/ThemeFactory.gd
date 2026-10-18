@@ -2047,7 +2047,7 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["CreditDetailLabel", tokens.font_body_size, tokens.text_secondary, false, false],
 		["CreditMusicLabel", CREDIT_MUSIC_SIZE, tokens.text_secondary, false, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false, false],
-		# 2026-10-13: the first-run Nota Guru's line (TutorialPanel.nota_style),
+		# 2026-10-13: the Nota Guru's line (every TutorialPanel since 2026-10-18),
 		# the body face at title size, so the note reads as handwriting, not a heading.
 		["TutorialNoteLabel", tokens.font_title, tokens.text_primary, false, false],
 		# 2026-10-15 tutorial text ladder: every tutorial card wears the same

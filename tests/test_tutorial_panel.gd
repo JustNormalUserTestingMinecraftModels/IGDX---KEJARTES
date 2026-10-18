@@ -82,7 +82,7 @@ func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
 	var frame := root.get_node_or_null("Frame") as NotebookFrame
 	assert_true(frame != null, "the card is a NotebookFrame")
 	if frame != null:
-		assert_eq(frame.title_text, "TUTORIAL")
+		assert_eq(frame.title_text, "", "a lesson card wears no sticker")
 		assert_eq(frame.title_text, root.get("step_sticker_text"),
 			"the scene's authored sticker is the STEP default, so it reads right before any show_step()")
 		assert_false(frame.show_close, "a forced step shows no close")
@@ -190,6 +190,7 @@ func test_the_badge_nodes_sit_above_the_title() -> void:
 
 func test_mode_is_an_export_and_toggles_the_pill_and_the_plate() -> void:
 	var panel := _make()
+	panel.count_steps = true  # the pill is off by default (2026-10-18)
 	var exported := false
 	for prop: Dictionary in panel.get_property_list():
 		if prop["name"] == "mode" and (int(prop["usage"]) & PROPERTY_USAGE_EDITOR) != 0:
@@ -210,6 +211,7 @@ func test_mode_is_an_export_and_toggles_the_pill_and_the_plate() -> void:
 
 func test_show_step_with_a_single_step_hides_the_pill_and_three_shows_it() -> void:
 	var panel := _make()
+	panel.count_steps = true
 	var pill := panel.get_node(LAYOUT + "StepPill") as Control
 	var label := panel.get_node(LAYOUT + "StepPill/StepLabel") as Label
 	panel.show_step("Judul", "Isi", "Ketuk", 1, 1)
@@ -223,6 +225,7 @@ func test_show_step_with_a_single_step_hides_the_pill_and_three_shows_it() -> vo
 
 func test_show_beat_shows_the_name_plate_with_the_speaker() -> void:
 	var panel := _make()
+	panel.count_steps = true
 	var pill := panel.get_node(LAYOUT + "StepPill") as Control
 	var plate := panel.get_node(LAYOUT + "NamePlate") as Control
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk untuk lanjut")
@@ -245,6 +248,7 @@ func test_show_beat_shows_the_name_plate_with_the_speaker() -> void:
 ## tutorials off would read a story beat labelled as one.
 func test_the_sticker_follows_the_mode() -> void:
 	var panel := _make()
+	panel.step_sticker_text = "TUTORIAL"  # empty by default since 2026-10-18
 	var frame := panel.get_node("Frame") as NotebookFrame
 	var sticker := frame.get_node("Chrome/Sticker") as Control
 	var label := frame.get_node("Chrome/Sticker/Title") as Label
@@ -269,11 +273,11 @@ func test_the_sticker_texts_are_exports_that_apply_live() -> void:
 			if prop["name"] == export_name and (int(prop["usage"]) & PROPERTY_USAGE_EDITOR) != 0:
 				exported = true
 		assert_true(exported, export_name + " is an @export on the panel root, so a scene can set it")
-	assert_eq(panel.step_sticker_text, "TUTORIAL")
+	assert_eq(panel.step_sticker_text, "", "a lesson wears no sticker (2026-10-18)")
 	assert_eq(panel.beat_sticker_text, "PENGUMUMAN")
 	var frame := panel.get_node("Frame") as NotebookFrame
 	panel.beat_sticker_text = "KABAR"
-	assert_eq(frame.title_text, "TUTORIAL", "changing the beat's text leaves a step's sticker alone")
+	assert_eq(frame.title_text, "", "changing the beat's text leaves a step's sticker alone")
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
 	assert_eq(frame.title_text, "KABAR", "the beat wears its own text")
 	panel.beat_sticker_text = "SAMBUTAN"
@@ -1093,10 +1097,11 @@ func test_the_mascot_wears_the_face_expression_names() -> void:
 	assert_eq(mascot.texture, panel.decor.mascot_bangga, "a beat is proud")
 
 
-## nota_style is the first-run look: no TUTORIAL sticker, no pill, the body face.
-func test_nota_style_drops_the_sticker_and_pill() -> void:
+## 2026-10-18 (owner): every step card wears the first-run look -- no
+## TUTORIAL sticker, no pill -- and a task keeps its TUGAS.
+func test_every_step_card_drops_the_sticker_and_pill() -> void:
 	var panel := _make()
-	panel.nota_style = true
+	assert_false(panel.count_steps, "no card counts its steps")
 	panel.show_step("Kenalan", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT, 1, 6)
 	assert_eq(panel.frame.title_text, "", "no sticker")
 	assert_false(panel.step_pill.visible, "no pill")
@@ -1130,16 +1135,17 @@ func test_the_comic_is_a_compact_row() -> void:
 	assert_eq(comic.get_node("%Line").get_parent().get_parent(), row, "the line sits beside it")
 
 
-## 2026-10-15 text ladder: every card wears the same three faces, whatever the
-## chrome (nota_style) says, and the scene authors them too.
+## 2026-10-15 text ladder: every card wears the same three faces, and the scene
+## authors them too.
 func test_every_card_wears_the_one_text_ladder() -> void:
 	var panel := _make()
-	for nota: bool in [false, true]:
-		panel.nota_style = nota
-		panel.show_step("Judul", "Isi.", TutorialPanel.DEFAULT_PROMPT, 1, 2)
+	for task: bool in [false, true]:
+		panel.show_step("Judul", "Isi.", TutorialPanel.DEFAULT_PROMPT, 1, 2, task)
 		assert_eq(panel.title_label.theme_type_variation, TutorialPanel.TITLE_VARIATION)
 		assert_eq(panel.body_label.theme_type_variation, TutorialPanel.BODY_VARIATION)
 		assert_eq(panel.prompt_label.theme_type_variation, TutorialPanel.PROMPT_VARIATION)
+	assert_false(FileAccess.get_file_as_string(PANEL_SCRIPT_PATH).contains("nota_style"),
+		"the nota_style switch is gone")
 	var scene := FileAccess.get_file_as_string("res://Scenes/UI/TutorialPanel.tscn")
 	for name: String in [&"TutorialTitleLabel", &"TutorialNoteLabel", &"TutorialPromptLabel"]:
 		assert_contains(scene, name, "the scene authors %s" % name)

@@ -71,11 +71,10 @@ static func expression_for(index: int) -> TutorialPanel.Face:
 
 
 ## Dresses `panel` for StudentCard's step `index` in `grade`: grade 7's first
-## run wears the mockup's Nota Guru look and the beat's face; grade 8/9's lone
-## pick keeps the pill and a stern face.
+## run wears the beat's face; grade 8/9's lone pick a stern face. The Nota
+## Guru look itself is every card's since 2026-10-18.
 static func dress(panel: TutorialPanel, index: int, grade: int) -> void:
 	var first_run := grade == GRADE
-	panel.nota_style = first_run
 	panel.expression = expression_for(index) if first_run else TutorialPanel.Face.SERIUS
 
 

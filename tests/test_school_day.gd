@@ -177,9 +177,10 @@ func test_debug_tutorial_bypass_skips_the_end_of_simulation_tutorial() -> void:
 		"the debug menu's master tutorial-bypass flag must skip the end-of-week-1 tutorial too")
 
 
-## The end-of-week-1 card pages through short steps and counts them, so the
-## pill reads "Langkah n / N"; a card given no count still shows no pill, and it
-## is a tutorial card, not the headmaster's beat.
+## The end-of-week-1 card pages through short steps, handing show_step() each
+## page's number and count (the pill is off on every card since 2026-10-18,
+## count_steps); a card given no count shows no pill, and it is a tutorial
+## card, not the headmaster's beat.
 func test_the_end_of_week_panel_pages_and_a_countless_card_hides_its_pill() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
 	assert_contains(src,

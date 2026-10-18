@@ -153,7 +153,7 @@ to switch. Its only behaviour is "a STEP card hides the sticker and pill".
 
 ## As built (2026-10-18, untested: no editor on this worktree)
 
-- Tasks 1–6 are committed on this branch; Task 7 copy waits for the owner.
+- Tasks 1–7 are committed on this branch (Task 7 copy owner-approved 2026-10-18).
 - Task 2: the chrome is the panel's `Decor` (torn edge, paperclip, name tab,
   mascot). `StepPill` stayed in the panel's `Layout`, not in the chrome.
 - Task 4: `_tutorial_card_rect()` / `_tutorial_card_position()` stay, as

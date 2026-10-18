@@ -675,12 +675,12 @@ func test_grade7_textwall_removed_and_beats_present() -> void:
 func test_grade7_beats_follow_the_spec() -> void:
 	var src := FileAccess.get_file_as_string("res://Scripts/StudentCard/FirstRunTutorial.gd")
 	var card := FileAccess.get_file_as_string(_SCRIPT_PATH)
-	for line: String in ["Kalau bagus, dia belajar dengan semangat; kalau habis, gampang ngambek.",
-			"Tiap kegiatan menguras energi. Kalau habis, %s terpaksa izin istirahat.",
-			"Inilah yang kamu kejar biar dia lulus.",
-			"juga punya Quirk dan Persona, sifat khasnya. Coba ketuk salah satunya.",
-			"Nah, begitu cara baca sifat murid. Sesuaikan jadwalnya, ya!",
-			"Terima dulu %s dengan Approve, lalu kita mulai minggu pertama."]:
+	for line: String in ["Mood bagus membuat %s semangat belajar; kalau habis, dia mudah merajuk.",
+			"Kalau energinya habis, %s terpaksa izin istirahat.",
+			"Tiga kemampuan inilah yang harus kamu kejar agar dia lulus.",
+			"Ketuk salah satu sifat %s untuk mengenal wataknya.",
+			"Begitulah cara membaca sifat murid. Sesuaikan jadwalnya!",
+			"Terima %s dengan APPROVE, lalu kita mulai minggu pertama."]:
 		assert_contains(src, line, "the beat says: " + line)
 	assert_contains(card, "FirstRunTutorial.steps_for(", "StudentCard plays them")
 	var begin := _function_source(card, "_begin_tutorial")
@@ -718,7 +718,7 @@ func test_gated_beats_answer_wrong_taps_and_approve_ends_the_tutorial() -> void:
 func test_first_run_steps_name_the_student_and_gate_two_beats() -> void:
 	var steps := FirstRunTutorial.steps_for("Andi")
 	assert_eq(steps.size(), FirstRunTutorial.STEPS.size(), "one entry per beat")
-	assert_true((steps[0][1] as String).begins_with("Ini Mood Andi."), "the first student is named")
+	assert_true((steps[0][1] as String).begins_with("Mood bagus membuat Andi "), "the first student is named")
 	for entry: Array in steps:
 		assert_false((entry[1] as String).contains("%s"), "no unfilled name is left")
 	for index in steps.size():

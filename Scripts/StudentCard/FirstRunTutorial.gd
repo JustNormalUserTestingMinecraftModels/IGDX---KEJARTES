@@ -9,7 +9,8 @@ extends RefCounted
 ##
 ## After the comic cold-open (TutorialComic), one traveling note hops the real
 ## bars (Kenalan), hands off to a trait pop-up and comes back (Sifat), then
-## gates on Approve (Mulai). The copy is the spec's, verbatim: ask the owner
+## gates on Approve (Mulai). One nudge line per beat (Voice B, spec 2026-10-16,
+## owner-approved 2026-10-18), KBBI-standard: ask the owner
 ## before changing it.
 
 ## Where each field sits in a beat.
@@ -20,16 +21,16 @@ const PROMPT := 3
 ## Each beat: [title, line, targets, prompt]. "%s" in a line is the first
 ## student's name; targets are comma-separated StudentCard node paths.
 const STEPS := [
-	["Kenalan", "Ini Mood %s. Kalau bagus, dia belajar dengan semangat; kalau habis, gampang ngambek.",
+	["Kenalan", "Mood bagus membuat %s semangat belajar; kalau habis, dia mudah merajuk.",
 		"KertasMurid1/Mood", ""],
-	["Kenalan", "Ini Energi. Tiap kegiatan menguras energi. Kalau habis, %s terpaksa izin istirahat.",
+	["Kenalan", "Kalau energinya habis, %s terpaksa izin istirahat.",
 		"KertasMurid1/Energy", ""],
-	["Kenalan", "Dan ini tiga skill-nya: Akademis, Seni Budaya, Olahraga. Inilah yang kamu kejar biar dia lulus.",
+	["Kenalan", "Tiga kemampuan inilah yang harus kamu kejar agar dia lulus.",
 		"KertasMurid1/Akademis,KertasMurid1/SeniBudaya,KertasMurid1/Olahraga", ""],
-	["Sifat", "%s juga punya Quirk dan Persona, sifat khasnya. Coba ketuk salah satunya.",
+	["Sifat", "Ketuk salah satu sifat %s untuk mengenal wataknya.",
 		"KertasMurid1/KutuBuku,KertasMurid1/KutuBuku2", "KETUK SEBUAH SIFAT"],
-	["Sifat", "Nah, begitu cara baca sifat murid. Sesuaikan jadwalnya, ya!", "", ""],
-	["Mulai", "Mantap! Terima dulu %s dengan Approve, lalu kita mulai minggu pertama.",
+	["Sifat", "Begitulah cara membaca sifat murid. Sesuaikan jadwalnya!", "", ""],
+	["Mulai", "Terima %s dengan APPROVE, lalu kita mulai minggu pertama.",
 		"KertasMurid1/Aprove", "KETUK APPROVE"],
 ]
 ## Pak Kepsek's face for each beat in STEPS, index for index

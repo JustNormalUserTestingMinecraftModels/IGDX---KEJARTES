@@ -1305,6 +1305,9 @@ func _on_back_pressed() -> void:
 
 # ── End Simulation Tutorial Implementation ──────────────────────────────────────
 func _show_end_simulation_tutorial() -> void:
+	if end_tutorial_pages.is_empty():
+		push_warning("SchoolDay: end_tutorial_pages is empty; the end-of-week-1 tutorial is skipped")
+		return
 	_is_tutorial_active = true
 	# Dimmer overlay -- a themed Scrim rather than a hand-colored ColorRect.
 	var overlay = Panel.new()
@@ -1360,6 +1363,11 @@ func _show_end_simulation_tutorial() -> void:
 		if page > 0:
 			_tutorial_panel.show_step(end_tutorial_title, end_tutorial_pages[page],
 				end_tutorial_prompt, page + 1, page_count)
+			# A page of another length is another size: centre it again.
+			_tutorial_panel.reset_size()
+			await get_tree().process_frame
+			_tutorial_panel.position = (viewport_size - _tutorial_panel.size) / 2.0
+			_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 		await _tutorial_closed
 		while _tutorial_panel.is_typing():  # a first tap only fills the line
 			_tutorial_panel.skip_typing()

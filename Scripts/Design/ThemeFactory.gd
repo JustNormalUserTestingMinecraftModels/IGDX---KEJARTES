@@ -212,6 +212,10 @@ const PICKER_TILE_BORDER := 3
 ## step above CreditDetailLabel (font_body_size) and just under the names
 ## (font_title), so a track reads as belonging to the artist above it.
 const CREDIT_MUSIC_SIZE := 32
+## TutorialNoteLabel's extra leading, px: the tutorial line reads as a
+## paragraph, not a heading. A line_spacing override on TutorialPanel's
+## BodyLabel until 2026-10-18.
+const TUTORIAL_NOTE_LINE_SPACING := 8
 ## The selected tile's gold ring, px -- thick enough to read at a glance.
 const PICKER_SELECTED_BORDER := 6
 ## Alpha of the selected tile's gold glow.
@@ -2130,6 +2134,7 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 			theme.set_color("font_outline_color", name, tokens.text_outline_color)
 		if spec[4] and tokens.font_display != null:
 			theme.set_font("font", name, tokens.font_display)
+	theme.set_constant("line_spacing", "TutorialNoteLabel", TUTORIAL_NOTE_LINE_SPACING)
 
 	# Text that sits ON TOP of a StatBar, where the background behind any
 	# given glyph may be either the light track or a saturated category

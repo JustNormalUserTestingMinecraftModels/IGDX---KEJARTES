@@ -820,3 +820,10 @@ func test_changing_the_success_token_changes_the_tutorial_badges() -> void:
 		var box := built.get_stylebox("panel", box_name) as StyleBoxFlat
 		assert_eq(box.bg_color, Color("ff0000"),
 			box_name + " must follow state_success, not a hardcoded mint")
+
+
+## 2026-10-18: the tutorial line's leading lives on the variation, not on a
+## theme_override_constants/line_spacing on TutorialPanel's BodyLabel.
+func test_tutorial_note_label_carries_its_line_spacing() -> void:
+	assert_eq(_theme.get_constant("line_spacing", "TutorialNoteLabel"),
+		ThemeFactory.TUTORIAL_NOTE_LINE_SPACING)

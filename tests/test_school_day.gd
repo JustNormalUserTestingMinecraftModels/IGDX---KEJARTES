@@ -993,3 +993,11 @@ func test_school_day_tutorial_uses_shared_box() -> void:
 	assert_true(src.contains("TutorialPanel"), "SchoolDay tutorial uses the shared panel")
 	assert_false(src.contains("PanelContainer.new()"), "no runtime-built tutorial panel")
 	assert_true(src.contains("_tutorial_panel.skip_typing()"), "a tap fills a typing line first")
+
+
+## 2026-10-18: an emptied end_tutorial_pages export skips the card instead of
+## indexing page 0 of nothing.
+func test_an_empty_page_list_skips_the_end_tutorial() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_contains(src, "if end_tutorial_pages.is_empty():",
+		"the end tutorial guards an empty page list")

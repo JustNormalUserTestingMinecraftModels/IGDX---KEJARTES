@@ -1145,3 +1145,13 @@ func test_every_card_wears_the_one_text_ladder() -> void:
 		assert_contains(scene, name, "the scene authors %s" % name)
 	for old: String in ["H1Label", "H2Label", "&\"TitleLabel\"", "CaptionLabel"]:
 		assert_false(scene.contains(old), "the scene no longer names %s" % old)
+
+
+## 2026-10-18: BodyLabel carries no line_spacing override (the variation has
+## it) and no negative minimum width (_apply_geometry() sets the real one).
+func test_body_label_has_no_override_or_negative_width() -> void:
+	var scene := FileAccess.get_file_as_string(SCENE_PATH)
+	assert_false(scene.contains("theme_override_constants/line_spacing"),
+		"line spacing comes from TutorialNoteLabel")
+	assert_false(scene.contains("custom_minimum_size = Vector2(-"),
+		"no negative minimum size in the scene")

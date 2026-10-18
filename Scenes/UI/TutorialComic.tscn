@@ -4,6 +4,8 @@
 [ext_resource type="Texture2D" uid="uid://c8nld5lbfcmmi" path="res://Assets/Images/UI/Placeholders/tutorial/comic/plate_kelas.svg" id="2_4nvt3"]
 [ext_resource type="Texture2D" uid="uid://c3ng4a6kr5byo" path="res://Assets/Images/UI/Placeholders/tutorial/mark_check.svg" id="3_xg634"]
 [ext_resource type="Texture2D" uid="uid://b55b5axdsyjhr" path="res://Assets/Images/UI/Placeholders/tutorial/mark_cross.svg" id="4_ymum6"]
+[ext_resource type="PackedScene" uid="uid://djkgrgndtsvc7" path="res://Scenes/UI/NotebookFrame.tscn" id="nb_frame"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/TutorialNoteChrome.tscn" id="note_chrome"]
 
 [node name="TutorialComic" type="Control" unique_id=1180170923]
 visible = false
@@ -22,7 +24,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 theme_type_variation = &"Scrim"
 
-[node name="Plate" type="Panel" parent="." unique_id=104023247]
+[node name="Plate" parent="." unique_id=104023247 instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
 layout_mode = 0
 anchor_left = 0.5
@@ -35,12 +37,13 @@ offset_right = 460.0
 offset_bottom = 220.0
 pivot_offset = Vector2(460, 220)
 mouse_filter = 2
-theme_type_variation = &"Card"
+title_text = ""
+ring_count = 4
+show_well = false
+show_close = false
 
 [node name="Margin" type="MarginContainer" parent="Plate" unique_id=1773705381]
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
+layout_mode = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 40
 theme_override_constants/margin_top = 40
@@ -140,3 +143,7 @@ offset_bottom = 236.0
 grow_horizontal = 0
 theme_type_variation = &"SecondaryButton"
 text = "LEWATI"
+
+[node name="Decor" parent="Plate" instance=ExtResource("note_chrome")]
+layout_mode = 2
+metadata/notebook_chrome = true

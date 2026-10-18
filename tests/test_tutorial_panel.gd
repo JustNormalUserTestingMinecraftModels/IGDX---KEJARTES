@@ -1204,3 +1204,14 @@ func test_the_arrow_keeps_off_a_neighbour_when_it_can() -> void:
 	var boxed: Dictionary = TutorialPanel.ArrowScript.fit(energy, SAFE_UI, ARROW, Rect2(),
 		[mood, Rect2(100, 990, 600, 600)])
 	assert_true(boxed["clear"], "neighbours on both sides fall back, still clear of the card")
+
+
+## 2026-10-18: the welcome comic sits in the Nota Guru note -- a NotebookFrame
+## plate wearing the shared chrome -- like every other tutorial box.
+func test_the_comic_wears_the_note_and_its_chrome() -> void:
+	var comic := (load("res://Scenes/UI/TutorialComic.tscn") as PackedScene).instantiate()
+	assert_true(comic.get_node("Plate") is NotebookFrame, "the plate is the note")
+	assert_true(comic.get_node("Plate/Decor") is TutorialNoteChrome, "and wears the chrome")
+	assert_true(comic.get_node("Plate/Decor").has_meta(NotebookFrame.CHROME_META),
+		"which the frame keeps full-size, outside the content")
+	comic.free()

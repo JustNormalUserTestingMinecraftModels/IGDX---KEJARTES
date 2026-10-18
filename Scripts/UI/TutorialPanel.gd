@@ -578,21 +578,45 @@ static func mount(scene: PackedScene, overlay: Control, before: Control) -> Tuto
 ## when the spot is so big that the arrow would then have nowhere to go but
 ## across the card (a whole card stack, a splash), the card takes the other
 ## half instead. A step with no spot (an empty Rect2) centres the card.
-static func placement(bounds: Rect2, panel_size: Vector2, spot: Rect2, arrow_size: Vector2) -> Vector2:
-	var centred := bounds.position + (bounds.size - panel_size) / 2.0
+##
+## `head_room` (2026-10-18) is the height of what stands above the card's own
+## rect -- Pak Kepsek, TutorialNoteChrome.MASCOT_HEAD_ROOM -- so the card plus
+## the mascot stays inside `bounds` and the arrow keeps off the mascot too. The
+## returned position is still the card's own top-left.
+static func placement(bounds: Rect2, panel_size: Vector2, spot: Rect2, arrow_size: Vector2,
+		head_room: float = 0.0) -> Vector2:
+	var whole := panel_size + Vector2(0.0, head_room)
+	var lift := Vector2(0.0, head_room)
+	var centred := bounds.position + (bounds.size - whole) / 2.0 + lift
 	if not spot.has_area():
 		return centred
-	var top := Vector2(centred.x, bounds.position.y)
+	var top := Vector2(centred.x, bounds.position.y + head_room)
 	var bottom := Vector2(centred.x, bounds.end.y - panel_size.y)
 	var spot_above_middle := spot.get_center().y < bounds.get_center().y
 	var sides: Array[Vector2] = [top, bottom]
 	if spot_above_middle:
 		sides = [bottom, top]
 	for side: Vector2 in sides:
-		var fit: Dictionary = ArrowScript.fit(spot, bounds, arrow_size, Rect2(side, panel_size))
+		var fit: Dictionary = ArrowScript.fit(spot, bounds, arrow_size, Rect2(side - lift, whole))
 		if fit["clear"]:
 			return side
 	return sides[0]
+
+
+## The controls beside the spot an arrow should not sit on: each target's
+## visible sibling Controls, as rectangles in `overlay`'s space.
+static func neighbours_in(targets: Array, overlay: Control) -> Array:
+	var rects: Array = []
+	for target in targets:
+		if not (target is Control) or not is_instance_valid(target):
+			continue
+		var parent := (target as Control).get_parent()
+		if parent == null:
+			continue
+		for sibling: Node in parent.get_children():
+			if sibling is Control and not targets.has(sibling) and (sibling as Control).is_visible_in_tree():
+				rects.append(rect_in(sibling as Control, overlay))
+	return rects
 
 
 ## Puts one spotlit step's card and arrow where they belong, for the screens
@@ -614,13 +638,15 @@ static func place_step(panel: TutorialPanel, bounds_node: Control, overlay: Cont
 	var arrow_size := Vector2.ZERO
 	if is_instance_valid(arrow):
 		arrow_size = arrow.arrow_size
-	panel.position = placement(bounds, panel.size, spot, arrow_size)
+	var head_room := TutorialNoteChrome.MASCOT_HEAD_ROOM
+	panel.position = placement(bounds, panel.size, spot, arrow_size, head_room)
 	panel.pivot_offset = panel.size / 2.0
 	if not is_instance_valid(arrow):
 		return
 	arrow.visible = spot.has_area()
 	if arrow.visible:
-		arrow.position = arrow.point_at(spot, bounds, Rect2(panel.position, panel.size))
+		var card := Rect2(panel.position - Vector2(0.0, head_room), panel.size + Vector2(0.0, head_room))
+		arrow.position = arrow.point_at(spot, bounds, card, neighbours_in(targets, overlay))
 
 
 ## What a forced step does with a tap on the wrong control: the error cue, the

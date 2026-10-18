@@ -1166,3 +1166,41 @@ func test_the_panel_wears_the_shared_note_chrome() -> void:
 		"res://Scenes/UI/TutorialNoteChrome.tscn", "the scene instances it")
 	panel.speaker_name = "Bu Guru"
 	assert_eq(panel.name_tab_label.text, "Bu Guru", "the name reaches the chrome")
+
+
+## 2026-10-18 head room: Pak Kepsek stands MASCOT_HEAD_ROOM above the card's
+## rect, so the card plus the mascot stays inside the safe area at every anchor.
+func test_the_card_and_its_mascot_stay_inside_the_safe_area() -> void:
+	var head := TutorialNoteChrome.MASCOT_HEAD_ROOM
+	for label: String in REAL_SPOTS:
+		var at := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS[label], ARROW, head)
+		assert_true(at.y - head >= SAFE_UI.position.y and at.y + CARD.y <= SAFE_UI.end.y,
+			"%s: card+mascot at y=%d leaves the safe area" % [label, int(at.y - head)])
+	var low := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS["Lobby Inventory"], ARROW, head)
+	assert_eq(low.y, SAFE_UI.position.y + head, "a top-anchored card leaves the mascot its room")
+	var centred := TutorialPanel.placement(SAFE_UI, CARD, Rect2(), ARROW, head)
+	assert_true(centred.y - head >= SAFE_UI.position.y, "a centred card leaves it too")
+
+
+## The same on a 20:9 phone's 1080x2400 safe area.
+func test_head_room_holds_on_a_tall_phone() -> void:
+	var tall := Rect2(SAFE_UI.position, Vector2(SAFE_UI.size.x, SAFE_UI.size.y + 480.0))
+	var head := TutorialNoteChrome.MASCOT_HEAD_ROOM
+	for label: String in REAL_SPOTS:
+		var at := TutorialPanel.placement(tall, CARD, REAL_SPOTS[label], ARROW, head)
+		assert_true(at.y - head >= tall.position.y and at.y + CARD.y <= tall.end.y,
+			"%s: card+mascot leaves the tall safe area" % label)
+
+
+## A neighbour beside the spot (Mood above Energy) pushes the arrow to the
+## spot's other side; with no clear side it falls back to the old rule.
+func test_the_arrow_keeps_off_a_neighbour_when_it_can() -> void:
+	var energy := Rect2(100, 900, 600, 80)
+	var mood := Rect2(100, 700, 600, 180)
+	var placed: Dictionary = TutorialPanel.ArrowScript.fit(energy, SAFE_UI, ARROW, Rect2(), [mood])
+	var picture := TutorialPanel.ArrowScript.picture_rect(placed["tip"], ARROW, placed["pointing_up"])
+	assert_true(placed["pointing_up"], "Mood sits above, so the arrow points up from below")
+	assert_false(picture.intersects(mood), "the arrow is off the Mood bar")
+	var boxed: Dictionary = TutorialPanel.ArrowScript.fit(energy, SAFE_UI, ARROW, Rect2(),
+		[mood, Rect2(100, 990, 600, 600)])
+	assert_true(boxed["clear"], "neighbours on both sides fall back, still clear of the card")

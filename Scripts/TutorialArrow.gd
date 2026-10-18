@@ -66,9 +66,10 @@ func _rest_position() -> Vector2:
 ## Sets the arrow beside `spot` and returns where the Control's origin, the
 ## tip, goes, in the parent's space; the caller positions or tweens to it.
 ## `bounds` is the area the picture may sit in and `avoid` a rectangle it must
-## stay off (the tutorial card; empty for none). See fit() for the rules.
-func point_at(spot: Rect2, bounds: Rect2, avoid: Rect2 = Rect2()) -> Vector2:
-	var placed := fit(spot, bounds, arrow_size, avoid)
+## stay off (the tutorial card; empty for none); `neighbours` the controls
+## beside the spot the picture should not sit on. See fit() for the rules.
+func point_at(spot: Rect2, bounds: Rect2, avoid: Rect2 = Rect2(), neighbours: Array = []) -> Vector2:
+	var placed := fit(spot, bounds, arrow_size, avoid, neighbours)
 	set_direction(placed["pointing_up"])
 	return placed["tip"]
 
@@ -83,20 +84,40 @@ func point_at(spot: Rect2, bounds: Rect2, avoid: Rect2 = Rect2()) -> Vector2:
 ## "clear" is false when neither side qualifies (a spot bigger than the screen
 ## leaves no room): the tip is then clamped into `bounds` above the spot,
 ## across whatever is there.
-static func fit(spot: Rect2, bounds: Rect2, picture_size: Vector2, avoid: Rect2 = Rect2()) -> Dictionary:
+##
+## `neighbours` (Rect2s, 2026-10-18) are the controls beside the spot -- the
+## Mood bar above the Energy bar, JADWAL beside the inventory button. A side
+## whose picture sits on one reads as pointing at it, so a side clear of every
+## neighbour wins first; failing that, the old rule (off `avoid` only) decides.
+static func fit(spot: Rect2, bounds: Rect2, picture_size: Vector2, avoid: Rect2 = Rect2(),
+		neighbours: Array = []) -> Dictionary:
 	var inner := bounds.grow(-EDGE_MARGIN)
 	var x := clampf(spot.get_center().x, inner.position.x + picture_size.x / 2.0,
 			inner.end.x - picture_size.x / 2.0)
 	var above := Vector2(x, spot.position.y - TIP_GAP)
 	var below := Vector2(x, spot.end.y + TIP_GAP)
-	for pointing_up: bool in [false, true]:
-		var tip := below if pointing_up else above
-		var picture := picture_rect(tip, picture_size, pointing_up)
-		if inner.encloses(picture) and not (avoid.has_area() and picture.intersects(avoid)):
+	for mind_neighbours: bool in [true, false]:
+		if mind_neighbours and neighbours.is_empty():
+			continue
+		for pointing_up: bool in [false, true]:
+			var tip := below if pointing_up else above
+			var picture := picture_rect(tip, picture_size, pointing_up)
+			if not inner.encloses(picture) or (avoid.has_area() and picture.intersects(avoid)):
+				continue
+			if mind_neighbours and _covers_any(picture, neighbours):
+				continue
 			return {"tip": tip, "pointing_up": pointing_up, "clear": true}
 	var lowest := maxf(inner.end.y, inner.position.y + picture_size.y)
 	var squeezed := clampf(above.y, inner.position.y + picture_size.y, lowest)
 	return {"tip": Vector2(x, squeezed), "pointing_up": false, "clear": false}
+
+
+## Whether `picture` overlaps any of the Rect2s in `rects`.
+static func _covers_any(picture: Rect2, rects: Array) -> bool:
+	for rect: Rect2 in rects:
+		if rect.has_area() and picture.intersects(rect):
+			return true
+	return false
 
 
 ## The rectangle the picture covers when its tip is at `tip`: hanging above it

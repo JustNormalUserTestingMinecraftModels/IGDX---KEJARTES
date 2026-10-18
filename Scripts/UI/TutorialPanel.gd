@@ -147,21 +147,15 @@ enum Mode {
 	set(value):
 		speaker_name = value
 		if is_inside_tree():
-			name_tab_label.text = value
+			decor.speaker_name = value
 
-## Pak Kepsek's face: which of the three mascot textures Decor/Mascot wears.
+## Pak Kepsek's face on the shared chrome's mascot (Decor, a
+## TutorialNoteChrome; the three textures are its exports).
 @export var expression: Face = Face.SENANG:
 	set(value):
 		expression = value
 		if is_inside_tree():
 			_apply_expression()
-
-## The mascot's warm face (placeholder: DEBT.md, "Tutorial art").
-@export var mascot_senang: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_senang.svg")
-## The mascot's stern face.
-@export var mascot_serius: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_serius.svg")
-## The mascot's proud face.
-@export var mascot_bangga: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_bangga.svg")
 
 ## The first-run Nota Guru chrome (header): a STEP card drops the sticker and
 ## the pill. The text faces are the same on every card (TITLE_VARIATION and
@@ -234,6 +228,8 @@ enum Mode {
 @onready var step_label: Label = $Frame/Margin/Layout/StepPill/StepLabel
 @onready var name_plate: PanelContainer = $Frame/Margin/Layout/NamePlate
 @onready var speaker_label: Label = $Frame/Margin/Layout/NamePlate/Row/SpeakerLabel
+## The shared Nota Guru chrome: torn edge, paperclip, name tab, mascot.
+@onready var decor: TutorialNoteChrome = $Decor
 ## The Nota Guru's name tab (placeholder art: DEBT.md, "Tutorial art").
 @onready var name_tab: PanelContainer = $Decor/NameTab
 @onready var name_tab_label: Label = $Decor/NameTab/NameTabLabel
@@ -319,13 +315,7 @@ func _apply_variations() -> void:
 
 ## Puts the face `expression` names on the mascot.
 func _apply_expression() -> void:
-	match expression:
-		Face.SERIUS:
-			mascot.texture = mascot_serius
-		Face.BANGGA:
-			mascot.texture = mascot_bangga
-		_:
-			mascot.texture = mascot_senang
+	decor.expression = int(expression)
 
 
 func _apply_prompt_tint() -> void:
@@ -339,8 +329,8 @@ func _apply_prompt_tint() -> void:
 func _apply_mode() -> void:
 	step_pill.visible = mode == Mode.STEP and _pill_wanted and not nota_style
 	name_plate.visible = mode == Mode.HEADMASTER
-	name_tab.visible = mode != Mode.HEADMASTER
-	name_tab_label.text = speaker_name
+	decor.show_name_tab = mode != Mode.HEADMASTER
+	decor.speaker_name = speaker_name
 	var sticker := beat_sticker_text
 	if mode == Mode.STEP:
 		sticker = task_sticker_text if _task else step_sticker_text

@@ -1,0 +1,68 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://Scripts/UI/TutorialNoteChrome.gd" id="1_chrome"]
+[ext_resource type="Texture2D" uid="uid://bmremdu0628fd" path="res://Assets/Images/UI/Placeholders/tutorial/torn_edge.svg" id="4_bbugx"]
+[ext_resource type="Texture2D" uid="uid://doe7bsikah4lc" path="res://Assets/Images/UI/Placeholders/tutorial/paperclip.svg" id="5_ojetn"]
+[ext_resource type="Texture2D" uid="uid://c1o3mjo6ybrhj" path="res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_senang.svg" id="6_ojetn"]
+
+[node name="TutorialNoteChrome" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_chrome")
+
+[node name="TornEdge" type="TextureRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+offset_left = 64.0
+offset_top = -6.0
+offset_right = -24.0
+offset_bottom = 22.0
+mouse_filter = 2
+texture = ExtResource("4_bbugx")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="Paperclip" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 200.0
+offset_top = -44.0
+offset_right = 248.0
+offset_bottom = 52.0
+mouse_filter = 2
+texture = ExtResource("5_ojetn")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameTab" type="PanelContainer" parent="."]
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = -30.0
+offset_right = -48.0
+offset_bottom = 30.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_type_variation = &"TutorialNamePlate"
+
+[node name="NameTabLabel" type="Label" parent="NameTab"]
+layout_mode = 2
+theme_type_variation = &"TutorialNamePlateLabel"
+text = "Pak Kepsek"
+horizontal_alignment = 1
+
+[node name="Mascot" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -20.0
+offset_top = -196.0
+offset_right = 176.0
+pivot_offset = Vector2(98, 196)
+mouse_filter = 2
+texture = ExtResource("6_ojetn")
+expand_mode = 1
+stretch_mode = 5

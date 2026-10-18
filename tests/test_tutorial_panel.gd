@@ -1086,11 +1086,11 @@ func test_the_mascot_wears_the_face_expression_names() -> void:
 	var mascot := panel.get_node("Decor/Mascot") as TextureRect
 	assert_true(mascot != null, "Decor/Mascot exists")
 	assert_eq(mascot.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the mascot never takes a tap")
-	assert_eq(mascot.texture, panel.mascot_senang, "warm by default")
+	assert_eq(mascot.texture, panel.decor.mascot_senang, "warm by default")
 	panel.expression = TutorialPanel.Face.SERIUS
-	assert_eq(mascot.texture, panel.mascot_serius)
+	assert_eq(mascot.texture, panel.decor.mascot_serius)
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik kelas.", TutorialPanel.DEFAULT_PROMPT)
-	assert_eq(mascot.texture, panel.mascot_bangga, "a beat is proud")
+	assert_eq(mascot.texture, panel.decor.mascot_bangga, "a beat is proud")
 
 
 ## nota_style is the first-run look: no TUTORIAL sticker, no pill, the body face.
@@ -1155,3 +1155,14 @@ func test_body_label_has_no_override_or_negative_width() -> void:
 		"line spacing comes from TutorialNoteLabel")
 	assert_false(scene.contains("custom_minimum_size = Vector2(-"),
 		"no negative minimum size in the scene")
+
+
+## 2026-10-18: the Nota Guru chrome is one shared scene, and the panel's Decor
+## is an instance of it, so the comic and CARA MAIN can wear the same one.
+func test_the_panel_wears_the_shared_note_chrome() -> void:
+	var panel := _make()
+	assert_true(panel.get_node("Decor") is TutorialNoteChrome, "Decor is the shared chrome")
+	assert_contains(FileAccess.get_file_as_string(SCENE_PATH),
+		"res://Scenes/UI/TutorialNoteChrome.tscn", "the scene instances it")
+	panel.speaker_name = "Bu Guru"
+	assert_eq(panel.name_tab_label.text, "Bu Guru", "the name reaches the chrome")

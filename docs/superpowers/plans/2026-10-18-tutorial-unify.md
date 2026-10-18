@@ -150,3 +150,22 @@ to switch. Its only behaviour is "a STEP card hides the sticker and pill".
 
 - Task 6: sticker and pill on non-first-run step cards.
 - Task 7: final Indonesian strings.
+
+## As built (2026-10-18, untested: no editor on this worktree)
+
+- Tasks 1–6 are committed on this branch; Task 7 copy waits for the owner.
+- Task 2: the chrome is the panel's `Decor` (torn edge, paperclip, name tab,
+  mascot). `StepPill` stayed in the panel's `Layout`, not in the chrome.
+- Task 4: `_tutorial_card_rect()` / `_tutorial_card_position()` stay, as
+  thin wrappers: the position now comes from `TutorialPanel.placement()` with
+  head room, and the rect includes the mascot. The old 55% floor is gone:
+  the card sits on the half opposite the spot, as on the other screens.
+- Task 5: the comic's `Plate` is now a `NotebookFrame`; both it and CARA
+  MAIN carry the chrome as a `notebook_chrome` child of the frame.
+- Task 6 (owner: yes): `nota_style` is gone; `step_sticker_text` defaults to
+  "" and a new `count_steps` (off) gates the pill, so the grade 8/9 pick and
+  SchoolDay's pages show no "Langkah" pill either.
+- First editor pass must: rescan, restart (new `class_name`), rebake the
+  theme, run `test_tutorial_panel`, `test_student_card`, `test_school_day`,
+  `test_theme_factory`, `test_minigame_layout_kit`, `test_popup_frames`,
+  `test_tall_screen_layout`, `test_script_documentation`, then Task 8.

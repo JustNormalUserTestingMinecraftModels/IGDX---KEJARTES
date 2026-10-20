@@ -128,6 +128,9 @@ var _tutorial_arrow: Control = null
 ## The category the Senin step asks for; the picker's subtitle repeats it
 ## until the first assignment. Empty outside that step.
 var _tutorial_focus_category := ""
+## Shakes the focus tile after the shared idle delay while the picker is open
+## during the Senin step (TutorialIdle); attached the first time it is needed.
+var _picker_idle: TutorialIdle = null
 
 ## Full-screen dimming backdrop shared by Peringatan and Penjadwalan. A
 ## &"Scrim"-variation Panel, not the old ad-hoc blur shader ColorRect.
@@ -268,28 +271,16 @@ func _setup_gameplay():
 		_setup_phase2_tutorial()
 
 func _populate_default_tutorial_steps():
+	# One card per phase, one target per card: a single spotlight hole never
+	# spans the stats and the days, so it cannot bleed over the splash.
+	# "{stat}" is the skill furthest under target (_setup_phase2_tutorial);
+	# phase 3 leaves the gains to FirstAssignmentBeat's floating numbers.
 	if tutorial_phase1_steps.is_empty():
-		var p1_data = [
-			["Atur Jadwal", "Pilih murid yang mau dijadwalkan.", "TextureButton", "Ketuk kartu murid"]
-		]
-		tutorial_phase1_steps = _steps_from(p1_data)
-
+		tutorial_phase1_steps = _steps_from([["Atur Jadwal", "Pilih murid yang mau dijadwalkan.", "TextureButton", "Ketuk kartu murid"]])
 	if tutorial_phase2_steps.is_empty():
-		# One step, one target: a single spotlight hole never spans the
-		# stats and the days, so it cannot bleed over the splash.
-		# "{stat}" is the skill furthest under target (_setup_phase2_tutorial).
-		var p2_data = [
-			["Jadwal Senin", "{stat} Nama Murid paling jauh dari target. Isi Senin dengan {stat}.", "BGHari/Senin", "Ketuk Senin"]
-		]
-		tutorial_phase2_steps = _steps_from(p2_data)
-
+		tutorial_phase2_steps = _steps_from([["Jadwal Senin", "{stat} Nama Murid paling jauh dari target. Isi Senin dengan {stat}.", "BGHari/Senin", "Ketuk Senin"]])
 	if tutorial_phase3_steps.is_empty():
-		# FirstAssignmentBeat already floats the gains and costs up; this card
-		# only hands the rest of the week to the player.
-		var p3_data = [
-			["Berhasil!", "Isi hari lainnya, lalu mulai minggunya.", "", ""]
-		]
-		tutorial_phase3_steps = _steps_from(p3_data)
+		tutorial_phase3_steps = _steps_from([["Berhasil!", "Isi hari lainnya, lalu mulai minggunya.", "", ""]])
 
 ## One TutorialStepData per [title, text, target paths, prompt] row.
 func _steps_from(rows: Array) -> Array[TutorialStepData]:
@@ -930,6 +921,10 @@ func _show_penjadwalan_popup():
 		popup_subtitle.text = "Pilih satu kegiatan untuk %s" % String(student.get("name", "murid ini"))
 		if _tutorial_focus_category != "":
 			popup_subtitle.text = "Pilih %s, lalu ketuk Pilih" % DayStickyNote.DISPLAY_NAMES.get(_tutorial_focus_category, _tutorial_focus_category)
+	if _focus_tile():
+		if _picker_idle == null:
+			_picker_idle = TutorialIdle.attach(self)
+		_picker_idle.start(_focus_tile(), [])
 	_update_popup_stats()
 	# Every opening starts with nothing chosen: Pilih stays dimmed until the
 	# player taps a tile (D13).
@@ -953,6 +948,8 @@ func _hide_penjadwalan_popup():
 		return
 	AudioDirector.play_sfx(&"popup_close")
 	penjadwalan_popup_open = false
+	if _picker_idle:
+		_picker_idle.stop()
 	var t := _get_tokens()
 	var tween = create_tween().set_parallel(true)
 	tween.tween_property(penjadwalan_popup, "modulate:a", 0.0, t.dur_fast).set_ease(Tween.EASE_IN)
@@ -963,6 +960,15 @@ func _hide_penjadwalan_popup():
 		blur_overlay.visible = false
 		blur_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	)
+
+## The picker tile the Senin step asks for, or null outside that step.
+func _focus_tile() -> ActivityTile:
+	if _tutorial_focus_category == "":
+		return null
+	for tile in _popup_tiles():
+		if tile.category == _tutorial_focus_category:
+			return tile
+	return null
 
 ## A tile was tapped: select it, nothing more. The day is only assigned when
 ## the player confirms with Pilih (D13).
@@ -1092,15 +1098,12 @@ func _on_day_pressed(day_name: String):
 
 	if tutorial_active:
 		var current_step_data = current_phase_steps[current_step] if current_step < current_phase_steps.size() else null
-		if current_step_data:
-			var target_path = current_step_data.target_node_path
-			if "Senin" in target_path or "Selasa" in target_path or "Rabu" in target_path or "Kamis" in target_path or "Jumat" in target_path:
-				if not target_path.ends_with(day_name):
-					_reject_tutorial_tap(current_step_data)
-					return
-			elif target_path != "" and not ("BGHari" in target_path):
-				_reject_tutorial_tap(current_step_data)
-				return
+		# Every step targets one control, so a day tap passes only an untargeted
+		# step or the step that targets this very day.
+		if current_step_data and current_step_data.target_node_path != "" \
+				and not current_step_data.target_node_path.ends_with(day_name):
+			_reject_tutorial_tap(current_step_data)
+			return
 		tutorial_active = false
 		color_rect.hide()
 
@@ -1216,10 +1219,8 @@ func _resolve_step_targets(step: TutorialStepData) -> Array[Control]:
 ## taps: the five day notes, the splash that picks the student, START WEEK and
 ## Kembali.
 func _tutorial_alternatives() -> Array[Control]:
-	var controls: Array[Control] = []
-	for candidate: Control in [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn,
-			select_student_button, start_week_button, back_button]:
-		controls.append(candidate)
+	var controls: Array[Control] = [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn,
+			select_student_button, start_week_button, back_button]
 	return controls
 
 ## A wrong tap at a forced step used to be dropped without a sound (a print(),

@@ -1348,7 +1348,9 @@ func test_a_wrong_day_at_a_forced_step_is_answered_not_dropped() -> void:
 		assert_true(rest.begins_with("return"), "the tap is still refused after the answer")
 		answered += 1
 		from = at + 1
-	assert_eq(answered, 2, "the day gate and the non-day gate both answer")
+	# One gate since 2026-10-20: every step targets one control, so "targets
+	# another day" and "targets a non-day" are the same refusal.
+	assert_eq(answered, 1, "the one target gate answers a wrong day")
 
 
 func test_the_answer_shakes_the_wanted_day_and_dims_the_others_with_the_error_cue() -> void:
@@ -1486,3 +1488,14 @@ func test_tutorial_card_body_uses_the_body_face() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/UI/TutorialPanel.tscn")
 	var at := src.find('[node name="BodyLabel"')
 	assert_true(src.substr(at, 300).contains('theme_type_variation = &"TutorialBodyLabel"'))
+
+func test_picker_nudges_the_focus_tile_while_the_senin_step_runs() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_tutorial_block(src, "func _show_penjadwalan_popup").contains("_picker_idle.start(_focus_tile()"),
+		"the idle nudge targets the focus tile")
+	assert_true(_tutorial_block(src, "func _hide_penjadwalan_popup").contains("_picker_idle.stop()"),
+		"closing the picker stops the nudge")
+
+func test_focus_tile_is_null_outside_the_tutorial() -> void:
+	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _focus_tile")
+	assert_true(fn.contains('_tutorial_focus_category == ""'), "no focus, no nudge")

@@ -106,8 +106,6 @@ var _picked_category := ""
 @export var tutorial_phase1_steps: Array[TutorialStepData] = []
 ## Phase 2 tutorial steps (Returning from student selection)
 @export var tutorial_phase2_steps: Array[TutorialStepData] = []
-## Phase 2 alternative step for when student needs academic boost
-@export var tutorial_phase2_alt_step: TutorialStepData = null
 ## Phase 3 tutorial steps (After scheduling Monday)
 @export var tutorial_phase3_steps: Array[TutorialStepData] = []
 ## The shared onboarding coach-mark the steps show on: the look StudentCard
@@ -127,6 +125,9 @@ var _tutorial_prompt_label: Label
 var _step_targets: Array[Control] = []
 var _blink_tween: Tween
 var _tutorial_arrow: Control = null
+## The category the Senin step asks for; the picker's subtitle repeats it
+## until the first assignment. Empty outside that step.
+var _tutorial_focus_category := ""
 
 ## Full-screen dimming backdrop shared by Peringatan and Penjadwalan. A
 ## &"Scrim"-variation Panel, not the old ad-hoc blur shader ColorRect.
@@ -269,34 +270,24 @@ func _setup_gameplay():
 func _populate_default_tutorial_steps():
 	if tutorial_phase1_steps.is_empty():
 		var p1_data = [
-			["Penjadwalan Murid", "Di sini kamu akan menjadwalkan mata pelajaran apa yang perlu ditingkatkan tiap murid agar lolos ujian!", "", ""],
-			["Pilih Murid", "Kamu akan menjadwalkan \"Nama Murid\" terlebih dahulu.", "TextureButton", "Tekan kartu murid untuk lanjut!"]
+			["Atur Jadwal", "Pilih murid yang mau dijadwalkan.", "TextureButton", "Ketuk kartu murid"]
 		]
 		tutorial_phase1_steps = _steps_from(p1_data)
 
 	if tutorial_phase2_steps.is_empty():
+		# One step, one target: a single spotlight hole never spans the
+		# stats and the days, so it cannot bleed over the splash.
+		# "{stat}" is the skill furthest under target (_setup_phase2_tutorial).
 		var p2_data = [
-			["Evaluasi Murid", "Murid ini membutuhkan bantuan agar mereka terfokuskan untuk meningkatkan apa yang ketertinggalan.", "BGStat/Akademis,BGStat/SeniBudaya,BGStat/Olahraga", ""],
-			["Perhatian Akademis", "Wah, sepertinya \"Nama Murid\" mempunyai nilai akademis yang bagus!", "BGStat/Akademis", ""],
-			["Hari Kosong", "Hari berwarnakan Ungu Muda mempunyai arti hari tersebut kosong bagi murid tersebut!", "BGHari/Senin,BGHari/Selasa,BGHari/Rabu,BGHari/Kamis,BGHari/Jumat", ""],
-			["Jadwal Hari Senin", "Mari kita jadwalkan hari senin untuk diisikan mata pelajaran yang mereka sedang butuhkan!", "BGHari/Senin", "Tekan tombol 'Senin' untuk lanjut!"]
+			["Jadwal Senin", "{stat} Nama Murid paling jauh dari target. Isi Senin dengan {stat}.", "BGHari/Senin", "Ketuk Senin"]
 		]
 		tutorial_phase2_steps = _steps_from(p2_data)
 
-	if not tutorial_phase2_alt_step:
-		var alt = TutorialStepData.new()
-		alt.title = "Perhatian Akademis"
-		alt.text = "Wah, sepertinya \"Nama Murid\" perlu nilai akademisnya untuk dinaikkan lebih lagi."
-		alt.target_node_path = "BGStat/Akademis"
-		alt.prompt_text = ""
-		tutorial_phase2_alt_step = alt
-
 	if tutorial_phase3_steps.is_empty():
+		# FirstAssignmentBeat already floats the gains and costs up; this card
+		# only hands the rest of the week to the player.
 		var p3_data = [
-			["Penjadwalan Berhasil", "Kerja bagus!\n\nSekarang, kita perhatikan 2 hal yang berubah saat kamu mengisi sebuah hari dengan mata pelajaran.", "", ""],
-			["Warna Hari", "Pertama, hari akan berganti warna sesuai dengan warna mata pelajaran.\nBiru: Akademis, Hijau: Seni Budaya, dan Merah: Olahraga", "BGHari/Senin", ""],
-			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "BGStat/Akademis/ValueLabel,BGStat/SeniBudaya/ValueLabel,BGStat/Olahraga/ValueLabel,BGStat/Mood/ValueLabel,BGStat/Energy/ValueLabel", ""],
-			["Siap Mengajar!", "Wow, dirimu sangat cepat untuk beradaptasi di lingkungan sekolah ini.\nKamu punya potensi besar untuk sukses mendidik lebih jauh di sini!", "", ""]
+			["Berhasil!", "Isi hari lainnya, lalu mulai minggunya.", "", ""]
 		]
 		tutorial_phase3_steps = _steps_from(p3_data)
 
@@ -387,24 +378,28 @@ func _setup_phase1_tutorial():
 	_start_tutorial_overlay()
 	_enable_select_button()
 
-func _has_akademis_below_target(student: Dictionary) -> bool:
-	var pairs = [
-		["akademis", "target_akademis"],
-		["seni_budaya", "target_seni_budaya"],
-		["olahraga", "target_olahraga"]
-	]
-	for p in pairs:
-		var current = student.get(p[0], 0.0)
-		var target = student.get(p[1], 65.0)
-		if current < target:
-			return true
-	return false
+## The skill `student` is furthest under its target, as its activity
+## category ("Akademis", "SeniBudaya", "Olahraga"). The old step said
+## "akademis yang bagus" for every student, whatever they needed.
+static func weakest_skill_category(student: Dictionary) -> String:
+	var best := "Akademis"
+	var best_gap := -INF
+	for p in [["akademis", "Akademis"], ["seni_budaya", "SeniBudaya"], ["olahraga", "Olahraga"]]:
+		var gap: float = float(student.get("target_" + p[0], 65.0)) - float(student.get(p[0], 0.0))
+		if gap > best_gap:
+			best_gap = gap
+			best = p[1]
+	return best
 
 func _setup_phase2_tutorial():
 	current_phase_steps = tutorial_phase2_steps.duplicate()
-	var student = GameState.selected_student
-	if _has_akademis_below_target(student) and tutorial_phase2_alt_step and current_phase_steps.size() > 1:
-		current_phase_steps[1] = tutorial_phase2_alt_step
+	_tutorial_focus_category = weakest_skill_category(GameState.selected_student)
+	var stat_name: String = DayStickyNote.DISPLAY_NAMES.get(_tutorial_focus_category, _tutorial_focus_category)
+	for i in current_phase_steps.size():
+		if current_phase_steps[i].text.contains("{stat}"):
+			var step := current_phase_steps[i].duplicate() as TutorialStepData
+			step.text = step.text.replace("{stat}", stat_name)
+			current_phase_steps[i] = step
 	_start_tutorial_overlay()
 
 ## `lead_line` (FirstAssignmentBeat.line_for) replaces the first card's body.
@@ -933,6 +928,8 @@ func _show_penjadwalan_popup():
 		popup_title.text = "%s mau ngapain?" % GameState.selected_day
 	if popup_subtitle:
 		popup_subtitle.text = "Pilih satu kegiatan untuk %s" % String(student.get("name", "murid ini"))
+		if _tutorial_focus_category != "":
+			popup_subtitle.text = "Pilih %s, lalu ketuk Pilih" % DayStickyNote.DISPLAY_NAMES.get(_tutorial_focus_category, _tutorial_focus_category)
 	_update_popup_stats()
 	# Every opening starts with nothing chosen: Pilih stays dimmed until the
 	# player taps a tile (D13).
@@ -1036,6 +1033,7 @@ func _on_activity_selected(category: String):
 	if not tutorial_phase3_done and tutorial_phase1_done:
 		var schedules = _get_current_schedules()
 		if schedules.has("Senin"):
+			_tutorial_focus_category = ""
 			FirstAssignmentBeat.play(self, FirstAssignmentBeat.deltas_for(category, student, GameState.current_grade))
 			_setup_phase3_tutorial(FirstAssignmentBeat.line_for(category))
 

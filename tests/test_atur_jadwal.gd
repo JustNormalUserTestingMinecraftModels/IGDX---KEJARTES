@@ -1440,3 +1440,49 @@ func test_a_tap_fills_a_typing_line_first() -> void:
 	assert_true(src.find("_tutorial_panel.skip_typing()", at) != -1
 			and src.find("_tutorial_panel.skip_typing()", at) < src.find("current_step += 1", at),
 		"skip_typing() comes before the step counts")
+
+
+# ── Show-don't-tell tutorial (2026-10-20 plan) ─────────────────────────────────
+# One line per card, one control per card, and the Senin card names the skill
+# the student is furthest behind on.
+
+func _tutorial_block(src: String, header: String) -> String:
+	var block := src.substr(src.find(header))
+	return block.substr(0, block.find("\nfunc ", 10))
+
+func test_weakest_skill_is_the_largest_gap_to_target() -> void:
+	var s := {"akademis": 60, "target_akademis": 65,
+			"seni_budaya": 30, "target_seni_budaya": 65,
+			"olahraga": 50, "target_olahraga": 65}
+	assert_eq(load(_SCRIPT_PATH).weakest_skill_category(s), "SeniBudaya")
+
+func test_weakest_skill_when_every_target_is_met() -> void:
+	var s := {"akademis": 90, "target_akademis": 65,
+			"seni_budaya": 70, "target_seni_budaya": 65,
+			"olahraga": 80, "target_olahraga": 65}
+	assert_eq(load(_SCRIPT_PATH).weakest_skill_category(s), "SeniBudaya", "smallest surplus wins")
+
+func test_weakest_skill_defaults_missing_targets_to_65() -> void:
+	assert_eq(load(_SCRIPT_PATH).weakest_skill_category(
+			{"akademis": 64, "seni_budaya": 70, "olahraga": 70}), "Akademis")
+
+func test_every_tutorial_step_targets_at_most_one_control() -> void:
+	# A comma-separated target cuts one hole round all of them: the splash bleed.
+	var block := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH),
+			"func _populate_default_tutorial_steps")
+	var rx := RegEx.create_from_string(r'\[\s*"[^"]*",\s*"[^"]*",\s*"([^"]*)"')
+	var rows := rx.search_all(block)
+	assert_eq(rows.size(), 3, "three step rows in all")
+	for m in rows:
+		assert_false(m.get_string(1).contains(","), "multi-target step: " + m.get_string(1))
+
+func test_senin_step_names_the_stat_and_the_picker_repeats_it() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains('"{stat} Nama Murid paling jauh dari target. Isi Senin dengan {stat}."'))
+	assert_true(src.contains('"Pilih %s, lalu ketuk Pilih"'))
+	assert_false(src.contains("Ungu Muda"), "empty days are not purple")
+
+func test_tutorial_card_body_uses_the_body_face() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/UI/TutorialPanel.tscn")
+	var at := src.find('[node name="BodyLabel"')
+	assert_true(src.substr(at, 300).contains('theme_type_variation = &"TutorialBodyLabel"'))

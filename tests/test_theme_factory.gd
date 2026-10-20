@@ -303,7 +303,7 @@ func test_body_labels_do_not_take_the_display_font() -> void:
 	# variation -- get_font_list() is the only way to see whether an
 	# explicit "font" override was actually registered for this exact type.
 	for name in ["CaptionLabel", "MicroLabel", "EmptyStateLabel",
-			"ResultBodyLabel", "BioLabel", "BarLabel"]:
+			"ResultBodyLabel", "BioLabel", "BarLabel", "TutorialBodyLabel"]:
 		assert_true(not _theme.get_font_list(name).has("font"),
 			"%s must not carry an explicit font override (should inherit default_font)" % name)
 

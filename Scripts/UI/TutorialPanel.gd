@@ -111,11 +111,30 @@ enum Mode {
 			_apply_mode()
 
 ## The title on the frame's sticker while a tutorial step heads the card
-## (mode STEP). The scene authors the same word on the Frame, so the sticker
-## reads right before the first show_step().
-@export var step_sticker_text: String = "TUTORIAL":
+## (mode STEP). Empty, so a step wears no sticker: the card's own title
+## already names the lesson (owner, 2026-10-20). The scene authors the same
+## on the Frame, so nothing flashes before the first show_step().
+@export var step_sticker_text: String = "":
 	set(value):
 		step_sticker_text = value
+		if is_inside_tree():
+			_apply_mode()
+
+## Whether a multi-step flow shows the "Langkah n / N" pill. Off: the count
+## was one more thing to read on a card a mobile player skims (owner,
+## 2026-10-20). A scene that wants it back sets this on its instance.
+@export var show_step_count: bool = false:
+	set(value):
+		show_step_count = value
+		if is_inside_tree():
+			_apply_mode()
+
+## Frame top padding, px, while the card wears no sticker: the frame's own
+## 120 is a band for the sticker, and left an empty strip over the title.
+## Clear of the paperclip and the name tab on the top edge.
+@export var no_sticker_top_padding: int = 64:
+	set(value):
+		no_sticker_top_padding = value
 		if is_inside_tree():
 			_apply_mode()
 
@@ -210,9 +229,10 @@ enum Mode {
 		if is_inside_tree():
 			_apply_variations()
 
-## Theme variation for the body label. StudentCard uses TitleLabel;
+## Theme variation for the body label: TutorialBodyLabel, the body face, since
+## the line is prose (it was TitleLabel, so every card read all-bold).
 ## SchoolDay sets none (plain default Label styling).
-@export var body_variation: StringName = &"TitleLabel":
+@export var body_variation: StringName = &"TutorialBodyLabel":
 	set(value):
 		body_variation = value
 		if is_inside_tree():
@@ -359,7 +379,7 @@ func _apply_prompt_tint() -> void:
 ## match. The sticker is only written when it changes: each write re-sorts the
 ## frame, and show_step() lands here on every step.
 func _apply_mode() -> void:
-	step_pill.visible = mode == Mode.STEP and _pill_wanted and not nota_style
+	step_pill.visible = mode == Mode.STEP and _pill_wanted and show_step_count and not nota_style
 	name_plate.visible = mode == Mode.HEADMASTER
 	name_tab.visible = mode != Mode.HEADMASTER
 	name_tab_label.text = speaker_name
@@ -370,6 +390,11 @@ func _apply_mode() -> void:
 			sticker = ""
 	if frame.title_text != sticker:
 		frame.title_text = sticker
+	var pad := frame.content_padding
+	# The nota card's decor was laid out over the full band, so it keeps it.
+	pad.y = NotebookFrame.DEFAULT_PADDING.y if sticker != "" or nota_style else no_sticker_top_padding
+	if frame.content_padding != pad:
+		frame.content_padding = pad
 
 
 ## Fills all three labels for one tutorial step and shows the step pill.

@@ -106,8 +106,6 @@ var _picked_category := ""
 @export var tutorial_phase1_steps: Array[TutorialStepData] = []
 ## Phase 2 tutorial steps (Returning from student selection)
 @export var tutorial_phase2_steps: Array[TutorialStepData] = []
-## Phase 2 alternative step for when student needs academic boost
-@export var tutorial_phase2_alt_step: TutorialStepData = null
 ## Phase 3 tutorial steps (After scheduling Monday)
 @export var tutorial_phase3_steps: Array[TutorialStepData] = []
 ## The shared onboarding coach-mark the steps show on: the look StudentCard
@@ -127,6 +125,12 @@ var _tutorial_prompt_label: Label
 var _step_targets: Array[Control] = []
 var _blink_tween: Tween
 var _tutorial_arrow: Control = null
+## The category the Senin step asks for; the picker's subtitle repeats it
+## until the first assignment. Empty outside that step.
+var _tutorial_focus_category := ""
+## Shakes the focus tile after the shared idle delay while the picker is open
+## during the Senin step (TutorialIdle); attached the first time it is needed.
+var _picker_idle: TutorialIdle = null
 
 ## Full-screen dimming backdrop shared by Peringatan and Penjadwalan. A
 ## &"Scrim"-variation Panel, not the old ad-hoc blur shader ColorRect.
@@ -267,38 +271,16 @@ func _setup_gameplay():
 		_setup_phase2_tutorial()
 
 func _populate_default_tutorial_steps():
+	# One card per phase, one target per card: a single spotlight hole never
+	# spans the stats and the days, so it cannot bleed over the splash.
+	# "{stat}" is the skill furthest under target (_setup_phase2_tutorial);
+	# phase 3 leaves the gains to FirstAssignmentBeat's floating numbers.
 	if tutorial_phase1_steps.is_empty():
-		var p1_data = [
-			["Penjadwalan Murid", "Di sini kamu akan menjadwalkan mata pelajaran apa yang perlu ditingkatkan tiap murid agar lolos ujian!", "", ""],
-			["Pilih Murid", "Kamu akan menjadwalkan \"Nama Murid\" terlebih dahulu.", "TextureButton", "Tekan kartu murid untuk lanjut!"]
-		]
-		tutorial_phase1_steps = _steps_from(p1_data)
-
+		tutorial_phase1_steps = _steps_from([["Atur Jadwal", "Pilih murid yang mau dijadwalkan.", "LabelNama", "Ketuk kartu murid"]])
 	if tutorial_phase2_steps.is_empty():
-		var p2_data = [
-			["Evaluasi Murid", "Murid ini membutuhkan bantuan agar mereka terfokuskan untuk meningkatkan apa yang ketertinggalan.", "BGStat/Akademis,BGStat/SeniBudaya,BGStat/Olahraga", ""],
-			["Perhatian Akademis", "Wah, sepertinya \"Nama Murid\" mempunyai nilai akademis yang bagus!", "BGStat/Akademis", ""],
-			["Hari Kosong", "Hari berwarnakan Ungu Muda mempunyai arti hari tersebut kosong bagi murid tersebut!", "BGHari/Senin,BGHari/Selasa,BGHari/Rabu,BGHari/Kamis,BGHari/Jumat", ""],
-			["Jadwal Hari Senin", "Mari kita jadwalkan hari senin untuk diisikan mata pelajaran yang mereka sedang butuhkan!", "BGHari/Senin", "Tekan tombol 'Senin' untuk lanjut!"]
-		]
-		tutorial_phase2_steps = _steps_from(p2_data)
-
-	if not tutorial_phase2_alt_step:
-		var alt = TutorialStepData.new()
-		alt.title = "Perhatian Akademis"
-		alt.text = "Wah, sepertinya \"Nama Murid\" perlu nilai akademisnya untuk dinaikkan lebih lagi."
-		alt.target_node_path = "BGStat/Akademis"
-		alt.prompt_text = ""
-		tutorial_phase2_alt_step = alt
-
+		tutorial_phase2_steps = _steps_from([["Jadwal Senin", "{stat} Nama Murid paling jauh dari target. Isi Senin dengan {stat}.", "BGHari/Senin", "Ketuk Senin"]])
 	if tutorial_phase3_steps.is_empty():
-		var p3_data = [
-			["Penjadwalan Berhasil", "Kerja bagus!\n\nSekarang, kita perhatikan 2 hal yang berubah saat kamu mengisi sebuah hari dengan mata pelajaran.", "", ""],
-			["Warna Hari", "Pertama, hari akan berganti warna sesuai dengan warna mata pelajaran.\nBiru: Akademis, Hijau: Seni Budaya, dan Merah: Olahraga", "BGHari/Senin", ""],
-			["Perubahan Stats & Energy", "Kedua, stats akan mempunyai nilai plus berdasarkan berapa pelajaran per hari yang mereka ambil!\n\nTapi Mood dan energi mereka akan berkurang!", "BGStat/Akademis/ValueLabel,BGStat/SeniBudaya/ValueLabel,BGStat/Olahraga/ValueLabel,BGStat/Mood/ValueLabel,BGStat/Energy/ValueLabel", ""],
-			["Siap Mengajar!", "Wow, dirimu sangat cepat untuk beradaptasi di lingkungan sekolah ini.\nKamu punya potensi besar untuk sukses mendidik lebih jauh di sini!", "", ""]
-		]
-		tutorial_phase3_steps = _steps_from(p3_data)
+		tutorial_phase3_steps = _steps_from([["Berhasil!", "Isi hari lainnya, lalu mulai minggunya.", "", ""]])
 
 ## One TutorialStepData per [title, text, target paths, prompt] row.
 func _steps_from(rows: Array) -> Array[TutorialStepData]:
@@ -387,24 +369,28 @@ func _setup_phase1_tutorial():
 	_start_tutorial_overlay()
 	_enable_select_button()
 
-func _has_akademis_below_target(student: Dictionary) -> bool:
-	var pairs = [
-		["akademis", "target_akademis"],
-		["seni_budaya", "target_seni_budaya"],
-		["olahraga", "target_olahraga"]
-	]
-	for p in pairs:
-		var current = student.get(p[0], 0.0)
-		var target = student.get(p[1], 65.0)
-		if current < target:
-			return true
-	return false
+## The skill `student` is furthest under its target, as its activity
+## category ("Akademis", "SeniBudaya", "Olahraga"). The old step said
+## "akademis yang bagus" for every student, whatever they needed.
+static func weakest_skill_category(student: Dictionary) -> String:
+	var best := "Akademis"
+	var best_gap := -INF
+	for p in [["akademis", "Akademis"], ["seni_budaya", "SeniBudaya"], ["olahraga", "Olahraga"]]:
+		var gap: float = float(student.get("target_" + p[0], 65.0)) - float(student.get(p[0], 0.0))
+		if gap > best_gap:
+			best_gap = gap
+			best = p[1]
+	return best
 
 func _setup_phase2_tutorial():
 	current_phase_steps = tutorial_phase2_steps.duplicate()
-	var student = GameState.selected_student
-	if _has_akademis_below_target(student) and tutorial_phase2_alt_step and current_phase_steps.size() > 1:
-		current_phase_steps[1] = tutorial_phase2_alt_step
+	_tutorial_focus_category = weakest_skill_category(GameState.selected_student)
+	var stat_name: String = DayStickyNote.DISPLAY_NAMES.get(_tutorial_focus_category, _tutorial_focus_category)
+	for i in current_phase_steps.size():
+		if current_phase_steps[i].text.contains("{stat}"):
+			var step := current_phase_steps[i].duplicate() as TutorialStepData
+			step.text = step.text.replace("{stat}", stat_name)
+			current_phase_steps[i] = step
 	_start_tutorial_overlay()
 
 ## `lead_line` (FirstAssignmentBeat.line_for) replaces the first card's body.
@@ -687,7 +673,7 @@ func _on_select_student_pressed():
 	if tutorial_active:
 		var current_step_data = current_phase_steps[current_step] if current_step < current_phase_steps.size() else null
 		if current_step_data:
-			if current_step_data.target_node_path == "" or not ("TextureButton" in current_step_data.target_node_path):
+			if current_step_data.target_node_path != "LabelNama":  # not the 700x1244 button: it spans the days
 				_reject_tutorial_tap(current_step_data)
 				return
 		tutorial_phase1_done = true
@@ -933,6 +919,12 @@ func _show_penjadwalan_popup():
 		popup_title.text = "%s mau ngapain?" % GameState.selected_day
 	if popup_subtitle:
 		popup_subtitle.text = "Pilih satu kegiatan untuk %s" % String(student.get("name", "murid ini"))
+		if _focus_tile():
+			popup_subtitle.text = "Pilih %s, lalu ketuk Pilih" % DayStickyNote.DISPLAY_NAMES.get(_tutorial_focus_category, _tutorial_focus_category)
+	if _focus_tile():
+		if _picker_idle == null:
+			_picker_idle = TutorialIdle.attach(self)
+		_picker_idle.start(_focus_tile(), [])
 	_update_popup_stats()
 	# Every opening starts with nothing chosen: Pilih stays dimmed until the
 	# player taps a tile (D13).
@@ -956,6 +948,7 @@ func _hide_penjadwalan_popup():
 		return
 	AudioDirector.play_sfx(&"popup_close")
 	penjadwalan_popup_open = false
+	if _picker_idle: _picker_idle.stop()
 	var t := _get_tokens()
 	var tween = create_tween().set_parallel(true)
 	tween.tween_property(penjadwalan_popup, "modulate:a", 0.0, t.dur_fast).set_ease(Tween.EASE_IN)
@@ -967,12 +960,22 @@ func _hide_penjadwalan_popup():
 		blur_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	)
 
+## The picker tile the Senin step asks for, or null outside that step.
+func _focus_tile() -> ActivityTile:
+	if _tutorial_focus_category == "" or GameState.selected_day != "Senin":
+		return null
+	for tile in _popup_tiles():
+		if tile.category == _tutorial_focus_category:
+			return tile
+	return null
+
 ## A tile was tapped: select it, nothing more. The day is only assigned when
 ## the player confirms with Pilih (D13).
 func _on_tile_picked(category: String) -> void:
 	# The sheet stays tappable through its closing fade; ignore it then.
 	if not penjadwalan_popup_open or category == _picked_category:
 		return
+	if _picker_idle: _picker_idle.stop()  # a pick answers the nudge
 	_set_pick(category)
 	AudioDirector.play_sfx(&"tap")
 
@@ -1036,6 +1039,7 @@ func _on_activity_selected(category: String):
 	if not tutorial_phase3_done and tutorial_phase1_done:
 		var schedules = _get_current_schedules()
 		if schedules.has("Senin"):
+			_tutorial_focus_category = ""
 			FirstAssignmentBeat.play(self, FirstAssignmentBeat.deltas_for(category, student, GameState.current_grade))
 			_setup_phase3_tutorial(FirstAssignmentBeat.line_for(category))
 
@@ -1094,15 +1098,12 @@ func _on_day_pressed(day_name: String):
 
 	if tutorial_active:
 		var current_step_data = current_phase_steps[current_step] if current_step < current_phase_steps.size() else null
-		if current_step_data:
-			var target_path = current_step_data.target_node_path
-			if "Senin" in target_path or "Selasa" in target_path or "Rabu" in target_path or "Kamis" in target_path or "Jumat" in target_path:
-				if not target_path.ends_with(day_name):
-					_reject_tutorial_tap(current_step_data)
-					return
-			elif target_path != "" and not ("BGHari" in target_path):
-				_reject_tutorial_tap(current_step_data)
-				return
+		# Every step targets one control, so a day tap passes only an untargeted
+		# step or the step that targets this very day.
+		if current_step_data and current_step_data.target_node_path != "" \
+				and not current_step_data.target_node_path.ends_with(day_name):
+			_reject_tutorial_tap(current_step_data)
+			return
 		tutorial_active = false
 		color_rect.hide()
 
@@ -1163,7 +1164,7 @@ func _show_step(index: int) -> void:
 		_highlight_multiple(_step_targets)
 
 	# Determine if step requires specific button interaction (only when prompt_text is explicitly set or when target is an actual action button)
-	var is_button_target := step.target_node_path == "TextureButton" or step.target_node_path == "BGHari/Senin"
+	var is_button_target := step.target_node_path == "LabelNama" or step.target_node_path == "BGHari/Senin"
 	var requires_button_press := step.prompt_text != "" or (is_button_target and index == current_phase_steps.size() - 1)
 
 	# Dynamic Prompt Text
@@ -1218,10 +1219,8 @@ func _resolve_step_targets(step: TutorialStepData) -> Array[Control]:
 ## taps: the five day notes, the splash that picks the student, START WEEK and
 ## Kembali.
 func _tutorial_alternatives() -> Array[Control]:
-	var controls: Array[Control] = []
-	for candidate: Control in [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn,
-			select_student_button, start_week_button, back_button]:
-		controls.append(candidate)
+	var controls: Array[Control] = [senin_btn, selasa_btn, rabu_btn, kamis_btn, jumat_btn,
+			select_student_button, start_week_button, back_button]
 	return controls
 
 ## A wrong tap at a forced step used to be dropped without a sound (a print(),

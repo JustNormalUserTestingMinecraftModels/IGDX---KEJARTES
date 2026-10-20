@@ -1108,6 +1108,16 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 	if tokens.font_body != null:
 		theme.set_font("font", "AchievementSheetBodyLabel", tokens.font_body)
 
+	# The tutorial card's one line (TutorialPanel BodyLabel). It was TitleLabel,
+	# so title, body and prompt all shouted in the display face; the body is
+	# prose, so it inherits default_font (Open Sans) in the primary ink, at
+	# title size like the nota card's TutorialNoteLabel: one tutorial voice,
+	# and body size read too small under the H1 title.
+	theme.add_type("TutorialBodyLabel")
+	theme.set_type_variation("TutorialBodyLabel", "Label")
+	theme.set_font_size("font_size", "TutorialBodyLabel", tokens.font_title)
+	theme.set_color("font_color", "TutorialBodyLabel", tokens.text_primary)
+
 	# The "BARU" unlock pip that used to sit in the tile's top-right corner
 	# was replaced on 2026-09-22 by a notice_icon.png TextureRect, so its
 	# AchievementBaruBadge / AchievementBaruBadgeLabel variations went with

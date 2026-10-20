@@ -1139,3 +1139,17 @@ func test_the_comic_is_a_compact_row() -> void:
 	assert_true(row is HBoxContainer, "a row, not a stack")
 	assert_eq(comic.get_node("%Illustration").get_parent(), row, "the icon heads the row")
 	assert_eq(comic.get_node("%Line").get_parent().get_parent(), row, "the line sits beside it")
+
+
+## With no sticker on a step (2026-10-20) the frame's 120px sticker band was
+## an empty strip over the title. A stickerless card closes it to
+## no_sticker_top_padding; a beat's sticker brings the band back.
+func test_a_stickerless_card_closes_the_sticker_band() -> void:
+	var panel := _make()
+	var frame := panel.get_node("Frame") as NotebookFrame
+	panel.show_step("Judul", "Isi", "Ketuk", 1, 2)
+	assert_eq(frame.content_padding.y, panel.no_sticker_top_padding, "no sticker, no band")
+	assert_true(panel.no_sticker_top_padding < NotebookFrame.DEFAULT_PADDING.y, "and it is tighter")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
+	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "a sticker gets its band back")
+	assert_eq(frame.content_padding.x, NotebookFrame.DEFAULT_PADDING.x, "the sides are untouched")

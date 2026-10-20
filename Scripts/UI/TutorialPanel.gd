@@ -120,6 +120,15 @@ enum Mode {
 		if is_inside_tree():
 			_apply_mode()
 
+## Frame top padding, px, while the card wears no sticker: the frame's own
+## 120 is a band for the sticker, and left an empty strip over the title.
+## Clear of the paperclip and the name tab on the top edge.
+@export var no_sticker_top_padding: int = 64:
+	set(value):
+		no_sticker_top_padding = value
+		if is_inside_tree():
+			_apply_mode()
+
 ## The title on the frame's sticker while the headmaster's beat heads the card
 ## (mode HEADMASTER). A promotion's congratulation is a story beat, not a
 ## lesson, so its card must not wear the tutorial's label.
@@ -372,6 +381,10 @@ func _apply_mode() -> void:
 			sticker = ""
 	if frame.title_text != sticker:
 		frame.title_text = sticker
+	var pad := frame.content_padding
+	pad.y = NotebookFrame.DEFAULT_PADDING.y if sticker != "" else no_sticker_top_padding
+	if frame.content_padding != pad:
+		frame.content_padding = pad
 
 
 ## Fills all three labels for one tutorial step and shows the step pill.

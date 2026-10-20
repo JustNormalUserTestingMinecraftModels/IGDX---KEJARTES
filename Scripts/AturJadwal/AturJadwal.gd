@@ -919,7 +919,7 @@ func _show_penjadwalan_popup():
 		popup_title.text = "%s mau ngapain?" % GameState.selected_day
 	if popup_subtitle:
 		popup_subtitle.text = "Pilih satu kegiatan untuk %s" % String(student.get("name", "murid ini"))
-		if _tutorial_focus_category != "":
+		if _focus_tile():
 			popup_subtitle.text = "Pilih %s, lalu ketuk Pilih" % DayStickyNote.DISPLAY_NAMES.get(_tutorial_focus_category, _tutorial_focus_category)
 	if _focus_tile():
 		if _picker_idle == null:
@@ -963,7 +963,7 @@ func _hide_penjadwalan_popup():
 
 ## The picker tile the Senin step asks for, or null outside that step.
 func _focus_tile() -> ActivityTile:
-	if _tutorial_focus_category == "":
+	if _tutorial_focus_category == "" or GameState.selected_day != "Senin":
 		return null
 	for tile in _popup_tiles():
 		if tile.category == _tutorial_focus_category:

@@ -1496,6 +1496,15 @@ func test_picker_nudges_the_focus_tile_while_the_senin_step_runs() -> void:
 	assert_true(_tutorial_block(src, "func _hide_penjadwalan_popup").contains("_picker_idle.stop()"),
 		"closing the picker stops the nudge")
 
+func test_the_senin_hint_stays_on_senin() -> void:
+	# Review I1: tap Senin, cancel, tap Selasa -- the Selasa picker must not
+	# carry the Senin hint or shake its tile.
+	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _focus_tile")
+	assert_true(fn.contains('GameState.selected_day != "Senin"'), "no focus on any other day")
+	var show := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _show_penjadwalan_popup")
+	assert_true(show.contains("if _focus_tile():\n\t\t\tpopup_subtitle.text = \"Pilih %s"),
+		"the subtitle hint follows the same gate")
+
 func test_focus_tile_is_null_outside_the_tutorial() -> void:
 	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _focus_tile")
 	assert_true(fn.contains('_tutorial_focus_category == ""'), "no focus, no nudge")

@@ -210,9 +210,10 @@ enum Mode {
 		if is_inside_tree():
 			_apply_variations()
 
-## Theme variation for the body label. StudentCard uses TitleLabel;
+## Theme variation for the body label: TutorialBodyLabel, the body face, since
+## the line is prose (it was TitleLabel, so every card read all-bold).
 ## SchoolDay sets none (plain default Label styling).
-@export var body_variation: StringName = &"TitleLabel":
+@export var body_variation: StringName = &"TutorialBodyLabel":
 	set(value):
 		body_variation = value
 		if is_inside_tree():

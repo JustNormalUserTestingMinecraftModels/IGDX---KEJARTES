@@ -276,7 +276,7 @@ func _populate_default_tutorial_steps():
 	# "{stat}" is the skill furthest under target (_setup_phase2_tutorial);
 	# phase 3 leaves the gains to FirstAssignmentBeat's floating numbers.
 	if tutorial_phase1_steps.is_empty():
-		tutorial_phase1_steps = _steps_from([["Atur Jadwal", "Pilih murid yang mau dijadwalkan.", "TextureButton", "Ketuk kartu murid"]])
+		tutorial_phase1_steps = _steps_from([["Atur Jadwal", "Pilih murid yang mau dijadwalkan.", "LabelNama", "Ketuk kartu murid"]])
 	if tutorial_phase2_steps.is_empty():
 		tutorial_phase2_steps = _steps_from([["Jadwal Senin", "{stat} Nama Murid paling jauh dari target. Isi Senin dengan {stat}.", "BGHari/Senin", "Ketuk Senin"]])
 	if tutorial_phase3_steps.is_empty():
@@ -673,7 +673,7 @@ func _on_select_student_pressed():
 	if tutorial_active:
 		var current_step_data = current_phase_steps[current_step] if current_step < current_phase_steps.size() else null
 		if current_step_data:
-			if current_step_data.target_node_path == "" or not ("TextureButton" in current_step_data.target_node_path):
+			if current_step_data.target_node_path != "LabelNama":  # not the 700x1244 button: it spans the days
 				_reject_tutorial_tap(current_step_data)
 				return
 		tutorial_phase1_done = true
@@ -1164,7 +1164,7 @@ func _show_step(index: int) -> void:
 		_highlight_multiple(_step_targets)
 
 	# Determine if step requires specific button interaction (only when prompt_text is explicitly set or when target is an actual action button)
-	var is_button_target := step.target_node_path == "TextureButton" or step.target_node_path == "BGHari/Senin"
+	var is_button_target := step.target_node_path == "LabelNama" or step.target_node_path == "BGHari/Senin"
 	var requires_button_press := step.prompt_text != "" or (is_button_target and index == current_phase_steps.size() - 1)
 
 	# Dynamic Prompt Text

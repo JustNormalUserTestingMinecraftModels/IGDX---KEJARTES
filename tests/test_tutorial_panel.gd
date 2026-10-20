@@ -130,7 +130,7 @@ func test_layout_knobs_default_to_student_cards_shipped_numbers() -> void:
 	assert_eq(panel.content_margin, 0)
 	assert_eq(panel.vbox_separation, 10)
 	assert_eq(panel.title_variation, &"H1Label")
-	assert_eq(panel.body_variation, &"TitleLabel")
+	assert_eq(panel.body_variation, &"TutorialBodyLabel", "the line is prose: body face, not display")
 	assert_eq(panel.body_width_offset, 60.0)
 	assert_eq(panel.prompt_variation, &"TitleLabel")
 	assert_false(panel.prompt_success_tint)
@@ -896,7 +896,7 @@ func test_the_tutorial_copy_addresses_the_player_as_kamu() -> void:
 		assert_true(found == null, "%s still says \"%s\""
 			% [path, found.get_string() if found != null else ""])
 	assert_contains(FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd"),
-		"Kamu akan menjadwalkan", "the card after \"Di sini kamu akan\" keeps its voice (not vacuous)")
+		"Isi Senin dengan {stat}", "the Senin card is scanned, so the check is not vacuous")
 	assert_false(FileAccess.get_file_as_string(STUDENT_CARD_PATH).contains("performance"),
 		"StudentCard's welcome says kemampuan, not performance")
 

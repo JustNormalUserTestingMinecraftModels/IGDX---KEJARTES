@@ -8,6 +8,12 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-20 — Atur Jadwal tutorial: show, don't tell
+
+- **Why:** players skip tutorial text; the old Atur Jadwal cards misled (told every student their akademis was good, called empty days "Ungu Muda" when Istirahat is the purple), its student-card spotlight wrapped the 700×1244 `TextureButton` so it lit the day notes and the arrow pointed at Kamis, and every card body was `TitleLabel` (all display face).
+- **Now:** 2 + 4 + 4 cards → 1 + 1 + 1. Step 1 lights `LabelNama`; the Senin card names the skill furthest under target (`AturJadwal.weakest_skill_category`) and the picker's subtitle repeats it while `TutorialIdle` shakes that tile after the idle delay. Phase 3 leaves the numbers to `FirstAssignmentBeat`. `TutorialPanel.body_variation` defaults to the new `TutorialBodyLabel` (body face), which reaches every non-nota tutorial card.
+- **Tests:** `test_atur_jadwal` (weakest skill incl. all-met and missing targets, one target per step, copy, nudge, name-plate gate), `test_tutorial_panel` (default variation), `test_theme_factory` (body-face roster). Live-checked step 1 and the StudentList card; step 2 and the picker were not driven live (the MCP bridge's clicks do not reach the game).
+
 ## 2026-10-02 — Web build for itch.io
 
 - **Why gzip in place:** itch.io caps a file at 200 MB and the web export's raw `index.pck` is 585.6 MB (desktop and phone textures both packed). itch.io serves gzip content with `content-encoding: gzip` under the file's own name, so `tools/shrink_web.ps1` gzips `*.pck`, `*.wasm` and `*.js` in place, proves each unpacks to a byte-identical original, checks the 200 MB limit and zips the folder for upload. The pck went to 172.8 MB, the zip is 181.8 MB.

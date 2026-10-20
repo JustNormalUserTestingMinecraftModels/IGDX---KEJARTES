@@ -1499,3 +1499,11 @@ func test_picker_nudges_the_focus_tile_while_the_senin_step_runs() -> void:
 func test_focus_tile_is_null_outside_the_tutorial() -> void:
 	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _focus_tile")
 	assert_true(fn.contains('_tutorial_focus_category == ""'), "no focus, no nudge")
+
+func test_the_student_step_spotlights_the_name_plate_not_the_whole_button() -> void:
+	# TextureButton is 700x1244: its spotlight ran from the splash down over
+	# the day notes and the arrow pointed at Kamis (live run, 2026-10-20).
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains('"Pilih murid yang mau dijadwalkan.", "LabelNama"'), "step 1 lights the name plate")
+	assert_true(_tutorial_block(src, "func _on_select_student_pressed").contains('"LabelNama"'),
+		"the student gate accepts the name-plate step")

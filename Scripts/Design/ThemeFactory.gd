@@ -1110,10 +1110,12 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 
 	# The tutorial card's one line (TutorialPanel BodyLabel). It was TitleLabel,
 	# so title, body and prompt all shouted in the display face; the body is
-	# prose, so it inherits default_font (Open Sans) in the primary ink.
+	# prose, so it inherits default_font (Open Sans) in the primary ink, at
+	# title size like the nota card's TutorialNoteLabel: one tutorial voice,
+	# and body size read too small under the H1 title.
 	theme.add_type("TutorialBodyLabel")
 	theme.set_type_variation("TutorialBodyLabel", "Label")
-	theme.set_font_size("font_size", "TutorialBodyLabel", tokens.font_body_size)
+	theme.set_font_size("font_size", "TutorialBodyLabel", tokens.font_title)
 	theme.set_color("font_color", "TutorialBodyLabel", tokens.text_primary)
 
 	# The "BARU" unlock pip that used to sit in the tile's top-right corner

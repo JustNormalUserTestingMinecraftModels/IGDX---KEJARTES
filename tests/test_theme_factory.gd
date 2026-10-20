@@ -818,3 +818,15 @@ func test_changing_the_success_token_changes_the_tutorial_badges() -> void:
 		var box := built.get_stylebox("panel", box_name) as StyleBoxFlat
 		assert_eq(box.bg_color, Color("ff0000"),
 			box_name + " must follow state_success, not a hardcoded mint")
+
+
+## Every tutorial card speaks with one voice: the plain card's line
+## (TutorialBodyLabel) matches the first-run nota card's (TutorialNoteLabel)
+## -- body face, title size, primary ink. At body size it read too small
+## under the 64px title (owner, 2026-10-20).
+func test_tutorial_body_matches_the_nota_line() -> void:
+	assert_eq(_theme.get_font_size("font_size", "TutorialBodyLabel"), _tokens.font_title)
+	assert_eq(_theme.get_font_size("font_size", "TutorialBodyLabel"),
+		_theme.get_font_size("font_size", "TutorialNoteLabel"))
+	assert_eq(_theme.get_color("font_color", "TutorialBodyLabel"),
+		_theme.get_color("font_color", "TutorialNoteLabel"))

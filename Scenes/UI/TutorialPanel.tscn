@@ -15,16 +15,16 @@ theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 script = ExtResource("1_v0ojc")
-step_sticker_text = ""
 
 [node name="Frame" parent="." unique_id=25906949 instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 360)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 mouse_filter = 2
 ring_count = 4
 show_well = false
 show_close = false
+content_padding = Vector4i(72, 64, 40, 48)
 
 [node name="Margin" type="MarginContainer" parent="Frame" unique_id=1626375456]
 layout_mode = 2

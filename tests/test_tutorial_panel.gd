@@ -1144,6 +1144,16 @@ func test_the_comic_is_a_compact_row() -> void:
 ## With no sticker on a step (2026-10-20) the frame's 120px sticker band was
 ## an empty strip over the title. A stickerless card closes it to
 ## no_sticker_top_padding; a beat's sticker brings the band back.
+## The card's frame floor sits under a one-line step's content (title, line,
+## prompt, 64 + 48 padding: ~340px), so the content -- not a fixed 360 --
+## sets the height and no empty strip opens under the prompt (2026-10-20).
+func test_the_card_floor_lets_content_set_the_height() -> void:
+	var card := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(card)
+	assert_true((card.get_node("Frame") as Control).custom_minimum_size.y <= 280.0,
+		"frame floor %.0f is low enough for the content to drive"
+		% (card.get_node("Frame") as Control).custom_minimum_size.y)
+
 func test_a_stickerless_card_closes_the_sticker_band() -> void:
 	var panel := _make()
 	var frame := panel.get_node("Frame") as NotebookFrame

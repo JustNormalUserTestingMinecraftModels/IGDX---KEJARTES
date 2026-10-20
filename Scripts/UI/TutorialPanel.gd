@@ -111,9 +111,10 @@ enum Mode {
 			_apply_mode()
 
 ## The title on the frame's sticker while a tutorial step heads the card
-## (mode STEP). The scene authors the same word on the Frame, so the sticker
-## reads right before the first show_step().
-@export var step_sticker_text: String = "TUTORIAL":
+## (mode STEP). Empty, so a step wears no sticker: the card's own title
+## already names the lesson (owner, 2026-10-20). The scene authors the same
+## on the Frame, so nothing flashes before the first show_step().
+@export var step_sticker_text: String = "":
 	set(value):
 		step_sticker_text = value
 		if is_inside_tree():

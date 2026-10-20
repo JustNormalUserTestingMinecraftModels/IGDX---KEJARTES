@@ -120,6 +120,15 @@ enum Mode {
 		if is_inside_tree():
 			_apply_mode()
 
+## Whether a multi-step flow shows the "Langkah n / N" pill. Off: the count
+## was one more thing to read on a card a mobile player skims (owner,
+## 2026-10-20). A scene that wants it back sets this on its instance.
+@export var show_step_count: bool = false:
+	set(value):
+		show_step_count = value
+		if is_inside_tree():
+			_apply_mode()
+
 ## Frame top padding, px, while the card wears no sticker: the frame's own
 ## 120 is a band for the sticker, and left an empty strip over the title.
 ## Clear of the paperclip and the name tab on the top edge.
@@ -370,7 +379,7 @@ func _apply_prompt_tint() -> void:
 ## match. The sticker is only written when it changes: each write re-sorts the
 ## frame, and show_step() lands here on every step.
 func _apply_mode() -> void:
-	step_pill.visible = mode == Mode.STEP and _pill_wanted and not nota_style
+	step_pill.visible = mode == Mode.STEP and _pill_wanted and show_step_count and not nota_style
 	name_plate.visible = mode == Mode.HEADMASTER
 	name_tab.visible = mode != Mode.HEADMASTER
 	name_tab_label.text = speaker_name

@@ -204,13 +204,13 @@ func test_mode_is_an_export_and_toggles_the_pill_and_the_plate() -> void:
 	assert_eq(panel.mode, TutorialPanel.Mode.STEP, "a card starts as a tutorial step")
 	var pill := panel.get_node(LAYOUT + "StepPill") as Control
 	var plate := panel.get_node(LAYOUT + "NamePlate") as Control
-	assert_true(pill.visible, "STEP shows the pill")
+	assert_false(pill.visible, "STEP shows no step count by default (owner, 2026-10-20)")
 	assert_false(plate.visible, "and not the name plate")
 	panel.mode = TutorialPanel.Mode.HEADMASTER
 	assert_true(plate.visible, "HEADMASTER shows the name plate")
 	assert_false(pill.visible, "and not the pill")
 	panel.mode = TutorialPanel.Mode.STEP
-	assert_true(pill.visible, "switching back shows the pill again")
+	assert_false(pill.visible, "nor after switching back")
 	assert_false(plate.visible)
 
 
@@ -221,7 +221,10 @@ func test_show_step_with_a_single_step_hides_the_pill_and_three_shows_it() -> vo
 	panel.show_step("Judul", "Isi", "Ketuk", 1, 1)
 	assert_false(pill.visible, "one step has nothing to count")
 	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
-	assert_true(pill.visible, "three steps show the pill")
+	assert_false(pill.visible, "three steps show no count either")
+	panel.show_step_count = true
+	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
+	assert_true(pill.visible, "a scene that opts in still gets the pill")
 	assert_eq(label.text, "Langkah 2 / 3")
 	panel.show_step("Judul", "Isi", "Ketuk")
 	assert_false(pill.visible, "the three-argument call shows no pill")
@@ -242,7 +245,7 @@ func test_show_beat_shows_the_name_plate_with_the_speaker() -> void:
 	assert_eq((panel.get_node(LAYOUT + "PromptLabel") as Label).text, "Ketuk untuk lanjut")
 	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
 	assert_eq(panel.mode, TutorialPanel.Mode.STEP, "a step after a beat is a step again")
-	assert_true(pill.visible)
+	assert_false(pill.visible, "with no step count (show_step_count off)")
 	assert_false(plate.visible)
 
 

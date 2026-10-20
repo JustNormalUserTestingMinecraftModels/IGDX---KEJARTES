@@ -1166,3 +1166,13 @@ func test_a_stickerless_card_closes_the_sticker_band() -> void:
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
 	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "a sticker gets its band back")
 	assert_eq(frame.content_padding.x, NotebookFrame.DEFAULT_PADDING.x, "the sides are untouched")
+
+## Review 2026-10-20: the nota card already wore no sticker and its decor
+## (mascot, paperclip, name tab) was laid out over the 120px band, so the
+## stickerless padding is for plain cards only.
+func test_the_nota_card_keeps_its_band() -> void:
+	var panel := _make()
+	var frame := panel.get_node("Frame") as NotebookFrame
+	panel.nota_style = true
+	panel.show_step("Judul", "Isi", "Ketuk", 1, 2)
+	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "nota keeps 120")

@@ -948,8 +948,7 @@ func _hide_penjadwalan_popup():
 		return
 	AudioDirector.play_sfx(&"popup_close")
 	penjadwalan_popup_open = false
-	if _picker_idle:
-		_picker_idle.stop()
+	if _picker_idle: _picker_idle.stop()
 	var t := _get_tokens()
 	var tween = create_tween().set_parallel(true)
 	tween.tween_property(penjadwalan_popup, "modulate:a", 0.0, t.dur_fast).set_ease(Tween.EASE_IN)
@@ -976,6 +975,7 @@ func _on_tile_picked(category: String) -> void:
 	# The sheet stays tappable through its closing fade; ignore it then.
 	if not penjadwalan_popup_open or category == _picked_category:
 		return
+	if _picker_idle: _picker_idle.stop()  # a pick answers the nudge
 	_set_pick(category)
 	AudioDirector.play_sfx(&"tap")
 

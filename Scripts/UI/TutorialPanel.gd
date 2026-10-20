@@ -391,7 +391,8 @@ func _apply_mode() -> void:
 	if frame.title_text != sticker:
 		frame.title_text = sticker
 	var pad := frame.content_padding
-	pad.y = NotebookFrame.DEFAULT_PADDING.y if sticker != "" else no_sticker_top_padding
+	# The nota card's decor was laid out over the full band, so it keeps it.
+	pad.y = NotebookFrame.DEFAULT_PADDING.y if sticker != "" or nota_style else no_sticker_top_padding
 	if frame.content_padding != pad:
 		frame.content_padding = pad
 

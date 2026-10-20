@@ -1516,3 +1516,8 @@ func test_the_student_step_spotlights_the_name_plate_not_the_whole_button() -> v
 	assert_true(src.contains('"Pilih murid yang mau dijadwalkan.", "LabelNama"'), "step 1 lights the name plate")
 	assert_true(_tutorial_block(src, "func _on_select_student_pressed").contains('"LabelNama"'),
 		"the student gate accepts the name-plate step")
+
+func test_picking_a_tile_calms_the_nudge() -> void:
+	# Review 2026-10-20: the suggested tile kept shaking after it was picked.
+	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _on_tile_picked")
+	assert_true(fn.contains("_picker_idle.stop()"), "a pick stops the nudge")

@@ -248,7 +248,6 @@ func test_show_beat_shows_the_name_plate_with_the_speaker() -> void:
 ## tutorials off would read a story beat labelled as one.
 func test_the_sticker_follows_the_mode() -> void:
 	var panel := _make()
-	panel.step_sticker_text = "TUTORIAL"  # empty by default since 2026-10-18
 	var frame := panel.get_node("Frame") as NotebookFrame
 	var sticker := frame.get_node("Chrome/Sticker") as Control
 	var label := frame.get_node("Chrome/Sticker/Title") as Label

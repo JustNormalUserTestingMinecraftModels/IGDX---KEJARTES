@@ -56,6 +56,10 @@ const MASCOT_HEAD_ROOM := 196.0
 
 
 func _ready() -> void:
+	# MASCOT_HEAD_ROOM is the one source of the mascot's height: the scene's
+	# offsets are a placeholder for the editor, so the two cannot drift apart.
+	mascot.offset_top = -MASCOT_HEAD_ROOM
+	mascot.pivot_offset = Vector2(mascot.size.x / 2.0, MASCOT_HEAD_ROOM)
 	name_tab_label.text = speaker_name
 	name_tab.visible = show_name_tab
 	_apply_expression()

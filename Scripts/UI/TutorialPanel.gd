@@ -644,6 +644,7 @@ static func place_step(panel: TutorialPanel, bounds_node: Control, overlay: Cont
 	await panel.get_tree().process_frame
 	if not is_instance_valid(panel) or not is_instance_valid(bounds_node):
 		return
+	panel.reset_size()  # the first layout pass over-grows wrapped labels
 	var bounds := rect_in(bounds_node, overlay)
 	var spot := spot_in(targets, overlay)
 	var arrow_size := Vector2.ZERO

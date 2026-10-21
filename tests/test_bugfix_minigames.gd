@@ -12,6 +12,9 @@ extends McpTestSuite
 ## - Menjodohkan ignored the grade-scaled clock SchoolDay passes.
 ## - MainBola's out-of-shots loss showed the card without ending the game,
 ##   and a winning goal in the last 0.35 s ended as a loss.
+## - Variabel's and Password's Kirim handler resumed after a timer await
+##   during which a wrong answer's penalty (or the clock) had ended the game,
+##   calling get_tree() on a freed minigame.
 ##
 ## The shipping minigames are not @tool, so most checks are source scans; the
 ## abandon check drives tests/minigame_end_stub.gd, a real BaseMinigame.
@@ -25,6 +28,10 @@ const MENARI_PATH := "res://Scripts/Minigames/SeniBudaya/LombaMenari.gd"
 const MENJODOHKAN_PATH := "res://Scripts/Minigames/Akademis/Menjodohkan.gd"
 ## MainBola's script, scanned for its goal and out-of-shots endings.
 const MAIN_BOLA_PATH := "res://Scripts/Minigames/Olahraga/MainBola.gd"
+## Variabel's script, scanned for its Kirim handler's await guards.
+const VARIABEL_PATH := "res://Scripts/Minigames/Akademis/Variabel.gd"
+## Password's script, scanned for its Kirim handler's await guards.
+const PASSWORD_PATH := "res://Scripts/Minigames/Akademis/Password.gd"
 ## The smallest real BaseMinigame (@tool, so its methods run in the editor).
 const EndStub := preload("res://tests/minigame_end_stub.gd")
 
@@ -102,3 +109,28 @@ func test_main_bola_winning_goal_is_decided_before_the_pause() -> void:
 	assert_true(decided < paused,
 		"the win stops the clock before the pacing pause, so a buzzer there cannot lose it")
 	assert_true(goal.contains("win_game()"), "and the goal still ends on the win card")
+
+
+## Asserts every timer await in `body` is followed, past the line restoring
+## is_paused, by a _round_still_live() bail-out.
+func _assert_awaits_guarded(body: String, label: String) -> void:
+	var lines := body.split("\n")
+	var awaits := 0
+	for i in lines.size():
+		if not lines[i].contains("await get_tree().create_timer("):
+			continue
+		awaits += 1
+		var next := ""
+		for j in range(i + 1, lines.size()):
+			var line := lines[j].strip_edges()
+			if line != "" and not line.begins_with("is_paused"):
+				next = line
+				break
+		assert_eq(next, "if not _round_still_live():",
+			"%s: the await on handler line %d re-checks the round" % [label, i + 1])
+	assert_true(awaits > 0, "%s: the handler still waits on a timer" % label)
+
+
+func test_kalkulator_kirim_stops_once_the_round_has_ended() -> void:
+	_assert_awaits_guarded(_function_body(VARIABEL_PATH, "func _on_submit_pressed("), "Variabel")
+	_assert_awaits_guarded(_function_body(PASSWORD_PATH, "func _on_enter_pressed("), "Password")

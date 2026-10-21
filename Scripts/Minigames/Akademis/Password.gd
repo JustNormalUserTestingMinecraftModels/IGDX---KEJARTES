@@ -248,18 +248,30 @@ func _on_enter_pressed() -> void:
 			kalkulator.set_layar_color(error_color)
 			_play_wiggle_animation(kalkulator)
 		# Show correct answer briefly before moving on
+		if not _round_still_live():
+			return
 		await get_tree().create_timer(reveal_delay).timeout
+		if not _round_still_live():
+			return
 		if kalkulator and is_instance_valid(kalkulator):
 			kalkulator.set_layar(str(expected_answer))
 			kalkulator.set_layar_color(reveal_color)
 
 	await get_tree().create_timer(feedback_hold_duration).timeout
+	if not _round_still_live():
+		return
 
 	current_question_index += 1
 	if current_question_index < active_questions.size():
 		_show_current_question()
 	else:
 		_finish_quiz()
+
+## False once the game has ended (a time penalty or the clock running out
+## mid-answer calls lose_game()) or the scene has left the tree: the submit
+## handler stops there instead of judging the round a second time.
+func _round_still_live() -> bool:
+	return is_game_active and is_inside_tree()
 
 # ── Finish quiz ───────────────────────────────────────────────────────────────
 func _finish_quiz() -> void:

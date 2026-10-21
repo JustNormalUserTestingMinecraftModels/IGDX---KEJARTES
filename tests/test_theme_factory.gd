@@ -827,3 +827,12 @@ func test_changing_the_success_token_changes_the_tutorial_badges() -> void:
 func test_tutorial_note_label_carries_its_line_spacing() -> void:
 	assert_eq(_theme.get_constant("line_spacing", "TutorialNoteLabel"),
 		ThemeFactory.TUTORIAL_NOTE_LINE_SPACING)
+
+
+## 2026-10-21: [b] text reads "bold_font_size"; unset, it fell back to the
+## engine's 16px and the comic's bold numbers rendered tiny.
+func test_rich_text_bold_matches_its_normal_size() -> void:
+	for type_name: String in ["RichTextLabel", "EventDialogueText"]:
+		assert_eq(_theme.get_font_size("bold_font_size", type_name),
+			_theme.get_font_size("normal_font_size", type_name),
+			type_name + " bold text is as big as its normal text")

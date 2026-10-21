@@ -902,9 +902,13 @@ static func _build_event_dialogue(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("EventDialogueText")
 	theme.set_type_variation("EventDialogueText", "RichTextLabel")
 	theme.set_font_size("normal_font_size", "EventDialogueText", tokens.font_title + 8)
+	# [b] reads "bold_font_size", which fell back to the engine's 16px: the
+	# comic's bold "3" and "2" rendered a third of the line's height.
+	theme.set_font_size("bold_font_size", "EventDialogueText", tokens.font_title + 8)
 	theme.set_color("default_color", "EventDialogueText", tokens.text_primary)
 	if bold != null:
 		theme.set_font("normal_font", "EventDialogueText", bold)
+		theme.set_font("bold_font", "EventDialogueText", bold)
 
 	theme.add_type("DayBannerPanel")
 	theme.set_type_variation("DayBannerPanel", "PanelContainer")
@@ -3674,6 +3678,8 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 	# DialogueLabel rendered a fully-revealed but blank line.
 	theme.set_color("default_color", "RichTextLabel", tokens.text_primary)
 	theme.set_font_size("normal_font_size", "RichTextLabel", tokens.font_body_size)
+	# And [b] text the same size (it fell back to the engine's 16px).
+	theme.set_font_size("bold_font_size", "RichTextLabel", tokens.font_body_size)
 
 	# Container rhythm: every screen gets consistent spacing/margins from
 	# the theme instead of per-scene theme_override_constants.

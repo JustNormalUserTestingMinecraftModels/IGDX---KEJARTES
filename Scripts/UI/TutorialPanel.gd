@@ -608,7 +608,9 @@ static func placement(bounds: Rect2, panel_size: Vector2, spot: Rect2, arrow_siz
 ## visible sibling Controls, as rectangles in `overlay`'s space. A sibling
 ## that overlaps the target itself is its backdrop (the student card's paper),
 ## not a neighbour, and is left out -- it covers every side.
-static func neighbours_in(targets: Array, overlay: Control) -> Array:
+## With a `scope` (the screen's Safe/UI), every visible button under it counts
+## too: the Lobby's JADWAL sits in another bar from the inventory button.
+static func neighbours_in(targets: Array, overlay: Control, scope: Node = null) -> Array:
 	var rects: Array = []
 	for target in targets:
 		if not (target is Control) or not is_instance_valid(target):
@@ -617,9 +619,12 @@ static func neighbours_in(targets: Array, overlay: Control) -> Array:
 		if parent == null:
 			continue
 		var own := rect_in(target as Control, overlay)
-		for sibling: Node in parent.get_children():
-			if sibling is Control and not targets.has(sibling) and (sibling as Control).is_visible_in_tree():
-				var rect := rect_in(sibling as Control, overlay)
+		var others: Array = parent.get_children()
+		if scope != null:
+			others.append_array(scope.find_children("*", "BaseButton", true, false))
+		for other: Node in others:
+			if other is Control and not targets.has(other) and (other as Control).is_visible_in_tree():
+				var rect := rect_in(other as Control, overlay)
 				if not rect.intersects(own):
 					rects.append(rect)
 	return rects
@@ -652,7 +657,7 @@ static func place_step(panel: TutorialPanel, bounds_node: Control, overlay: Cont
 	arrow.visible = spot.has_area()
 	if arrow.visible:
 		var card := Rect2(panel.position - Vector2(0.0, head_room), panel.size + Vector2(0.0, head_room))
-		arrow.position = arrow.point_at(spot, bounds, card, neighbours_in(targets, overlay))
+		arrow.position = arrow.point_at(spot, bounds, card, neighbours_in(targets, overlay, bounds_node))
 
 
 ## What a forced step does with a tap on the wrong control: the error cue, the

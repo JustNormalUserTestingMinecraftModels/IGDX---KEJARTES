@@ -303,7 +303,7 @@ func test_body_labels_do_not_take_the_display_font() -> void:
 	# variation -- get_font_list() is the only way to see whether an
 	# explicit "font" override was actually registered for this exact type.
 	for name in ["CaptionLabel", "MicroLabel", "EmptyStateLabel",
-			"ResultBodyLabel", "BioLabel", "BarLabel", "TutorialBodyLabel"]:
+			"ResultBodyLabel", "BioLabel", "BarLabel"]:
 		assert_true(not _theme.get_font_list(name).has("font"),
 			"%s must not carry an explicit font override (should inherit default_font)" % name)
 
@@ -318,6 +318,8 @@ const DISPLAY_ROSTER := [
 	"SuccessButton", "QuirkBadge", "PersonaBadge",
 	"EventSelectCard", "ShopHubTileLabel", "FilterChipButton",
 	"TraitPill",
+	# 2026-10-15 tutorial text ladder: the fat title.
+	"TutorialTitleLabel",
 	# 2026-10-03 credits tab: the KEJARTES title and the red role headings.
 	"CreditTitleLabel", "CreditRoleLabel",
 	# 2026-09-29: achievement tile titles on the heading face.
@@ -820,13 +822,17 @@ func test_changing_the_success_token_changes_the_tutorial_badges() -> void:
 			box_name + " must follow state_success, not a hardcoded mint")
 
 
-## Every tutorial card speaks with one voice: the plain card's line
-## (TutorialBodyLabel) matches the first-run nota card's (TutorialNoteLabel)
-## -- body face, title size, primary ink. At body size it read too small
-## under the 64px title (owner, 2026-10-20).
-func test_tutorial_body_matches_the_nota_line() -> void:
-	assert_eq(_theme.get_font_size("font_size", "TutorialBodyLabel"), _tokens.font_title)
-	assert_eq(_theme.get_font_size("font_size", "TutorialBodyLabel"),
-		_theme.get_font_size("font_size", "TutorialNoteLabel"))
-	assert_eq(_theme.get_color("font_color", "TutorialBodyLabel"),
-		_theme.get_color("font_color", "TutorialNoteLabel"))
+## 2026-10-18: the tutorial line's leading lives on the variation, not on a
+## theme_override_constants/line_spacing on TutorialPanel's BodyLabel.
+func test_tutorial_note_label_carries_its_line_spacing() -> void:
+	assert_eq(_theme.get_constant("line_spacing", "TutorialNoteLabel"),
+		ThemeFactory.TUTORIAL_NOTE_LINE_SPACING)
+
+
+## 2026-10-21: [b] text reads "bold_font_size"; unset, it fell back to the
+## engine's 16px and the comic's bold numbers rendered tiny.
+func test_rich_text_bold_matches_its_normal_size() -> void:
+	for type_name: String in ["RichTextLabel", "EventDialogueText"]:
+		assert_eq(_theme.get_font_size("bold_font_size", type_name),
+			_theme.get_font_size("normal_font_size", type_name),
+			type_name + " bold text is as big as its normal text")

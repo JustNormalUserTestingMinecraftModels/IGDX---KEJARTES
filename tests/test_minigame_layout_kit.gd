@@ -267,3 +267,15 @@ func test_jeda_and_keluar_wear_their_roles() -> void:
 			continue
 		assert_eq(button.text, row[2], "%s text" % row[1])
 		assert_eq(button.theme_type_variation, row[3], "%s wears its role" % row[1])
+
+
+## 2026-10-18: CARA MAIN wears the shared Nota Guru chrome (mascot, PAK
+## KEPSEK tab) on its NotebookFrame, and stays a CanvasLayer.
+func test_the_card_wears_the_note_chrome() -> void:
+	var card := (load(TUTORIAL) as PackedScene).instantiate()
+	assert_true(card is CanvasLayer, "still its own layer over the minigame")
+	var decor := card.get_node_or_null("Safe/Center/Frame/Decor")
+	assert_true(decor is TutorialNoteChrome, "the frame wears the chrome")
+	assert_true(decor != null and decor.has_meta(NotebookFrame.CHROME_META),
+		"kept full-size, outside the content")
+	card.free()

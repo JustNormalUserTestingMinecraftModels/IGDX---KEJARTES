@@ -224,13 +224,6 @@ the same path with no code change; real art is owed by the artist/owner
   over the note's top-left corner; any square picture fits.
 - `hand_point.svg` -- the idle nudge's pointing hand, fingertip top-left
   (`TutorialArrow` `Hand`, slid in by `TutorialIdle` on the escalation).
-- **Known gap (2026-10-13 review):** the mascot stands 196px above the
-  card's own rect, which `TutorialPanel.placement()` and StudentCard's
-  `_tutorial_card_rect()` do not know about. Where `placement()` puts the card
-  at the top of Safe/UI (Lobby/StudentList steps with a low spot) the mascot
-  rides above the safe area, and a low card's mascot can cover what sits just
-  above it. A root top margin fixes it but breaks the popup-floor height guard;
-  the real fix is head room in `placement()` (its pinned tests move with it).
 - **Still owed:** the reward star (spec section 7), and the idle nudge's
   one-line text: neither the spec nor the mockup gives the copy.
 

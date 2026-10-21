@@ -24,6 +24,9 @@ const UP_ROTATION_DEGREES := 180.0
 const TIP_GAP := 35.0
 ## The least room the picture leaves to the edge of the area it may sit in.
 const EDGE_MARGIN := 20.0
+## Where along the spot the tip may sit when neighbours crowd it, as a share
+## of the spot's width from its centre: centre first, then each side.
+const TIP_SLIDES: Array[float] = [0.0, -0.3, 0.3]
 
 ## Size of the arrow picture, in pixels. The tip stays at this Control's
 ## origin whatever the size.
@@ -66,9 +69,10 @@ func _rest_position() -> Vector2:
 ## Sets the arrow beside `spot` and returns where the Control's origin, the
 ## tip, goes, in the parent's space; the caller positions or tweens to it.
 ## `bounds` is the area the picture may sit in and `avoid` a rectangle it must
-## stay off (the tutorial card; empty for none). See fit() for the rules.
-func point_at(spot: Rect2, bounds: Rect2, avoid: Rect2 = Rect2()) -> Vector2:
-	var placed := fit(spot, bounds, arrow_size, avoid)
+## stay off (the tutorial card; empty for none); `neighbours` the controls
+## beside the spot the picture should not sit on. See fit() for the rules.
+func point_at(spot: Rect2, bounds: Rect2, avoid: Rect2 = Rect2(), neighbours: Array = []) -> Vector2:
+	var placed := fit(spot, bounds, arrow_size, avoid, neighbours)
 	set_direction(placed["pointing_up"])
 	return placed["tip"]
 
@@ -83,20 +87,47 @@ func point_at(spot: Rect2, bounds: Rect2, avoid: Rect2 = Rect2()) -> Vector2:
 ## "clear" is false when neither side qualifies (a spot bigger than the screen
 ## leaves no room): the tip is then clamped into `bounds` above the spot,
 ## across whatever is there.
-static func fit(spot: Rect2, bounds: Rect2, picture_size: Vector2, avoid: Rect2 = Rect2()) -> Dictionary:
+##
+## `neighbours` (Rect2s, 2026-10-18) are the controls beside the spot -- the
+## Mood bar above the Energy bar, JADWAL beside the inventory button. A side
+## whose picture sits on one reads as pointing at it, so of the sides that
+## qualify, the one covering the least neighbour area wins (above on a tie).
+## With neighbours, the tip may also slide along the spot (TIP_SLIDES) -- the
+## Lobby's inventory button has JADWAL wherever the arrow hangs straight above.
+static func fit(spot: Rect2, bounds: Rect2, picture_size: Vector2, avoid: Rect2 = Rect2(),
+		neighbours: Array = []) -> Dictionary:
 	var inner := bounds.grow(-EDGE_MARGIN)
 	var x := clampf(spot.get_center().x, inner.position.x + picture_size.x / 2.0,
 			inner.end.x - picture_size.x / 2.0)
 	var above := Vector2(x, spot.position.y - TIP_GAP)
-	var below := Vector2(x, spot.end.y + TIP_GAP)
-	for pointing_up: bool in [false, true]:
-		var tip := below if pointing_up else above
-		var picture := picture_rect(tip, picture_size, pointing_up)
-		if inner.encloses(picture) and not (avoid.has_area() and picture.intersects(avoid)):
-			return {"tip": tip, "pointing_up": pointing_up, "clear": true}
+	var best := {}
+	var best_cover := INF
+	var slides: Array = [0.0] if neighbours.is_empty() else TIP_SLIDES
+	for slide: float in slides:
+		var slid_x := clampf(spot.get_center().x + slide * spot.size.x,
+				inner.position.x + picture_size.x / 2.0, inner.end.x - picture_size.x / 2.0)
+		for pointing_up: bool in [false, true]:
+			var tip := Vector2(slid_x, spot.end.y + TIP_GAP if pointing_up else spot.position.y - TIP_GAP)
+			var picture := picture_rect(tip, picture_size, pointing_up)
+			if not inner.encloses(picture) or (avoid.has_area() and picture.intersects(avoid)):
+				continue
+			var cover := _covered_area(picture, neighbours)
+			if cover < best_cover:
+				best_cover = cover
+				best = {"tip": tip, "pointing_up": pointing_up, "clear": true}
+	if not best.is_empty():
+		return best
 	var lowest := maxf(inner.end.y, inner.position.y + picture_size.y)
 	var squeezed := clampf(above.y, inner.position.y + picture_size.y, lowest)
 	return {"tip": Vector2(x, squeezed), "pointing_up": false, "clear": false}
+
+
+## How much of `picture` the Rect2s in `rects` cover, summed, px².
+static func _covered_area(picture: Rect2, rects: Array) -> float:
+	var area := 0.0
+	for rect: Rect2 in rects:
+		area += picture.intersection(rect).get_area()
+	return area
 
 
 ## The rectangle the picture covers when its tip is at `tip`: hanging above it

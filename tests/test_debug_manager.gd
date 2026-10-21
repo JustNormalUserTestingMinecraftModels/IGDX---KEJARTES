@@ -76,12 +76,12 @@ func test_ready_applies_playtest_defaults() -> void:
 		"_ready must apply the playtest defaults on every launch")
 
 
-func test_playtest_defaults_bypass_tutorials_and_fill_the_screen_but_leave_settings() -> void:
+func test_playtest_defaults_keep_tutorials_and_fill_the_screen_but_leave_settings() -> void:
 	var body := _function_body(_source(), "_apply_playtest_defaults")
-	assert_true(body.contains("GameState.tutorials_bypassed = true"),
-		"playtest must always bypass every tutorial in the game")
-	assert_true(body.contains("GameState.lobby_tutorial_completed = true"),
-		"playtest must always skip the lobby tutorial")
+	assert_false(body.contains("tutorials_bypassed"),
+		"the debug boot must not bypass the tutorials; the seed button does that on demand")
+	assert_false(body.contains("lobby_tutorial_completed"),
+		"the debug boot must not skip the lobby tutorial")
 	assert_false(body.contains("minigame_tutorial_enabled"),
 		"a forced value in the saved Tutorial Minigame switch reaches " +
 		"settings.cfg on the next save_settings(), as the player's own choice")

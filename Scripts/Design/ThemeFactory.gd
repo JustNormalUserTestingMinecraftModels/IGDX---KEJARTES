@@ -212,6 +212,10 @@ const PICKER_TILE_BORDER := 3
 ## step above CreditDetailLabel (font_body_size) and just under the names
 ## (font_title), so a track reads as belonging to the artist above it.
 const CREDIT_MUSIC_SIZE := 32
+## TutorialNoteLabel's extra leading, px: the tutorial line reads as a
+## paragraph, not a heading. A line_spacing override on TutorialPanel's
+## BodyLabel until 2026-10-18.
+const TUTORIAL_NOTE_LINE_SPACING := 8
 ## The selected tile's gold ring, px -- thick enough to read at a glance.
 const PICKER_SELECTED_BORDER := 6
 ## Alpha of the selected tile's gold glow.
@@ -898,9 +902,13 @@ static func _build_event_dialogue(theme: Theme, tokens: DesignTokens) -> void:
 	theme.add_type("EventDialogueText")
 	theme.set_type_variation("EventDialogueText", "RichTextLabel")
 	theme.set_font_size("normal_font_size", "EventDialogueText", tokens.font_title + 8)
+	# [b] reads "bold_font_size", which fell back to the engine's 16px: the
+	# comic's bold "3" and "2" rendered a third of the line's height.
+	theme.set_font_size("bold_font_size", "EventDialogueText", tokens.font_title + 8)
 	theme.set_color("default_color", "EventDialogueText", tokens.text_primary)
 	if bold != null:
 		theme.set_font("normal_font", "EventDialogueText", bold)
+		theme.set_font("bold_font", "EventDialogueText", bold)
 
 	theme.add_type("DayBannerPanel")
 	theme.set_type_variation("DayBannerPanel", "PanelContainer")
@@ -1107,16 +1115,6 @@ static func _build_achievement_tile(theme: Theme, tokens: DesignTokens) -> void:
 	theme.set_color("font_color", "AchievementSheetBodyLabel", tokens.text_secondary)
 	if tokens.font_body != null:
 		theme.set_font("font", "AchievementSheetBodyLabel", tokens.font_body)
-
-	# The tutorial card's one line (TutorialPanel BodyLabel). It was TitleLabel,
-	# so title, body and prompt all shouted in the display face; the body is
-	# prose, so it inherits default_font (Open Sans) in the primary ink, at
-	# title size like the nota card's TutorialNoteLabel: one tutorial voice,
-	# and body size read too small under the H1 title.
-	theme.add_type("TutorialBodyLabel")
-	theme.set_type_variation("TutorialBodyLabel", "Label")
-	theme.set_font_size("font_size", "TutorialBodyLabel", tokens.font_title)
-	theme.set_color("font_color", "TutorialBodyLabel", tokens.text_primary)
 
 	# The "BARU" unlock pip that used to sit in the tile's top-right corner
 	# was replaced on 2026-09-22 by a notice_icon.png TextureRect, so its
@@ -2053,9 +2051,16 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 		["CreditDetailLabel", tokens.font_body_size, tokens.text_secondary, false, false],
 		["CreditMusicLabel", CREDIT_MUSIC_SIZE, tokens.text_secondary, false, false],
 		["MicroLabel", tokens.font_micro, tokens.text_secondary, false, false],
-		# 2026-10-13: the first-run Nota Guru's line (TutorialPanel.nota_style),
+		# 2026-10-13: the Nota Guru's line (every TutorialPanel since 2026-10-18),
 		# the body face at title size, so the note reads as handwriting, not a heading.
 		["TutorialNoteLabel", tokens.font_title, tokens.text_primary, false, false],
+		# 2026-10-15 tutorial text ladder: every tutorial card wears the same
+		# three faces. The title keeps the fat, playful display face and its
+		# rim (H2 size, smaller than the old 64px H1); the line above reads in
+		# the body face; the prompt is a quiet secondary hint, not a second line
+		# of the lesson.
+		["TutorialTitleLabel", tokens.font_h2, tokens.text_primary, true, true],
+		["TutorialPromptLabel", tokens.font_body_size, tokens.text_secondary, false, false],
 		# PageDotLabel styled the SemesterEnd carousel's page dots and has
 		# had no consumer since Plan A deleted that screen. Kept baked
 		# rather than removed: dropping a variation needs a theme rebake,
@@ -2133,6 +2138,7 @@ static func _build_labels(theme: Theme, tokens: DesignTokens) -> void:
 			theme.set_color("font_outline_color", name, tokens.text_outline_color)
 		if spec[4] and tokens.font_display != null:
 			theme.set_font("font", name, tokens.font_display)
+	theme.set_constant("line_spacing", "TutorialNoteLabel", TUTORIAL_NOTE_LINE_SPACING)
 
 	# Text that sits ON TOP of a StatBar, where the background behind any
 	# given glyph may be either the light track or a saturated category
@@ -3672,6 +3678,8 @@ static func _build_base_overrides(theme: Theme, tokens: DesignTokens) -> void:
 	# DialogueLabel rendered a fully-revealed but blank line.
 	theme.set_color("default_color", "RichTextLabel", tokens.text_primary)
 	theme.set_font_size("normal_font_size", "RichTextLabel", tokens.font_body_size)
+	# And [b] text the same size (it fell back to the engine's 16px).
+	theme.set_font_size("bold_font_size", "RichTextLabel", tokens.font_body_size)
 
 	# Container rhythm: every screen gets consistent spacing/margins from
 	# the theme instead of per-scene theme_override_constants.

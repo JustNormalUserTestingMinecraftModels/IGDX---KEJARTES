@@ -82,7 +82,7 @@ func test_it_is_the_notebook_dialog_with_no_way_out() -> void:
 	var frame := root.get_node_or_null("Frame") as NotebookFrame
 	assert_true(frame != null, "the card is a NotebookFrame")
 	if frame != null:
-		assert_eq(frame.title_text, "")
+		assert_eq(frame.title_text, "", "a lesson card wears no sticker")
 		assert_eq(frame.title_text, root.get("step_sticker_text"),
 			"the scene's authored sticker is the STEP default, so it reads right before any show_step()")
 		assert_false(frame.show_close, "a forced step shows no close")
@@ -129,10 +129,7 @@ func test_layout_knobs_default_to_student_cards_shipped_numbers() -> void:
 	assert_eq(panel.max_width, 1000.0)
 	assert_eq(panel.content_margin, 0)
 	assert_eq(panel.vbox_separation, 10)
-	assert_eq(panel.title_variation, &"H1Label")
-	assert_eq(panel.body_variation, &"TutorialBodyLabel", "the line is prose: body face, not display")
 	assert_eq(panel.body_width_offset, 60.0)
-	assert_eq(panel.prompt_variation, &"TitleLabel")
 	assert_false(panel.prompt_success_tint)
 
 
@@ -140,9 +137,6 @@ func test_overriding_layout_knobs_reaches_the_nodes() -> void:
 	var panel := _make()
 	panel.content_margin = 30
 	panel.vbox_separation = 20
-	panel.title_variation = &"H2Label"
-	panel.body_variation = &""
-	panel.prompt_variation = &"CaptionLabel"
 	panel.prompt_success_tint = true
 
 	var margin := panel.get_node("Frame/Margin") as MarginContainer
@@ -151,9 +145,9 @@ func test_overriding_layout_knobs_reaches_the_nodes() -> void:
 	assert_eq(margin.get_theme_constant("margin_right"), 30)
 	assert_eq(margin.get_theme_constant("margin_bottom"), 30)
 	assert_eq((panel.get_node("Frame/Margin/Layout") as VBoxContainer).get_theme_constant("separation"), 20)
-	assert_eq((panel.get_node("Frame/Margin/Layout/TitleLabel") as Label).theme_type_variation, &"H2Label")
-	assert_eq((panel.get_node("Frame/Margin/Layout/BodyLabel") as Label).theme_type_variation, &"")
-	assert_eq((panel.get_node("Frame/Margin/Layout/PromptLabel") as Label).theme_type_variation, &"CaptionLabel")
+	assert_eq((panel.get_node("Frame/Margin/Layout/TitleLabel") as Label).theme_type_variation, TutorialPanel.TITLE_VARIATION)
+	assert_eq((panel.get_node("Frame/Margin/Layout/BodyLabel") as Label).theme_type_variation, TutorialPanel.BODY_VARIATION)
+	assert_eq((panel.get_node("Frame/Margin/Layout/PromptLabel") as Label).theme_type_variation, TutorialPanel.PROMPT_VARIATION)
 
 
 func test_each_screen_still_sets_its_own_shipped_numbers() -> void:
@@ -279,7 +273,7 @@ func test_the_sticker_texts_are_exports_that_apply_live() -> void:
 			if prop["name"] == export_name and (int(prop["usage"]) & PROPERTY_USAGE_EDITOR) != 0:
 				exported = true
 		assert_true(exported, export_name + " is an @export on the panel root, so a scene can set it")
-	assert_eq(panel.step_sticker_text, "", "a tutorial step carries no TUTORIAL sticker")
+	assert_eq(panel.step_sticker_text, "", "a lesson wears no sticker (2026-10-18)")
 	assert_eq(panel.beat_sticker_text, "PENGUMUMAN")
 	var frame := panel.get_node("Frame") as NotebookFrame
 	panel.beat_sticker_text = "KABAR"
@@ -761,8 +755,8 @@ func test_every_arrow_caller_places_the_arrow_from_its_own_size() -> void:
 	var panel_src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
 	var place := _function_source(panel_src, "place_step")
 	assert_contains(place, "arrow.arrow_size", "place_step reads the arrow's own size")
-	assert_contains(place, "arrow.point_at(spot, bounds, Rect2(panel.position, panel.size))",
-		"and points it clear of the card")
+	assert_contains(place, "arrow.point_at(spot, bounds, card, neighbours_in(targets, overlay, bounds_node))",
+		"and points it clear of the card, its mascot and the spot's neighbours")
 	for path: String in ["res://Scripts/AturJadwal/AturJadwal.gd",
 			"res://Scripts/StudentList/StudentList.gd", "res://Scripts/Lobby/Lobby.gd"]:
 		var src := FileAccess.get_file_as_string(path)
@@ -1096,26 +1090,23 @@ func test_the_mascot_wears_the_face_expression_names() -> void:
 	var mascot := panel.get_node("Decor/Mascot") as TextureRect
 	assert_true(mascot != null, "Decor/Mascot exists")
 	assert_eq(mascot.mouse_filter, Control.MOUSE_FILTER_IGNORE, "the mascot never takes a tap")
-	assert_eq(mascot.texture, panel.mascot_senang, "warm by default")
+	assert_eq(mascot.texture, panel.decor.mascot_senang, "warm by default")
 	panel.expression = TutorialPanel.Face.SERIUS
-	assert_eq(mascot.texture, panel.mascot_serius)
+	assert_eq(mascot.texture, panel.decor.mascot_serius)
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik kelas.", TutorialPanel.DEFAULT_PROMPT)
-	assert_eq(mascot.texture, panel.mascot_bangga, "a beat is proud")
+	assert_eq(mascot.texture, panel.decor.mascot_bangga, "a beat is proud")
 
 
-## nota_style is the first-run look: no TUTORIAL sticker, no pill, the body face.
-func test_nota_style_drops_the_sticker_and_pill() -> void:
+## 2026-10-18 (owner): every step card wears the first-run look -- no
+## TUTORIAL sticker, no pill -- and a task keeps its TUGAS.
+func test_every_step_card_drops_the_sticker_and_pill() -> void:
 	var panel := _make()
-	panel.nota_style = true
+	assert_false(panel.show_step_count, "no card counts its steps")
 	panel.show_step("Kenalan", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT, 1, 6)
 	assert_eq(panel.frame.title_text, "", "no sticker")
 	assert_false(panel.step_pill.visible, "no pill")
-	assert_eq(panel.body_label.theme_type_variation, TutorialPanel.NOTA_BODY_VARIATION)
-	assert_eq(panel.title_label.theme_type_variation, TutorialPanel.NOTA_TITLE_VARIATION)
 	panel.show_step("Pilih", "Ambil dua.", TutorialPanel.DEFAULT_PROMPT, 1, 2, true)
 	assert_eq(panel.frame.title_text, panel.task_sticker_text, "a task keeps TUGAS")
-	panel.nota_style = false
-	assert_eq(panel.body_label.theme_type_variation, panel.body_variation, "off restores the export")
 
 
 ## The idle nudge's hand rides the arrow, hidden until the escalation.
@@ -1144,9 +1135,103 @@ func test_the_comic_is_a_compact_row() -> void:
 	assert_eq(comic.get_node("%Line").get_parent().get_parent(), row, "the line sits beside it")
 
 
-## With no sticker on a step (2026-10-20) the frame's 120px sticker band was
-## an empty strip over the title. A stickerless card closes it to
-## no_sticker_top_padding; a beat's sticker brings the band back.
+## 2026-10-15 text ladder: every card wears the same three faces, and the scene
+## authors them too.
+func test_every_card_wears_the_one_text_ladder() -> void:
+	var panel := _make()
+	for task: bool in [false, true]:
+		panel.show_step("Judul", "Isi.", TutorialPanel.DEFAULT_PROMPT, 1, 2, task)
+		assert_eq(panel.title_label.theme_type_variation, TutorialPanel.TITLE_VARIATION)
+		assert_eq(panel.body_label.theme_type_variation, TutorialPanel.BODY_VARIATION)
+		assert_eq(panel.prompt_label.theme_type_variation, TutorialPanel.PROMPT_VARIATION)
+	assert_false(FileAccess.get_file_as_string(PANEL_SCRIPT_PATH).contains("nota_style"),
+		"the nota_style switch is gone")
+	var scene := FileAccess.get_file_as_string("res://Scenes/UI/TutorialPanel.tscn")
+	for name: String in [&"TutorialTitleLabel", &"TutorialNoteLabel", &"TutorialPromptLabel"]:
+		assert_contains(scene, name, "the scene authors %s" % name)
+	for old: String in ["H1Label", "H2Label", "&\"TitleLabel\"", "CaptionLabel"]:
+		assert_false(scene.contains(old), "the scene no longer names %s" % old)
+
+
+## 2026-10-18: BodyLabel carries no line_spacing override (the variation has
+## it) and no negative minimum width (_apply_geometry() sets the real one).
+func test_body_label_has_no_override_or_negative_width() -> void:
+	var scene := FileAccess.get_file_as_string(SCENE_PATH)
+	assert_false(scene.contains("theme_override_constants/line_spacing"),
+		"line spacing comes from TutorialNoteLabel")
+	assert_false(scene.contains("custom_minimum_size = Vector2(-"),
+		"no negative minimum size in the scene")
+	var panel := _make()
+	assert_eq(panel.title_label.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART,
+		"a long title wraps instead of widening the card (SchoolDay's 1162px one did)")
+
+
+## 2026-10-18: the Nota Guru chrome is one shared scene, and the panel's Decor
+## is an instance of it, so the comic and CARA MAIN can wear the same one.
+func test_the_panel_wears_the_shared_note_chrome() -> void:
+	var panel := _make()
+	assert_true(panel.get_node("Decor") is TutorialNoteChrome, "Decor is the shared chrome")
+	assert_contains(FileAccess.get_file_as_string(SCENE_PATH),
+		"res://Scenes/UI/TutorialNoteChrome.tscn", "the scene instances it")
+	panel.speaker_name = "Bu Guru"
+	assert_eq(panel.name_tab_label.text, "Bu Guru", "the name reaches the chrome")
+
+
+## 2026-10-18 head room: Pak Kepsek stands MASCOT_HEAD_ROOM above the card's
+## rect, so the card plus the mascot stays inside the safe area at every anchor.
+func test_the_card_and_its_mascot_stay_inside_the_safe_area() -> void:
+	var head := TutorialNoteChrome.MASCOT_HEAD_ROOM
+	for label: String in REAL_SPOTS:
+		var at := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS[label], ARROW, head)
+		assert_true(at.y - head >= SAFE_UI.position.y and at.y + CARD.y <= SAFE_UI.end.y,
+			"%s: card+mascot at y=%d leaves the safe area" % [label, int(at.y - head)])
+	var low := TutorialPanel.placement(SAFE_UI, CARD, REAL_SPOTS["Lobby Inventory"], ARROW, head)
+	assert_eq(low.y, SAFE_UI.position.y + head, "a top-anchored card leaves the mascot its room")
+	var centred := TutorialPanel.placement(SAFE_UI, CARD, Rect2(), ARROW, head)
+	assert_true(centred.y - head >= SAFE_UI.position.y, "a centred card leaves it too")
+
+
+## The same on a 20:9 phone's 1080x2400 safe area.
+func test_head_room_holds_on_a_tall_phone() -> void:
+	var tall := Rect2(SAFE_UI.position, Vector2(SAFE_UI.size.x, SAFE_UI.size.y + 480.0))
+	var head := TutorialNoteChrome.MASCOT_HEAD_ROOM
+	for label: String in REAL_SPOTS:
+		var at := TutorialPanel.placement(tall, CARD, REAL_SPOTS[label], ARROW, head)
+		assert_true(at.y - head >= tall.position.y and at.y + CARD.y <= tall.end.y,
+			"%s: card+mascot leaves the tall safe area" % label)
+
+
+## A neighbour beside the spot (Mood above Energy) pushes the arrow to the
+## spot's other side; with no clear side it falls back to the old rule.
+func test_the_arrow_keeps_off_a_neighbour_when_it_can() -> void:
+	var energy := Rect2(100, 900, 600, 80)
+	var mood := Rect2(100, 700, 600, 180)
+	var placed: Dictionary = TutorialPanel.ArrowScript.fit(energy, SAFE_UI, ARROW, Rect2(), [mood])
+	var picture := TutorialPanel.ArrowScript.picture_rect(placed["tip"], ARROW, placed["pointing_up"])
+	assert_true(placed["pointing_up"], "Mood sits above, so the arrow points up from below")
+	assert_false(picture.intersects(mood), "the arrow is off the Mood bar")
+	var boxed: Dictionary = TutorialPanel.ArrowScript.fit(energy, SAFE_UI, ARROW, Rect2(),
+		[mood, Rect2(100, 990, 600, 600)])
+	assert_true(boxed["clear"], "neighbours on both sides fall back, still clear of the card")
+	# The live Energy step (2026-10-21): Mood fills the space above, MINAT's
+	# box clips 5px below; the side covering less wins.
+	var live: Dictionary = TutorialPanel.ArrowScript.fit(Rect2(701, 872.5, 243, 99),
+		Rect2(0, 0, 1080, 1922), ARROW, Rect2(43, 1275, 994, 607),
+		[Rect2(716, 762, 211, 67), Rect2(119, 1181, 842, 70)])
+	assert_true(live["pointing_up"], "the arrow goes under Energy, off the Mood bar")
+
+
+## 2026-10-18: the welcome comic sits in the Nota Guru note -- a NotebookFrame
+## plate wearing the shared chrome -- like every other tutorial box.
+func test_the_comic_wears_the_note_and_its_chrome() -> void:
+	var comic := (load("res://Scenes/UI/TutorialComic.tscn") as PackedScene).instantiate()
+	assert_true(comic.get_node("Plate") is NotebookFrame, "the plate is the note")
+	assert_true(comic.get_node("Plate/Decor") is TutorialNoteChrome, "and wears the chrome")
+	assert_true(comic.get_node("Plate/Decor").has_meta(NotebookFrame.CHROME_META),
+		"which the frame keeps full-size, outside the content")
+	comic.free()
+
+
 ## The card's frame floor sits under a one-line step's content (title, line,
 ## prompt, 64 + 48 padding: ~340px), so the content -- not a fixed 360 --
 ## sets the height and no empty strip opens under the prompt (2026-10-20).
@@ -1157,22 +1242,14 @@ func test_the_card_floor_lets_content_set_the_height() -> void:
 		"frame floor %.0f is low enough for the content to drive"
 		% (card.get_node("Frame") as Control).custom_minimum_size.y)
 
-func test_a_stickerless_card_closes_the_sticker_band() -> void:
-	var panel := _make()
-	var frame := panel.get_node("Frame") as NotebookFrame
-	panel.show_step("Judul", "Isi", "Ketuk", 1, 2)
-	assert_eq(frame.content_padding.y, panel.no_sticker_top_padding, "no sticker, no band")
-	assert_true(panel.no_sticker_top_padding < NotebookFrame.DEFAULT_PADDING.y, "and it is tighter")
-	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
-	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "a sticker gets its band back")
-	assert_eq(frame.content_padding.x, NotebookFrame.DEFAULT_PADDING.x, "the sides are untouched")
 
-## Review 2026-10-20: the nota card already wore no sticker and its decor
-## (mascot, paperclip, name tab) was laid out over the 120px band, so the
-## stickerless padding is for plain cards only.
-func test_the_nota_card_keeps_its_band() -> void:
+## Review 2026-10-20: the nota decor (mascot, paperclip, name tab) is laid out
+## over the 120px sticker band. Since 2026-10-21 every card wears that decor,
+## so every card keeps the band, sticker or none.
+func test_every_card_keeps_the_sticker_band() -> void:
 	var panel := _make()
 	var frame := panel.get_node("Frame") as NotebookFrame
-	panel.nota_style = true
 	panel.show_step("Judul", "Isi", "Ketuk", 1, 2)
-	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "nota keeps 120")
+	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "a stickerless step keeps 120")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
+	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "and so does a beat")

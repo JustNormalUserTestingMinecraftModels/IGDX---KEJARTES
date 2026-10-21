@@ -1487,7 +1487,7 @@ func test_senin_step_names_the_stat_and_the_picker_repeats_it() -> void:
 func test_tutorial_card_body_uses_the_body_face() -> void:
 	var src := FileAccess.get_file_as_string("res://Scenes/UI/TutorialPanel.tscn")
 	var at := src.find('[node name="BodyLabel"')
-	assert_true(src.substr(at, 300).contains('theme_type_variation = &"TutorialBodyLabel"'))
+	assert_true(src.substr(at, 300).contains('theme_type_variation = &"TutorialNoteLabel"'))
 
 func test_picker_nudges_the_focus_tile_while_the_senin_step_runs() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)

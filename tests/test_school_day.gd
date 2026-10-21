@@ -177,14 +177,15 @@ func test_debug_tutorial_bypass_skips_the_end_of_simulation_tutorial() -> void:
 		"the debug menu's master tutorial-bypass flag must skip the end-of-week-1 tutorial too")
 
 
-## The end-of-week-1 card is a single step: it gives show_step() no step count, so
-## the panel's "Langkah n / N" pill stays hidden (a pill counting one step would
-## read "Langkah 1 / 1"), and it is a tutorial card, not the headmaster's beat.
-func test_the_end_of_week_panel_is_one_step_so_its_pill_stays_hidden() -> void:
+## The end-of-week-1 card pages through short steps, handing show_step() each
+## page's number and count (the pill is off on every card since 2026-10-18,
+## show_step_count); a card given no count shows no pill, and it is a tutorial
+## card, not the headmaster's beat.
+func test_the_end_of_week_panel_pages_and_a_countless_card_hides_its_pill() -> void:
 	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
 	assert_contains(src,
-		"_tutorial_panel.show_step(end_tutorial_title, end_tutorial_text, end_tutorial_prompt)",
-		"the call passes no step or count")
+		"_tutorial_panel.show_step(end_tutorial_title, end_tutorial_pages[0], end_tutorial_prompt, 1, page_count)",
+		"the first page is step 1 of the page count")
 	assert_false(src.contains("show_beat("), "SchoolDay's card is a step, not a beat")
 	var panel: TutorialPanel = (load("res://Scenes/UI/TutorialPanel.tscn") as PackedScene).instantiate()
 	Engine.get_main_loop().root.add_child(panel)
@@ -993,3 +994,11 @@ func test_school_day_tutorial_uses_shared_box() -> void:
 	assert_true(src.contains("TutorialPanel"), "SchoolDay tutorial uses the shared panel")
 	assert_false(src.contains("PanelContainer.new()"), "no runtime-built tutorial panel")
 	assert_true(src.contains("_tutorial_panel.skip_typing()"), "a tap fills a typing line first")
+
+
+## 2026-10-18: an emptied end_tutorial_pages export skips the card instead of
+## indexing page 0 of nothing.
+func test_an_empty_page_list_skips_the_end_tutorial() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY_SCRIPT)
+	assert_contains(src, "if end_tutorial_pages.is_empty():",
+		"the end tutorial guards an empty page list")

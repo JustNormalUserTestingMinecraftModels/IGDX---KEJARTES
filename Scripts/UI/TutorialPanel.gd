@@ -29,9 +29,9 @@ extends MarginContainer
 ## PAK KEPSEK. The note's speaker stands over its top-left corner as a
 ## Decor/Mascot picture (placeholder art: DEBT.md, "Tutorial art") wearing one
 ## of three faces, `expression`. A headmaster beat (show_beat) is a
-## congratulation and wears BANGGA. `nota_style` is the first-run look from the
-## mockup (docs/superpowers/mockups/tutorial-handoff.html): no TUTORIAL sticker,
-## no step pill, a smaller title and the body face for the line.
+## congratulation and wears BANGGA. Every card wears the first-run look from the
+## mockup (docs/superpowers/mockups/tutorial-handoff.html): no TUTORIAL sticker
+## and no step pill (show_step_count), the text ladder of TITLE_VARIATION and friends.
 ##
 ## The screens that spotlight a control (AturJadwal, StudentList, Lobby) share
 ## a handful of static helpers from here instead of each carrying its own
@@ -78,10 +78,12 @@ const DIM_ORIGIN_META := &"tutorial_dim_origin"
 ## a second tap cannot start another shake from the first one's offset.
 const ANSWERING_META := &"tutorial_answering"
 
-## The title's variation in nota_style.
-const NOTA_TITLE_VARIATION := &"H2Label"
-## The line's variation in nota_style: the body face, at title size.
-const NOTA_BODY_VARIATION := &"TutorialNoteLabel"
+## The title's variation, on every card: the fat display face with its rim.
+const TITLE_VARIATION := &"TutorialTitleLabel"
+## The line's variation, on every card: the body face, easy to read at length.
+const BODY_VARIATION := &"TutorialNoteLabel"
+## The prompt's variation, on every card: a quiet secondary hint.
+const PROMPT_VARIATION := &"TutorialPromptLabel"
 
 ## Pak Kepsek's face on the mascot.
 enum Face {
@@ -111,9 +113,9 @@ enum Mode {
 			_apply_mode()
 
 ## The title on the frame's sticker while a tutorial step heads the card
-## (mode STEP). Empty, so a step wears no sticker: the card's own title
-## already names the lesson (owner, 2026-10-20). The scene authors the same
-## on the Frame, so nothing flashes before the first show_step().
+## (mode STEP). Empty since 2026-10-18 (owner): a lesson card wears no
+## sticker, only a task (TUGAS) or a beat (PENGUMUMAN) does. The scene authors
+## the same empty title on the Frame, so it reads right before any show_step().
 @export var step_sticker_text: String = "":
 	set(value):
 		step_sticker_text = value
@@ -126,15 +128,6 @@ enum Mode {
 @export var show_step_count: bool = false:
 	set(value):
 		show_step_count = value
-		if is_inside_tree():
-			_apply_mode()
-
-## Frame top padding, px, while the card wears no sticker: the frame's own
-## 120 is a band for the sticker, and left an empty strip over the title.
-## Clear of the paperclip and the name tab on the top edge.
-@export var no_sticker_top_padding: int = 64:
-	set(value):
-		no_sticker_top_padding = value
 		if is_inside_tree():
 			_apply_mode()
 
@@ -164,31 +157,15 @@ enum Mode {
 	set(value):
 		speaker_name = value
 		if is_inside_tree():
-			name_tab_label.text = value
+			decor.speaker_name = value
 
-## Pak Kepsek's face: which of the three mascot textures Decor/Mascot wears.
+## Pak Kepsek's face on the shared chrome's mascot (Decor, a
+## TutorialNoteChrome; the three textures are its exports).
 @export var expression: Face = Face.SENANG:
 	set(value):
 		expression = value
 		if is_inside_tree():
 			_apply_expression()
-
-## The mascot's warm face (placeholder: DEBT.md, "Tutorial art").
-@export var mascot_senang: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_senang.svg")
-## The mascot's stern face.
-@export var mascot_serius: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_serius.svg")
-## The mascot's proud face.
-@export var mascot_bangga: Texture2D = preload("res://Assets/Images/UI/Placeholders/tutorial/kepsek/kepsek_bangga.svg")
-
-## The first-run Nota Guru look (header): a STEP card drops the sticker and
-## the pill, the title is NOTA_TITLE_VARIATION and the line NOTA_BODY_VARIATION.
-## A task card keeps its TUGAS sticker; a headmaster beat is untouched.
-@export var nota_style: bool = false:
-	set(value):
-		nota_style = value
-		if is_inside_tree():
-			_apply_variations()
-			_apply_mode()
 
 ## Panel width as a fraction of the viewport width, before max_width clamps
 ## it. StudentCard ships 0.92; SchoolDay ships 0.85.
@@ -221,23 +198,6 @@ enum Mode {
 		if is_inside_tree():
 			layout.add_theme_constant_override("separation", value)
 
-## Theme variation for the title label. StudentCard uses H1Label;
-## SchoolDay uses the smaller H2Label.
-@export var title_variation: StringName = &"H1Label":
-	set(value):
-		title_variation = value
-		if is_inside_tree():
-			_apply_variations()
-
-## Theme variation for the body label: TutorialBodyLabel, the body face, since
-## the line is prose (it was TitleLabel, so every card read all-bold).
-## SchoolDay sets none (plain default Label styling).
-@export var body_variation: StringName = &"TutorialBodyLabel":
-	set(value):
-		body_variation = value
-		if is_inside_tree():
-			_apply_variations()
-
 ## How much narrower the body label is than the panel's own outer width,
 ## on top of the frame's horizontal content_padding (subtracted separately
 ## in _apply_geometry() so the two insets never double up) -- the room its
@@ -249,14 +209,6 @@ enum Mode {
 		body_width_offset = value
 		if is_inside_tree():
 			_apply_geometry()
-
-## Theme variation for the prompt label. StudentCard uses TitleLabel;
-## SchoolDay uses the quieter CaptionLabel.
-@export var prompt_variation: StringName = &"TitleLabel":
-	set(value):
-		prompt_variation = value
-		if is_inside_tree():
-			prompt_label.theme_type_variation = value
 
 ## When true, tints the prompt label with the design tokens' success
 ## color. Only SchoolDay's end-of-week tutorial does this.
@@ -276,6 +228,8 @@ enum Mode {
 @onready var step_label: Label = $Frame/Margin/Layout/StepPill/StepLabel
 @onready var name_plate: PanelContainer = $Frame/Margin/Layout/NamePlate
 @onready var speaker_label: Label = $Frame/Margin/Layout/NamePlate/Row/SpeakerLabel
+## The shared Nota Guru chrome: torn edge, paperclip, name tab, mascot.
+@onready var decor: TutorialNoteChrome = $Decor
 ## The Nota Guru's name tab (placeholder art: DEBT.md, "Tutorial art").
 @onready var name_tab: PanelContainer = $Decor/NameTab
 @onready var name_tab_label: Label = $Decor/NameTab/NameTabLabel
@@ -309,7 +263,6 @@ func _ready() -> void:
 	layout.add_theme_constant_override("separation", vbox_separation)
 	_apply_variations()
 	_apply_expression()
-	prompt_label.theme_type_variation = prompt_variation
 	# Hidden characters keep their room, so a card placed for a typed line is
 	# already the size of the whole line and does not grow as it types.
 	body_label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
@@ -351,23 +304,21 @@ func _apply_geometry() -> void:
 	var pad: Vector4i = frame.content_padding
 	var body_width: float = panel_width - body_width_offset - float(pad.x + pad.z)
 	body_label.custom_minimum_size = Vector2(body_width, 0)
+	# The title wraps too (a long one widened the card past the screen), and an
+	# autowrapped label sizes its height from its width: give it the same one.
+	title_label.custom_minimum_size = Vector2(body_width, 0)
 
 
-## The title and body variations: the exports, or nota_style's pair.
+## The one text ladder every card wears: title, line and prompt.
 func _apply_variations() -> void:
-	title_label.theme_type_variation = NOTA_TITLE_VARIATION if nota_style else title_variation
-	body_label.theme_type_variation = NOTA_BODY_VARIATION if nota_style else body_variation
+	title_label.theme_type_variation = TITLE_VARIATION
+	body_label.theme_type_variation = BODY_VARIATION
+	prompt_label.theme_type_variation = PROMPT_VARIATION
 
 
 ## Puts the face `expression` names on the mascot.
 func _apply_expression() -> void:
-	match expression:
-		Face.SERIUS:
-			mascot.texture = mascot_serius
-		Face.BANGGA:
-			mascot.texture = mascot_bangga
-		_:
-			mascot.texture = mascot_senang
+	decor.expression = int(expression)
 
 
 func _apply_prompt_tint() -> void:
@@ -379,22 +330,15 @@ func _apply_prompt_tint() -> void:
 ## match. The sticker is only written when it changes: each write re-sorts the
 ## frame, and show_step() lands here on every step.
 func _apply_mode() -> void:
-	step_pill.visible = mode == Mode.STEP and _pill_wanted and show_step_count and not nota_style
+	step_pill.visible = mode == Mode.STEP and _pill_wanted and show_step_count
 	name_plate.visible = mode == Mode.HEADMASTER
-	name_tab.visible = mode != Mode.HEADMASTER
-	name_tab_label.text = speaker_name
+	decor.show_name_tab = mode != Mode.HEADMASTER
+	decor.speaker_name = speaker_name
 	var sticker := beat_sticker_text
 	if mode == Mode.STEP:
 		sticker = task_sticker_text if _task else step_sticker_text
-		if nota_style and not _task:
-			sticker = ""
 	if frame.title_text != sticker:
 		frame.title_text = sticker
-	var pad := frame.content_padding
-	# The nota card's decor was laid out over the full band, so it keeps it.
-	pad.y = NotebookFrame.DEFAULT_PADDING.y if sticker != "" or nota_style else no_sticker_top_padding
-	if frame.content_padding != pad:
-		frame.content_padding = pad
 
 
 ## Fills all three labels for one tutorial step and shows the step pill.
@@ -635,21 +579,55 @@ static func mount(scene: PackedScene, overlay: Control, before: Control) -> Tuto
 ## when the spot is so big that the arrow would then have nowhere to go but
 ## across the card (a whole card stack, a splash), the card takes the other
 ## half instead. A step with no spot (an empty Rect2) centres the card.
-static func placement(bounds: Rect2, panel_size: Vector2, spot: Rect2, arrow_size: Vector2) -> Vector2:
-	var centred := bounds.position + (bounds.size - panel_size) / 2.0
+##
+## `head_room` (2026-10-18) is the height of what stands above the card's own
+## rect -- Pak Kepsek, TutorialNoteChrome.MASCOT_HEAD_ROOM -- so the card plus
+## the mascot stays inside `bounds` and the arrow keeps off the mascot too. The
+## returned position is still the card's own top-left.
+static func placement(bounds: Rect2, panel_size: Vector2, spot: Rect2, arrow_size: Vector2,
+		head_room: float = 0.0) -> Vector2:
+	var whole := panel_size + Vector2(0.0, head_room)
+	var lift := Vector2(0.0, head_room)
+	var centred := bounds.position + (bounds.size - whole) / 2.0 + lift
 	if not spot.has_area():
 		return centred
-	var top := Vector2(centred.x, bounds.position.y)
+	var top := Vector2(centred.x, bounds.position.y + head_room)
 	var bottom := Vector2(centred.x, bounds.end.y - panel_size.y)
 	var spot_above_middle := spot.get_center().y < bounds.get_center().y
 	var sides: Array[Vector2] = [top, bottom]
 	if spot_above_middle:
 		sides = [bottom, top]
 	for side: Vector2 in sides:
-		var fit: Dictionary = ArrowScript.fit(spot, bounds, arrow_size, Rect2(side, panel_size))
+		var fit: Dictionary = ArrowScript.fit(spot, bounds, arrow_size, Rect2(side - lift, whole))
 		if fit["clear"]:
 			return side
 	return sides[0]
+
+
+## The controls beside the spot an arrow should not sit on: each target's
+## visible sibling Controls, as rectangles in `overlay`'s space. A sibling
+## that overlaps the target itself is its backdrop (the student card's paper),
+## not a neighbour, and is left out -- it covers every side.
+## With a `scope` (the screen's Safe/UI), every visible button under it counts
+## too: the Lobby's JADWAL sits in another bar from the inventory button.
+static func neighbours_in(targets: Array, overlay: Control, scope: Node = null) -> Array:
+	var rects: Array = []
+	for target in targets:
+		if not (target is Control) or not is_instance_valid(target):
+			continue
+		var parent := (target as Control).get_parent()
+		if parent == null:
+			continue
+		var own := rect_in(target as Control, overlay)
+		var others: Array = parent.get_children()
+		if scope != null:
+			others.append_array(scope.find_children("*", "BaseButton", true, false))
+		for other: Node in others:
+			if other is Control and not targets.has(other) and (other as Control).is_visible_in_tree():
+				var rect := rect_in(other as Control, overlay)
+				if not rect.intersects(own):
+					rects.append(rect)
+	return rects
 
 
 ## Puts one spotlit step's card and arrow where they belong, for the screens
@@ -666,18 +644,21 @@ static func place_step(panel: TutorialPanel, bounds_node: Control, overlay: Cont
 	await panel.get_tree().process_frame
 	if not is_instance_valid(panel) or not is_instance_valid(bounds_node):
 		return
+	panel.reset_size()  # the first layout pass over-grows wrapped labels
 	var bounds := rect_in(bounds_node, overlay)
 	var spot := spot_in(targets, overlay)
 	var arrow_size := Vector2.ZERO
 	if is_instance_valid(arrow):
 		arrow_size = arrow.arrow_size
-	panel.position = placement(bounds, panel.size, spot, arrow_size)
+	var head_room := TutorialNoteChrome.MASCOT_HEAD_ROOM
+	panel.position = placement(bounds, panel.size, spot, arrow_size, head_room)
 	panel.pivot_offset = panel.size / 2.0
 	if not is_instance_valid(arrow):
 		return
 	arrow.visible = spot.has_area()
 	if arrow.visible:
-		arrow.position = arrow.point_at(spot, bounds, Rect2(panel.position, panel.size))
+		var card := Rect2(panel.position - Vector2(0.0, head_room), panel.size + Vector2(0.0, head_room))
+		arrow.position = arrow.point_at(spot, bounds, card, neighbours_in(targets, overlay, bounds_node))
 
 
 ## What a forced step does with a tap on the wrong control: the error cue, the

@@ -8,6 +8,11 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-21 — Tutorial unify (Tutorialfixpart2)
+
+- **Why:** three tutorial boxes looked different (white comic card, Nota Guru note, plain CARA MAIN), the note over-talked, and the mascot rode out of the safe area. Plan: `plans/2026-10-18-tutorial-unify.md`.
+- **Now:** one `TutorialNoteChrome` scene (mascot, name tab, paperclip, torn edge) on the tutorial card, the welcome comic (now a `NotebookFrame`) and CARA MAIN. Every card wears the first-run look; `nota_style` is gone, `show_step_count` (off) still gates the pill, and every card keeps the 120px sticker band its decor sits on (`no_sticker_top_padding` and `TutorialBodyLabel` went with the merge). `TutorialPanel.placement()` leaves `MASCOT_HEAD_ROOM`; StudentCard places its card through it. The arrow takes the side, and the slide along the spot (`TIP_SLIDES`), that covers the least of the screen.s buttons. Title wraps; `[b]` rich text is full size; SchoolDay.s end card pages four short lines; first-run lines are one KBBI nudge each (owner-approved).
+
 ## 2026-10-20 — Atur Jadwal tutorial: show, don't tell
 
 - **Why:** players skip tutorial text; the old Atur Jadwal cards misled (told every student their akademis was good, called empty days "Ungu Muda" when Istirahat is the purple), its student-card spotlight wrapped the 700×1244 `TextureButton` so it lit the day notes and the arrow pointed at Kamis, and every card body was `TitleLabel` (all display face).

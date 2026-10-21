@@ -1161,6 +1161,9 @@ func test_body_label_has_no_override_or_negative_width() -> void:
 		"line spacing comes from TutorialNoteLabel")
 	assert_false(scene.contains("custom_minimum_size = Vector2(-"),
 		"no negative minimum size in the scene")
+	var panel := _make()
+	assert_eq(panel.title_label.autowrap_mode, TextServer.AUTOWRAP_WORD_SMART,
+		"a long title wraps instead of widening the card (SchoolDay's 1162px one did)")
 
 
 ## 2026-10-18: the Nota Guru chrome is one shared scene, and the panel's Decor
@@ -1210,6 +1213,12 @@ func test_the_arrow_keeps_off_a_neighbour_when_it_can() -> void:
 	var boxed: Dictionary = TutorialPanel.ArrowScript.fit(energy, SAFE_UI, ARROW, Rect2(),
 		[mood, Rect2(100, 990, 600, 600)])
 	assert_true(boxed["clear"], "neighbours on both sides fall back, still clear of the card")
+	# The live Energy step (2026-10-21): Mood fills the space above, MINAT's
+	# box clips 5px below; the side covering less wins.
+	var live: Dictionary = TutorialPanel.ArrowScript.fit(Rect2(701, 872.5, 243, 99),
+		Rect2(0, 0, 1080, 1922), ARROW, Rect2(43, 1275, 994, 607),
+		[Rect2(716, 762, 211, 67), Rect2(119, 1181, 842, 70)])
+	assert_true(live["pointing_up"], "the arrow goes under Energy, off the Mood bar")
 
 
 ## 2026-10-18: the welcome comic sits in the Nota Guru note -- a NotebookFrame

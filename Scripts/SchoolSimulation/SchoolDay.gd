@@ -1349,6 +1349,7 @@ func _show_end_simulation_tutorial() -> void:
 func _centre_tutorial_panel() -> void:
 	_tutorial_panel.reset_size()
 	await get_tree().process_frame
+	_tutorial_panel.reset_size()  # its first layout pass over-grows the wrapped labels
 	_tutorial_panel.position = (get_viewport_rect().size - _tutorial_panel.size) / 2.0
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 

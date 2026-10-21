@@ -87,8 +87,8 @@ func point_at(spot: Rect2, bounds: Rect2, avoid: Rect2 = Rect2(), neighbours: Ar
 ##
 ## `neighbours` (Rect2s, 2026-10-18) are the controls beside the spot -- the
 ## Mood bar above the Energy bar, JADWAL beside the inventory button. A side
-## whose picture sits on one reads as pointing at it, so a side clear of every
-## neighbour wins first; failing that, the old rule (off `avoid` only) decides.
+## whose picture sits on one reads as pointing at it, so of the sides that
+## qualify, the one covering the least neighbour area wins (above on a tie).
 static func fit(spot: Rect2, bounds: Rect2, picture_size: Vector2, avoid: Rect2 = Rect2(),
 		neighbours: Array = []) -> Dictionary:
 	var inner := bounds.grow(-EDGE_MARGIN)
@@ -96,28 +96,30 @@ static func fit(spot: Rect2, bounds: Rect2, picture_size: Vector2, avoid: Rect2 
 			inner.end.x - picture_size.x / 2.0)
 	var above := Vector2(x, spot.position.y - TIP_GAP)
 	var below := Vector2(x, spot.end.y + TIP_GAP)
-	for mind_neighbours: bool in [true, false]:
-		if mind_neighbours and neighbours.is_empty():
+	var best := {}
+	var best_cover := INF
+	for pointing_up: bool in [false, true]:
+		var tip := below if pointing_up else above
+		var picture := picture_rect(tip, picture_size, pointing_up)
+		if not inner.encloses(picture) or (avoid.has_area() and picture.intersects(avoid)):
 			continue
-		for pointing_up: bool in [false, true]:
-			var tip := below if pointing_up else above
-			var picture := picture_rect(tip, picture_size, pointing_up)
-			if not inner.encloses(picture) or (avoid.has_area() and picture.intersects(avoid)):
-				continue
-			if mind_neighbours and _covers_any(picture, neighbours):
-				continue
-			return {"tip": tip, "pointing_up": pointing_up, "clear": true}
+		var cover := _covered_area(picture, neighbours)
+		if cover < best_cover:
+			best_cover = cover
+			best = {"tip": tip, "pointing_up": pointing_up, "clear": true}
+	if not best.is_empty():
+		return best
 	var lowest := maxf(inner.end.y, inner.position.y + picture_size.y)
 	var squeezed := clampf(above.y, inner.position.y + picture_size.y, lowest)
 	return {"tip": Vector2(x, squeezed), "pointing_up": false, "clear": false}
 
 
-## Whether `picture` overlaps any of the Rect2s in `rects`.
-static func _covers_any(picture: Rect2, rects: Array) -> bool:
+## How much of `picture` the Rect2s in `rects` cover, summed, px².
+static func _covered_area(picture: Rect2, rects: Array) -> float:
+	var area := 0.0
 	for rect: Rect2 in rects:
-		if rect.has_area() and picture.intersects(rect):
-			return true
-	return false
+		area += picture.intersection(rect).get_area()
+	return area
 
 
 ## The rectangle the picture covers when its tip is at `tip`: hanging above it

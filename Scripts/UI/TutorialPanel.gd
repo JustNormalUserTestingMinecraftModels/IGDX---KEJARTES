@@ -304,6 +304,9 @@ func _apply_geometry() -> void:
 	var pad: Vector4i = frame.content_padding
 	var body_width: float = panel_width - body_width_offset - float(pad.x + pad.z)
 	body_label.custom_minimum_size = Vector2(body_width, 0)
+	# The title wraps too (a long one widened the card past the screen), and an
+	# autowrapped label sizes its height from its width: give it the same one.
+	title_label.custom_minimum_size = Vector2(body_width, 0)
 
 
 ## The one text ladder every card wears: title, line and prompt.
@@ -602,7 +605,9 @@ static func placement(bounds: Rect2, panel_size: Vector2, spot: Rect2, arrow_siz
 
 
 ## The controls beside the spot an arrow should not sit on: each target's
-## visible sibling Controls, as rectangles in `overlay`'s space.
+## visible sibling Controls, as rectangles in `overlay`'s space. A sibling
+## that overlaps the target itself is its backdrop (the student card's paper),
+## not a neighbour, and is left out -- it covers every side.
 static func neighbours_in(targets: Array, overlay: Control) -> Array:
 	var rects: Array = []
 	for target in targets:
@@ -611,9 +616,12 @@ static func neighbours_in(targets: Array, overlay: Control) -> Array:
 		var parent := (target as Control).get_parent()
 		if parent == null:
 			continue
+		var own := rect_in(target as Control, overlay)
 		for sibling: Node in parent.get_children():
 			if sibling is Control and not targets.has(sibling) and (sibling as Control).is_visible_in_tree():
-				rects.append(rect_in(sibling as Control, overlay))
+				var rect := rect_in(sibling as Control, overlay)
+				if not rect.intersects(own):
+					rects.append(rect)
 	return rects
 
 

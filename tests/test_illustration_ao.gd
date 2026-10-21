@@ -119,17 +119,17 @@ func test_the_splash_material_keeps_rim_and_ao_off() -> void:
 
 
 ## The splash grade's colour values are the owner's picks from the live
-## previews (2026-10-01): saturation 0.78, contrast 0.9, exposure 1.16 and a
-## warm tint. Change them only on the owner's say-so.
+## previews (2026-10-15: matched to the Lobby cutout, saturation 0.865,
+## exposure 0.995, light tint). Change them only on the owner's say-so.
 func test_the_splash_grade_is_the_owners_pick() -> void:
 	var mat: ShaderMaterial = load(SPLASH)
 	assert_true(mat != null, "the splash material must exist")
 	if mat == null:
 		return
-	assert_true(is_equal_approx(mat.get_shader_parameter("saturation"), 0.78), "saturation")
-	assert_true(is_equal_approx(mat.get_shader_parameter("contrast"), 0.9), "contrast")
-	assert_true(is_equal_approx(mat.get_shader_parameter("exposure"), 1.16), "exposure")
-	assert_true((mat.get_shader_parameter("tint") as Color).is_equal_approx(Color(1.08, 1.005, 0.875)), "tint")
+	assert_true(is_equal_approx(mat.get_shader_parameter("saturation"), 0.865), "saturation")
+	assert_true(is_equal_approx(mat.get_shader_parameter("contrast"), 1.0086625), "contrast")
+	assert_true(is_equal_approx(mat.get_shader_parameter("exposure"), 0.995), "exposure")
+	assert_true((mat.get_shader_parameter("tint") as Color).is_equal_approx(Color(1.022, 1.0, 0.972)), "tint")
 
 
 ## The radius is in SCREEN pixels, via fwidth. A radius in source texels would

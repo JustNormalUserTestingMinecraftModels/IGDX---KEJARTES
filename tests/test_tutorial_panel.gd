@@ -190,7 +190,6 @@ func test_the_badge_nodes_sit_above_the_title() -> void:
 
 func test_mode_is_an_export_and_toggles_the_pill_and_the_plate() -> void:
 	var panel := _make()
-	panel.count_steps = true  # the pill is off by default (2026-10-18)
 	var exported := false
 	for prop: Dictionary in panel.get_property_list():
 		if prop["name"] == "mode" and (int(prop["usage"]) & PROPERTY_USAGE_EDITOR) != 0:
@@ -199,25 +198,27 @@ func test_mode_is_an_export_and_toggles_the_pill_and_the_plate() -> void:
 	assert_eq(panel.mode, TutorialPanel.Mode.STEP, "a card starts as a tutorial step")
 	var pill := panel.get_node(LAYOUT + "StepPill") as Control
 	var plate := panel.get_node(LAYOUT + "NamePlate") as Control
-	assert_true(pill.visible, "STEP shows the pill")
+	assert_false(pill.visible, "STEP shows no step count by default (owner, 2026-10-20)")
 	assert_false(plate.visible, "and not the name plate")
 	panel.mode = TutorialPanel.Mode.HEADMASTER
 	assert_true(plate.visible, "HEADMASTER shows the name plate")
 	assert_false(pill.visible, "and not the pill")
 	panel.mode = TutorialPanel.Mode.STEP
-	assert_true(pill.visible, "switching back shows the pill again")
+	assert_false(pill.visible, "nor after switching back")
 	assert_false(plate.visible)
 
 
 func test_show_step_with_a_single_step_hides_the_pill_and_three_shows_it() -> void:
 	var panel := _make()
-	panel.count_steps = true
 	var pill := panel.get_node(LAYOUT + "StepPill") as Control
 	var label := panel.get_node(LAYOUT + "StepPill/StepLabel") as Label
 	panel.show_step("Judul", "Isi", "Ketuk", 1, 1)
 	assert_false(pill.visible, "one step has nothing to count")
 	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
-	assert_true(pill.visible, "three steps show the pill")
+	assert_false(pill.visible, "three steps show no count either")
+	panel.show_step_count = true
+	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
+	assert_true(pill.visible, "a scene that opts in still gets the pill")
 	assert_eq(label.text, "Langkah 2 / 3")
 	panel.show_step("Judul", "Isi", "Ketuk")
 	assert_false(pill.visible, "the three-argument call shows no pill")
@@ -225,7 +226,6 @@ func test_show_step_with_a_single_step_hides_the_pill_and_three_shows_it() -> vo
 
 func test_show_beat_shows_the_name_plate_with_the_speaker() -> void:
 	var panel := _make()
-	panel.count_steps = true
 	var pill := panel.get_node(LAYOUT + "StepPill") as Control
 	var plate := panel.get_node(LAYOUT + "NamePlate") as Control
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk untuk lanjut")
@@ -239,7 +239,7 @@ func test_show_beat_shows_the_name_plate_with_the_speaker() -> void:
 	assert_eq((panel.get_node(LAYOUT + "PromptLabel") as Label).text, "Ketuk untuk lanjut")
 	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
 	assert_eq(panel.mode, TutorialPanel.Mode.STEP, "a step after a beat is a step again")
-	assert_true(pill.visible)
+	assert_false(pill.visible, "with no step count (show_step_count off)")
 	assert_false(plate.visible)
 
 
@@ -252,17 +252,18 @@ func test_the_sticker_follows_the_mode() -> void:
 	var frame := panel.get_node("Frame") as NotebookFrame
 	var sticker := frame.get_node("Chrome/Sticker") as Control
 	var label := frame.get_node("Chrome/Sticker/Title") as Label
-	assert_eq(frame.title_text, "TUTORIAL", "a card starts as a tutorial step")
+	assert_eq(frame.title_text, "", "a step wears no sticker (owner, 2026-10-20)")
+	assert_false(sticker.visible, "so the sticker hides")
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
 	assert_eq(frame.title_text, "PENGUMUMAN", "a beat is an announcement")
 	assert_eq(label.text, "PENGUMUMAN", "and the sticker's own label says so")
 	assert_true(sticker.visible, "the sticker stays")
 	panel.show_step("Judul", "Isi", "Ketuk", 2, 3)
-	assert_eq(frame.title_text, "TUTORIAL", "the next step is a tutorial again")
-	assert_eq(label.text, "TUTORIAL")
+	assert_eq(frame.title_text, "", "the next step drops it again")
+	assert_false(sticker.visible, "and hides it")
 	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
 	panel.mode = TutorialPanel.Mode.STEP
-	assert_eq(frame.title_text, "TUTORIAL", "switching the mode back does it too")
+	assert_eq(frame.title_text, "", "switching the mode back does it too")
 
 
 func test_the_sticker_texts_are_exports_that_apply_live() -> void:
@@ -894,7 +895,7 @@ func test_the_tutorial_copy_addresses_the_player_as_kamu() -> void:
 		assert_true(found == null, "%s still says \"%s\""
 			% [path, found.get_string() if found != null else ""])
 	assert_contains(FileAccess.get_file_as_string("res://Scripts/AturJadwal/AturJadwal.gd"),
-		"Kamu akan menjadwalkan", "the card after \"Di sini kamu akan\" keeps its voice (not vacuous)")
+		"Isi Senin dengan {stat}", "the Senin card is scanned, so the check is not vacuous")
 	assert_false(FileAccess.get_file_as_string(STUDENT_CARD_PATH).contains("performance"),
 		"StudentCard's welcome says kemampuan, not performance")
 
@@ -1015,7 +1016,7 @@ func test_task_steps_wear_the_tugas_ribbon() -> void:
 	panel.show_step("Pilih", "Pilih satu murid lagi.", TutorialPanel.DEFAULT_PROMPT, 0, 0, true)
 	assert_eq(panel.frame.title_text, panel.task_sticker_text, "a task wears TUGAS")
 	panel.show_step("Mood", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT)
-	assert_eq(panel.frame.title_text, panel.step_sticker_text, "a lesson wears TUTORIAL")
+	assert_eq(panel.frame.title_text, panel.step_sticker_text, "a lesson wears no sticker")
 
 
 ## Task 2: the Nota Guru skin -- a paperclip, a torn top edge and a name tab
@@ -1101,7 +1102,7 @@ func test_the_mascot_wears_the_face_expression_names() -> void:
 ## TUTORIAL sticker, no pill -- and a task keeps its TUGAS.
 func test_every_step_card_drops_the_sticker_and_pill() -> void:
 	var panel := _make()
-	assert_false(panel.count_steps, "no card counts its steps")
+	assert_false(panel.show_step_count, "no card counts its steps")
 	panel.show_step("Kenalan", "Ini Mood.", TutorialPanel.DEFAULT_PROMPT, 1, 6)
 	assert_eq(panel.frame.title_text, "", "no sticker")
 	assert_false(panel.step_pill.visible, "no pill")
@@ -1230,3 +1231,26 @@ func test_the_comic_wears_the_note_and_its_chrome() -> void:
 	assert_true(comic.get_node("Plate/Decor").has_meta(NotebookFrame.CHROME_META),
 		"which the frame keeps full-size, outside the content")
 	comic.free()
+
+
+## The card's frame floor sits under a one-line step's content (title, line,
+## prompt, 64 + 48 padding: ~340px), so the content -- not a fixed 360 --
+## sets the height and no empty strip opens under the prompt (2026-10-20).
+func test_the_card_floor_lets_content_set_the_height() -> void:
+	var card := (load(SCENE_PATH) as PackedScene).instantiate()
+	track(card)
+	assert_true((card.get_node("Frame") as Control).custom_minimum_size.y <= 280.0,
+		"frame floor %.0f is low enough for the content to drive"
+		% (card.get_node("Frame") as Control).custom_minimum_size.y)
+
+
+## Review 2026-10-20: the nota decor (mascot, paperclip, name tab) is laid out
+## over the 120px sticker band. Since 2026-10-21 every card wears that decor,
+## so every card keeps the band, sticker or none.
+func test_every_card_keeps_the_sticker_band() -> void:
+	var panel := _make()
+	var frame := panel.get_node("Frame") as NotebookFrame
+	panel.show_step("Judul", "Isi", "Ketuk", 1, 2)
+	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "a stickerless step keeps 120")
+	panel.show_beat("Pak Kepala Sekolah", "Selamat!", "Naik ke Kelas 8.", "Ketuk")
+	assert_eq(frame.content_padding.y, NotebookFrame.DEFAULT_PADDING.y, "and so does a beat")

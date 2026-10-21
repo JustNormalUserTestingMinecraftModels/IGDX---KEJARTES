@@ -312,7 +312,8 @@ func test_the_scene_is_authored_and_themed() -> void:
 # ── look ─────────────────────────────────────────────────────────────────────
 
 ## The dialogue wears the Lobby look under its UI: a screen-read desaturation
-## of 30% grades the backdrop and the speaker, then the Lobby's light and
+## of 30% grades the backdrop only (2026-10-15: run over the speaker too, it
+## stacked on the splash grade and pulled the character off its art), then the Lobby's light and
 ## shafts sit over that, all in a `World` CanvasLayer at -1, and the Lobby's
 ## own WorldEnvironment glow (an AmbientGlow, the root's second child) blooms
 ## that layer only (2026-09-30; it replaced a screen-read ScreenGlow at the
@@ -326,8 +327,9 @@ func test_the_dialogue_wears_the_lobby_look_under_its_ui() -> void:
 	var world := Census.entry(c, "World")
 	assert_eq(world.get("type"), "CanvasLayer", "World is a CanvasLayer")
 	assert_eq(Census.prop(world, "layer"), -1, "World draws at -1, under the UI")
-	assert_eq(Census.children_of(c, "World/Room"), ["Background", "Blur", "Splash", "GradeCopy",
-			"Desaturate", "Light", "Shafts"] as Array[String], "art, then the grade and the light")
+	assert_eq(Census.children_of(c, "World/Room"), ["Background", "Blur", "GradeCopy",
+			"Desaturate", "Splash", "Light", "Shafts"] as Array[String],
+		"the backdrop and its grade, then the speaker (graded once, by its splash grade), then the light")
 	assert_eq(Census.entry(c, "World/Room/Desaturate").get("instance"), "res://Scenes/Look/ScreenSaturation.tscn")
 	assert_eq(Census.entry(c, "World/Room/Light").get("instance"), "res://Scenes/Look/LightPool.tscn")
 	assert_eq(Census.entry(c, "World/Room/Shafts").get("instance"), "res://Scenes/Look/SunShafts.tscn")

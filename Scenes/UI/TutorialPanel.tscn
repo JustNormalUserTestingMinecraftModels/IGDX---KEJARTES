@@ -16,7 +16,7 @@ script = ExtResource("1_v0ojc")
 
 [node name="Frame" parent="." unique_id=25906949 instance=ExtResource("nb_frame")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 360)
+custom_minimum_size = Vector2(0, 280)
 layout_mode = 2
 mouse_filter = 2
 ring_count = 4

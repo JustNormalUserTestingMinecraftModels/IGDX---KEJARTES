@@ -1348,7 +1348,9 @@ func test_a_wrong_day_at_a_forced_step_is_answered_not_dropped() -> void:
 		assert_true(rest.begins_with("return"), "the tap is still refused after the answer")
 		answered += 1
 		from = at + 1
-	assert_eq(answered, 2, "the day gate and the non-day gate both answer")
+	# One gate since 2026-10-20: every step targets one control, so "targets
+	# another day" and "targets a non-day" are the same refusal.
+	assert_eq(answered, 1, "the one target gate answers a wrong day")
 
 
 func test_the_answer_shakes_the_wanted_day_and_dims_the_others_with_the_error_cue() -> void:
@@ -1440,3 +1442,82 @@ func test_a_tap_fills_a_typing_line_first() -> void:
 	assert_true(src.find("_tutorial_panel.skip_typing()", at) != -1
 			and src.find("_tutorial_panel.skip_typing()", at) < src.find("current_step += 1", at),
 		"skip_typing() comes before the step counts")
+
+
+# ── Show-don't-tell tutorial (2026-10-20 plan) ─────────────────────────────────
+# One line per card, one control per card, and the Senin card names the skill
+# the student is furthest behind on.
+
+func _tutorial_block(src: String, header: String) -> String:
+	var block := src.substr(src.find(header))
+	return block.substr(0, block.find("\nfunc ", 10))
+
+func test_weakest_skill_is_the_largest_gap_to_target() -> void:
+	var s := {"akademis": 60, "target_akademis": 65,
+			"seni_budaya": 30, "target_seni_budaya": 65,
+			"olahraga": 50, "target_olahraga": 65}
+	assert_eq(load(_SCRIPT_PATH).weakest_skill_category(s), "SeniBudaya")
+
+func test_weakest_skill_when_every_target_is_met() -> void:
+	var s := {"akademis": 90, "target_akademis": 65,
+			"seni_budaya": 70, "target_seni_budaya": 65,
+			"olahraga": 80, "target_olahraga": 65}
+	assert_eq(load(_SCRIPT_PATH).weakest_skill_category(s), "SeniBudaya", "smallest surplus wins")
+
+func test_weakest_skill_defaults_missing_targets_to_65() -> void:
+	assert_eq(load(_SCRIPT_PATH).weakest_skill_category(
+			{"akademis": 64, "seni_budaya": 70, "olahraga": 70}), "Akademis")
+
+func test_every_tutorial_step_targets_at_most_one_control() -> void:
+	# A comma-separated target cuts one hole round all of them: the splash bleed.
+	var block := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH),
+			"func _populate_default_tutorial_steps")
+	var rx := RegEx.create_from_string(r'\[\s*"[^"]*",\s*"[^"]*",\s*"([^"]*)"')
+	var rows := rx.search_all(block)
+	assert_eq(rows.size(), 3, "three step rows in all")
+	for m in rows:
+		assert_false(m.get_string(1).contains(","), "multi-target step: " + m.get_string(1))
+
+func test_senin_step_names_the_stat_and_the_picker_repeats_it() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains('"{stat} Nama Murid paling jauh dari target. Isi Senin dengan {stat}."'))
+	assert_true(src.contains('"Pilih %s, lalu ketuk Pilih"'))
+	assert_false(src.contains("Ungu Muda"), "empty days are not purple")
+
+func test_tutorial_card_body_uses_the_body_face() -> void:
+	var src := FileAccess.get_file_as_string("res://Scenes/UI/TutorialPanel.tscn")
+	var at := src.find('[node name="BodyLabel"')
+	assert_true(src.substr(at, 300).contains('theme_type_variation = &"TutorialNoteLabel"'))
+
+func test_picker_nudges_the_focus_tile_while_the_senin_step_runs() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(_tutorial_block(src, "func _show_penjadwalan_popup").contains("_picker_idle.start(_focus_tile()"),
+		"the idle nudge targets the focus tile")
+	assert_true(_tutorial_block(src, "func _hide_penjadwalan_popup").contains("_picker_idle.stop()"),
+		"closing the picker stops the nudge")
+
+func test_the_senin_hint_stays_on_senin() -> void:
+	# Review I1: tap Senin, cancel, tap Selasa -- the Selasa picker must not
+	# carry the Senin hint or shake its tile.
+	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _focus_tile")
+	assert_true(fn.contains('GameState.selected_day != "Senin"'), "no focus on any other day")
+	var show := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _show_penjadwalan_popup")
+	assert_true(show.contains("if _focus_tile():\n\t\t\tpopup_subtitle.text = \"Pilih %s"),
+		"the subtitle hint follows the same gate")
+
+func test_focus_tile_is_null_outside_the_tutorial() -> void:
+	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _focus_tile")
+	assert_true(fn.contains('_tutorial_focus_category == ""'), "no focus, no nudge")
+
+func test_the_student_step_spotlights_the_name_plate_not_the_whole_button() -> void:
+	# TextureButton is 700x1244: its spotlight ran from the splash down over
+	# the day notes and the arrow pointed at Kamis (live run, 2026-10-20).
+	var src := FileAccess.get_file_as_string(_SCRIPT_PATH)
+	assert_true(src.contains('"Pilih murid yang mau dijadwalkan.", "LabelNama"'), "step 1 lights the name plate")
+	assert_true(_tutorial_block(src, "func _on_select_student_pressed").contains('"LabelNama"'),
+		"the student gate accepts the name-plate step")
+
+func test_picking_a_tile_calms_the_nudge() -> void:
+	# Review 2026-10-20: the suggested tile kept shaking after it was picked.
+	var fn := _tutorial_block(FileAccess.get_file_as_string(_SCRIPT_PATH), "func _on_tile_picked")
+	assert_true(fn.contains("_picker_idle.stop()"), "a pick stops the nudge")

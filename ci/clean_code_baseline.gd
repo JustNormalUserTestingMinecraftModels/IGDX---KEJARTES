@@ -54,7 +54,7 @@ const LONG_FUNCTIONS: Dictionary = {
 ## Untyped vars, signatures without ->, untyped parameters, per script.
 const UNTYPED: Dictionary = {
 	"res://Scripts/AnimUtils.gd": 27,
-	"res://Scripts/AturJadwal/AturJadwal.gd": 146,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 137,
 	"res://Scripts/CutScene/CutScene.gd": 12,
 	"res://Scripts/CutScene/HintLabel.gd": 3,
 	"res://Scripts/Debug/DebugManager.gd": 167,
@@ -215,10 +215,10 @@ const DUPLICATE_GROUPS: Array[String] = [
 
 ## Scripts over 1,000 lines -> their line count.
 const LARGE_SCRIPTS: Dictionary = {
-	"res://Scripts/AturJadwal/AturJadwal.gd": 1464,
+	"res://Scripts/AturJadwal/AturJadwal.gd": 1463,
 	"res://Scripts/Debug/DebugManager.gd": 1745,
 	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1628,
-	"res://Scripts/StudentCard/StudentCard.gd": 1443,
+	"res://Scripts/StudentCard/StudentCard.gd": 1441,
 }
 
 ## Must reach zero: .gd/.tscn names that are not PascalCase.

@@ -31,7 +31,7 @@ extends MarginContainer
 ## of three faces, `expression`. A headmaster beat (show_beat) is a
 ## congratulation and wears BANGGA. Every card wears the first-run look from the
 ## mockup (docs/superpowers/mockups/tutorial-handoff.html): no TUTORIAL sticker
-## and no step pill (count_steps), the text ladder of TITLE_VARIATION and friends.
+## and no step pill (show_step_count), the text ladder of TITLE_VARIATION and friends.
 ##
 ## The screens that spotlight a control (AturJadwal, StudentList, Lobby) share
 ## a handful of static helpers from here instead of each carrying its own
@@ -122,6 +122,15 @@ enum Mode {
 		if is_inside_tree():
 			_apply_mode()
 
+## Whether a multi-step flow shows the "Langkah n / N" pill. Off: the count
+## was one more thing to read on a card a mobile player skims (owner,
+## 2026-10-20). A scene that wants it back sets this on its instance.
+@export var show_step_count: bool = false:
+	set(value):
+		show_step_count = value
+		if is_inside_tree():
+			_apply_mode()
+
 ## The title on the frame's sticker while the headmaster's beat heads the card
 ## (mode HEADMASTER). A promotion's congratulation is a story beat, not a
 ## lesson, so its card must not wear the tutorial's label.
@@ -157,15 +166,6 @@ enum Mode {
 		expression = value
 		if is_inside_tree():
 			_apply_expression()
-
-## Whether a STEP card shows its "Langkah n / N" pill. Off on every card
-## since 2026-10-18 (owner: one look everywhere, the first-run one, which
-## counts nothing); kept as a knob so a screen can count again.
-@export var count_steps: bool = false:
-	set(value):
-		count_steps = value
-		if is_inside_tree():
-			_apply_mode()
 
 ## Panel width as a fraction of the viewport width, before max_width clamps
 ## it. StudentCard ships 0.92; SchoolDay ships 0.85.
@@ -330,7 +330,7 @@ func _apply_prompt_tint() -> void:
 ## match. The sticker is only written when it changes: each write re-sorts the
 ## frame, and show_step() lands here on every step.
 func _apply_mode() -> void:
-	step_pill.visible = mode == Mode.STEP and _pill_wanted and count_steps
+	step_pill.visible = mode == Mode.STEP and _pill_wanted and show_step_count
 	name_plate.visible = mode == Mode.HEADMASTER
 	decor.show_name_tab = mode != Mode.HEADMASTER
 	decor.speaker_name = speaker_name

@@ -531,6 +531,10 @@ func _input(event: InputEvent) -> void:
 			if player_paddle and event.position.y > screen_size.y / 2.0:
 				is_dragging_player = true
 				player_target_pos = _player_half_point(event.position)
+				# Jump straight there: the next frame's hit sweep then starts
+				# under the finger, not from wherever the racket was, so a tap
+				# cannot "swing" through a shuttle along the way.
+				player_paddle.global_position = player_target_pos
 		else:
 			is_dragging_player = false
 			

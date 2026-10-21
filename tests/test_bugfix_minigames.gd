@@ -94,6 +94,9 @@ func test_badminton_rackets_cannot_squeeze_or_stall_on_anything() -> void:
 	assert_true(physics.contains("player_paddle.global_position = player_target_pos"),
 		"the player's racket is set exactly under the finger")
 	assert_false(src.contains("max_paddle_speed"), "with no speed cap to lag behind it")
+	var input := _function_body(BADMINTON_PATH, "func _input(")
+	assert_true(input.contains("player_paddle.global_position = player_target_pos"),
+		"a press jumps the racket under the finger, so the hit sweep never starts from the old spot")
 	assert_true(physics.contains("_check_racket_hits(") and physics.contains("_watch_for_pin("),
 		"hits are swept for and a pinned shuttle is watched for every physics frame")
 

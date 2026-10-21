@@ -592,11 +592,13 @@ func test_baked_theme_resource_matches_the_factory() -> void:
 	# test runs inside the same long-lived editor process across an entire
 	# session (godot-ai MCP bridge), so a bare load() can silently return
 	# a copy of this resource cached from BEFORE the last rebake, producing
-	# a false result in either direction. CACHE_MODE_REPLACE forces a real
-	# read of what's on disk right now and updates the cache to match.
+	# a false result in either direction. CACHE_MODE_IGNORE forces a real read
+	# of what's on disk right now. It must not be CACHE_MODE_REPLACE: that
+	# swaps the cached copy of the project theme, which the editor and the
+	# running UI are using, and segfaulted the editor (signal 11) on a full run.
 	var tokens := DesignTokens.load_default()
 	var baked: Theme = ResourceLoader.load(
-		"res://Assets/Theme/kejartes_theme.tres", "", ResourceLoader.CACHE_MODE_REPLACE)
+		"res://Assets/Theme/kejartes_theme.tres", "", ResourceLoader.CACHE_MODE_IGNORE)
 	assert_true(baked != null, "kejartes_theme.tres must load")
 	assert_eq(baked.default_font, tokens.font_body,
 		"baked theme's default_font must match the current body font")

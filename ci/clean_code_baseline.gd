@@ -29,8 +29,7 @@ const LONG_FUNCTIONS: Dictionary = {
 	"res://Scripts/Minigames/Akademis/Menjodohkan.gd::setup_game": 55,
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd::_show_current_question": 70,
 	"res://Scripts/Minigames/Akademis/Variabel.gd::_generate_question": 127,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd::_physics_process": 53,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd::_ready": 63,
+	"res://Scripts/Minigames/Olahraga/Badminton.gd::_ready": 61,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd::_setup_layout": 95,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd::_shoot_ball": 55,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd::_apply_visual_exports": 53,
@@ -73,7 +72,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/Minigames/Akademis/Password.gd": 10,
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 21,
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 66,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd": 52,
+	"res://Scripts/Minigames/Olahraga/Badminton.gd": 48,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 44,
 	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 37,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd": 11,
@@ -149,7 +148,7 @@ const BARE_NUMBERS: Dictionary = {
 	"res://Scripts/Minigames/Akademis/Password.gd": 4,
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 1,
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 46,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd": 132,
+	"res://Scripts/Minigames/Olahraga/Badminton.gd": 122,
 	"res://Scripts/Minigames/Olahraga/MainBola.gd": 89,
 	"res://Scripts/Minigames/Olahraga/ShuttlecockSprite.gd": 2,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 48,
@@ -216,9 +215,9 @@ const DUPLICATE_GROUPS: Array[String] = [
 ## Scripts over 1,000 lines -> their line count.
 const LARGE_SCRIPTS: Dictionary = {
 	"res://Scripts/AturJadwal/AturJadwal.gd": 1463,
-	"res://Scripts/Debug/DebugManager.gd": 1745,
-	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1628,
-	"res://Scripts/StudentCard/StudentCard.gd": 1441,
+	"res://Scripts/Debug/DebugManager.gd": 1744,
+	"res://Scripts/SchoolSimulation/SchoolDay.gd": 1627,
+	"res://Scripts/StudentCard/StudentCard.gd": 1436,
 }
 
 ## Must reach zero: .gd/.tscn names that are not PascalCase.

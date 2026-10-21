@@ -7,6 +7,28 @@ const LOSS_CARD_DELAY := 1.2
 ## offsets, spec 2026-09-30 minigame hierarchy B5); the player's goal line
 ## moves up with it so a point still lands at the painted baseline.
 const COURT_LIFT := 48.0
+## How far below the net line (a fraction of screen height) the player's racket
+## can be and still count as crowding the net; past it the enemy plays freely.
+const NET_CROWD_ZONE_FRAC := 0.15
+## Deepest the enemy may stand while the player's racket is right at the net,
+## as a fraction of screen height from the top. It eases out to the enemy's
+## normal reach as the player backs off across NET_CROWD_ZONE_FRAC.
+const ENEMY_RETREAT_Y_FRAC := 0.14
+## The shuttle counts as pinned once it has stayed inside PIN_RADIUS of one
+## spot for this long (seconds).
+const PIN_SECONDS := 0.5
+## How far (px) the shuttle may wander and still count as staying in one spot.
+const PIN_RADIUS := 40.0
+## Sideways share of a pop-out's direction, aimed at the court's centre line.
+const PIN_POP_SIDEWAYS := 0.3
+## How far (px) a pop-out nudges the shuttle off the wall it was pinned against.
+const PIN_POP_NUDGE := 60.0
+## The player's racket stays this far (px) inside the screen edges and the net half.
+const PLAYER_EDGE_MARGIN := 50.0
+## The enemy racket keeps this far (px) inside the screen's top and side edges.
+const ENEMY_EDGE_MARGIN := 80.0
+## The enemy's normal forward reach: this far (px) short of the net line.
+const ENEMY_NET_MARGIN := 80.0
 
 # ─── Visual - Shuttlecock ───────────────────────────────────────────────────
 @export_group("Visual - Shuttlecock")
@@ -54,8 +76,6 @@ const COURT_LIFT := 48.0
 ## Assign a custom Font resource. Leave null to use default theme font.
 @export var font: Font = null
 @export_group("Configuration")
-## Speed cap (px/s) on the player paddle's drag-follow movement.
-@export var max_paddle_speed: float = 2400.0
 ## The shuttle's hit circle radius, as a fraction of screen width. Doubled
 ## from 0.04 with the shuttle's picture on 2026-09-10, so the circle still
 ## matches the art's box (Puck/Sprite2D's scale sets the picture's size).
@@ -85,6 +105,13 @@ var max_score: int = 0
 
 var is_dragging_player: bool = false
 var player_target_pos: Vector2 = Vector2.ZERO
+## How close (px, centre to centre) a racket must be to hit the shuttle: the
+## racket's circle plus the shuttle's. Set once by _setup_rackets().
+var _hit_reach: float = 0.0
+## Where the shuttle was when it last moved more than PIN_RADIUS, and for how
+## long (s) it has stayed within PIN_RADIUS of there.
+var _pin_anchor: Vector2 = Vector2.ZERO
+var _pin_time: float = 0.0
 var puck_start_pos: Vector2
 
 # ─── Visual nodes ────────────────────────────────────────────────────────────
@@ -200,9 +227,6 @@ func _ready() -> void:
 		puck.global_position = Vector2(screen_size.x / 2, screen_size.y * 0.5)
 		puck_start_pos = puck.global_position
 		puck.continuous_cd = RigidBody2D.CCD_MODE_CAST_RAY
-		puck.contact_monitor = true
-		puck.max_contacts_reported = 4
-		puck.body_entered.connect(_on_puck_body_entered)
 		var col = puck.get_node_or_null("CollisionShape2D")
 		if col and col.shape is CircleShape2D:
 			col.shape.radius = screen_size.x * puck_radius_frac
@@ -218,6 +242,7 @@ func _ready() -> void:
 		enemy_paddle.global_position = Vector2(screen_size.x / 2, screen_size.y * 0.2)
 
 	_apply_visual_exports()
+	_setup_rackets()
 	_remember_racket_poses()
 
 	if player_goal:
@@ -261,24 +286,92 @@ var _racket_idle_texture: Dictionary = {}
 ## The running squash per racket sprite, killed before the next one starts.
 var _racket_tweens: Dictionary = {}
 
+## Takes both rackets off the physics board and measures how close one must
+## be to hit. A racket collides with nothing, so a wall or the shuttle can
+## never slow or block it, and the shuttle can never be squeezed between a
+## racket and a wall (that squeeze is what once launched it at extreme
+## speed). Hits are found by _check_racket_hits() instead. Needs the shuttle's
+## radius, so it runs after _ready() has sized the shuttle.
+func _setup_rackets() -> void:
+	for racket in [player_paddle, enemy_paddle]:
+		if racket:
+			racket.collision_layer = 0
+			racket.collision_mask = 0
+	var racket_shape := player_paddle.get_node("CollisionShape2D").shape as CircleShape2D
+	var puck_shape := puck.get_node("CollisionShape2D").shape as CircleShape2D
+	_hit_reach = racket_shape.radius + puck_shape.radius
+
+## Hits the shuttle for whichever racket has swept within reach of it since
+## the last frame. A sweep, not a snapshot: a fast swipe cannot jump clean over
+## the shuttle between two frames.
+func _check_racket_hits(player_from: Vector2, enemy_from: Vector2) -> void:
+	if not puck or is_puck_in_serve or is_scoring_delay or _puck_hit_cooldown > 0.0:
+		return
+	var sweeps := [[player_paddle, player_from], [enemy_paddle, enemy_from]]
+	for sweep in sweeps:
+		var racket: CharacterBody2D = sweep[0]
+		var closest := Geometry2D.get_closest_point_to_segment(puck.global_position, sweep[1], racket.global_position)
+		if closest.distance_to(puck.global_position) <= _hit_reach:
+			_hit_puck(racket)
+			return
+
 # Racket hit: re-aim the puck, swell the shuttle, turn its cork to lead the
 # new flight, and squash the racket that hit it.
-func _on_puck_body_entered(body: Node) -> void:
-	if is_scoring_delay:
+func _hit_puck(racket: CharacterBody2D) -> void:
+	_puck_hit_cooldown = 0.22 # Prevent multi-hit trigger jitter
+	if racket == player_paddle and not _hint_settled:
+		_hint_settled = true
+		hint_settle()
+	# Three racket samples picked at random: a rally is the same action
+	# a dozen times in ten seconds, and one sample reads as a metronome.
+	AudioDirector.play_sfx_variant(&"racket_hit")
+	_redirect_puck_towards_opponent(racket)
+	puck_sprite.punch()
+	puck_sprite.face(puck.linear_velocity.y)
+	_play_racket_squash_animation(racket)
+
+## Counts how long the shuttle has stayed in one spot and, past PIN_SECONDS,
+## pops it out gently. A shuttle stuck on a wall or in a corner never ends the
+## rally, so the pin is broken for it.
+func _watch_for_pin(delta: float) -> void:
+	if not puck or is_puck_in_serve or is_scoring_delay or puck.freeze:
+		_pin_time = 0.0
 		return
-	if (body == player_paddle or body == enemy_paddle) and _puck_hit_cooldown <= 0.0:
-		_puck_hit_cooldown = 0.22 # Prevent multi-hit trigger jitter
-		if body == player_paddle and not _hint_settled:
-			_hint_settled = true
-			hint_settle()
-		# Three racket samples picked at random: a rally is the same action
-		# a dozen times in ten seconds, and one sample reads as a metronome.
-		# Inside the cooldown branch so the jitter guard covers the cue too.
-		AudioDirector.play_sfx_variant(&"racket_hit")
-		_redirect_puck_towards_opponent(body)
-		puck_sprite.punch()
-		puck_sprite.face(puck.linear_velocity.y)
-		_play_racket_squash_animation(body as CharacterBody2D)
+	if puck.global_position.distance_to(_pin_anchor) > PIN_RADIUS:
+		_pin_anchor = puck.global_position
+		_pin_time = 0.0
+		return
+	_pin_time += delta
+	if _pin_time >= PIN_SECONDS:
+		_pin_time = 0.0
+		_pop_pinned_puck()
+
+## Frees a pinned shuttle: nudges it off the wall towards the centre line and
+## sends it, at the slowest legal speed, to the half opposite the one it was
+## pinned in -- the pinner's rally continues, the pin does not pay.
+func _pop_pinned_puck() -> void:
+	var puck_shape := puck.get_node("CollisionShape2D").shape as CircleShape2D
+	var inward := 1.0 if puck.global_position.x < screen_size.x / 2.0 else -1.0
+	var nudged_x := puck.global_position.x + inward * PIN_POP_NUDGE
+	var wall_gap := puck_shape.radius + ENEMY_EDGE_MARGIN
+	puck.global_position.x = clampf(nudged_x, wall_gap, screen_size.x - wall_gap)
+	puck.linear_velocity = pop_heading(puck.global_position, screen_size) * min_puck_speed
+	puck_sprite.face(puck.linear_velocity.y)
+
+## The unit direction a pinned shuttle at `puck_pos` is popped in: up the court
+## if it sits in the player's half, down if in the enemy's, leaning a little
+## towards the centre line so it leaves the wall it was pinned against.
+static func pop_heading(puck_pos: Vector2, screen: Vector2) -> Vector2:
+	var inward := 1.0 if puck_pos.x < screen.x / 2.0 else -1.0
+	var up_court := -1.0 if puck_pos.y > screen.y / 2.0 else 1.0
+	return Vector2(inward * PIN_POP_SIDEWAYS, up_court).normalized()
+
+## The nearest point to `point` that the player's racket may stand on: the
+## player's half of the court, inside the screen edges.
+func _player_half_point(point: Vector2) -> Vector2:
+	return Vector2(
+		clampf(point.x, PLAYER_EDGE_MARGIN, screen_size.x - PLAYER_EDGE_MARGIN),
+		clampf(point.y, screen_size.y / 2.0 + PLAYER_EDGE_MARGIN, screen_size.y - PLAYER_EDGE_MARGIN))
 
 func _redirect_puck_towards_opponent(body: Node) -> void:
 	if not puck: return
@@ -336,6 +429,28 @@ func _play_racket_squash_animation(racket: CharacterBody2D) -> void:
 				sprite.texture = idle_texture
 		)
 
+## The deepest line (largest y) the enemy racket may stand on, given where the
+## player's racket is. Away from the net it is the enemy's normal reach; as the
+## player closes on the net it slides back to ENEMY_RETREAT_Y_FRAC, so the
+## enemy keeps its distance instead of crowding the player.
+static func enemy_forward_limit(player_y: float, screen_h: float) -> float:
+	var net_y := screen_h / 2.0
+	var free_y := net_y - ENEMY_NET_MARGIN
+	var crowd := 1.0 - clampf((player_y - net_y) / (screen_h * NET_CROWD_ZONE_FRAC), 0.0, 1.0)
+	return lerpf(free_y, minf(screen_h * ENEMY_RETREAT_Y_FRAC, free_y), crowd)
+
+## Where the enemy racket heads on y, inside its playable area: the shuttle
+## while it is on the enemy's half, else a ready line, never past
+## enemy_forward_limit() for where the player's racket is.
+func _enemy_target_y() -> float:
+	var target_y := puck.global_position.y
+	if puck.global_position.y > screen_size.y / 2:
+		target_y = screen_size.y * 0.25
+	var forward_limit := ENEMY_EDGE_MARGIN
+	if player_paddle:
+		forward_limit = enemy_forward_limit(player_paddle.global_position.y, screen_size.y)
+	return clampf(target_y, ENEMY_EDGE_MARGIN, maxf(forward_limit, ENEMY_EDGE_MARGIN))
+
 func _physics_process(delta: float) -> void:
 	if not is_game_active or is_paused:
 		return
@@ -351,25 +466,17 @@ func _physics_process(delta: float) -> void:
 			call_deferred("_reset_puck", last_conceding_side)
 			return
 
-	# Player Paddle Movement
-	if is_dragging_player and player_paddle and player_target_pos != Vector2.ZERO:
-		var move_vec = player_target_pos - player_paddle.global_position
-		var desired_velocity = move_vec / delta
-		if desired_velocity.length() > max_paddle_speed:
-			desired_velocity = desired_velocity.normalized() * max_paddle_speed
-		player_paddle.velocity = desired_velocity
-		player_paddle.move_and_slide()
+	# Player Paddle Movement: exactly under the finger, nothing to slow it.
+	var player_from := player_paddle.global_position
+	var enemy_from := enemy_paddle.global_position
+	if is_dragging_player and player_target_pos != Vector2.ZERO:
+		player_paddle.global_position = player_target_pos
 
 	# Enemy AI
 	if enemy_paddle and puck:
 		var target_x = puck.global_position.x
-		var target_y = puck.global_position.y
-		if puck.global_position.y > screen_size.y / 2:
-			target_y = screen_size.y * 0.25
-			
-		# Clamp target position to the enemy's playable area
-		target_y = clamp(target_y, 80.0, screen_size.y / 2.0 - 80.0)
-		target_x = clamp(target_x, 80.0, screen_size.x - 80.0)
+		var target_y = _enemy_target_y()
+		target_x = clamp(target_x, ENEMY_EDGE_MARGIN, screen_size.x - ENEMY_EDGE_MARGIN)
 		
 		var current_x = enemy_paddle.global_position.x
 		var current_y = enemy_paddle.global_position.y
@@ -390,6 +497,8 @@ func _physics_process(delta: float) -> void:
 			
 		enemy_paddle.move_and_slide()
 
+	_check_racket_hits(player_from, enemy_from)
+
 	# Puck Velocity regulation & Directional Safety Clamping
 	if puck and not is_puck_in_serve:
 
@@ -409,6 +518,7 @@ func _physics_process(delta: float) -> void:
 			if abs(puck.linear_velocity.y) < 120.0:
 				puck.linear_velocity.y = 120.0 * (-1.0 if puck.linear_velocity.y < 0.0 else 1.0)
 
+	_watch_for_pin(delta)
 	_update_trail_and_particles()
 
 func _input(event: InputEvent) -> void:
@@ -416,19 +526,17 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventScreenTouch or event is InputEventMouseButton:
 		if event.is_pressed():
-			var touch_radius = screen_size.x * 0.12
-			if player_paddle and event.position.distance_to(player_paddle.global_position) < touch_radius:
+			# A press anywhere on the player's half picks the racket up under
+			# the finger; it used to need a press right on the racket.
+			if player_paddle and event.position.y > screen_size.y / 2.0:
 				is_dragging_player = true
-				player_target_pos = player_paddle.global_position
+				player_target_pos = _player_half_point(event.position)
 		else:
 			is_dragging_player = false
 			
 	elif event is InputEventScreenDrag or event is InputEventMouseMotion:
 		if is_dragging_player:
-			var target_pos = event.position
-			target_pos.y = clamp(target_pos.y, screen_size.y / 2 + 50, screen_size.y - 50)
-			target_pos.x = clamp(target_pos.x, 50, screen_size.x - 50)
-			player_target_pos = target_pos
+			player_target_pos = _player_half_point(event.position)
 
 var is_scoring_delay: bool = false
 

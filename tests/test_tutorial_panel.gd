@@ -755,8 +755,8 @@ func test_every_arrow_caller_places_the_arrow_from_its_own_size() -> void:
 	var panel_src := FileAccess.get_file_as_string(PANEL_SCRIPT_PATH)
 	var place := _function_source(panel_src, "place_step")
 	assert_contains(place, "arrow.arrow_size", "place_step reads the arrow's own size")
-	assert_contains(place, "arrow.point_at(spot, bounds, Rect2(panel.position, panel.size))",
-		"and points it clear of the card")
+	assert_contains(place, "arrow.point_at(spot, bounds, card, neighbours_in(targets, overlay))",
+		"and points it clear of the card, its mascot and the spot's neighbours")
 	for path: String in ["res://Scripts/AturJadwal/AturJadwal.gd",
 			"res://Scripts/StudentList/StudentList.gd", "res://Scripts/Lobby/Lobby.gd"]:
 		var src := FileAccess.get_file_as_string(path)

@@ -60,11 +60,9 @@ var _tutorial_prompt_label: Label
 var _blink_tween: Tween
 var _highlight_tween: Tween
 var _tutorial_arrow: Control = null
-## The current step's padded spotlight hole in the overlay's space (empty for
-## none), which _tutorial_card_position() keeps the card opposite.
+## The step's padded spotlight hole (overlay space, empty for none).
 var _tutorial_spot := Rect2()
-## How far the tutorial card's bounds stop short of the screen's bottom, px
-## (the shipped bottom card's 40px gap).
+## The tutorial card's gap above the screen's bottom edge, px.
 const TUTORIAL_CARD_BOTTOM_GAP := 40.0
 
 ## The headmaster's congratulation while it plays on this card, else null.
@@ -337,24 +335,17 @@ func _position_tutorial_panel():
 	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
 
 ## Where the card's top-left corner goes at the current step, for a card of
-## `panel_size`, by the one rule every tutorial screen shares,
-## TutorialPanel.placement(), with the mascot's head room: against the half of
-## the screen opposite the spotlit control, or centred down the screen (from
-## the grade-7 Sifat beat on, and during the headmaster's beat, which give it
-## no spot). The bounds stop TUTORIAL_CARD_BOTTOM_GAP short of the bottom edge.
+## `panel_size`: TutorialPanel.placement() with the mascot's head room, so
+## opposite the spot, or centred (no spot) from Sifat on and in the beat.
 func _tutorial_card_position(panel_size: Vector2) -> Vector2:
 	var viewport_size := get_viewport_rect().size
 	var bounds := Rect2(Vector2.ZERO, viewport_size - Vector2(0.0, TUTORIAL_CARD_BOTTOM_GAP))
 	var centred := (_beat != null and _beat.is_playing()) or current_step >= FirstRunTutorial.STEP_TRAITS
 	var spot := Rect2() if centred else _tutorial_spot
-	var arrow_size := Vector2.ZERO
-	if is_instance_valid(_tutorial_arrow):
-		arrow_size = _tutorial_arrow.arrow_size
-	return TutorialPanel.placement(bounds, panel_size, spot, arrow_size,
-			TutorialNoteChrome.MASCOT_HEAD_ROOM)
+	var arrow_size: Vector2 = _tutorial_arrow.arrow_size if is_instance_valid(_tutorial_arrow) else Vector2.ZERO
+	return TutorialPanel.placement(bounds, panel_size, spot, arrow_size, TutorialNoteChrome.MASCOT_HEAD_ROOM)
 
-## The rectangle the card and its mascot will cover at the current step, for
-## the arrow to keep off.
+## The rectangle the card and its mascot cover now, for the arrow to keep off.
 func _tutorial_card_rect() -> Rect2:
 	if not is_instance_valid(_tutorial_panel): return Rect2()
 	var card_size := _tutorial_panel.get_combined_minimum_size()
@@ -480,33 +471,23 @@ func _is_approve_beat() -> bool:
 func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 	# Defer one frame so layout is resolved and control sizes are accurate
 	await get_tree().process_frame
-	
 	var valid_controls: Array[Control] = []
 	for c in controls:
 		if is_instance_valid(c):
 			valid_controls.append(c)
-			
 	if valid_controls.is_empty():
 		_clear_highlight()
 		return
-		
 	var mat := color_rect.material as ShaderMaterial
 	if not mat:
 		return
-		
 	var min_pos = Vector2(INF, INF)
 	var max_pos = Vector2(-INF, -INF)
-	
 	for c in valid_controls:
 		# Use global transform matrix of control to transform the 4 corners,
 		# perfectly handling scaled, rotated, or offset elements (like NextButtonKanan)
 		var trans = c.get_global_transform()
-		var local_corners = [
-			Vector2.ZERO,
-			Vector2(c.size.x, 0),
-			Vector2(0, c.size.y),
-			Vector2(c.size.x, c.size.y)
-		]
+		var local_corners = [Vector2.ZERO, Vector2(c.size.x, 0), Vector2(0, c.size.y), c.size]
 		for corner in local_corners:
 			var global_corner = trans * corner
 			var local_corner = global_corner - color_rect.global_position
@@ -514,13 +495,10 @@ func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 			min_pos.y = min(min_pos.y, local_corner.y)
 			max_pos.x = max(max_pos.x, local_corner.x)
 			max_pos.y = max(max_pos.y, local_corner.y)
-		
 	var local_pos = min_pos - Vector2(padding, padding)
 	var size_with_padding = (max_pos - min_pos) + Vector2(padding, padding) * 2
-	
 	if _highlight_tween and _highlight_tween.is_valid():
 		_highlight_tween.kill()
-		
 	var current_size = mat.get_shader_parameter("hole_size")
 	# The arrow sizes itself from arrow_size and stands its tip beside the hole
 	# (above, or below when there is no room), inside the overlay and off the card.
@@ -537,7 +515,6 @@ func _highlight_multiple(controls: Array[Control], padding: float = 12.0):
 		mat.set_shader_parameter("hole_size", Vector2.ZERO)
 		if _tutorial_arrow:
 			_tutorial_arrow.position = arrow_pos
-		
 	_highlight_tween = create_tween().set_parallel(true)
 	_highlight_tween.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_highlight_tween.tween_property(mat, "shader_parameter/hole_pos", local_pos, 0.45)

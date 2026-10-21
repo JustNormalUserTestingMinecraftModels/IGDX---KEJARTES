@@ -1186,10 +1186,8 @@ func skip_to_results() -> void:
 	if not is_running or is_skipped:
 		return
 	is_skipped = true
-	
 	if skip_button:
 		skip_button.hide()
-		
 	while current_day < DAYS.size():
 		var day_name = DAYS[current_day]
 		if student_manager:
@@ -1213,7 +1211,6 @@ func skip_to_results() -> void:
 		elif outcome == "Event":
 			_skip_event(day_name)
 		current_day += 1
-		
 	if current_minigame:
 		# Skipped mid-minigame (key O): _play_minigame never reaches its own
 		# close, so its music, the paused day music and the faded day picture
@@ -1223,10 +1220,8 @@ func skip_to_results() -> void:
 		_day_cover.uncover(false)
 		current_minigame.queue_free()
 		current_minigame = null
-		
 	for child in game_container.get_children():
 		child.queue_free()
-		
 	_on_week_complete()
 
 
@@ -1287,15 +1282,12 @@ func _on_back_pressed() -> void:
 	AudioDirector.play_sfx(&"cancel")
 	if student_manager:
 		student_manager.write_back_to_gamestate()
-	
 	var completed_week = GameState.minggu_ke
 	GameState.minggu_ke += 1
-	
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.4)
 	await tween.finished
 	simulation_finished.emit()
-	
 	var max_weeks = GameState.max_minggu
 
 	if completed_week >= max_weeks:
@@ -1315,14 +1307,8 @@ func _show_end_simulation_tutorial() -> void:
 	overlay.theme_type_variation = &"Scrim"
 	add_child(overlay)
 
-	# The shared TutorialPanel, on the Card surface -- this used to prefer
-	# the dialogue_box.png placeholder when present. It no longer does:
-	# that art is a near-black box from the old dark palette, and the
-	# theme's label colors are now dark-on-light, so the tutorial text
-	# rendered black-on-black. Confirmed in a live run. The Card variation
-	# is the correct surface for a modal panel and keeps the text legible;
-	# the PNG stays in the project for the student-card slot, which is
-	# light and still reads fine.
+	# The shared TutorialPanel on the Card surface (the dark dialogue_box.png
+	# rendered the dark-on-light text black-on-black; confirmed live).
 	_tutorial_panel = tutorial_panel_scene.instantiate()
 	_tutorial_panel.width_fraction = 0.85
 	_tutorial_panel.max_width = 900.0
@@ -1330,13 +1316,9 @@ func _show_end_simulation_tutorial() -> void:
 	_tutorial_panel.vbox_separation = 20
 	_tutorial_panel.body_width_offset = 100.0
 	_tutorial_panel.prompt_success_tint = true
-
-	var viewport_size = get_viewport_rect().size
-
 	overlay.add_child(_tutorial_panel)
 	var page_count: int = end_tutorial_pages.size()
 	_tutorial_panel.show_step(end_tutorial_title, end_tutorial_pages[0], end_tutorial_prompt, 1, page_count)
-
 	# Pulsing Prompt Tween -- same hint pulse as the Splashscreen (Task 10).
 	_tutorial_panel.prompt_label.modulate.a = 1.0
 	_blink_tween = create_tween().set_loops()
@@ -1344,13 +1326,7 @@ func _show_end_simulation_tutorial() -> void:
 		.set_ease(Tween.EASE_IN_OUT)
 	_blink_tween.tween_property(_tutorial_panel.prompt_label, "modulate:a", 1.0, Juice.tokens().dur_slow) \
 		.set_ease(Tween.EASE_IN_OUT)
-
-	# Position Centering
-	await get_tree().process_frame
-	var panel_size = _tutorial_panel.size
-	_tutorial_panel.position = (viewport_size - panel_size) / 2.0
-	_tutorial_panel.pivot_offset = panel_size / 2.0
-	
+	await _centre_tutorial_panel()
 	# Scale animation bounce-in
 	_tutorial_panel.scale = Vector2(0.8, 0.8)
 	_tutorial_panel.modulate.a = 0.0
@@ -1358,31 +1334,35 @@ func _show_end_simulation_tutorial() -> void:
 	tween_in.tween_property(_tutorial_panel, "scale", Vector2(1.0, 1.0), 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween_in.tween_property(_tutorial_panel, "modulate:a", 1.0, 0.25)
 	await tween_in.finished
-
-	for page in page_count:
-		if page > 0:
-			_tutorial_panel.show_step(end_tutorial_title, end_tutorial_pages[page],
-				end_tutorial_prompt, page + 1, page_count)
-			# A page of another length is another size: centre it again.
-			_tutorial_panel.reset_size()
-			await get_tree().process_frame
-			_tutorial_panel.position = (viewport_size - _tutorial_panel.size) / 2.0
-			_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
-		await _tutorial_closed
-		while _tutorial_panel.is_typing():  # a first tap only fills the line
-			_tutorial_panel.skip_typing()
-			await _tutorial_closed
+	await _page_end_tutorial(page_count)
 	# Bounce scale-out
 	var tween_out = create_tween().set_parallel(true)
 	tween_out.tween_property(_tutorial_panel, "scale", Vector2(0.8, 0.8), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween_out.tween_property(_tutorial_panel, "modulate:a", 0.0, 0.2)
 	await tween_out.finished
-	
 	if _blink_tween and _blink_tween.is_valid():
 		_blink_tween.kill()
-		
 	overlay.queue_free()
 	_is_tutorial_active = false
+
+## Centres the end-of-week card once it has sized itself to its text.
+func _centre_tutorial_panel() -> void:
+	_tutorial_panel.reset_size()
+	await get_tree().process_frame
+	_tutorial_panel.position = (get_viewport_rect().size - _tutorial_panel.size) / 2.0
+	_tutorial_panel.pivot_offset = _tutorial_panel.size / 2.0
+
+## Pages the end-of-week card a tap a page, centring each (sizes differ).
+func _page_end_tutorial(page_count: int) -> void:
+	for page in page_count:
+		if page > 0:
+			_tutorial_panel.show_step(end_tutorial_title, end_tutorial_pages[page],
+				end_tutorial_prompt, page + 1, page_count)
+			await _centre_tutorial_panel()
+		await _tutorial_closed
+		while _tutorial_panel.is_typing():  # a first tap only fills the line
+			_tutorial_panel.skip_typing()
+			await _tutorial_closed
 
 # ─────────────────────────────────────────────────────────────────────────────
 func _reset_day_ui() -> void:

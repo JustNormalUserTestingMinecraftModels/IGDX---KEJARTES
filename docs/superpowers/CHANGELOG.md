@@ -8,6 +8,12 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-22 — Badminton: exact racket follow, no corner launch
+
+- **Why:** the player's racket lagged and could not reach the sides (the rackets were physical bodies, blocked by the walls and the shuttle), and pinning the shuttle between a racket and a wall made the solver fire it out at extreme speed.
+- **Now:** both rackets collide with nothing (`_setup_rackets`); the player's is placed exactly under the finger (no `max_paddle_speed`), and a press anywhere on its half picks it up. Hits come from a swept distance check (`_check_racket_hits`, reach = racket + shuttle radius) feeding the old redirect (`_hit_puck`). A shuttle that stays within 40px of one spot for 0.5s is nudged off the wall and sent at `min_puck_speed` to the opposite half (`_watch_for_pin`, `pop_heading`). The enemy retreats to 14% of the screen height while the player's racket is at the net (`enemy_forward_limit`).
+- **Tests:** `test_bugfix_minigames` (retreat limit, pop heading, rackets off the physics board, racket set under the finger, per-frame hit and pin checks). Live-checked: the racket reaches x≈61 and a hit sends the shuttle back up; the pin pop-out was not triggered live.
+
 ## 2026-10-21 — Tutorial unify (Tutorialfixpart2)
 
 - **Why:** three tutorial boxes looked different (white comic card, Nota Guru note, plain CARA MAIN), the note over-talked, and the mascot rode out of the safe area. Plan: `plans/2026-10-18-tutorial-unify.md`.

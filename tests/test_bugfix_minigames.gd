@@ -61,6 +61,46 @@ func test_badminton_does_not_promote_a_loss_to_a_win() -> void:
 	assert_true(lose.contains("if not is_game_active:"), "and shows it once")
 
 
+func test_badminton_enemy_keeps_distance_when_the_player_crowds_the_net() -> void:
+	var badminton := load(BADMINTON_PATH)
+	var h := 1920.0
+	var free_limit: float = badminton.enemy_forward_limit(h * 0.8, h)
+	var net_limit: float = badminton.enemy_forward_limit(h * 0.5, h)
+	var mid_limit: float = badminton.enemy_forward_limit(h * 0.575, h)
+	assert_true(absf(free_limit - (h / 2.0 - 80.0)) < 0.01, "a far player leaves the enemy its normal reach")
+	assert_true(absf(net_limit - h * 0.14) < 0.01, "a player at the net pushes the enemy to the retreat line")
+	assert_true(net_limit < mid_limit and mid_limit < free_limit, "the retreat eases out as the player backs off")
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	assert_true(src.contains("enemy_forward_limit(player_paddle.global_position.y"),
+		"the enemy AI clamps its target to that limit")
+
+
+func test_badminton_pop_out_leaves_the_wall_towards_the_other_half() -> void:
+	var badminton := load(BADMINTON_PATH)
+	var screen := Vector2(1080.0, 1920.0)
+	var from_player_left: Vector2 = badminton.pop_heading(Vector2(100.0, 1500.0), screen)
+	var from_enemy_right: Vector2 = badminton.pop_heading(Vector2(980.0, 400.0), screen)
+	assert_true(from_player_left.y < 0.0 and from_player_left.x > 0.0, "pinned left in the player's half: up and inward")
+	assert_true(from_enemy_right.y > 0.0 and from_enemy_right.x < 0.0, "pinned right in the enemy's half: down and inward")
+	assert_true(absf(from_player_left.length() - 1.0) < 0.001, "the heading is a unit vector")
+
+
+func test_badminton_rackets_cannot_squeeze_or_stall_on_anything() -> void:
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	var setup := _function_body(BADMINTON_PATH, "func _setup_rackets(")
+	assert_true(setup.contains("collision_layer = 0") and setup.contains("collision_mask = 0"),
+		"both rackets leave the physics board, so nothing blocks them and the shuttle cannot be squeezed")
+	var physics := _function_body(BADMINTON_PATH, "func _physics_process(")
+	assert_true(physics.contains("player_paddle.global_position = player_target_pos"),
+		"the player's racket is set exactly under the finger")
+	assert_false(src.contains("max_paddle_speed"), "with no speed cap to lag behind it")
+	var input := _function_body(BADMINTON_PATH, "func _input(")
+	assert_true(input.contains("player_paddle.global_position = player_target_pos"),
+		"a press jumps the racket under the finger, so the hit sweep never starts from the old spot")
+	assert_true(physics.contains("_check_racket_hits(") and physics.contains("_watch_for_pin("),
+		"hits are swept for and a pinned shuttle is watched for every physics frame")
+
+
 func test_menari_notes_hold_still_through_the_resume_countdown() -> void:
 	var process := _function_body(MENARI_PATH, "func _process(")
 	var guard := process.find("if not is_game_active or is_paused:")

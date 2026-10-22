@@ -27,8 +27,13 @@ const PIN_POP_NUDGE := 60.0
 const PLAYER_EDGE_MARGIN := 50.0
 ## The enemy racket keeps this far (px) inside the screen's top and side edges.
 const ENEMY_EDGE_MARGIN := 80.0
-## The enemy's normal forward reach: this far (px) short of the net line.
-const ENEMY_NET_MARGIN := 80.0
+## Where the enemy's short service line (the line before the net) is painted
+## in lapanganBadminton.jpg, as a fraction of the art's height (row 732 of
+## 1920). The enemy racket's centre never crosses it.
+const ENEMY_SERVICE_LINE_ART_FRAC := 732.0 / 1920.0
+## How closely the enemy racket tracks the shuttle: its follow gain and top
+## speed are scaled by this. 0.75 is 25% less precise than the original AI.
+const ENEMY_PRECISION := 0.75
 
 # ─── Visual - Shuttlecock ───────────────────────────────────────────────────
 @export_group("Visual - Shuttlecock")
@@ -429,13 +434,18 @@ func _play_racket_squash_animation(racket: CharacterBody2D) -> void:
 				sprite.texture = idle_texture
 		)
 
+## The screen y of the enemy's short service line: the court art covers the
+## screen height and sits COURT_LIFT px up.
+static func enemy_service_line_y(screen_h: float) -> float:
+	return screen_h * ENEMY_SERVICE_LINE_ART_FRAC - COURT_LIFT
+
 ## The deepest line (largest y) the enemy racket may stand on, given where the
-## player's racket is. Away from the net it is the enemy's normal reach; as the
-## player closes on the net it slides back to ENEMY_RETREAT_Y_FRAC, so the
-## enemy keeps its distance instead of crowding the player.
+## player's racket is. Away from the net it is the enemy's short service line;
+## as the player closes on the net it slides back to ENEMY_RETREAT_Y_FRAC, so
+## the enemy keeps its distance instead of crowding the player.
 static func enemy_forward_limit(player_y: float, screen_h: float) -> float:
 	var net_y := screen_h / 2.0
-	var free_y := net_y - ENEMY_NET_MARGIN
+	var free_y := enemy_service_line_y(screen_h)
 	var crowd := 1.0 - clampf((player_y - net_y) / (screen_h * NET_CROWD_ZONE_FRAC), 0.0, 1.0)
 	return lerpf(free_y, minf(screen_h * ENEMY_RETREAT_Y_FRAC, free_y), crowd)
 
@@ -488,14 +498,18 @@ func _physics_process(delta: float) -> void:
 			max_speed = 360.0
 		elif difficulty >= 3:
 			max_speed = 460.0
-		
-		enemy_paddle.velocity.x = diff_x / delta * 0.15
-		enemy_paddle.velocity.y = diff_y / delta * 0.15
+		max_speed *= ENEMY_PRECISION
+
+		enemy_paddle.velocity.x = diff_x / delta * 0.15 * ENEMY_PRECISION
+		enemy_paddle.velocity.y = diff_y / delta * 0.15 * ENEMY_PRECISION
 		
 		if enemy_paddle.velocity.length() > max_speed:
 			enemy_paddle.velocity = enemy_paddle.velocity.normalized() * max_speed
 			
 		enemy_paddle.move_and_slide()
+		# A hard stop, not just a target: the racket never crosses the line.
+		enemy_paddle.global_position.y = minf(enemy_paddle.global_position.y,
+			enemy_service_line_y(screen_size.y))
 
 	_check_racket_hits(player_from, enemy_from)
 

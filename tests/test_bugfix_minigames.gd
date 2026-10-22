@@ -67,12 +67,32 @@ func test_badminton_enemy_keeps_distance_when_the_player_crowds_the_net() -> voi
 	var free_limit: float = badminton.enemy_forward_limit(h * 0.8, h)
 	var net_limit: float = badminton.enemy_forward_limit(h * 0.5, h)
 	var mid_limit: float = badminton.enemy_forward_limit(h * 0.575, h)
-	assert_true(absf(free_limit - (h / 2.0 - 80.0)) < 0.01, "a far player leaves the enemy its normal reach")
+	assert_true(absf(free_limit - (732.0 - 48.0)) < 0.01,
+		"a far player leaves the enemy up to its short service line, got %s" % free_limit)
 	assert_true(absf(net_limit - h * 0.14) < 0.01, "a player at the net pushes the enemy to the retreat line")
 	assert_true(net_limit < mid_limit and mid_limit < free_limit, "the retreat eases out as the player backs off")
 	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
 	assert_true(src.contains("enemy_forward_limit(player_paddle.global_position.y"),
 		"the enemy AI clamps its target to that limit")
+
+
+func test_badminton_enemy_never_crosses_its_service_line() -> void:
+	var badminton := load(BADMINTON_PATH)
+	# A 20:9 phone: the court art covers 2400 px, so the line moves with it.
+	var tall_line: float = badminton.enemy_service_line_y(2400.0)
+	assert_true(absf(tall_line - (2400.0 * 732.0 / 1920.0 - 48.0)) < 0.01,
+		"the service line follows the covered court art, got %s" % tall_line)
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	assert_true(src.contains("enemy_paddle.global_position.y = minf(enemy_paddle.global_position.y,"),
+		"the racket is hard-stopped at the line after it moves, not only aimed short of it")
+
+
+func test_badminton_enemy_is_a_quarter_less_precise() -> void:
+	var badminton := load(BADMINTON_PATH)
+	assert_true(is_equal_approx(badminton.ENEMY_PRECISION, 0.75), "the enemy tracks at 75% of the original AI")
+	var src := FileAccess.get_file_as_string(BADMINTON_PATH)
+	assert_true(src.contains("max_speed *= ENEMY_PRECISION"), "its top speed is scaled")
+	assert_true(src.contains("diff_x / delta * 0.15 * ENEMY_PRECISION"), "and its follow gain")
 
 
 func test_badminton_pop_out_leaves_the_wall_towards_the_other_half() -> void:

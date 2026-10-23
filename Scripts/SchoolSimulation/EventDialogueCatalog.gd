@@ -259,3 +259,24 @@ static func win_speaker_path(category: String, featured: StudentData, day_name: 
 	if teacher != "" and (featured == null or roll < WIN_TEACHER_CHANCE):
 		return teacher
 	return student_splash(featured, day_name)
+
+
+## Every texture an event dialogue could show on `day_name` for `roster`: each
+## entry's backdrop, every fixed speaker, and each student's splash dressed
+## for the day. Unique, no empty paths. SchoolDay loads these while nothing
+## moves so a dialogue never decodes art with the sky on screen (2026-10-23).
+static func art_paths_for_day(roster: Array, day_name: String) -> PackedStringArray:
+	var out := PackedStringArray()
+	for key in ENTRIES:
+		var e: Dictionary = ENTRIES[key]
+		var wanted: Array[String] = [str(e.get("background", DEFAULT_BACKGROUND))]
+		var speaker: String = e.get("speaker", "")
+		if speaker == SPEAKER_STUDENT:
+			for s in roster:
+				wanted.append(student_splash(s as StudentData, day_name))
+		else:
+			wanted.append(speaker)
+		for p in wanted:
+			if p != "" and not out.has(p):
+				out.append(p)
+	return out

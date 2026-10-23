@@ -202,7 +202,10 @@ func test_mipmaps_stay_targeted_not_global() -> void:
 	# 45 until 2026-09-25, when the twelve day outfits joined TARGETS above;
 	# 57 until 2026-09-30, when the six skin splashes joined them; 63 until
 	# 2026-10-01, when the three speaker splashes joined them; 66 until later
-	# that day, when AturJadwal's SafeChip icon joined them.
-	assert_true(mipmapped <= 67,
+	# that day, when AturJadwal's SafeChip icon joined them; 67 until 2026-10-23,
+	# when EventDialogue's two backdrops (sekolah, hujan) got a chain for
+	# backdrop_blur.gdshader, which blurs from the texture's own mips instead of
+	# a screen read that went black on low-end phones.
+	assert_true(mipmapped <= 69,
 		"mipmaps are per-asset and measured, not a bulk flip: %d of %d imports "
 			% [mipmapped, total] + "generate them")

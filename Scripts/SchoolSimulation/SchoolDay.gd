@@ -203,6 +203,7 @@ const DAY_CATEGORIES := ["Olahraga", "Akademis", "Istirahat", "Libur", "SeniBuda
 ## backdrop. A page is a large surface; anything stronger stops being a
 ## background.
 const DAY_TINT_STRENGTH := 0.12
+var _event_art := EventArtCache.new()
 
 
 func _ready() -> void:
@@ -223,6 +224,7 @@ func _ready() -> void:
 	if buat_batik_scene == null: buat_batik_scene = load("res://Scenes/Minigames/SeniBudaya/BuatBatik.tscn")
 	if lomba_menari_scene == null: lomba_menari_scene = load("res://Scenes/Minigames/SeniBudaya/LombaMenari.tscn")
 	if event_warning_scene == null: event_warning_scene = load("res://Scenes/SchoolSimulation/EventWarning.tscn")
+	if event_dialogue_scene == null: event_dialogue_scene = load("res://Scenes/SchoolSimulation/EventDialogue.tscn")
 	
 	setup_scenes(
 		menjodohkan_scene, variabel_scene, pilihan_ganda_scene, password_scene,
@@ -297,6 +299,7 @@ func start_simulation() -> void:
 	GameState.minigame_gain_this_week.clear()
 	student_manager = StudentManager.new()
 	student_manager.initialize_from_gamestate()
+	_event_art.prefetch_day(Array(student_manager.students), DAYS, 0)
 	if skip_button:
 		skip_button.show()
 	# The classroom bed runs under the whole week. _on_week_complete() stops
@@ -322,6 +325,7 @@ func resume_simulation(week: Dictionary) -> void:
 	max_minigames_this_week = int(week.get("max_minigames", Balance.MINIGAME_MAKS_MINGGU_MIN))
 	student_manager = StudentManager.new()
 	student_manager.restore_from_save(week.get("manager", {}))
+	_event_art.prefetch_day(Array(student_manager.students), DAYS, current_day)
 	if skip_button:
 		skip_button.show()
 	AudioDirector.play_ambience(&"classroom_1")
@@ -713,6 +717,7 @@ func _show_day_summary(day_name: String) -> void:
 	# delta at all.
 	summary_instance.setup_summary(summary, student_manager.students,
 		_pending_total() - _money_at_day_start, day_name)
+	_event_art.prefetch_day_later(get_tree(), Array(student_manager.students), DAYS, current_day + 1)
 
 	await summary_instance.summary_dismissed
 	_set_day_chrome_visible(true)
@@ -1517,9 +1522,6 @@ func _play_day_stamp(day_name: String) -> void:
 func _show_event_warning(caption: String, category: String = "", mode: String = "") -> void:
 	var warning_scene = event_warning_scene
 	if warning_scene == null:
-		warning_scene = load("res://Scenes/SchoolSimulation/EventWarning.tscn")
-
-	if warning_scene == null:
 		return
 
 	var warning_instance = warning_scene.instantiate()
@@ -1553,8 +1555,6 @@ func _show_event_dialogue(key: String) -> bool:
 	if GameSettings.skip_event_dialogue and EventDialogueCatalog.shorten_skips(key):
 		return true
 	var dialogue_scene = event_dialogue_scene
-	if dialogue_scene == null:
-		dialogue_scene = load("res://Scenes/SchoolSimulation/EventDialogue.tscn")
 	if dialogue_scene == null:
 		return true
 	var e: Dictionary = EventDialogueCatalog.entry(key).duplicate()

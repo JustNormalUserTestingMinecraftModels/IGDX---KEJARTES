@@ -72,7 +72,7 @@ const UNTYPED: Dictionary = {
 	"res://Scripts/Minigames/Akademis/Password.gd": 10,
 	"res://Scripts/Minigames/Akademis/PilihanGanda.gd": 21,
 	"res://Scripts/Minigames/Akademis/Variabel.gd": 66,
-	"res://Scripts/Minigames/Olahraga/Badminton.gd": 48,
+	"res://Scripts/Minigames/Olahraga/Badminton.gd": 45,
 	"res://Scripts/Minigames/SeniBudaya/BuatBatik.gd": 44,
 	"res://Scripts/Minigames/SeniBudaya/LombaMenari.gd": 37,
 	"res://Scripts/Minigames/UI/BaseMinigame.gd": 11,

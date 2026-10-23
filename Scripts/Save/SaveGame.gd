@@ -388,8 +388,7 @@ static func merge_legacy_inventory() -> void:
 	var legacy := read_legacy_inventory()
 	if legacy.is_empty():
 		return
-	for item in legacy:
-		GameState.inventory[item] = int(GameState.inventory.get(item, 0)) + int(legacy[item])
+	_add_items(legacy)
 	GameState.inventory_changed.emit()
 
 
@@ -406,16 +405,22 @@ static func write_carryover(cfg: ConfigFile) -> void:
 ## value of the wrong type. Called after reset_run(), so adding is the same
 ## as restoring. Pure, so a test can apply it. Emits GameState.inventory_changed.
 static func apply_carryover(cfg: ConfigFile) -> void:
-	for key in ["player_money", "ad_debt"]:
-		var amount: Variant = cfg.get_value("carry", key, 0)
-		if amount is int or amount is float:
-			GameState.set(key, int(GameState.get(key)) + int(amount))
-	var items: Variant = cfg.get_value("carry", "inventory", {})
-	if items is Dictionary:
-		for item in items:
-			if items[item] is int or items[item] is float:
-				GameState.inventory[str(item)] = int(GameState.inventory.get(str(item), 0)) + int(items[item])
+	for key in CARRYOVER_KEYS:
+		var value: Variant = cfg.get_value("carry", key)
+		if key == "inventory":
+			if value is Dictionary:
+				_add_items(value)
+		elif value is int or value is float:
+			GameState.set(key, int(GameState.get(key)) + int(value))
 	GameState.inventory_changed.emit()
+
+
+## Adds `items` (name -> count) to GameState.inventory, skipping any count
+## that is not a number. Emits nothing; the caller does.
+static func _add_items(items: Dictionary) -> void:
+	for item in items:
+		if items[item] is int or items[item] is float:
+			GameState.inventory[str(item)] = int(GameState.inventory.get(str(item), 0)) + int(items[item])
 
 
 ## RunResult's beaten-game exit: keeps the money and items for the next new

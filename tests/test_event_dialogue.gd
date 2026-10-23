@@ -221,7 +221,7 @@ func test_open_dresses_the_screen() -> void:
 	var d = _dialogue("BuatBatik", thea)
 	assert_eq(d.splash.texture.resource_path, _THEA_SPLASH, "the student's own splash")
 	assert_eq(d.shadow.texture, d.splash.texture, "the shadow follows the speaker's art")
-	assert_true(d.splash.visible and d.blur.visible)
+	assert_true(d.splash.visible and d.is_backdrop_blurred())
 	assert_eq(d.background.texture.resource_path, EventDialogueCatalog.DEFAULT_BACKGROUND)
 	assert_eq(d.week_label.text, "2/6")
 	assert_eq(d.day_label.text, "Senin")
@@ -255,7 +255,7 @@ func test_the_screen_shows_a_picked_line() -> void:
 func test_hujan_hides_the_splash_and_the_blur() -> void:
 	var d = _dialogue("hujan", _student("Thea", "SeniBudaya", _THEA_SPLASH))
 	assert_false(d.splash.visible, "rain has no speaker")
-	assert_false(d.blur.visible, "and a sharp backdrop")
+	assert_false(d.is_backdrop_blurred(), "and a sharp backdrop")
 	assert_eq(d.background.texture.resource_path, EventDialogueCatalog.HUJAN_BACKGROUND)
 
 
@@ -293,12 +293,12 @@ func test_the_scene_is_authored_and_themed() -> void:
 		if n != null:
 			assert_eq(n.theme_type_variation, want[path], path)
 	assert_eq(d.mouse_filter, Control.MOUSE_FILTER_STOP, "the root takes the taps")
-	for path in ["World/Room", "World/Room/Background", "World/Room/Blur", "World/Room/Splash",
+	for path in ["World/Room", "World/Room/Background", "World/Room/Splash",
 			"World/Room/Desaturate", "World/Room/Light", "World/Room/Shafts", "Header",
 			"DialogueBox", "DialogueBox/Content/Line"]:
 		assert_eq((d.get_node(path) as Control).mouse_filter, Control.MOUSE_FILTER_IGNORE,
 			path + " must let taps through to the root")
-	assert_eq((d.get_node("World/Room/Blur") as ColorRect).material.resource_path,
+	assert_eq((d.get_node("World/Room/Background") as TextureRect).material.resource_path,
 		"res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres")
 	assert_eq((d.get_node("Header/Calendar") as TextureRect).texture.resource_path,
 		EventDialogueCatalog.CALENDAR_BADGE)
@@ -327,7 +327,7 @@ func test_the_dialogue_wears_the_lobby_look_under_its_ui() -> void:
 	var world := Census.entry(c, "World")
 	assert_eq(world.get("type"), "CanvasLayer", "World is a CanvasLayer")
 	assert_eq(Census.prop(world, "layer"), -1, "World draws at -1, under the UI")
-	assert_eq(Census.children_of(c, "World/Room"), ["Background", "Blur", "GradeCopy",
+	assert_eq(Census.children_of(c, "World/Room"), ["Background", "GradeCopy",
 			"Desaturate", "Splash", "Light", "Shafts"] as Array[String],
 		"the backdrop and its grade, then the speaker (graded once, by its splash grade), then the light")
 	assert_eq(Census.entry(c, "World/Room/Desaturate").get("instance"), "res://Scenes/Look/ScreenSaturation.tscn")
@@ -341,7 +341,7 @@ func test_the_dialogue_wears_the_lobby_look_under_its_ui() -> void:
 	## 2026-09-29 at 1080x1920); the rain scene is too dark to bloom at all.
 	assert_eq(float(Census.prop(Census.entry(c, "Glow"), "glow_threshold", 0.7)), 0.85, "the bloom's threshold")
 	var src := FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/EventDialogue.gd")
-	for node_name in ["Background", "Blur", "Splash"]:
+	for node_name in ["Background", "Splash"]:
 		assert_true(src.contains("= %" + node_name), "EventDialogue.gd finds %" + node_name + " by unique name")
 
 
@@ -698,3 +698,95 @@ func test_school_day_hands_over_the_picked_lines() -> void:
 		"the win screen draws for its speaker and category")
 	assert_true(src.contains("EventDialogueCatalog.entry(key).duplicate()"),
 		"the picked line lands on a copy, never the catalog's own entry")
+
+
+func _fn_body(src: String, signature: String) -> String:
+	var start := src.find(signature)
+	if start < 0:
+		return ""
+	return src.substr(start, src.find("\n\n\n", start) - start)
+
+
+## Low-end phones fall back to the Compatibility renderer, where a screen read
+## at a mip level can come back black, and the blur used to be an opaque layer
+## reading the screen at mip 3: the whole backdrop went black (2026-10-23). The
+## blur now samples the backdrop image's own mip chain, which every GPU has.
+func test_the_backdrop_blur_reads_the_image_not_the_screen() -> void:
+	var mat := load("res://Scenes/SchoolSimulation/event_dialogue_blur_material.tres") as ShaderMaterial
+	assert_false(mat.shader.code.contains("hint_screen_texture"), "the blur must not read the screen")
+	assert_true(mat.shader.code.contains("textureLod(TEXTURE"), "it blurs the backdrop's own mip chain")
+	for path in [EventDialogueCatalog.DEFAULT_BACKGROUND, EventDialogueCatalog.HUJAN_BACKGROUND]:
+		var cfg := ConfigFile.new()
+		assert_eq(cfg.load(path + ".import"), OK, path + ".import must exist")
+		assert_eq(cfg.get_value("params", "mipmaps/generate"), true, path + " needs a mip chain to blur from")
+
+
+## Every texture an event dialogue can show on `day`: both backdrops, every
+## fixed speaker, and each roster student's splash for that day.
+func test_art_paths_for_day_cover_every_backdrop_and_speaker() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var senin: PackedStringArray = EventDialogueCatalog.art_paths_for_day([thea], "Senin")
+	for want in [EventDialogueCatalog.DEFAULT_BACKGROUND, EventDialogueCatalog.HUJAN_BACKGROUND,
+			EventDialogueCatalog.SPLASH_MOM, _THEA_SPLASH]:
+		assert_true(senin.has(want), "Senin is missing " + want)
+	assert_false(senin.has(""), "no empty paths")
+	var seen := {}
+	for p in senin:
+		assert_false(seen.has(p), "listed twice: " + p)
+		seen[p] = true
+	var outfit := StudentSkins.day_splash_for("Thea", "Kamis")
+	if outfit != "":
+		assert_true(EventDialogueCatalog.art_paths_for_day([thea], "Kamis").has(outfit),
+			"Kamis wears the outfit")
+
+
+## The dialogue used to load from disk the moment an event fired, with the sky
+## on screen: ~200 ms native, 2-4x that on the web, the BookClock freeze
+## (2026-10-23). SchoolDay now loads the scene in _ready (under the transition)
+## and each day's event art while nothing moves: day one at start, the next day
+## behind the day-summary popup.
+func test_school_day_loads_event_art_before_it_is_needed() -> void:
+	var src := FileAccess.get_file_as_string(_SCHOOL_DAY)
+	assert_true(_fn_body(src, "func _ready()").contains(
+			'event_dialogue_scene = load("res://Scenes/SchoolSimulation/EventDialogue.tscn")'),
+		"_ready loads the dialogue scene")
+	assert_true(_fn_body(src, "func start_simulation()").contains("_event_art.prefetch_day(Array(student_manager.students), DAYS, 0)"),
+		"day one's art loads at start")
+	assert_true(_fn_body(src, "func resume_simulation(").contains("_event_art.prefetch_day(Array(student_manager.students), DAYS, current_day)"),
+		"a resumed week loads its day's art too")
+	assert_true(_fn_body(src, "func _show_day_summary(").contains("_event_art.prefetch_day_later(get_tree(), summary_instance, Array(student_manager.students), DAYS, current_day + 1)"),
+		"the next day's art loads behind the summary popup")
+
+
+## The cache holds one day's art and ignores days outside the week.
+func test_event_art_cache_holds_one_day_and_ignores_bad_days() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var cache := EventArtCache.new()
+	cache.prefetch_day([thea], ["Senin", "Selasa"], 5)
+	assert_eq(cache.held_paths().size(), 0, "a day past the week loads nothing")
+	cache.prefetch_day([thea], ["Senin", "Selasa"], 0)
+	var held := cache.held_paths()
+	assert_true(held.has(EventDialogueCatalog.DEFAULT_BACKGROUND), "the school backdrop is held")
+	assert_true(held.has(_THEA_SPLASH), "the student's splash is held")
+	assert_eq(held.size(), EventDialogueCatalog.art_paths_for_day([thea], "Senin").size(), "exactly the day's art")
+
+
+## The delayed prefetch only runs while the day-summary popup is still up. If
+## the player tapped it away (or left SchoolDay) first, loading then would put
+## the decode on the next day's moving sky, or on another scene (review of
+## 2026-10-23); the dialogue then loads on demand as before.
+func test_event_art_cache_skips_the_prefetch_once_the_popup_is_gone() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var cache := EventArtCache.new()
+	var gone := Node.new()
+	cache.prefetch_day_if_open(gone, [thea], ["Senin"], 0)
+	assert_eq(cache.held_paths().size(), 0, "a popup outside the tree loads nothing")
+	gone.free()
+	var popup := Node.new()
+	Engine.get_main_loop().root.add_child(popup)
+	track(popup)
+	cache.prefetch_day_if_open(popup, [thea], ["Senin"], 0)
+	assert_true(cache.held_paths().has(_THEA_SPLASH), "an open popup lets the day's art load")
+	assert_true(FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd").contains(
+			"_event_art.prefetch_day_later(get_tree(), summary_instance,"),
+		"SchoolDay hands the popup to the delayed prefetch")

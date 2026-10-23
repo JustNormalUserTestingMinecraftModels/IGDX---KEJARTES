@@ -36,6 +36,7 @@ mouse_filter = 2
 
 [node name="Background" type="TextureRect" parent="World/Room" unique_id=2078275385]
 unique_name_in_owner = true
+material = ExtResource("3_qxown")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,17 +47,6 @@ mouse_filter = 2
 texture = ExtResource("2_gv18b")
 expand_mode = 1
 stretch_mode = 6
-
-[node name="Blur" type="ColorRect" parent="World/Room" unique_id=1710863248]
-unique_name_in_owner = true
-material = ExtResource("3_qxown")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
 
 [node name="GradeCopy" type="BackBufferCopy" parent="World/Room"]
 copy_mode = 2

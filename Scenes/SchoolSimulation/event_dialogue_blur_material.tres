@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3]
 
-[ext_resource type="Shader" uid="uid://qa800fpfmeqf" path="res://Scripts/Shaders/blur.gdshader" id="1_blur"]
+[ext_resource type="Shader" path="res://Scripts/Shaders/backdrop_blur.gdshader" id="1_blur"]
 
 [resource]
 shader = ExtResource("1_blur")

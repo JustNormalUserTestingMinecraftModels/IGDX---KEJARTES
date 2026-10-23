@@ -19,7 +19,9 @@ signal closed(accepted: bool)
 @export var typewriter_chars_per_second: float = 45.0
 
 @onready var background: TextureRect = %Background
-@onready var blur: ColorRect = %Blur
+## The backdrop blur (a texture-mip blur, never a screen read: see
+## backdrop_blur.gdshader). open() takes it off for a sharp backdrop.
+@onready var _blur_material: Material = background.material
 @onready var splash: TextureRect = %Splash
 @onready var shadow: SplashShadow = $World/Room/Splash/Shadow
 @onready var week_label: Label = $Header/Calendar/Text/WeekLabel
@@ -56,7 +58,7 @@ func open(e: Dictionary, featured: StudentData, week: int, max_weeks: int, day_n
 	_is_closed = false
 	var bg_path: String = e.get("background", EventDialogueCatalog.DEFAULT_BACKGROUND)
 	background.texture = load(bg_path)
-	blur.visible = e.get("blur", true)
+	background.material = _blur_material if e.get("blur", true) else null
 	var splash_path: String = EventDialogueCatalog.splash_path_for(e, featured, day_name)
 	splash.texture = load(splash_path) if splash_path != "" and ResourceLoader.exists(splash_path) else null
 	splash.visible = splash.texture != null
@@ -135,3 +137,9 @@ func _close(accepted: bool) -> void:
 		return
 	_is_closed = true
 	closed.emit(accepted)
+
+
+## True while the backdrop wears its blur (every event but the sharp-backdrop
+## ones, such as hujan).
+func is_backdrop_blurred() -> bool:
+	return background.material != null

@@ -461,6 +461,29 @@ func _enemy_target_y() -> float:
 		forward_limit = enemy_forward_limit(player_paddle.global_position.y, screen_size.y)
 	return clampf(target_y, ENEMY_EDGE_MARGIN, maxf(forward_limit, ENEMY_EDGE_MARGIN))
 
+## Enemy AI: eases the racket towards the shuttle's x and _enemy_target_y(),
+## at ENEMY_PRECISION of the full follow gain and top speed, then hard-stops
+## it at its service line.
+func _move_enemy(delta: float) -> void:
+	var target_x = clamp(puck.global_position.x, ENEMY_EDGE_MARGIN, screen_size.x - ENEMY_EDGE_MARGIN)
+	var diff_x = target_x - enemy_paddle.global_position.x
+	var diff_y = _enemy_target_y() - enemy_paddle.global_position.y
+	var max_speed = 260.0
+	if difficulty == 2:
+		max_speed = 360.0
+	elif difficulty >= 3:
+		max_speed = 460.0
+	max_speed *= ENEMY_PRECISION
+
+	enemy_paddle.velocity.x = diff_x / delta * 0.15 * ENEMY_PRECISION
+	enemy_paddle.velocity.y = diff_y / delta * 0.15 * ENEMY_PRECISION
+	if enemy_paddle.velocity.length() > max_speed:
+		enemy_paddle.velocity = enemy_paddle.velocity.normalized() * max_speed
+	enemy_paddle.move_and_slide()
+	# A hard stop, not just a target: the racket never crosses the line.
+	enemy_paddle.global_position.y = minf(enemy_paddle.global_position.y,
+		enemy_service_line_y(screen_size.y))
+
 func _physics_process(delta: float) -> void:
 	if not is_game_active or is_paused:
 		return
@@ -482,34 +505,8 @@ func _physics_process(delta: float) -> void:
 	if is_dragging_player and player_target_pos != Vector2.ZERO:
 		player_paddle.global_position = player_target_pos
 
-	# Enemy AI
 	if enemy_paddle and puck:
-		var target_x = puck.global_position.x
-		var target_y = _enemy_target_y()
-		target_x = clamp(target_x, ENEMY_EDGE_MARGIN, screen_size.x - ENEMY_EDGE_MARGIN)
-		
-		var current_x = enemy_paddle.global_position.x
-		var current_y = enemy_paddle.global_position.y
-		
-		var diff_x = target_x - current_x
-		var diff_y = target_y - current_y
-		var max_speed = 260.0
-		if difficulty == 2:
-			max_speed = 360.0
-		elif difficulty >= 3:
-			max_speed = 460.0
-		max_speed *= ENEMY_PRECISION
-
-		enemy_paddle.velocity.x = diff_x / delta * 0.15 * ENEMY_PRECISION
-		enemy_paddle.velocity.y = diff_y / delta * 0.15 * ENEMY_PRECISION
-		
-		if enemy_paddle.velocity.length() > max_speed:
-			enemy_paddle.velocity = enemy_paddle.velocity.normalized() * max_speed
-			
-		enemy_paddle.move_and_slide()
-		# A hard stop, not just a target: the racket never crosses the line.
-		enemy_paddle.global_position.y = minf(enemy_paddle.global_position.y,
-			enemy_service_line_y(screen_size.y))
+		_move_enemy(delta)
 
 	_check_racket_hits(player_from, enemy_from)
 

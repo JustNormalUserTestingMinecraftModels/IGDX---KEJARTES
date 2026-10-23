@@ -147,6 +147,7 @@ func _begin_new_game() -> void:
 	SaveGame.delete_save()
 	# Only after reset_run(), which empties the inventory the items land in.
 	SaveGame.merge_legacy_inventory()
+	SaveGame.merge_carryover()
 	var target := "res://Scenes/LevelSelect/LevelSelect.tscn" \
 		if GameState.is_level_select_enabled() \
 		else "res://Scenes/CutScene/CutScene.tscn"

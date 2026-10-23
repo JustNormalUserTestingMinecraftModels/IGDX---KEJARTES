@@ -489,6 +489,7 @@ func forget_session() -> void:
 	reset_run()
 	SaveGame.delete_save()
 	SaveGame.delete_legacy_inventory()
+	SaveGame.delete_carryover()
 	Cart.clear()
 	Achievements.reset()
 

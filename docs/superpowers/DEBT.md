@@ -935,11 +935,6 @@ left behind. Spec: `docs/superpowers/specs/2026-09-28-ui-depth-pass-design.md`.
   reaches the cart correctly). Herman's `talk` head-bob animation has not
   been tuned against the final counter art.
 
-- **`Achievements.RESET_ON_LAUNCH` is on** (debug, 2026-09-17): every launch
-  wipes achievement progress and claimed prizes. Turn it off before release.
-  Since the run save (2026-10-01) a continued run keeps its progress while
-  its achievements reset, so check achievements within one launch.
-
 - **Achievements polish (2026-09-18).** The debug Prestasi tab's "Buka
   semua" loops `Achievements.debug_unlock(id)` over all 26 catalog entries,
   firing 26 separate `state_changed` signals (one per unlock) instead of a

@@ -252,12 +252,17 @@ func _on_selesai_pressed() -> void:
 		return
 	_exiting = true
 	AudioDirector.play_sfx(&"confirm")
+	# Read before _apply_progression(), which clears run_failed.
+	var won := not GameState.run_failed
 	var destination := _apply_progression()
 	# The save follows the run: a run going on (next grade, or a retry) is
-	# saved at its new StudentCard start; a run that ended is deleted.
+	# saved at its new StudentCard start; a run that ended is deleted. A
+	# beaten game first keeps its money and items for the next new game.
 	if destination == ROSTER_SCENE:
 		SaveGame.save()
 	else:
+		if won:
+			SaveGame.save_carryover()
 		SaveGame.delete_save()
 
 	var tween := create_tween()

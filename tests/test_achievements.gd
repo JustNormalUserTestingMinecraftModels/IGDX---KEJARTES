@@ -181,10 +181,13 @@ func test_reset_clears_everything() -> void:
 	assert_eq(a.minigames_played, 0)
 
 
-func test_debug_reset_on_launch_is_on() -> void:
-	assert_true(ACHIEVEMENTS.RESET_ON_LAUNCH, "debug: every launch starts with no achievement progress")
+## 2026-10-23: the debug wipe was left on, so every relaunch (after beating
+## Kelas 9, say) lost all achievement progress.
+func test_achievements_survive_a_relaunch() -> void:
+	assert_false(ACHIEVEMENTS.RESET_ON_LAUNCH, "a launch must load progress, not wipe it")
 	var src := FileAccess.get_file_as_string("res://Scripts/Achievements/Achievements.gd")
-	assert_true(src.contains("if RESET_ON_LAUNCH:\n\t\treset()"), "_ready resets instead of loading")
+	assert_true(src.contains("if RESET_ON_LAUNCH:\n\t\treset()\n\telse:\n\t\tload_progress()"),
+		"_ready loads saved progress when the debug wipe is off")
 
 
 func _src(path: String) -> String:

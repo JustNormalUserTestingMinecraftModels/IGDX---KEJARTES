@@ -20,9 +20,9 @@ signal claimed(id: String)
 signal state_changed
 
 const SAVE_PATH := "user://achievements.cfg"
-## DEBUG (2026-09-17): wipe all achievement progress on every launch, so each
-## play session starts fresh. Set false to keep progress between launches.
-const RESET_ON_LAUNCH := true
+## DEBUG: true wipes all achievement progress on every launch, so each play
+## session starts fresh. Off since 2026-10-23: progress is kept between launches.
+const RESET_ON_LAUNCH := false
 
 const STATE_LOCKED := 0
 const STATE_UNLOCKED := 1

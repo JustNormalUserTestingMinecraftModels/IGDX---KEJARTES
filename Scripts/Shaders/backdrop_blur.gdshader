@@ -16,7 +16,19 @@ uniform float lod : hint_range(0.0, 5.0) = 3.0;
 // How much to darken the blurred backdrop so the speaker and text stand out.
 uniform float darkness : hint_range(0.0, 1.0) = 0.12;
 
+// The Compatibility renderer samples inside a mip level without smoothing, so a
+// single read at `lod` shows each texel as a hard block. Nine reads one level
+// finer, spread over that level's texels, average into the same soft blur on
+// any GPU.
 void fragment() {
-	vec4 c = textureLod(TEXTURE, UV, lod);
+	float level = max(lod - 1.0, 0.0);
+	vec2 step_uv = exp2(level) / vec2(textureSize(TEXTURE, 0));
+	vec4 sum = vec4(0.0);
+	for (int x = -1; x <= 1; x++) {
+		for (int y = -1; y <= 1; y++) {
+			sum += textureLod(TEXTURE, UV + vec2(float(x), float(y)) * step_uv * 1.5, level);
+		}
+	}
+	vec4 c = sum / 9.0;
 	COLOR = vec4(c.rgb * (1.0 - darkness), c.a);
 }

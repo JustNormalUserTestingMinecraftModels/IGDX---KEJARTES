@@ -15,6 +15,9 @@ shader_type canvas_item;
 uniform float lod : hint_range(0.0, 5.0) = 3.0;
 // How much to darken the blurred backdrop so the speaker and text stand out.
 uniform float darkness : hint_range(0.0, 1.0) = 0.12;
+// How far apart the nine reads sit, in texels of the level they read: wider is
+// softer. 1.5 reads close to the old screen blur at the default lod.
+uniform float spread : hint_range(0.5, 3.0) = 1.5;
 
 // The Compatibility renderer samples inside a mip level without smoothing, so a
 // single read at `lod` shows each texel as a hard block. Nine reads one level
@@ -26,7 +29,7 @@ void fragment() {
 	vec4 sum = vec4(0.0);
 	for (int x = -1; x <= 1; x++) {
 		for (int y = -1; y <= 1; y++) {
-			sum += textureLod(TEXTURE, UV + vec2(float(x), float(y)) * step_uv * 1.5, level);
+			sum += textureLod(TEXTURE, UV + vec2(float(x), float(y)) * step_uv * spread, level);
 		}
 	}
 	vec4 c = sum / 9.0;

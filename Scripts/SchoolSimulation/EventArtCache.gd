@@ -29,11 +29,19 @@ func prefetch_day(roster: Array, days: Array, day_index: int) -> void:
 	_held = next
 
 
-## prefetch_day(), PREFETCH_DELAY seconds from now on `tree`. Callers do not
-## await it: the popup keeps waiting for its tap meanwhile.
-func prefetch_day_later(tree: SceneTree, roster: Array, days: Array, day_index: int) -> void:
+## prefetch_day_if_open(), PREFETCH_DELAY seconds from now on `tree`. Callers
+## do not await it: the popup keeps waiting for its tap meanwhile.
+func prefetch_day_later(tree: SceneTree, popup: Node, roster: Array, days: Array, day_index: int) -> void:
 	await tree.create_timer(PREFETCH_DELAY).timeout
-	prefetch_day(roster, days, day_index)
+	prefetch_day_if_open(popup, roster, days, day_index)
+
+
+## prefetch_day() only while `popup` (the still screen hiding the decode) is up.
+## Once it is tapped away or its scene has gone, loading would land on the next
+## day's moving sky or on another screen, so the dialogue loads on demand.
+func prefetch_day_if_open(popup: Node, roster: Array, days: Array, day_index: int) -> void:
+	if is_instance_valid(popup) and popup.is_inside_tree():
+		prefetch_day(roster, days, day_index)
 
 
 ## The resource paths held now, for tests.

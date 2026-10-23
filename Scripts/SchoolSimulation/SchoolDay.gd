@@ -717,7 +717,7 @@ func _show_day_summary(day_name: String) -> void:
 	# delta at all.
 	summary_instance.setup_summary(summary, student_manager.students,
 		_pending_total() - _money_at_day_start, day_name)
-	_event_art.prefetch_day_later(get_tree(), Array(student_manager.students), DAYS, current_day + 1)
+	_event_art.prefetch_day_later(get_tree(), summary_instance, Array(student_manager.students), DAYS, current_day + 1)
 
 	await summary_instance.summary_dismissed
 	_set_day_chrome_visible(true)

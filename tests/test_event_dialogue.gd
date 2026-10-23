@@ -754,7 +754,7 @@ func test_school_day_loads_event_art_before_it_is_needed() -> void:
 		"day one's art loads at start")
 	assert_true(_fn_body(src, "func resume_simulation(").contains("_event_art.prefetch_day(Array(student_manager.students), DAYS, current_day)"),
 		"a resumed week loads its day's art too")
-	assert_true(_fn_body(src, "func _show_day_summary(").contains("_event_art.prefetch_day_later(get_tree(), Array(student_manager.students), DAYS, current_day + 1)"),
+	assert_true(_fn_body(src, "func _show_day_summary(").contains("_event_art.prefetch_day_later(get_tree(), summary_instance, Array(student_manager.students), DAYS, current_day + 1)"),
 		"the next day's art loads behind the summary popup")
 
 
@@ -769,3 +769,24 @@ func test_event_art_cache_holds_one_day_and_ignores_bad_days() -> void:
 	assert_true(held.has(EventDialogueCatalog.DEFAULT_BACKGROUND), "the school backdrop is held")
 	assert_true(held.has(_THEA_SPLASH), "the student's splash is held")
 	assert_eq(held.size(), EventDialogueCatalog.art_paths_for_day([thea], "Senin").size(), "exactly the day's art")
+
+
+## The delayed prefetch only runs while the day-summary popup is still up. If
+## the player tapped it away (or left SchoolDay) first, loading then would put
+## the decode on the next day's moving sky, or on another scene (review of
+## 2026-10-23); the dialogue then loads on demand as before.
+func test_event_art_cache_skips_the_prefetch_once_the_popup_is_gone() -> void:
+	var thea := _student("Thea", "SeniBudaya", _THEA_SPLASH)
+	var cache := EventArtCache.new()
+	var gone := Node.new()
+	cache.prefetch_day_if_open(gone, [thea], ["Senin"], 0)
+	assert_eq(cache.held_paths().size(), 0, "a popup outside the tree loads nothing")
+	gone.free()
+	var popup := Node.new()
+	Engine.get_main_loop().root.add_child(popup)
+	track(popup)
+	cache.prefetch_day_if_open(popup, [thea], ["Senin"], 0)
+	assert_true(cache.held_paths().has(_THEA_SPLASH), "an open popup lets the day's art load")
+	assert_true(FileAccess.get_file_as_string("res://Scripts/SchoolSimulation/SchoolDay.gd").contains(
+			"_event_art.prefetch_day_later(get_tree(), summary_instance,"),
+		"SchoolDay hands the popup to the delayed prefetch")

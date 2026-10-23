@@ -311,6 +311,58 @@ func test_the_legacy_inventory_outlives_a_quit_before_the_first_save() -> void:
 		"delete_legacy_inventory() removes the legacy file")
 
 
+## 2026-10-23: beating Kelas 9 deleted the save, and the new game's
+## reset_run() then zeroed money and items. The carry-over hands them on.
+func test_a_beaten_game_carries_money_and_items_into_the_new_game() -> void:
+	GameState.player_money = 4321
+	GameState.ad_debt = 2
+	GameState.inventory = {"Buku Tulis": 3}
+	var cfg := ConfigFile.new()
+	SaveGame.write_carryover(cfg)
+	GameState.reset_run()
+	assert_eq(GameState.player_money, 0, "the new game starts wiped")
+	SaveGame.apply_carryover(cfg)
+	assert_eq(GameState.player_money, 4321, "money comes back")
+	assert_eq(GameState.ad_debt, 2, "the debt owed against it comes too")
+	assert_eq(int(GameState.inventory.get("Buku Tulis", 0)), 3, "items come back")
+
+
+func test_a_wrong_typed_carryover_is_skipped() -> void:
+	GameState.reset_run()
+	var cfg := ConfigFile.new()
+	cfg.set_value("carry", "player_money", "lots")
+	cfg.set_value("carry", "inventory", {"Buku Tulis": "x", "Pensil": 2})
+	SaveGame.apply_carryover(cfg)
+	assert_eq(GameState.player_money, 0, "a non-number is ignored")
+	assert_false(GameState.inventory.has("Buku Tulis"), "a non-number count is ignored")
+	assert_eq(int(GameState.inventory.get("Pensil", 0)), 2, "the rest still lands")
+
+
+func test_the_carryover_is_written_merged_and_dropped_at_the_right_places() -> void:
+	var src := FileAccess.get_file_as_string(_SCRIPT)
+	for fn in ["save_carryover", "merge_carryover", "delete_carryover"]:
+		var body: String = src.get_slice("static func %s(" % fn, 1).get_slice("\nstatic func ", 0)
+		assert_true(body.contains("Engine.is_editor_hint()"), fn + " must no-op in the editor")
+	var save_body: String = src.get_slice("static func save(", 1).get_slice("\nstatic func ", 0)
+	assert_true(save_body.contains("\tdelete_legacy_inventory()\n\tdelete_carryover()"),
+		"save() drops the carry-over only once a run carrying it is on disk")
+	var rr := FileAccess.get_file_as_string("res://Scripts/EndGame/RunResult.gd")
+	var exit: String = rr.get_slice("func _on_selesai_pressed(", 1).get_slice("\nfunc ", 0)
+	var won := exit.find("var won := not GameState.run_failed")
+	assert_true(won != -1 and won < exit.find("var destination := _apply_progression()"),
+		"the win is read before progression clears run_failed")
+	var keep := exit.find("SaveGame.save_carryover()")
+	assert_true(keep != -1 and keep < exit.find("SaveGame.delete_save()"),
+		"a beaten game writes the carry-over before the save goes")
+	var menu := FileAccess.get_file_as_string("res://Scripts/MainMenu/MainMenu.gd")
+	var fresh: String = menu.get_slice("func _begin_new_game(", 1).get_slice("\nfunc ", 0)
+	assert_true(fresh.find("SaveGame.merge_carryover()") > fresh.find("GameState.reset_run()"),
+		"a new game merges the carry-over after the wipe")
+	var gs := FileAccess.get_file_as_string("res://Scripts/GameState.gd")
+	var forget: String = gs.get_slice("func forget_session(", 1).get_slice("\nfunc ", 0)
+	assert_true(forget.contains("SaveGame.delete_carryover()"), "Reset Progres drops it too")
+
+
 func test_checkpoints_fire_only_around_hub_screens() -> void:
 	var src := FileAccess.get_file_as_string(_SCRIPT)
 	var body: String = src.get_slice("static func checkpoint(", 1).get_slice("\nstatic func ", 0)
@@ -331,7 +383,7 @@ func test_run_result_saves_a_continuing_run_and_deletes_an_ended_one() -> void:
 	var body: String = src.get_slice("var destination := _apply_progression()", 1) \
 		.get_slice("var tween", 0)
 	assert_true(body.contains("if destination == ROSTER_SCENE:\n\t\tSaveGame.save()\n"
-			+ "\telse:\n\t\tSaveGame.delete_save()"),
+			+ "\telse:\n\t\tif won:\n\t\t\tSaveGame.save_carryover()\n\t\tSaveGame.delete_save()"),
 		"a run going on to StudentCard is saved; a run ending at the menu is deleted")
 
 

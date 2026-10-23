@@ -106,13 +106,15 @@ event screens and result portraits dress for the day via `splash_for_day`.
 
 **Persistence:** the run saves to `user://savegame.cfg` (`SaveGame`) around
 hub screens, on pause/quit on a hub, after each SchoolDay day's result and on
-RunResult's exit to StudentCard; its exit to MainMenu deletes it.
+RunResult's exit to StudentCard; its exit to MainMenu deletes it. A beaten
+Kelas 9 first writes money, ad debt and items to `user://carryover.cfg`
+(`SaveGame.CARRYOVER_KEYS`), which every new game merges back after its wipe.
 ContinuePopup resumes it or wipes the run (`GameState.reset_run()`). **Every
 GameState field is in `SaveGame.SAVE_KEYS` or `EXCLUDED`** (`test_save_game`
 fails otherwise): a new field picks one. A new per-week SchoolDay/StudentData
 field joins the `[week]` snapshot (`_week_snapshot`, `SAVED_STAT_KEYS`) or
-resets on resume. Achievements (`achievements.cfg`; debug `RESET_ON_LAUNCH`
-wipes them each launch: DEBT.md) and settings keep their own files. **Do not
+resets on resume. Achievements (`achievements.cfg`, kept across launches unless the
+debug `RESET_ON_LAUNCH` is switched on) and settings keep their own files. **Do not
 add further persistence without being asked.** Settings' **Reset Progres**
 and Debug's **🧹 Forget Session** wipe run, save, achievements.
 

@@ -29,6 +29,12 @@ const BAD_PATH := "user://savegame.bad.cfg"
 ## The inventory-only save this file replaced. Every new game reads it; the
 ## first save() that carries its items deletes it.
 const LEGACY_INVENTORY_PATH := "user://inventory.cfg"
+## What a beaten Kelas 9 hands to the next new game (2026-10-23): the run
+## save is deleted at that exit, and a new game's reset_run() zeroes money
+## and items, so without this file beating the game wiped them.
+const CARRYOVER_PATH := "user://carryover.cfg"
+## The GameState fields that file carries.
+const CARRYOVER_KEYS := ["player_money", "ad_debt", "inventory"]
 
 const LOBBY_SCENE := "res://Scenes/Lobby/Lobby.tscn"
 const SCHOOL_DAY_SCENE := "res://Scenes/SchoolSimulation/SchoolDay.tscn"
@@ -298,6 +304,7 @@ static func save(week: Dictionary = {}) -> void:
 		push_warning("SaveGame: could not move the save into place (error %d)" % err)
 		return
 	delete_legacy_inventory()
+	delete_carryover()
 
 
 ## Deletes the pre-2026-10-01 inventory-only save: once a run carrying its
@@ -381,9 +388,76 @@ static func merge_legacy_inventory() -> void:
 	var legacy := read_legacy_inventory()
 	if legacy.is_empty():
 		return
-	for item in legacy:
-		GameState.inventory[item] = int(GameState.inventory.get(item, 0)) + int(legacy[item])
+	_add_items(legacy)
 	GameState.inventory_changed.emit()
+
+
+## Writes what a beaten game keeps into `cfg`: the money, the ad debt owed
+## against it, and the items. Pure, so a test can read it back.
+static func write_carryover(cfg: ConfigFile) -> void:
+	cfg.clear()
+	for key in CARRYOVER_KEYS:
+		var value: Variant = GameState.get(key)
+		cfg.set_value("carry", key, value.duplicate(true) if value is Dictionary else value)
+
+
+## Adds `cfg`'s carried money, debt and items to GameState's, skipping any
+## value of the wrong type. Called after reset_run(), so adding is the same
+## as restoring. Pure, so a test can apply it. Emits GameState.inventory_changed.
+static func apply_carryover(cfg: ConfigFile) -> void:
+	for key in CARRYOVER_KEYS:
+		var value: Variant = cfg.get_value("carry", key)
+		if key == "inventory":
+			if value is Dictionary:
+				_add_items(value)
+		elif value is int or value is float:
+			GameState.set(key, int(GameState.get(key)) + int(value))
+	GameState.inventory_changed.emit()
+
+
+## Adds `items` (name -> count) to GameState.inventory, skipping any count
+## that is not a number. Emits nothing; the caller does.
+static func _add_items(items: Dictionary) -> void:
+	for item in items:
+		if items[item] is int or items[item] is float:
+			GameState.inventory[str(item)] = int(GameState.inventory.get(str(item), 0)) + int(items[item])
+
+
+## RunResult's beaten-game exit: keeps the money and items for the next new
+## game, which the run save (deleted right after) no longer carries. No-op in
+## the editor.
+static func save_carryover() -> void:
+	if Engine.is_editor_hint():
+		return
+	var cfg := ConfigFile.new()
+	write_carryover(cfg)
+	var err := cfg.save(CARRYOVER_PATH)
+	if err != OK:
+		push_warning("SaveGame: could not write %s (error %d)" % [CARRYOVER_PATH, err])
+
+
+## Adds a beaten game's money and items to the new game. Called by every new
+## game after GameState.reset_run(); like the legacy inventory, the file stays
+## until save() has a run carrying them on disk, so a quit before the first
+## save loses nothing. No-op in the editor.
+static func merge_carryover() -> void:
+	if Engine.is_editor_hint():
+		return
+	if not FileAccess.file_exists(CARRYOVER_PATH):
+		return
+	var cfg := ConfigFile.new()
+	if cfg.load(CARRYOVER_PATH) == OK:
+		apply_carryover(cfg)
+
+
+## Deletes the beaten game's carry-over: once a run carrying it is on disk
+## (save()), or when every bit of progress is wiped (forget_session()).
+## No-op in the editor.
+static func delete_carryover() -> void:
+	if Engine.is_editor_hint():
+		return
+	if FileAccess.file_exists(CARRYOVER_PATH):
+		DirAccess.remove_absolute(CARRYOVER_PATH)
 
 
 ## The save on disk if it is usable; otherwise null, and an unusable file is

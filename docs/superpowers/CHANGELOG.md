@@ -8,6 +8,14 @@ Facts that still govern how you work on the project belong in `CLAUDE.md`, not
 here. Unfinished placeholders and
 deferred items belong in `docs/superpowers/DEBT.md`. See `CLAUDE.md`'s `## Maintaining this file`.
 
+## 2026-10-23 — Beating Kelas 9 keeps money, items and achievements
+
+Beating the game deleted the run save, and the next new game's `reset_run()`
+zeroed money and items. RunResult now writes `user://carryover.cfg` (money,
+ad debt, inventory) before deleting the save; every new game merges it after
+the wipe, and `save()` / `forget_session()` drop it. Achievements were wiped
+on every launch by the debug `RESET_ON_LAUNCH`, now off.
+
 ## 2026-10-22 — Badminton: exact racket follow, no corner launch
 
 - **Why:** the player's racket lagged and could not reach the sides (the rackets were physical bodies, blocked by the walls and the shuttle), and pinning the shuttle between a racket and a wall made the solver fire it out at extreme speed.
